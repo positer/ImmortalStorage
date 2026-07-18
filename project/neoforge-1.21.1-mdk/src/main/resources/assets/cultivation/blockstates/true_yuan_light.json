@@ -1,0 +1,5 @@
+{
+  "multipart": [
+    { "apply": { "model": "cultivation:block/yuan_light" } }
+  ]
+}

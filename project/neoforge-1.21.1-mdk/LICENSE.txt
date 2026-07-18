@@ -1,0 +1,11 @@
+Copyright (c) 2026 Cultivation contributors
+
+All Rights Reserved.
+
+This source code and the compiled Cultivation mod may be downloaded and used
+for personal Minecraft play and private modpacks. Redistribution, commercial
+use, modification, or publication of derivative builds requires prior written
+permission from the copyright holder.
+
+Minecraft is a trademark of Mojang Studios. Cultivation is an independent
+project and is not affiliated with or endorsed by Mojang Studios or Microsoft.

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "cultivation:block/deepslate_spirit_iron_ore"
+  }
+}

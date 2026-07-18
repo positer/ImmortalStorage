@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ICI",
+    "CSC",
+    "ICI"
+  ],
+  "key": {
+    "I": { "item": "cultivation:spirit_iron_block" },
+    "C": { "item": "cultivation:spirit_crystal" },
+    "S": { "item": "cultivation:spirit_core" }
+  },
+  "result": {
+    "count": 1,
+    "id": "cultivation:xianqiao_interface"
+  }
+}

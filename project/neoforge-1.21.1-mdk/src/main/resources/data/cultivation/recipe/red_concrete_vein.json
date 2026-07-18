@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": { "item": "cultivation:spirit_iron" },
+    "C": { "item": "cultivation:spirit_crystal" },
+    "B": { "item": "minecraft:red_concrete" },
+    "W": { "item": "minecraft:water_bucket" },
+    "L": { "item": "minecraft:lava_bucket" }
+  },
+  "pattern": [
+    "ICI",
+    "CBC",
+    "WIL"
+  ],
+  "result": { "count": 1, "id": "cultivation:red_concrete_vein" }
+}

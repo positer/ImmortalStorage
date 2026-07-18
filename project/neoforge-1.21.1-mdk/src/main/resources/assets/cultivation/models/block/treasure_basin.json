@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "cultivation:block/treasure_basin",
+    "gold": "cultivation:block/treasure_basin"
+  },
+  "elements": [
+    {"from":[2,0,2],"to":[14,3,14],"faces":{"down":{"texture":"#gold"},"up":{"texture":"#gold"},"north":{"texture":"#gold"},"south":{"texture":"#gold"},"west":{"texture":"#gold"},"east":{"texture":"#gold"}}},
+    {"from":[1,3,1],"to":[3,13,15],"faces":{"up":{"texture":"#gold"},"north":{"texture":"#gold"},"south":{"texture":"#gold"},"west":{"texture":"#gold"},"east":{"texture":"#gold"}}},
+    {"from":[13,3,1],"to":[15,13,15],"faces":{"up":{"texture":"#gold"},"north":{"texture":"#gold"},"south":{"texture":"#gold"},"west":{"texture":"#gold"},"east":{"texture":"#gold"}}},
+    {"from":[3,3,1],"to":[13,13,3],"faces":{"up":{"texture":"#gold"},"north":{"texture":"#gold"},"south":{"texture":"#gold"},"west":{"texture":"#gold"},"east":{"texture":"#gold"}}},
+    {"from":[3,3,13],"to":[13,13,15],"faces":{"up":{"texture":"#gold"},"north":{"texture":"#gold"},"south":{"texture":"#gold"},"west":{"texture":"#gold"},"east":{"texture":"#gold"}}}
+  ]
+}

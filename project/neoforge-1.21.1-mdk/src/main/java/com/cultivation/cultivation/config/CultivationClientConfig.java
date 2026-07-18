@@ -1,0 +1,19 @@
+package com.cultivation.cultivation.config;
+
+import net.neoforged.neoforge.common.ModConfigSpec;
+
+public final class CultivationClientConfig {
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+
+    public static final ModConfigSpec.IntValue TERMINAL_ROWS = BUILDER
+            .comment("Preferred storage-terminal rows. The screen clamps this to the available height.")
+            .defineInRange("terminalRows", 5, 2, 12);
+
+    public static final ModConfigSpec.BooleanValue SYNC_RECIPE_VIEWER_SEARCH = BUILDER
+            .comment("Synchronize terminal search with installed JEI or EMI search fields.")
+            .define("syncRecipeViewerSearch", true);
+
+    public static final ModConfigSpec SPEC = BUILDER.build();
+
+    private CultivationClientConfig() {}
+}

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 50,
+  "experience": 0,
+  "ingredient": {
+    "item": "cultivation:crude_pill_embryo"
+  },
+  "result": {
+    "count": 1,
+    "id": "cultivation:crude_pill"
+  }
+}

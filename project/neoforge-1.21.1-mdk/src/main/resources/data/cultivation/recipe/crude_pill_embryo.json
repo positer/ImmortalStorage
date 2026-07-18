@@ -1,0 +1,16 @@
+{
+  "type": "cultivation:yuan_substitution_shapeless",
+  "category": "food",
+  "ingredients": [
+    {
+      "tag": "cultivation:yuan_crafting_materials"
+    },
+    {
+      "item": "minecraft:wheat"
+    }
+  ],
+  "result": {
+    "count": 8,
+    "id": "cultivation:crude_pill_embryo"
+  }
+}

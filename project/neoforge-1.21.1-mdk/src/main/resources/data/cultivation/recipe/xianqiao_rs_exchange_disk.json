@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "refinedstorage"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "refinedstorage:storage_housing"
+    },
+    {
+      "item": "cultivation:xianqiao_manager"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:xianqiao_rs_exchange_disk"
+  }
+}

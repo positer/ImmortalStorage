@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "cultivation:block/source_vein_manager_side",
+    "down": "cultivation:block/source_vein_manager_side",
+    "up": "cultivation:block/source_vein_manager_top",
+    "north": "cultivation:block/source_vein_manager_front",
+    "south": "cultivation:block/source_vein_manager_side",
+    "west": "cultivation:block/source_vein_manager_side",
+    "east": "cultivation:block/source_vein_manager_side"
+  }
+}

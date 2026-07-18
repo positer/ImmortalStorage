@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "cultivation:block/source_vein_manager" }
+  }
+}

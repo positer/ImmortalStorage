@@ -1,0 +1,89 @@
+package com.cultivation.cultivation.compat.refinedstorage;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+final class RsOptionalBoundaryTest {
+    private static final Path ROOT = locateMainSourceRoot();
+
+    @Test
+    void alwaysLoadedDiskAndFactoryDoNotReferenceRsTypes() throws IOException {
+        String item = source("java/com/cultivation/cultivation/item/custom/XianqiaoRsExchangeDiskItem.java");
+        String factory = source("java/com/cultivation/cultivation/item/custom/RsExchangeDiskFactory.java");
+        assertFalse(item.contains("com.refinedmods"));
+        assertFalse(factory.contains("import com.refinedmods"));
+        assertTrue(factory.contains("CompatManager.RS_LOADED"));
+        assertTrue(factory.contains("Class.forName"));
+    }
+
+    @Test
+    void rsAdapterUsesTheOfficialStorageContainerContract() throws IOException {
+        String adapter = source(
+                "java/com/cultivation/cultivation/compat/refinedstorage/XianqiaoRsStorageContainerItem.java");
+        assertTrue(adapter.contains("implements StorageContainerItem"));
+        assertTrue(adapter.contains("Optional<SerializableStorage> resolve"));
+        assertTrue(adapter.contains("Optional<StorageInfo> getInfo"));
+    }
+
+    @Test
+    void recipeAndMetadataStayOptionalAndPinnedToRsTwoPointZeroNine() throws IOException {
+        String recipe = source("resources/data/cultivation/recipe/xianqiao_rs_exchange_disk.json");
+        String modsToml = source("resources/META-INF/neoforge.mods.toml");
+        assertTrue(recipe.contains("neoforge:mod_loaded"));
+        assertTrue(recipe.contains("\"modid\": \"refinedstorage\""));
+        assertTrue(recipe.contains("refinedstorage:storage_housing"));
+        assertTrue(recipe.contains("cultivation:xianqiao_rs_exchange_disk"));
+        assertTrue(modsToml.contains("modId=\"refinedstorage\""));
+        assertTrue(modsToml.contains("versionRange=\"[2.0.9,2.0.10)\""));
+        assertTrue(modsToml.contains("type=\"optional\""));
+    }
+
+    @Test
+    void exactVersionMixinIsGatedAndForwardsOfficialCompositeLifecycle() throws IOException {
+        String config = source("resources/cultivation.refinedstorage.mixins.json");
+        String plugin = source(
+                "java/com/cultivation/cultivation/mixin/refinedstorage/RsMixinConfigPlugin.java");
+        String trackedBridge = source(
+                "java/com/cultivation/cultivation/mixin/refinedstorage/StateTrackedStorageCompositeBridgeMixin.java");
+        String compositeBridge = source(
+                "java/com/cultivation/cultivation/mixin/refinedstorage/CompositeStorageLifecycleMixin.java");
+        assertTrue(config.contains("RsMixinConfigPlugin"));
+        assertTrue(config.contains("StateTrackedStorageCompositeBridgeMixin"));
+        assertTrue(config.contains("CompositeStorageLifecycleMixin"));
+        assertTrue(plugin.contains("LoadingModList"));
+        assertTrue(plugin.contains("getModFileById(\"refinedstorage\")"));
+        assertFalse(plugin.contains("com.refinedmods"));
+        assertTrue(trackedBridge.contains("implements CompositeAwareChild"));
+        assertTrue(compositeBridge.contains("cultivation$rebuildCache"));
+        assertTrue(compositeBridge.contains("RsNetworkDeduplicator.rebalanceFrom"));
+    }
+
+    private static String source(String relative) throws IOException {
+        return Files.readString(ROOT.resolve(relative));
+    }
+
+    private static Path locateMainSourceRoot() {
+        Path cursor = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
+        while (cursor != null) {
+            Path direct = cursor.resolve("src/main");
+            if (isCultivationMainSource(direct)) return direct;
+
+            Path workspaceProject = cursor.resolve("project/neoforge-1.21.1-mdk/src/main");
+            if (isCultivationMainSource(workspaceProject)) return workspaceProject;
+            cursor = cursor.getParent();
+        }
+        throw new IllegalStateException("Unable to locate NeoForge Cultivation src/main from user.dir="
+                + System.getProperty("user.dir"));
+    }
+
+    private static boolean isCultivationMainSource(Path candidate) {
+        return Files.isRegularFile(candidate.resolve(
+                "java/com/cultivation/cultivation/CultivationMod.java"));
+    }
+}

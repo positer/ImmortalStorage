@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "cultivation:item/spirit_staff_explore"
+  },
+  "overrides": [
+    {
+      "predicate": {"cultivation:staff_mode": 1.0},
+      "model": "cultivation:item/spirit_staff_wrench"
+    },
+    {
+      "predicate": {"cultivation:staff_mode": 2.0},
+      "model": "cultivation:item/spirit_staff_pick"
+    },
+    {
+      "predicate": {"cultivation:staff_mode": 3.0},
+      "model": "cultivation:item/spirit_staff_build"
+    }
+  ]
+}

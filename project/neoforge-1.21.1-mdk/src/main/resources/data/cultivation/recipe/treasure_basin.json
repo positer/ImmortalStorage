@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": { "item": "cultivation:spirit_core" },
+    "I": { "item": "cultivation:spirit_iron" }
+  },
+  "pattern": [
+    "I I",
+    "ICI",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:treasure_basin"
+  }
+}

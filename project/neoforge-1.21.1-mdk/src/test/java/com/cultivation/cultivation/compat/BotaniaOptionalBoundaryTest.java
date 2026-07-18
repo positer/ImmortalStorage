@@ -1,0 +1,81 @@
+package com.cultivation.cultivation.compat;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+final class BotaniaOptionalBoundaryTest {
+    private static final Path PROJECT = locateProject();
+    private static final Path JAVA = PROJECT.resolve(Path.of("src", "main", "java"));
+
+    @Test
+    void botaniaTypesStayInsideTheIndependentOptionalModule() throws IOException {
+        Path optionalRoot = JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "botania"));
+        assertTrue(Files.isDirectory(optionalRoot));
+        try (var files = Files.walk(JAVA)) {
+            for (Path source : files.filter(path -> path.toString().endsWith(".java")).toList()) {
+                if (source.startsWith(optionalRoot)) continue;
+                String text = Files.readString(source);
+                assertFalse(text.contains("vazkii.botania"),
+                        () -> "hard Botania reference escaped optional module: " + source);
+            }
+        }
+    }
+
+    @Test
+    void buildAndMetadataPinTheAuditedOptionalBotaniaRange() throws IOException {
+        String build = Files.readString(PROJECT.resolve("build.gradle"));
+        assertTrue(build.contains(
+                "compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT')"));
+        assertTrue(build.contains("transitive = false"));
+
+        String mods = Files.readString(PROJECT.resolve(Path.of(
+                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+        int dependency = mods.indexOf("modId=\"botania\"");
+        assertTrue(dependency >= 0);
+        String botaniaSection = mods.substring(dependency);
+        assertTrue(botaniaSection.contains("type=\"optional\""));
+        assertTrue(botaniaSection.contains("versionRange=\"[454-SNAPSHOT,456)\""));
+        assertTrue(botaniaSection.contains("side=\"BOTH\""));
+    }
+
+    @Test
+    void adapterUsesOnlyTheOfficialManaPoolAndSparkCapabilityContracts() throws IOException {
+        String adapter = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "botania",
+                "XianqiaoBotaniaManaAdapter.java")));
+        assertTrue(adapter.contains("implements ManaPool, SparkAttachable"));
+        assertTrue(adapter.contains("receiveMana(int delta)"));
+        String window = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "botania",
+                "BotaniaManaWindow.java")));
+        assertTrue(window.contains("-(long) delta"),
+                "Integer.MIN_VALUE must not overflow while converting a negative Botania delta");
+        assertTrue(window.contains("LongAmountBridge.saturatingInt"));
+
+        String compat = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "botania", "BotaniaCompat.java")));
+        assertTrue(compat.contains("ManaReceiver.LOOKUP"));
+        assertTrue(compat.contains("ManaReceiver.LOOKUP.find(level, pos, side)"));
+        assertTrue(compat.contains("receiver instanceof ManaPool pool"));
+        assertTrue(compat.contains("SparkAttachable.LOOKUP"));
+        assertTrue(compat.contains("BotaniaForgeCapabilities.getBlockApiLookupById"));
+        assertTrue(compat.contains("RegisterCapabilitiesEvent"));
+    }
+
+    private static Path locateProject() {
+        Path current = Path.of("").toAbsolutePath();
+        while (current != null) {
+            if (Files.isRegularFile(current.resolve("build.gradle"))
+                    && Files.isDirectory(current.resolve("src/main/java"))) return current;
+            current = current.getParent();
+        }
+        throw new IllegalStateException("cannot locate project root");
+    }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "group": "cultivation:spirit_sword_tempering",
+  "cookingtime": 200,
+  "experience": 0.0,
+  "ingredient": { "item": "cultivation:spirit_sword" },
+  "result": { "count": 1, "id": "cultivation:spirit_sword" }
+}

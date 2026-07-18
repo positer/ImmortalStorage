@@ -1,0 +1,70 @@
+# Reference material and external projects are never part of Cultivation releases.
+reference-mods/
+archive/
+forge-sources/
+forge-sources-2/
+tools/
+tasks/
+.agents/
+.codex/
+.git/
+
+# Historical and not-yet-released version workspaces.
+project/forge-1.21.4-54.1.0-mdk/
+project/test/
+versions/
+
+# Local notes, extracted sources, screenshots, and one-off investigation files.
+Goal.md
+OVERVIEW.md
+AGENTS.md
+MinecraftClient.ini
+mob.java
+player.java
+/reference_core_16.png
+*.log
+*.tmp
+hs_err_pid*.log
+
+# Release artifacts belong on GitHub Releases, not in Git history.
+*.jar
+!project/neoforge-1.21.1-mdk/gradle/wrapper/gradle-wrapper.jar
+
+# IDE metadata.
+.idea/
+.vscode/
+.eclipse/
+.metadata/
+.settings/
+.classpath
+.project
+*.iml
+*.ipr
+*.iws
+*.launch
+bin/
+out/
+
+# Gradle and game runtime output at any depth.
+**/.gradle/
+**/build/
+**/run/
+**/run-data/
+**/logs/
+**/local-build-tmp/
+**/local-gradle-home/
+
+# Extracted/generated development data and visual references inside the MDK.
+/project/neoforge-1.21.1-mdk/data/
+/project/neoforge-1.21.1-mdk/references/
+/project/neoforge-1.21.1-mdk/README.txt
+/project/neoforge-1.21.1-mdk/changelog.txt
+/project/neoforge-1.21.1-mdk/CREDITS.txt
+
+# Local build/download diagnostics.
+**/*.download
+**/compile*.log
+**/test*.log
+**/server*.log
+**/focused.log
+**/build-final*.log

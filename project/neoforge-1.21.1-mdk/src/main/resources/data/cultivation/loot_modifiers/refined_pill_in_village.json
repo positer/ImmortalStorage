@@ -1,0 +1,19 @@
+{
+  "type": "cultivation:add_item",
+  "conditions": [
+    {
+      "condition": "minecraft:any_of",
+      "terms": [
+        { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/village/village_plains" },
+        { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/village/village_desert" },
+        { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/village/village_savanna" },
+        { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/village/village_snowy" },
+        { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/village/village_taiga" }
+      ]
+    }
+  ],
+  "item": { "item": "cultivation:refined_pill" },
+  "chance": 0.20,
+  "minCount": 3,
+  "maxCount": 5
+}

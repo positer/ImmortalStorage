@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "item": "cultivation:spirit_iron"
+    },
+    "S": {
+      "item": "cultivation:spirit_crystal"
+    },
+    "T": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    " I ",
+    " I ",
+    "ST "
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:spirit_sword",
+    "components": {
+      "minecraft:enchantments": {
+        "levels": { "cultivation:spirit_repair": 1 }
+      }
+    }
+  }
+}

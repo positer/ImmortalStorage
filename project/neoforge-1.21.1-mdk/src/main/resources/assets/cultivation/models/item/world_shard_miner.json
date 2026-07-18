@@ -1,0 +1,50 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "bottom": "cultivation:block/world_shard_miner_bottom",
+    "core": "minecraft:block/white_concrete",
+    "glass": "minecraft:block/glass",
+    "particle": "cultivation:block/world_shard_miner_side",
+    "side": "cultivation:block/world_shard_miner_side",
+    "top": "cultivation:block/world_shard_miner_top"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 3, 15],
+      "faces": {
+        "down": {"texture": "#bottom"},
+        "up": {"texture": "#top"},
+        "north": {"texture": "#side"},
+        "south": {"texture": "#side"},
+        "west": {"texture": "#side"},
+        "east": {"texture": "#side"}
+      }
+    },
+    {
+      "from": [3, 3, 3],
+      "to": [13, 14, 13],
+      "faces": {
+        "down": {"texture": "#core"},
+        "up": {"texture": "#core"},
+        "north": {"texture": "#core"},
+        "south": {"texture": "#core"},
+        "west": {"texture": "#core"},
+        "east": {"texture": "#core"}
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down": {"texture": "#glass"},
+        "up": {"texture": "#glass"},
+        "north": {"texture": "#glass"},
+        "south": {"texture": "#glass"},
+        "west": {"texture": "#glass"},
+        "east": {"texture": "#glass"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "cultivation:immortal_furnace",
+  "category": "building",
+  "cookingtime": 100,
+  "experience": 0,
+  "ingredient": {
+    "item": "cultivation:stone_vein"
+  },
+  "result": {
+    "id": "cultivation:smooth_stone_vein"
+  }
+}

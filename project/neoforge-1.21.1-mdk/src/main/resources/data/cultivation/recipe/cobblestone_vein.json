@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "item": "cultivation:spirit_iron"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    },
+    "W": {
+      "item": "cultivation:water_vein"
+    },
+    "C": {
+      "item": "cultivation:spirit_crystal"
+    }
+  },
+  "pattern": [
+    "ILI",
+    "IWI",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:cobblestone_vein"
+  }
+}

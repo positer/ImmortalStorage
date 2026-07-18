@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "item": "cultivation:spirit_iron"
+    },
+    "C": {
+      "item": "cultivation:spirit_crystal"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ICI",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:spirit_drive"
+  }
+}

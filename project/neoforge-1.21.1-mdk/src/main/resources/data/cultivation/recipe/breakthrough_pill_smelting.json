@@ -1,0 +1,13 @@
+{
+  "type": "cultivation:immortal_furnace",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0,
+  "ingredient": {
+    "item": "cultivation:breakthrough_pill_embryo"
+  },
+  "result": {
+    "count": 1,
+    "id": "cultivation:breakthrough_pill"
+  }
+}

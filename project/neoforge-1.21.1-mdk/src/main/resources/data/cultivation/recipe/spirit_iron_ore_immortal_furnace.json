@@ -1,0 +1,9 @@
+{
+  "type": "cultivation:immortal_furnace",
+  "category": "misc",
+  "group": "cultivation:spirit_iron_ores",
+  "cookingtime": 50,
+  "experience": 0.7,
+  "ingredient": { "item": "cultivation:spirit_iron_ore" },
+  "result": { "count": 1, "id": "cultivation:spirit_iron" }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "cultivation:immortal_yuan"
+    },
+    "C": {
+      "item": "cultivation:spirit_crystal"
+    },
+    "I": {
+      "item": "cultivation:spirit_iron"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    },
+    "D": {
+      "item": "minecraft:dirt"
+    }
+  },
+  "pattern": [
+    "XCX",
+    "ILI",
+    "XDX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:oak_log_vein"
+  }
+}

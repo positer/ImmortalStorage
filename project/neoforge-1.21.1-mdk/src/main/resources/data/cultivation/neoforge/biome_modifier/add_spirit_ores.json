@@ -1,0 +1,14 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "cultivation:spirit_iron_ore_upper",
+    "cultivation:spirit_iron_ore_middle",
+    "cultivation:spirit_iron_ore_small",
+    "cultivation:spirit_crystal_ore",
+    "cultivation:spirit_crystal_ore_medium",
+    "cultivation:spirit_crystal_ore_large",
+    "cultivation:spirit_crystal_ore_buried"
+  ],
+  "step": "underground_ores"
+}

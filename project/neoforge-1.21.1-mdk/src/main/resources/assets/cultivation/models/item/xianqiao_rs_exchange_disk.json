@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "cultivation:item/xianqiao_rs_exchange_disk"
+  }
+}

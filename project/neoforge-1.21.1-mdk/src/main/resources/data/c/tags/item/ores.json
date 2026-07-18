@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#c:ores/spirit_iron",
+    "#c:ores/spirit_crystal"
+  ]
+}

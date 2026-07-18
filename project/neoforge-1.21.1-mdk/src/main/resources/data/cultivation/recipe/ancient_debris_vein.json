@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "cultivation:immortal_yuan"
+    },
+    "C": {
+      "item": "cultivation:spirit_crystal"
+    },
+    "M": {
+      "item": "minecraft:netherite_scrap"
+    },
+    "B": {
+      "item": "minecraft:netherite_block"
+    },
+    "K": {
+      "item": "cultivation:spirit_core"
+    }
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "cultivation:ancient_debris_vein"
+  }
+}

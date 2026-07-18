@@ -1,0 +1,424 @@
+import groovy.json.JsonSlurper
+
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = "${mod_id}-neoforge-mc${minecraft_version}-nf${neo_version}"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+repositories {
+    if (providers.gradleProperty('useLocalNeoForgeMirror').map(String::toBoolean).getOrElse(false)) {
+        exclusiveContent {
+            forRepository {
+                def explicitMirror = providers.gradleProperty('localNeoForgeMirrorPath')
+                if (explicitMirror.isPresent()) {
+                    maven { url = uri(explicitMirror.get()) }
+                } else {
+                    mavenLocal()
+                }
+            }
+            filter {
+                includeModule('net.neoforged', 'neoforge')
+                includeModule('net.neoforged', 'DevLaunch')
+            }
+        }
+    }
+    maven { url = 'https://maven.blamejared.com' }
+    maven { url = 'https://maven.terraformersmc.com/releases' }
+    maven {
+        url = 'https://modmaven.dev/'
+        content {
+            includeGroup 'org.appliedenergistics'
+            includeGroup 'mekanism'
+        }
+    }
+    maven {
+        url = 'https://maven.creeperhost.net/'
+        content { includeGroup 'com.refinedmods.refinedstorage' }
+    }
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+    mavenCentral()
+}
+
+neoForge {
+    version = neo_version
+
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+
+        client {
+            client()
+            gameDirectory = project.file('run')
+        }
+
+        server {
+            server()
+            gameDirectory = project.file('run')
+            programArgument '--nogui'
+        }
+
+        data {
+            data()
+            gameDirectory = project.file('run-data')
+            programArguments.addAll '--mod', mod_id, '--all',
+                    '--output', file('src/generated/resources/').absolutePath,
+                    '--existing', file('src/main/resources/').absolutePath
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+}
+
+sourceSets.main {
+    java {
+        srcDir file(core_source_dir)
+        srcDir file(compatibility_source_dir)
+    }
+    resources { srcDir 'src/generated/resources' }
+}
+
+// ModDevGradle wires the mapped Minecraft/NeoForge classpath directly to the
+// main source set. Reuse it for build-time tests without shipping test classes.
+sourceSets.test {
+    compileClasspath += sourceSets.main.compileClasspath
+    runtimeClasspath += sourceSets.main.runtimeClasspath
+}
+
+dependencies {
+    compileOnly 'mezz.jei:jei-1.21.1-common-api:19.37.0.363'
+    compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.37.0.363'
+    compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
+    compileOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'
+    compileOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
+        transitive = false
+    }
+    compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') {
+        transitive = false
+    }
+    compileOnly('mekanism:Mekanism:1.21.1-10.7.19.85:api') {
+        transitive = false
+    }
+    compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') {
+        transitive = false
+    }
+    compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
+        transitive = false
+    }
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'
+    testRuntimeOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
+        transitive = false
+    }
+    testRuntimeOnly('mekanism:Mekanism:1.21.1-10.7.19.85:api') {
+        transitive = false
+    }
+    testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
+        transitive = false
+    }
+
+    if (providers.gradleProperty('enableRecipeViewerRuntime').map(String::toBoolean).getOrElse(false)) {
+        runtimeOnly 'mezz.jei:jei-1.21.1-neoforge:19.37.0.363@jar'
+        runtimeOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1@jar'
+    }
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    var replaceProperties = [
+            minecraft_version: minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version: neo_version,
+            neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version,
+            mod_authors: mod_authors,
+            mod_description: mod_description,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
+
+    // Every release artifact carries the exact descriptor for the one adapter
+    // selected by this integration project.  The matrix verifier rejects a JAR
+    // with zero, multiple, or mismatched markers.
+    from(file(compatibility_descriptor_file)) {
+        into 'META-INF/cultivation'
+        rename { 'version-adapter.json' }
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    exclude 'com/cultivation/cultivation/debug/**'
+    exclude '**/*DebugCommands*.class'
+    exclude '**/*TestAccess*.class'
+
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Cultivation-Compatibility-Id': compatibility_id,
+                'Cultivation-Minecraft-Range': minecraft_version_range,
+                'Cultivation-NeoForge-Range': neo_version_range,
+                'Cultivation-Core-Api-Revision': '1'
+        ])
+    }
+}
+
+tasks.register('verifyProductionJarBoundary') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def artifact = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        def forbiddenDependencies = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts
+                .collect { "${it.moduleVersion.id.group}:${it.moduleVersion.id.name}".toLowerCase(java.util.Locale.ROOT) }
+                .findAll { coordinate -> coordinate.split(':').any { it == 'numen' || it.startsWith('numen-') } }
+        if (!forbiddenDependencies.empty) {
+            throw new GradleException("Production compile classpath contains Numen dependencies: ${forbiddenDependencies}")
+        }
+
+        def forbiddenEntries = zipTree(artifact).matching {
+            include 'com/cultivation/cultivation/debug/**'
+            include '**/*DebugCommands*.class'
+            include '**/*TestAccess*.class'
+        }.files
+        if (!forbiddenEntries.empty) {
+            throw new GradleException("Production JAR contains debug/test classes: ${forbiddenEntries*.name}")
+        }
+
+        def forbiddenTokens = [
+                'numen',
+                'codex',
+                'numen-mcp',
+                'screen-state',
+                'click-screen',
+                'cultivationcatalog',
+                'creativecatalog',
+                'open_creative_catalog',
+                'realmticktest',
+                'selftest',
+                'terminalmenusupporttestaccess'
+        ]
+        def violations = []
+        new java.util.zip.ZipFile(artifact).withCloseable { zip ->
+            zip.entries().each { entry ->
+                if (!entry.directory && entry.name.endsWith('.class')) {
+                    def contents = new String(zip.getInputStream(entry).bytes, java.nio.charset.StandardCharsets.ISO_8859_1)
+                            .toLowerCase(java.util.Locale.ROOT)
+                    forbiddenTokens.each { token ->
+                        if (contents.contains(token)) {
+                            violations.add("${entry.name}: ${token}")
+                        }
+                    }
+                }
+            }
+        }
+        if (!violations.empty) {
+            throw new GradleException("Production JAR boundary violations: ${violations}")
+        }
+        new java.util.zip.ZipFile(artifact).withCloseable { zip ->
+            if (zip.getEntry('com/cultivation/cultivation/command/CultivationCommands.class') == null) {
+                throw new GradleException('Production JAR must retain the approved /cultivation stage command')
+            }
+        }
+    }
+}
+
+tasks.register('verifyVersionComposition') {
+    doLast {
+        def workspace = project.projectDir.toPath().resolve('../..').normalize().toFile()
+        def manifestFile = new File(workspace, 'versions/supported_versions.json')
+        if (!manifestFile.isFile()) {
+            throw new GradleException("Missing version manifest: ${manifestFile}")
+        }
+        def manifest = new JsonSlurper().parse(manifestFile)
+        if (manifest.product_version != mod_version) {
+            throw new GradleException("Product version mismatch: manifest=${manifest.product_version}, Gradle=${mod_version}")
+        }
+        def entry = manifest.entries.find { it.id == compatibility_id }
+        if (entry == null) {
+            throw new GradleException("Compatibility id is not registered: ${compatibility_id}")
+        }
+        def expected = [
+                minecraft_version: minecraft_version,
+                minecraft_range: minecraft_version_range,
+                neoforge_version: neo_version,
+                neoforge_range: neo_version_range,
+        ]
+        expected.each { key, value ->
+            if (entry[key] != value) {
+                throw new GradleException("Version manifest mismatch for ${key}: ${entry[key]} != ${value}")
+            }
+        }
+        def selectedProject = workspace.toPath().relativize(project.projectDir.toPath().normalize())
+                .toString().replace('\\', '/')
+        if (entry.integration_project != selectedProject) {
+            throw new GradleException("Wrong integration project for ${compatibility_id}: ${entry.integration_project} != ${selectedProject}")
+        }
+        def coreSource = file(core_source_dir)
+        def adapterSource = file(compatibility_source_dir)
+        def adapterDescriptorFile = file(compatibility_descriptor_file)
+        if (!coreSource.isDirectory() || !adapterSource.isDirectory() || !adapterDescriptorFile.isFile()) {
+            throw new GradleException("Core/adapter composition input is missing: ${coreSource}, ${adapterSource}, ${adapterDescriptorFile}")
+        }
+        if (entry.status == 'planned') {
+            throw new GradleException("Planned entries cannot be built as release candidates: ${compatibility_id}")
+        }
+        def descriptor = new JsonSlurper().parse(adapterDescriptorFile)
+        def descriptorExpected = [
+                id: compatibility_id,
+                minecraft_version: minecraft_version,
+                minecraft_range: minecraft_version_range,
+                neoforge_version: neo_version,
+                neoforge_range: neo_version_range,
+                core_api_revision: entry.core_api_revision,
+                integration_project: selectedProject,
+                adapter_source: workspace.toPath().relativize(adapterSource.toPath().normalize())
+                        .toString().replace('\\', '/'),
+                status: entry.status,
+        ]
+        descriptorExpected.each { key, value ->
+            if (descriptor[key] != value) {
+                throw new GradleException("Adapter descriptor mismatch for ${key}: ${descriptor[key]} != ${value}")
+            }
+        }
+        def expectedArtifactName = "${mod_id}-neoforge-mc${minecraft_version}-nf${neo_version}-${mod_version}.jar"
+        if (entry.artifact_name != expectedArtifactName) {
+            throw new GradleException("Version artifact name mismatch: ${entry.artifact_name} != ${expectedArtifactName}")
+        }
+    }
+}
+
+tasks.register('verifyVersionArtifact') {
+    dependsOn tasks.named('jar')
+    doLast {
+        def workspace = project.projectDir.toPath().resolve('../..').normalize().toFile()
+        def manifest = new JsonSlurper().parse(new File(workspace, 'versions/supported_versions.json'))
+        def entry = manifest.entries.find { it.id == compatibility_id }
+        if (entry == null) {
+            throw new GradleException("Compatibility id is not registered: ${compatibility_id}")
+        }
+        def artifact = tasks.named('jar', Jar).get().archiveFile.get().asFile
+        if (artifact.name != entry.artifact_name) {
+            throw new GradleException("Built artifact filename mismatch: ${artifact.name} != ${entry.artifact_name}")
+        }
+        new java.util.zip.ZipFile(artifact).withCloseable { zip ->
+            def markers = zip.entries().findAll { candidate ->
+                !candidate.directory &&
+                        candidate.name.startsWith('META-INF/cultivation/version-adapter') &&
+                        candidate.name.endsWith('.json')
+            }*.name
+            if (markers != ['META-INF/cultivation/version-adapter.json']) {
+                throw new GradleException("Artifact must contain exactly one version adapter marker: ${markers}")
+            }
+            def markerEntry = zip.getEntry('META-INF/cultivation/version-adapter.json')
+            def marker = new JsonSlurper().parse(zip.getInputStream(markerEntry))
+            def markerExpected = [
+                    id: compatibility_id,
+                    minecraft_version: minecraft_version,
+                    minecraft_range: minecraft_version_range,
+                    neoforge_version: neo_version,
+                    neoforge_range: neo_version_range,
+                    core_api_revision: entry.core_api_revision,
+            ]
+            markerExpected.each { key, value ->
+                if (marker[key] != value) {
+                    throw new GradleException("Artifact adapter marker mismatch for ${key}: ${marker[key]} != ${value}")
+                }
+            }
+            def jarManifest = new java.util.jar.Manifest(zip.getInputStream(zip.getEntry('META-INF/MANIFEST.MF')))
+            def attributes = jarManifest.mainAttributes
+            def manifestExpected = [
+                    'Implementation-Version': mod_version,
+                    'Cultivation-Compatibility-Id': compatibility_id,
+                    'Cultivation-Minecraft-Range': minecraft_version_range,
+                    'Cultivation-NeoForge-Range': neo_version_range,
+                    'Cultivation-Core-Api-Revision': entry.core_api_revision.toString(),
+            ]
+            manifestExpected.each { key, value ->
+                if (attributes.getValue(key) != value) {
+                    throw new GradleException("Artifact manifest mismatch for ${key}: ${attributes.getValue(key)} != ${value}")
+                }
+            }
+            def modsEntry = zip.getEntry('META-INF/neoforge.mods.toml')
+            def modsText = zip.getInputStream(modsEntry).getText('UTF-8')
+            if (!modsText.contains("modId=\"minecraft\"\ntype=\"required\"\nversionRange=\"${minecraft_version_range}\"")) {
+                throw new GradleException("Artifact Minecraft dependency range does not match ${minecraft_version_range}")
+            }
+            if (!modsText.contains("modId=\"neoforge\"\ntype=\"required\"\nversionRange=\"${neo_version_range}\"")) {
+                throw new GradleException("Artifact NeoForge dependency range does not match ${neo_version_range}")
+            }
+        }
+    }
+}
+
+tasks.named('check').configure {
+    dependsOn tasks.named('verifyProductionJarBoundary')
+    dependsOn tasks.named('verifyVersionComposition')
+    dependsOn tasks.named('verifyVersionArtifact')
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.matching { it.name == 'downloadAssets' }.configureEach {
+    onlyIf {
+        !providers.gradleProperty('skipAssetDownload').map(String::toBoolean).getOrElse(false)
+    }
+}
+
+idea.module { downloadJavadoc = downloadSources = true }
