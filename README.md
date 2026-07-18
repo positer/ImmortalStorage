@@ -1,321 +1,329 @@
-# Cultivation
+# Cultivation 修仙
 
-Cultivation is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
+**简体中文** | [English](README_en.md)
 
-The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
+Cultivation 是一个面向 Minecraft 生存流程的修仙、个人存储、自动化与专属维度模组。玩家会从凡人启灵开始，通过古玉了解修行道路，积累灵气与材料，逐步突破十个阶段，扩展与角色绑定的空窍/仙窍存储，建设属于自己的仙窍维度，并在后期通过渡劫完成境界提升。
 
-> Release 0.0.1 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-**Download:** [Cultivation 0.0.1](https://github.com/positer/Cultivation/releases/tag/0.0.1)  
-**Release JAR SHA256:** `B21C1089267F13F6C270B2F97A6871CFA59C89C6C247CAF6E1A9AF02E4431741`
+> 0.0.1 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
-## Highlights
+**下载：**[Cultivation 0.0.1](https://github.com/positer/Cultivation/releases/tag/0.0.1)
 
-- Ten cultivation stages with persistent benefits, pills, Yuan resources, ascension, and tribulations.
-- Per-player Kongqiao/Xianqiao storage that follows the character rather than a single block.
-- Smooth, searchable storage terminal with real crafting, furnace, armor, fluid, and magnet management.
-- A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
-- Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
-- Detailed Ancient Jade guide designed for play without JEI or EMI.
-- Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
-- Complete Simplified Chinese and English localization for gameplay and configuration.
+**发行 JAR SHA256：**`B21C1089267F13F6C270B2F97A6871CFA59C89C6C247CAF6E1A9AF02E4431741`
 
-## Requirements
+## 模组特色
 
-| Component | Version |
+- 从凡人到十阶的完整修行阶段，包含灵气、丹药、真元、仙元、飞升和渡劫。
+- 与玩家身份绑定的空窍/仙窍存储，不依赖某一个固定放置的箱子或机器。
+- 原版风格连续滚动终端，支持搜索、排序、合成、仙炉、装备、流体与磁铁管理。
+- 每位玩家独有的仙窍维度，空间边界和时间流速会随阶段成长。
+- 源方块、源方块管理器、仙窍管理器和仙窍接口组成的大宗资源自动化系统。
+- 探索、扳手、镐子、建筑四模式灵器，以及可淬火成长的灵剑。
+- 无需 JEI/EMI 也能游玩的古玉指导书，内含阶段任务、功能说明和真实配方图。
+- 可选兼容 JEI、EMI、AE2、RS、通用机械、植物魔法、Iron's Spells、通量网络与工业先锋灵魂等模组。
+- 完整的简体中文与英文游戏文本、Tooltip 和模组配置说明。
+
+## 环境要求
+
+| 项目 | 版本 |
 | --- | --- |
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
 | Cultivation | 0.0.1 |
 
-No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
+JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
-## Installation
+## 安装方法
 
-1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
-2. Use Java 21 for the client and dedicated server.
-3. Download `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.1.jar` from GitHub Releases.
-4. Place the JAR in the instance or server `mods` directory.
-5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
+1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
+2. 确认客户端与服务端均使用 Java 21。
+3. 从 GitHub Release 下载 `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.1.jar`。
+4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
+5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
-Back up important worlds before adding or updating any content mod.
+安装或更新任何内容模组前，请先备份重要世界。
 
-## Starting the Journey
+## 古玉与入门流程
 
-The Ancient Jade is the player's main guide. By default, a new character receives one on first joining a world. It can also be crafted shapelessly from a book, emerald, Spirit Crystal, and ImmortalPower.
+古玉是玩家的主要修行指导书。默认情况下，新角色首次进入世界时会获得一本；也可以使用书、绿宝石、灵晶和仙元进行无序合成。
 
-Open the Jade to see:
+古玉会根据玩家当前阶段显示：
 
-- the next meaningful cultivation task for the current stage;
-- detailed chapters for progression, storage, resources, tools, realms, and compatibility;
-- real crafting-table and cooking diagrams sourced from the current world's recipes;
-- stage-specific explanations that follow the active server configuration;
-- searchable bilingual descriptions for every major item and machine.
+- 当前最适合完成的修行目标；
+- 从启灵到十阶的阶段路线；
+- 空窍、仙窍、源方块、机器、灵器、灵剑和个人维度的详细说明；
+- 从当前世界配方管理器读取并渲染的真实合成台与烧炼配方；
+- 与服务器实际配置一致的十阶仙元、渡劫和边界说明；
+- 可搜索的中英文物品、方块与功能章节。
 
-The guide is intended to make a normal playthrough possible even when JEI and EMI are absent.
+指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-## Cultivation Progression
+## 修行阶段
 
-Cultivation runs from stage 0, the mortal state, through stage 10.
+修行从零阶凡人开始，最高正常达到十阶。
 
-- Early stages revolve around awakening, Lingqi accumulation, Spirit Pills, and gradually expanding Kongqiao storage.
-- Stage 5 is the final finite-storage stage and prepares the one-time ascension into Xianqiao.
-- Ascension from stage 5 to 6 converts existing TruePower once; later TruePower is not silently converted.
-- From stage 6 onward, the player gains Xianqiao storage, ImmortalPower systems, a personal realm, and late-game automation.
-- Stages 6-10 advance through tribulations fought inside the player's own Xianqiao realm.
-- Stage-derived permanent effects are restored after login, respawn, dimension travel, and game-mode changes, except while a tribulation deliberately suppresses them.
+- 一至五阶围绕启灵、灵气积累、丹药、真元与逐步扩展的空窍展开。
+- 五阶是有限存储的最后阶段，需要满足飞升条件才能进入六阶。
+- 五升六时会一次性处理既有真元；六阶以后新获得的真元不会继续被主动转换。
+- 六阶开始开放仙窍存储、仙元、个人仙窍维度和后期自动化。
+- 六至十阶通过在个人仙窍内完成渡劫进阶。
+- 阶段常驻效果会在登录、复活、切换维度和改变游戏模式后重新校准；渡劫期间则会暂时失效。
 
-The server can configure the maximum normally reachable stage and the enemies used for each tribulation.
+整合包作者可以配置正常流程最高阶数以及各阶段渡劫敌人的注册 ID。
 
-## TruePower and ImmortalPower
+## 真元与仙元
 
-TruePower and ImmortalPower are real items rather than invisible-only counters. Other mods can see, extract, and use them through ordinary item automation.
+真元与仙元均为真实物品，而不是只能在界面中查看的隐藏数值，因此其他模组可以通过普通物品能力读取、抽取并用于合成或机器处理。
 
-- Total limits are calculated across the player and personal storage where a stage limit applies.
-- Stage 6 and later no longer impose a TruePower maximum.
-- Stage 10 normally generates 256 ImmortalPower every 20 ticks with unbounded storage.
-- An optional configuration can replace that behavior with a non-consuming inexhaustible resource channel.
-- One ImmortalPower can be crafted into 64 TruePower.
-- Both items can act as furnace fuel.
-- Both can place dyeable, hideable floating-core light blocks; the ImmortalPower light also suppresses natural hostile spawning in its own chunk.
+- 有阶段上限时，限制按玩家身上与个人存储中的总量共同计算。
+- 六阶以后真元不再具有上限。
+- 十阶默认每 20 tick 生成 256 仙元，存储无上限。
+- 配置中可开启十阶无消耗仙元通道；该选项默认关闭。
+- 一个仙元可以无序合成 64 个真元。
+- 真元和仙元都可以作为普通熔炉燃料。
+- 两者都可放置可染色、可隐藏模型的悬浮核心光源；仙元光源还会抑制其当前区块的敌对生物自然生成。
 
-## Kongqiao and Xianqiao Storage
+## 空窍与仙窍存储
 
-Personal storage is opened with a configurable key binding. The default global storage shortcut can open above most non-text screens, and Escape returns to the previous screen.
+个人存储通过可自定义快捷键打开。存储快捷键可以覆盖大多数非文本输入界面全局打开，按 Esc 会返回之前的界面。
 
-### Kongqiao
+### 空窍
 
-- Available during stages 1-5.
-- Uses finite physical slot capacity that grows by cultivation stage.
-- Stores items only; fluids and Xianqiao Manager behavior are not available.
-- Keeps the compact early-game inventory presentation appropriate to its smaller capacity.
+- 在一至五阶使用。
+- 采用随阶段提升的有限物理槽位容量。
+- 只存储物品，不支持流体。
+- 不支持仙窍管理器等飞升后设备。
+- 低阶段会限制空白显示行数，避免小容量存储出现过多空行。
 
-### Xianqiao
+### 仙窍
 
-- Available from stage 6.
-- Aggregates equivalent items by item identity and complete Data Components while preserving server-authoritative entries.
-- Displays long-valued totals and supports large catalogs without changing the underlying external item-handler contract.
-- Supports item and fluid storage on the same terminal page; fluids are displayed in buckets.
-- Can expose content to storage buses and other capability-based automation.
+- 六阶开始使用。
+- 按物品身份和完整 Data Components 聚合同类物品。
+- 以长整型显示大宗数量，同时保持外部自动化的标准能力语义。
+- 物品与流体共用同一存储页面，流体按桶数显示。
+- 可以被存储总线、管道与其他标准能力自动化读取。
 
-### Terminal Features
+### 终端功能
 
-- Nine-column continuous storage view with smooth pixel scrolling.
-- Search by localized name, tooltip/tag text, namespace, and ordinary text.
-- Sorting by quantity, name, and mod ID.
-- Correct item-count layering above item sprites.
-- Player inventory, hotbar, and four real armor slots.
-- Mouse-drag stack distribution and standard container interactions.
-- Embedded 3x3 crafting with automatic ingredient refill from personal storage.
-- Optional exact-NBT/Data-Components matching for crafting refill.
-- Embedded three-lane Immortal Furnace with automatic input refill and direct storage output.
-- Magnet management with enable state, whitelist/blacklist filtering, and direct pickup into Xianqiao.
-- Exact-component held-stack refill after the current hand stack is consumed.
+- 九列连续存储页面和平滑像素滚动。
+- 按本地化名称、Tooltip、标签、命名空间或普通文本搜索。
+- 支持按数量、名称和模组 ID 排序。
+- 物品数量显示在材质上层，不会被图标遮挡。
+- 可直接管理玩家背包、快捷栏与四件真实装备槽。
+- 支持鼠标拖动均分等原版容器交互。
+- 内置真实 3x3 合成台，材料不足时自动从个人存储补充。
+- 可切换是否要求自动补料完全匹配 NBT/Data Components。
+- 内置三工作格仙炉，支持自动补入上一组原料并将输出送回存储。
+- 磁铁支持开关、黑名单/白名单与掉落物直接入库。
+- 手持物品耗尽后可按完整数据组件自动补充一组。
 
-## Personal Xianqiao Realm
+## 个人仙窍维度
 
-Every ascended player owns a stable UUID-bound personal dimension.
+每位飞升玩家拥有一个按稳定 UUID 绑定的独立仙窍维度。
 
-| Stage | Usable Area | Available Time Flow |
+| 阶段 | 可用空间 | 可用时间流速 |
 | --- | --- | --- |
-| 6 | 3x3 chunks | 1x |
-| 7 | 7x7 chunks | 0.5x, 1x, 2x, 4x |
-| 8 | 19x19 chunks | 0.2x to 8x fixed gears |
-| 9 | Unlimited | 0.1x to 16x fixed gears |
-| 10 | Unlimited | 0x freeze to 32x fixed gears |
+| 六阶 | 3x3 区块 | 1x |
+| 七阶 | 7x7 区块 | 0.5x、1x、2x、4x |
+| 八阶 | 19x19 区块 | 0.2x 至 8x 固定档位 |
+| 九阶 | 无限 | 0.1x 至 16x 固定档位 |
+| 十阶 | 无限 | 0x 冻结至 32x 固定档位 |
 
-Stages 6-8 use a visible vanilla world border. Crossing the legal space returns the owner to the nearest valid position and displays a boundary warning. Boundary checks run only while the owner is inside that exact realm, avoiding unnecessary world-side overhead.
+六至八阶会显示原版世界边界。玩家越过允许空间时会收到边界提醒，并被送回最近的合法位置。边界检测只在玩家位于自己的仙窍时运行，离开维度后会停止相关检查。
 
-Time flow is dimension-local. Slowing or freezing the Xianqiao does not freeze the overworld and never removes the ability to leave the realm.
+时间倍率只作用于对应仙窍维度。减速或完全冻结仙窍不会影响主世界，也不会阻止玩家正常离开。
 
-## Tribulations
+## 渡劫
 
-Late-stage advancement takes place only inside the player's own Xianqiao realm. Cultivation-derived buffs and flight are temporarily suspended during the encounter.
+六阶以后的渡劫只能在玩家自己的仙窍中开始。渡劫期间，Cultivation 提供的常驻增益与飞行能力会暂时失效。
 
-Default encounters are:
+默认敌人如下：
 
-| Advancement | Enemy |
+| 突破 | 默认敌人 |
 | --- | --- |
-| Stage 6 -> 7 | Armored Zombie |
-| Stage 7 -> 8 | Armored Wither Skeleton |
-| Stage 8 -> 9 | Armored Vindicator with Resistance I |
-| Stage 9 -> 10 | Warden |
+| 六升七 | 全套附魔下界合金装备的僵尸 |
+| 七升八 | 全套附魔下界合金装备的凋零骷髅 |
+| 八升九 | 全套附魔下界合金装备、抗性提升 I 的卫道士 |
+| 九升十 | 坚守者 |
 
-Each target permanently glows, has Strength III, and receives ten times its normal base health. Later fights add blindness and other pressure effects. Death during an active tribulation is intercepted in every game mode: the summoned target is removed, items are retained, the player revives in place, and current ImmortalPower is cleared. Failure does not lower cultivation stage.
+渡劫目标会永久发光，获得力量 III，并拥有原生基础生命值的十倍。后期渡劫还会对玩家施加失明、凋零等压力效果。
 
-Enemy registry IDs and the maximum normal stage are configurable for modpacks.
+无论游戏模式如何，渡劫期间死亡都会被拦截：召唤物会被清除，玩家保留物品并在原地复活，当前仙元清零，但阶段不会下降。
 
-## Immortal Furnace
+## 仙炉
 
-The Immortal Furnace is a three-lane cultivation furnace available both as a placed block and as an embedded Xianqiao module.
+仙炉拥有三个并行工作格，既可以作为世界方块放置，也可以作为仙窍终端内置模块使用。
 
-- Accepts supported vanilla furnace and blast-furnace recipes except recipes intentionally reserved by Cultivation.
-- Spirit Iron ores use blast-furnace or Immortal Furnace processing.
-- Spirit Crystal ores use the Immortal Furnace only.
-- TruePower processes one item in 50 ticks and supplies 150 furnace ticks in the Immortal Furnace rules.
-- ImmortalPower processes an entire stack in 25 ticks and supplies 500 furnace ticks.
-- Input automation enters from above.
-- Embedded auto-fill restores a full previous input stack and sends completed output directly to personal storage.
-- The Immortal Spirit Drive binds to a player and can pay a placed furnace from that player's storage, checking only when a real payment is required.
-- JEI and EMI receive a dedicated Immortal Furnace recipe category and catalysts.
+- 支持符合设计范围的原版熔炉与高炉配方。
+- 灵铁矿和深层灵铁矿只支持高炉或仙炉烧炼。
+- 灵晶矿和深层灵晶矿只支持仙炉烧炼。
+- 使用真元时，每个工作格一次烧炼一个物品，耗时 50 tick。
+- 使用仙元时，每次烧炼一组物品，耗时 25 tick。
+- 自动化从方块上方输入。
+- 内置仙炉自动填充会补入完整一组上一轮原料，并将输出直接存入个人存储。
+- 仙灵驱动器可绑定玩家并从绑定人的空窍/仙窍支付仙元或真元燃料，仅在真实需要付款且余额不足时进入五 tick 重试。
+- JEI 和 EMI 中拥有独立仙炉配方分类和配方转移。
 
-## Source Veins and Resource Automation
+## 源方块与自动化
 
-Source Veins are individually configurable producer blocks with real long-valued caches.
+每个源方块都有独立的长整型真实缓存和独立的六面设置。
 
-- Every block owns its own cache and per-face output rate.
-- Each face independently chooses Off, Push, or Bypass-Limit Push.
-- Off disables active transfer only; passive storage-bus and pipe extraction remains available.
-- Output uses cached resources first and performs ImmortalPower conversion only for a real deficit.
-- Fluid source blocks accept and void arbitrary fluid input from all six sides.
-- Int-only pipes receive saturated integer views while the authoritative ledger remains long-valued.
+- 六个面分别设置关闭、推出或绕过上限推出。
+- 每个面拥有独立的每 tick 推出预算和数值输入。
+- 关闭只停止主动抽取/推出，不会拒绝存储总线或管道的被动访问。
+- 外部抽取优先消耗真实缓存，缓存不足时才进行仙元兑换。
+- 流体源方块始终接受六面输入的任意流体并直接销毁。
+- 面对只支持整形数量的管道时，对外提供安全饱和的整形视图，内部账本仍保持长整型。
 
-Source definitions are data/config driven. A configured output resource can have only one definition in the same active configuration.
+源定义支持通过配置文件扩展。相同资源在同一有效配置中只能存在一个源定义，避免重复定义导致预算与统计冲突。
 
-### Source Vein Manager
+### 源方块管理器
 
-- Can be placed only inside its owner's Xianqiao.
-- Contains 72 single-item slots; each slot accepts one non-stackable Source Vein.
-- Allows only one Source Vein of the same name per manager.
-- Aggregates the installed veins into an extract-only resource view while keeping every member's cache and accounting independent.
-- Binds the aggregate to Xianqiao storage statistics so terminals and storage buses can see the available maximum budget plus real cache.
+- 只能放置在所有者自己的仙窍维度内。
+- 拥有 72 个单件槽，每格只能放入一个不可堆叠源方块。
+- 同名源方块在同一个管理器中只能存在一个。
+- 每个成员源仍独立工作和保存缓存，管理器仅聚合其对外取出能力。
+- 聚合视图会绑定到仙窍存储统计，使终端和存储总线能读取最大预算与真实缓存。
 
-### Xianqiao Manager
+### 仙窍管理器
 
-The Xianqiao Manager binds nearby automation to the owner's personal storage. Its visual identity is separate from Source Veins and it exposes standard item/fluid capability access without adding any Numen or HTTP debug interface to the production mod.
+仙窍管理器把相邻自动化与所有者的个人仙窍存储绑定，对外提供标准物品/流体能力。正式模组不包含任何 Numen、HTTP 或外部调试接口。
 
-### Xianqiao Interface
+### 仙窍接口
 
-The Xianqiao Interface can be placed outside the personal realm and cannot be claimed by another player.
+仙窍接口可以放置在其他维度，且不能被其他玩家重新认领。
 
-- Configurable item and fluid cache targets.
-- Default limits of 128 items per cache slot and 16 buckets per fluid slot, adjustable in configuration.
-- JEI/EMI ghost dragging and a numeric cache-amount dialog.
-- Per-target six-face interaction masks.
-- Global active-pull and active-push switches plus per-face Pull, Push, or Off modes.
-- Active pull drains all acceptable adjacent contents on enabled faces; active push supplies configured cached resources.
-- Optional energy, chemical, mana, Source, and Soul Surge caches when their owning mods are installed.
+- 配置物品与流体缓存目标。
+- 默认每个物品槽上限 128，每个流体槽上限 16 桶，可在配置中调整。
+- 支持从 JEI/EMI 拖动设置幽灵目标，并通过小窗口输入缓存数量。
+- 每个缓存目标都拥有独立的六面交互掩码。
+- 具有主动抽入、主动推出总开关，以及每面的抽入、推出、关闭设置。
+- 主动抽入会从开启面的相邻容器提取所有能够存入个人存储的内容，而不是只提取当前配置目标。
+- 主动推出会从真实缓存向对应面输出配置资源。
+- 安装对应模组后可配置电力、化学品、魔源、魔力和灵魂涌动等额外资源缓存。
 
-## Spirit Instrument
+## 灵器
 
-The Spirit Instrument has four modes, selected with the configurable mode controls.
+灵器拥有探索、扳手、镐子、建筑四种模式。
 
-### Explore
+### 探索模式
 
-Right-click air to toggle collection. While the enabled instrument remains in either hand, opening a chest, trapped chest, barrel, Lootr page, or registered loot container transfers the currently opened contents transactionally into personal storage. Anything that cannot fit remains in the source container.
+对空气右键开关自动收纳，启用时显示附魔光效。只有玩家仍手持启用状态的灵器并打开箱子、陷阱箱、木桶、Lootr 页面或已注册战利品容器时，当前打开页面的内容才会事务性转入个人存储；无法容纳的物品保留在原容器中。
 
-### Wrench
+### 扳手模式
 
-Uses public wrench conventions for Cultivation, Mekanism, AE2, Refined Storage, Create, and compatible machines. Shift-right-click safely dismantles owned Cultivation machines and returns the block.
+使用公开扳手语义兼容 Cultivation、通用机械、AE2、RS、机械动力等机器。对属于玩家的 Cultivation 功能方块 Shift 右键可完整拆下并获得掉落物。
 
-### Pick
+### 镐子模式
 
-Mines at netherite level. Ordinary left-click mining uses the instrument's current anvil enchantments and consumes durability normally. From stage 6, right-clicking a block spends one ImmortalPower to perform the instrument's built-in silk harvest; that special right-click path is independent of the tool's enchantments.
+拥有下界合金挖掘等级。普通左键挖掘会正常使用铁砧附魔并消耗耐久；六阶以后右键方块可消耗一个仙元执行灵器自带的精准采集，该右键能力不受灵器附魔影响。
 
-### Build
+### 建筑模式
 
-Shows a client preview derived from the same server placement plan, then batch-places a surface using materials from inventory and personal storage. The default action limit is 64 blocks and is configurable. Ctrl-right-click removes one planned layer without drops. Placement or removal consumes one durability per layer operation.
+客户端会显示与服务端实际放置计划一致的轮廓预览，材料可从背包和个人存储共同取用。默认单次上限为 64，可通过配置调整。按住 Ctrl 右键可以无掉落删除计划中的一层。每次放置或删除一层消耗一点耐久。
 
-The Spirit Instrument cannot receive random enchanting-table enchantments, but anvil compatibility follows the current netherite-pickaxe enchantment rules, including enchantments added by other mods.
+灵器不能在附魔台随机附魔，但可以通过铁砧接受当前下界合金镐允许的附魔，包括其他模组动态加入的附魔。
 
-## Spirit Sword
+## 灵剑
 
-The Spirit Sword's tooltip and combat code share the same damage model, so the displayed formula matches the server calculation.
+灵剑的 Tooltip 与实际攻击共享同一套伤害模型。
 
-- Stage-based bonus damage consumes the required TruePower or ImmortalPower on a successful hit.
-- Insufficient balance falls back to base weapon damage.
-- The sword supports anvil enchantments using the current netherite-sword rules but rejects random enchanting-table rolls.
-- Spirit Repair can consume Yuan to restore durability.
-- Repeated processing in a furnace, blast furnace, placed Immortal Furnace, or embedded Immortal Furnace adds one tempering point with no experience reward.
-- Every tempering point adds 1% damage; after a hit, tempering points are reduced to 50%, rounded down.
-- The current tempering bonus is visible in the tooltip.
+- 根据阶段获得额外伤害，命中时从背包与个人存储支付对应真元或仙元。
+- 余额不足时仍能攻击，但只造成基础武器伤害。
+- 不能在附魔台随机附魔，但可通过铁砧接受当前下界合金剑允许的附魔。
+- 自带灵气修复，可消耗元气恢复耐久。
+- 可在熔炉、高炉、放置仙炉和内置仙炉中反复淬火，每次增加一点淬火点且不给予经验。
+- 每一点淬火使伤害提高 1%；每次命中后淬火点减半并向下取整。
+- 当前淬火点与伤害加成会直接显示在 Tooltip 中。
 
-## World Shard Miner and Treasure Basin
+## 世界碎片开采器与聚宝盆
 
-The World Shard Miner shares the beacon's complete same-block activation structure. A full diamond-block, ancient-debris, or purpur-brick base selects overworld, nether, or end mode. Levels 1-4 increase work rate.
+世界碎片开采器使用与信标相同的完整同种方块底座结构。完整钻石块、下界残骸或紫颂砖底座分别激活主世界、下界和末地模式，底座等级一至四控制工作速度。
 
-By default, the miner reads the active world's ore-generation rules so datapacks and other mods influence its weighted output. Modpacks may switch to configurable fixed tables instead. Inside a Xianqiao realm, results enter that owner's personal storage; elsewhere, the miner fills an internal barrel-sized cache and stops when full.
+默认情况下，开采器会读取当前世界实际生效的矿物生成规则，使数据包和其他模组修改的矿物分布参与权重计算。整合包也可以选择启用固定表覆盖世界读取。在仙窍内工作时，产物直接进入对应玩家存储；在其他维度则进入机器内部一个木桶容量的缓存，缓存满后停机。
 
-The Treasure Basin is logically independent. It does not exchange messages with the miner: it only examines whether the block directly below is an active World Shard Miner and derives its loot mode from that observed state. It then samples loot-table behavior into its own cache and may block the beacon beam.
+聚宝盆与开采器逻辑解耦，双方不存在主动通信。聚宝盆只检查正下方是否存在已激活的世界碎片开采器，并根据观察到的工作模式抽取对应战利品表；它拥有独立缓存，同时可以遮挡信标光束。
 
-## Materials, Pills, Effects, and Villagers
+## 材料、丹药、效果与村民
 
-- Spirit Iron, Crude Spirit Iron, Spirit Crystal, their ores, deep ores, and storage blocks form the main material chain.
-- Spirit Core is a stackable-16 intermediate crafting material with no accessory behavior.
-- Pills have short use times, can be consumed at full hunger, and describe their effects in their tooltips.
-- Breakthrough Pill can fill stage-5 Lingqi progress without automatically crossing the ascension boundary.
-- Advancement Weakness and Lingqi Saturation are registered visible effects with localized names and icons.
-- Spirit Repair is a registered enchantment with an enchanted-book form.
-- The Spirit Sage villager profession uses the Immortal Furnace as its workstation and provides cultivation trades.
-- Standard villager purchases can draw exact required payment items from active personal storage; ImmortalPower is not silently substituted for TruePower.
+- 灵铁、粗灵铁、灵晶、对应矿石、深层矿石和储存块构成基础材料链。
+- 灵核堆叠上限为 16，只作为中间合成材料，不再具有饰品功能。
+- 所有丹药缩短食用时间、可以无视饱食度食用，并在 Tooltip 中写明效果。
+- 破限丹在五阶使用时会将灵气进度补满，但不会自动完成飞升。
+- 进阶虚弱与灵气饱和均为正式注册、可见且有独立图标的状态效果。
+- 灵气修复为正式附魔，并拥有附魔书形态。
+- 仙师孑遗村民职业以仙炉为工作方块并提供修行交易。
+- 普通村民交易可以从当前个人存储补充精确要求的付款物品；不会自动用仙元替代真元。
 
-## Recipe Viewers
+## JEI 与 EMI
 
-JEI and EMI are optional. When installed, Cultivation provides:
+JEI 和 EMI 均为可选依赖。安装后支持：
 
-- R/U recipe lookup and ingredient highlighting from terminal entries;
-- terminal search synchronization with loop prevention;
-- exclusion areas for terminal panels;
-- storage-backed crafting transfer and missing-material feedback;
-- clickable item and fluid stack providers;
-- dedicated Immortal Furnace recipe display and transfer behavior.
+- 在终端条目上使用 R/U 查询配方和用途；
+- 材料识别、高亮与缺料提示；
+- 终端搜索框与配方查看器搜索同步，并避免循环更新；
+- 正确报告终端和侧边面板的界面避让区域；
+- 从个人存储、玩家背包和真实合成格进行配方转移；
+- 物品与流体条目的点击识别；
+- 独立仙炉配方分类与转移处理。
 
-Installing neither viewer is supported. Installing both is also guarded against optional-class loading failures.
+不安装任何查看器可以正常游戏，同时安装两者也不会因可选类加载而崩溃。
 
-## Storage-Mod Compatibility
+## 存储与科技模组联动
 
-Cultivation uses standard NeoForge item/fluid capability surfaces for ordinary automation. Optional integrations are isolated so an absent mod cannot cause a class-loading crash.
+普通自动化优先通过 NeoForge 官方物品/流体能力交互。所有可选兼容均放在独立边界中，未安装目标模组时不会静态引用其类型。
 
-Implemented integration areas include AE2 and Refined Storage exchange media, storage-bus visibility, Mekanism energy/chemical access, Botania mana, Ars Nouveau Source, Flux Networks energy, and Industrial Foregoing Souls. Exact behavior depends on the installed mod version and the enabled server configuration.
+当前 0.0.1 工程包含 AE2、RS 交流存储介质与存储总线读取，以及通用机械能量/化学品、植物魔法魔力、Iron's Spells 魔源、通量网络能量、工业先锋灵魂等兼容区域。具体可用功能取决于实际安装版本与服务器配置。
 
-Additional storage compatibility expansion is intentionally not claimed as part of release 0.0.1 beyond the adapters included and tested for the stated Minecraft/NeoForge target.
+本次 Release 只声明已经针对 Minecraft 1.21.1 / NeoForge 21.1.235 构建和验证的适配，不将尚未独立发布的其他 NeoForge 版本区间描述为已支持。
 
-## Configuration
+## 游戏内配置
 
-Open Minecraft's **Mods** screen, select **Cultivation**, and choose **Configuration**. The built-in NeoForge configuration UI includes natural-language Simplified Chinese and English labels and tooltips.
+在主菜单或暂停菜单中打开 **模组 -> Cultivation -> 配置**，即可使用 NeoForge 原生配置界面。所有现有分组、次级菜单、配置名称和 Tooltip 均已注册自然中文与英文翻译。
 
-Notable options include:
+主要配置包括：
 
-- whether new players receive Ancient Jade;
-- loot injection probabilities and quantities;
-- maximum normally reachable stage;
-- optional stage-10 inexhaustible ImmortalPower behavior;
-- tribulation enemy registry IDs;
-- Source Vein ownership and destruction permissions;
-- Xianqiao Interface item/fluid cache limits;
-- Spirit Instrument build-mode action limit.
+- 新玩家是否自带古玉；
+- 古玉、丹药等战利品注入概率与数量；
+- 正常流程最高可达阶数；
+- 十阶是否启用无消耗无限仙元通道；
+- 各阶段渡劫敌人注册 ID；
+- 源方块认领、破坏与爆炸权限；
+- 仙窍接口物品/流体缓存上限；
+- 灵器建筑模式单次方块上限。
 
-Server owners should stop the server and back up the world before making progression or compatibility changes.
+调整阶段、资源或兼容配置前，建议关闭服务器并备份世界。
 
-## Key Bindings and Commands
+## 快捷键与管理员指令
 
-All Cultivation key bindings can be changed from Minecraft's Controls screen. Storage opening is global over most non-text screens; other actions remain gameplay-scoped to avoid stealing input from menus.
+所有 Cultivation 快捷键都可以在 Minecraft 控制设置中重新绑定。存储按键可以在大多数非文本界面上全局使用，其他模式按键保持在游戏场景内生效，避免抢占菜单输入。
 
-Permission-level-2 administrator commands:
+需要权限等级 2 的管理员指令：
 
 ```text
-/cultivation stage <0..10> [player]
-/cultivation unload [player]
-/cultivation reload [player]
-/cultivation speed <fixed-gear>x [player]
+/cultivation stage <0..10> [玩家]
+/cultivation unload [玩家]
+/cultivation reload [玩家]
+/cultivation speed <固定档位>x [玩家]
 ```
 
-When the optional player argument is omitted, the command targets the executor.
+不填写可选玩家参数时，默认作用于指令执行者。
 
-## Performance and Safety
+## 性能与安全边界
 
-- Storage directories use stable entry IDs, revision validation, compact synchronization, and viewport-only rendering.
-- Continuous-scroll rendering keeps full animation frame rate while unloading invisible rows.
-- High realm time scales tolerate amount-only terminal updates without making entries impossible to click.
-- Optional integrations are loaded behind explicit mod-presence boundaries.
-- Long-valued resources expose safe saturated integer views to int-only APIs.
-- Storage mutations, crafting refill, source conversion, interfaces, and furnace processing use server-authoritative transactions.
-- Production Cultivation contains no Numen, MCP, bearer-token, HTTP, or external-debug endpoint. Numen was used only as an external test tool.
+- 存储目录使用稳定条目 ID、revision 校验、紧凑同步和仅视口渲染。
+- 连续滚动不降低动画帧数，只卸载视野外行与不可见渲染内容。
+- 高仙窍时间倍率下，单纯数量变化不会使终端物品无法点击。
+- 长整型资源对只支持整形的 API 提供安全饱和值。
+- 存储操作、合成补料、源兑换、接口传输和仙炉处理均由服务端权威事务执行。
+- 可选模组兼容按安装状态隔离，专用服务端不会加载客户端查看器类。
+- 正式 Cultivation JAR 不包含 Numen、MCP、HTTP、Bearer Token 或外部调试端点；Numen 仅用于外部实机测试。
 
-## Building from Source
+## 从源码构建
 
-Clone the repository and run from Windows PowerShell:
+克隆仓库后，在 Windows PowerShell 中执行：
 
 ```powershell
 cd project/neoforge-1.21.1-mdk
@@ -323,52 +331,53 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 .\gradlew.bat clean build --no-daemon --max-workers 1 --console=plain
 ```
 
-The release artifact is written to:
+发行文件生成在：
 
 ```text
 project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.1.jar
 ```
 
-Useful verification tasks:
+完整验证命令：
 
 ```powershell
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The current release gate passes 160 test suites and 608 tests, plus production-class, version-composition, and exact-artifact checks.
+0.0.1 当前通过 160 个测试套件、608 项测试，以及生产类边界、版本组合和精确发行物校验。
 
-## Project Layout
+## 仓库结构
 
 ```text
 .
-├── README.md
-├── CHANGELOG.md
-├── LICENSE
+├── README.md                 中文默认介绍
+├── README_en.md              English documentation
+├── CHANGELOG.md              版本变更记录
+├── LICENSE                   发行许可证
 └── project/
     └── neoforge-1.21.1-mdk/
         ├── build.gradle
         ├── gradle.properties
         ├── gradle/
         └── src/
-            ├── main/java/       Cultivation implementation
-            ├── main/resources/  assets, data, recipes, tags, and metadata
-            └── test/java/       automated behavior and release-boundary tests
+            ├── main/java/       模组实现
+            ├── main/resources/  材质、模型、语言、配方、标签与数据
+            └── test/java/       自动化行为与发行边界测试
 ```
 
-Reference mods, extracted third-party sources, local test instances, Numen bridges, logs, screenshots, archives, and built JARs are excluded from Git history. Compiled releases are distributed only through GitHub Releases.
+参考模组、第三方提取源码、PCL2 测试实例、Numen 调试桥、日志、截图、归档和构建 JAR 均不会进入 Git 历史。编译后的正式版本只通过 GitHub Releases 分发。
 
-## Support and Bug Reports
+## Bug 反馈
 
-When reporting a problem, include:
+提交问题时，请附上：
 
-- Minecraft, NeoForge, Java, and Cultivation versions;
-- whether the issue occurs on client, integrated server, or dedicated server;
-- installed optional integration mods and their exact versions;
-- a minimal reproduction sequence;
-- the relevant `latest.log` excerpt without account tokens or private data.
+- Minecraft、NeoForge、Java 与 Cultivation 的准确版本；
+- 问题发生于客户端、单人整合服务端还是专用服务端；
+- 已安装联动模组及其准确版本；
+- 最小复现步骤；
+- 与问题相关的 `latest.log` 片段，请移除账号 Token 和其他隐私信息。
 
-## License
+## 许可证
 
-Cultivation is distributed under the repository's All Rights Reserved license. Personal play and private modpack use are permitted; redistribution, commercial use, modification, and derivative publication require prior written permission.
+Cultivation 使用仓库中的 All Rights Reserved 许可证。允许个人游玩与私人整合包使用；重新分发、商业使用、修改或发布衍生版本需要事先获得书面许可。
 
-Minecraft is a trademark of Mojang Studios. This project is independent and is not affiliated with Mojang Studios or Microsoft.
+Minecraft 是 Mojang Studios 的商标。本项目为独立模组，与 Mojang Studios 或 Microsoft 无隶属或授权关系。
