@@ -6,6 +6,9 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 > Release 0.0.1 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
+**Download:** [Cultivation 0.0.1](https://github.com/positer/Cultivation/releases/tag/0.0.1)  
+**Release JAR SHA256:** `B21C1089267F13F6C270B2F97A6871CFA59C89C6C247CAF6E1A9AF02E4431741`
+
 ## Highlights
 
 - Ten cultivation stages with persistent benefits, pills, Yuan resources, ascension, and tribulations.
