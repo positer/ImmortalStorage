@@ -4,6 +4,8 @@ All notable user-facing changes are documented here.
 
 ## [0.0.2] - 2026-07-20
 
+Stable release for Minecraft 1.21.1 and NeoForge 21.1.235. This release is published as **ImmortalStorage (仙藏)** and supersedes the earlier 0.0.2 artifact carrying the old Cultivation name.
+
 ### Breaking
 
 - Renamed the public product to ImmortalStorage (仙藏), including mod ID and resource namespace `immortalstorage`, Java packages, network payload identifiers, configuration files, command root, project logo, and release artifact name.
@@ -21,6 +23,9 @@ All notable user-facing changes are documented here.
 
 ### Changed
 
+- Renamed the Mods-screen display, creative tab, key-binding category, configuration UI, guide text, project documentation, GitHub repository, and release metadata to ImmortalStorage / 仙藏.
+- Renamed the production artifact to `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar`.
+- Renamed the administrator command root from `/cultivation` to `/immortalstorage` and configuration files to `immortalstorage-common.toml` and `immortalstorage-client.toml`.
 - Xianqiao Interface active pull/push switches now control scheduled block automation only; passive pipes use matching caches and per-cache output face masks.
 - External caches default to 1,000 units and enforce resource-appropriate server-side limits.
 - Fluid and chemical containers configure the exact held container on left click and their contained resource on right click.
@@ -41,9 +46,15 @@ All notable user-facing changes are documented here.
 - Loader: NeoForge 21.1.235
 - Java: 21
 - Tests: 658 passed
+- Release gate: JDK 21 `check`, production-boundary audit, version-composition audit, no-AE2 runtime probe, and Ars Source adapter verification passed
+- Release JAR: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar`
+- Release JAR size: 3,052,054 bytes
 - Release JAR SHA256: `AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
+- Release: https://github.com/positer/ImmortalStorage/releases/tag/0.0.2
 
 ## [0.0.1] - 2026-07-18
+
+Historical release published under the former **Cultivation** product name and `cultivation` technical namespace. It is not world-compatible with ImmortalStorage 0.0.2.
 
 ### Added
 
