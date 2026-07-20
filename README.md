@@ -16,8 +16,6 @@
 
 **下载：**[仙藏 ImmortalStorage 0.0.2](https://github.com/positer/ImmortalStorage/releases/tag/0.0.2)
 
-**更新日志：**[CHANGELOG.md](CHANGELOG.md)
-
 **发行 JAR SHA256：**`AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
 
 ## 模组特色
