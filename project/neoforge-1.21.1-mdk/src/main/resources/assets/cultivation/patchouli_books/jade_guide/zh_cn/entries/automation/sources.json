@@ -1,8 +1,0 @@
-{
-  "name":"源方块与管理器","icon":"cultivation:water_vein","category":"cultivation:automation","sortnum":0,
-  "pages":[
-    {"type":"patchouli:spotlight","item":"cultivation:water_vein","title":"真实长整型缓存","text":"每个源方块都先把资源放入自身真实缓存。自动化、Shift取出与存储总线只能抽取缓存；收费源缓存不足时才为差额消耗仙元。关闭六面模式只停止主动推出，不会隐藏标准能力。"},
-    {"type":"patchouli:text","text":"六面可分别设置推出、绕过上限推出或关闭，并分别输入每刻速率。流体源始终接受六面输入的任何流体并销毁。背包图标右下角会显示产物；流体优先显示对应桶。"},
-    {"type":"patchouli:text","text":"源方块管理器只能放在自己的仙窍中，有72个单件槽且同名源最多一个。它聚合成员的仅抽取视图并绑定仙窍目录，但每个源仍独立工作、独立保存缓存。"}
-  ]
-}

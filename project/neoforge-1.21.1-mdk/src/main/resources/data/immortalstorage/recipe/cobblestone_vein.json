@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "item": "immortalstorage:spirit_iron"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    },
+    "W": {
+      "item": "immortalstorage:water_vein"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    }
+  },
+  "pattern": [
+    "ILI",
+    "IWI",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:cobblestone_vein"
+  }
+}

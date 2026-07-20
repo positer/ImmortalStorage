@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "cultivation:spirit_crystal_ore",
-    "cultivation:deepslate_spirit_crystal_ore"
+    "immortalstorage:spirit_crystal_ore",
+    "immortalstorage:deepslate_spirit_crystal_ore"
   ]
 }

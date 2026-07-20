@@ -1,0 +1,5 @@
+{
+  "multipart": [
+    { "apply": { "model": "immortalstorage:block/yuan_light" } }
+  ]
+}

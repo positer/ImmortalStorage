@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "ae2"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "ae2:item_cell_housing"
+    },
+    {
+      "item": "immortalstorage:xianqiao_manager"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:xianqiao_exchange_cell"
+  }
+}

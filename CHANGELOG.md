@@ -4,6 +4,11 @@ All notable user-facing changes are documented here.
 
 ## [0.0.2] - 2026-07-20
 
+### Breaking
+
+- Renamed the public product to ImmortalStorage (仙藏), including mod ID and resource namespace `immortalstorage`, Java packages, network payload identifiers, configuration files, command root, project logo, and release artifact name.
+- Old `cultivation` worlds and configurations are intentionally unsupported to avoid duplicate registration and namespace conflicts. Test worlds must be deleted and recreated, and old/new JARs must never be installed together.
+
 ### Added
 
 - A rebindable grave-accent special-operation key for Spirit Instrument build-layer removal and server-authoritative Spirit Sword summon/return from the embedded Immortal Furnace.
@@ -20,7 +25,7 @@ All notable user-facing changes are documented here.
 - External caches default to 1,000 units and enforce resource-appropriate server-side limits.
 - Fluid and chemical containers configure the exact held container on left click and their contained resource on right click.
 - Stage 9/10 uncapped Immortal Pills grant 2,000 ticks of natural ImmortalPower generation instead of restoring 50% of an unlimited cap.
-- Beyond Dimensions remains an optional coexistence mod and no longer replaces or disables Cultivation personal storage.
+- Beyond Dimensions remains an optional coexistence mod and no longer replaces or disables ImmortalStorage personal storage.
 
 ### Fixed
 
@@ -36,7 +41,7 @@ All notable user-facing changes are documented here.
 - Loader: NeoForge 21.1.235
 - Java: 21
 - Tests: 658 passed
-- Release JAR SHA256: `839421B8518C6FE655B2E185C5D9152DC8BA98E86EE2B673BF404B15E69DC831`
+- Release JAR SHA256: `AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
 
 ## [0.0.1] - 2026-07-18
 

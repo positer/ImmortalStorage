@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "item": "immortalstorage:spirit_iron"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    }
+  },
+  "pattern": [
+    "IW",
+    "WC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:water_vein"
+  }
+}

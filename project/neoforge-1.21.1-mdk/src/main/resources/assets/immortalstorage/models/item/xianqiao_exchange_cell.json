@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "immortalstorage:item/xianqiao_exchange_cell"
+  }
+}

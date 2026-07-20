@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": { "item": "immortalstorage:spirit_iron" },
+    "C": { "item": "immortalstorage:spirit_crystal" },
+    "B": { "item": "minecraft:pink_concrete" },
+    "W": { "item": "minecraft:water_bucket" },
+    "L": { "item": "minecraft:lava_bucket" }
+  },
+  "pattern": [
+    "ICI",
+    "CBC",
+    "WIL"
+  ],
+  "result": { "count": 1, "id": "immortalstorage:pink_concrete_vein" }
+}

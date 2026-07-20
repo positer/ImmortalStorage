@@ -205,7 +205,7 @@ interface CurrentWorldGenerationIndex {
 7. 真实容器从未被打开或改写；采样不生成、不加载新区块。
 8. 服务器重启后同 fingerprint 延续计数；修改数据包后旧计数隔离。
 9. 队列溢出、缓存满、空矿池、校准不足和 `/reload` 竞态均不复制、不丢失既有物品、不阻塞服务器 tick。
-10. Numen 仅从外部执行创建世界、探索新区块、放置/激活机器和检查输出；Cultivation 内不得加入 Numen、MCP 或桥接端点。
+10. Numen 仅从外部执行创建世界、探索新区块、放置/激活机器和检查输出；ImmortalStorage 内不得加入 Numen、MCP 或桥接端点。
 
 ## 官方依据
 

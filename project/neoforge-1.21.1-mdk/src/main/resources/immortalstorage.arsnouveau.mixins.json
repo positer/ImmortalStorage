@@ -1,0 +1,9 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.immortalstorage.immortalstorage.mixin.arsnouveau",
+  "plugin": "com.immortalstorage.immortalstorage.mixin.arsnouveau.ArsNouveauMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["RelayTileXianqiaoMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

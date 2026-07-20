@@ -1,0 +1,14 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.immortalstorage.immortalstorage.mixin.refinedstorage",
+  "plugin": "com.immortalstorage.immortalstorage.mixin.refinedstorage.RsMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CompositeStorageLifecycleMixin",
+    "StateTrackedStorageCompositeBridgeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -182,7 +182,7 @@ tasks.named('test', Test).configure {
 // arguments unrelated to the API boundary under test).
 tasks.register('verifyWithoutAe2Runtime', JavaExec) {
     dependsOn tasks.named('testClasses')
-    mainClass = 'com.cultivation.cultivation.compat.NoAe2RuntimeProbe'
+    mainClass = 'com.immortalstorage.immortalstorage.compat.NoAe2RuntimeProbe'
     classpath = sourceSets.test.runtimeClasspath.filter { file ->
         !file.name.toLowerCase(java.util.Locale.ROOT).startsWith('appliedenergistics2-')
     }
@@ -190,7 +190,7 @@ tasks.register('verifyWithoutAe2Runtime', JavaExec) {
 
 tasks.register('verifyArsSourceAdapter', JavaExec) {
     dependsOn tasks.named('testClasses')
-    mainClass = 'com.cultivation.cultivation.compat.arsnouveau.XianqiaoArsSourceAdapterProbe'
+    mainClass = 'com.immortalstorage.immortalstorage.compat.arsnouveau.XianqiaoArsSourceAdapterProbe'
     classpath = sourceSets.test.runtimeClasspath + configurations.arsNouveauProbe
 }
 
@@ -218,13 +218,13 @@ tasks.named('processResources', ProcessResources).configure {
     // selected by this integration project.  The matrix verifier rejects a JAR
     // with zero, multiple, or mismatched markers.
     from(file(compatibility_descriptor_file)) {
-        into 'META-INF/cultivation'
+        into 'META-INF/immortalstorage'
         rename { 'version-adapter.json' }
     }
 }
 
 tasks.named('jar', Jar).configure {
-    exclude 'com/cultivation/cultivation/debug/**'
+    exclude 'com/immortalstorage/immortalstorage/debug/**'
     exclude '**/*DebugCommands*.class'
     exclude '**/*TestAccess*.class'
 
@@ -236,10 +236,10 @@ tasks.named('jar', Jar).configure {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'Cultivation-Compatibility-Id': compatibility_id,
-                'Cultivation-Minecraft-Range': minecraft_version_range,
-                'Cultivation-NeoForge-Range': neo_version_range,
-                'Cultivation-Core-Api-Revision': '1'
+                'ImmortalStorage-Compatibility-Id': compatibility_id,
+                'ImmortalStorage-Minecraft-Range': minecraft_version_range,
+                'ImmortalStorage-NeoForge-Range': neo_version_range,
+                'ImmortalStorage-Core-Api-Revision': '1'
         ])
     }
 }
@@ -256,7 +256,7 @@ tasks.register('verifyProductionJarBoundary') {
         }
 
         def forbiddenEntries = zipTree(artifact).matching {
-            include 'com/cultivation/cultivation/debug/**'
+            include 'com/immortalstorage/immortalstorage/debug/**'
             include '**/*DebugCommands*.class'
             include '**/*TestAccess*.class'
         }.files
@@ -270,7 +270,7 @@ tasks.register('verifyProductionJarBoundary') {
                 'numen-mcp',
                 'screen-state',
                 'click-screen',
-                'cultivationcatalog',
+                'immortalstoragecatalog',
                 'creativecatalog',
                 'open_creative_catalog',
                 'realmticktest',
@@ -295,8 +295,8 @@ tasks.register('verifyProductionJarBoundary') {
             throw new GradleException("Production JAR boundary violations: ${violations}")
         }
         new java.util.zip.ZipFile(artifact).withCloseable { zip ->
-            if (zip.getEntry('com/cultivation/cultivation/command/CultivationCommands.class') == null) {
-                throw new GradleException('Production JAR must retain the approved /cultivation stage command')
+            if (zip.getEntry('com/immortalstorage/immortalstorage/command/ImmortalStorageCommands.class') == null) {
+                throw new GradleException('Production JAR must retain the approved /immortalstorage stage command')
             }
         }
     }
@@ -383,13 +383,13 @@ tasks.register('verifyVersionArtifact') {
         new java.util.zip.ZipFile(artifact).withCloseable { zip ->
             def markers = zip.entries().findAll { candidate ->
                 !candidate.directory &&
-                        candidate.name.startsWith('META-INF/cultivation/version-adapter') &&
+                        candidate.name.startsWith('META-INF/immortalstorage/version-adapter') &&
                         candidate.name.endsWith('.json')
             }*.name
-            if (markers != ['META-INF/cultivation/version-adapter.json']) {
+            if (markers != ['META-INF/immortalstorage/version-adapter.json']) {
                 throw new GradleException("Artifact must contain exactly one version adapter marker: ${markers}")
             }
-            def markerEntry = zip.getEntry('META-INF/cultivation/version-adapter.json')
+            def markerEntry = zip.getEntry('META-INF/immortalstorage/version-adapter.json')
             def marker = new JsonSlurper().parse(zip.getInputStream(markerEntry))
             def markerExpected = [
                     id: compatibility_id,
@@ -408,10 +408,10 @@ tasks.register('verifyVersionArtifact') {
             def attributes = jarManifest.mainAttributes
             def manifestExpected = [
                     'Implementation-Version': mod_version,
-                    'Cultivation-Compatibility-Id': compatibility_id,
-                    'Cultivation-Minecraft-Range': minecraft_version_range,
-                    'Cultivation-NeoForge-Range': neo_version_range,
-                    'Cultivation-Core-Api-Revision': entry.core_api_revision.toString(),
+                    'ImmortalStorage-Compatibility-Id': compatibility_id,
+                    'ImmortalStorage-Minecraft-Range': minecraft_version_range,
+                    'ImmortalStorage-NeoForge-Range': neo_version_range,
+                    'ImmortalStorage-Core-Api-Revision': entry.core_api_revision.toString(),
             ]
             manifestExpected.each { key, value ->
                 if (attributes.getValue(key) != value) {

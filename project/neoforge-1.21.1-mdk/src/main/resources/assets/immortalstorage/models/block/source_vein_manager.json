@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "immortalstorage:block/source_vein_manager_side",
+    "down": "immortalstorage:block/source_vein_manager_side",
+    "up": "immortalstorage:block/source_vein_manager_top",
+    "north": "immortalstorage:block/source_vein_manager_front",
+    "south": "immortalstorage:block/source_vein_manager_side",
+    "west": "immortalstorage:block/source_vein_manager_side",
+    "east": "immortalstorage:block/source_vein_manager_side"
+  }
+}

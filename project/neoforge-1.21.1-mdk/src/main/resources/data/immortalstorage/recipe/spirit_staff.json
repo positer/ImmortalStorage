@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "immortalstorage:spirit_core"
+    },
+    "S": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "T": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "C",
+    "T",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_staff",
+    "components": {
+      "minecraft:enchantments": {
+        "levels": { "immortalstorage:spirit_repair": 1 }
+      }
+    }
+  }
+}

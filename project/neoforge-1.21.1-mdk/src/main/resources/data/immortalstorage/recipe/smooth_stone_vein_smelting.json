@@ -1,0 +1,12 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "building",
+  "cookingtime": 100,
+  "experience": 0,
+  "ingredient": {
+    "item": "immortalstorage:stone_vein"
+  },
+  "result": {
+    "id": "immortalstorage:smooth_stone_vein"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "immortalstorage:immortal_yuan"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "M": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "B": {
+      "item": "immortalstorage:spirit_crystal_block"
+    },
+    "K": {
+      "item": "immortalstorage:spirit_core"
+    }
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_crystal_vein"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "item.immortalstorage.jade_guide",
+  "landing_text": "book.immortalstorage.jade_guide.landing",
+  "subtitle": "book.immortalstorage.jade_guide.subtitle",
+  "model": "immortalstorage:jade_guide",
+  "version": "0.0.2",
+  "use_resource_pack": true,
+  "text_overflow_mode": "resize",
+  "pause_game": false
+}

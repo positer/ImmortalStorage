@@ -1,0 +1,13 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "cookingtime": 50,
+  "experience": 0.7,
+  "ingredient": {
+    "item": "immortalstorage:crude_spirit_iron"
+  },
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_iron"
+  }
+}

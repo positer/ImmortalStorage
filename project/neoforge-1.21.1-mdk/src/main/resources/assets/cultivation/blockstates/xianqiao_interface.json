@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "cultivation:block/xianqiao_interface" },
-    "facing=east": { "model": "cultivation:block/xianqiao_interface", "y": 90 },
-    "facing=south": { "model": "cultivation:block/xianqiao_interface", "y": 180 },
-    "facing=west": { "model": "cultivation:block/xianqiao_interface", "y": 270 }
-  }
-}

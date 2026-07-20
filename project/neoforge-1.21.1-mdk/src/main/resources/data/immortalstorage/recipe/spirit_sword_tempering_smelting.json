@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "group": "immortalstorage:spirit_sword_tempering",
+  "cookingtime": 200,
+  "experience": 0.0,
+  "ingredient": { "item": "immortalstorage:spirit_sword" },
+  "result": { "count": 1, "id": "immortalstorage:spirit_sword" }
+}

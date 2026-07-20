@@ -1,9 +1,0 @@
-{
-  "required": false,
-  "minVersion": "0.8",
-  "package": "com.cultivation.cultivation.mixin.arsnouveau",
-  "plugin": "com.cultivation.cultivation.mixin.arsnouveau.ArsNouveauMixinConfigPlugin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": ["RelayTileXianqiaoMixin"],
-  "injectors": { "defaultRequire": 1 }
-}

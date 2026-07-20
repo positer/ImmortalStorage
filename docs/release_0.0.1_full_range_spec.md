@@ -1,8 +1,8 @@
-# Spec: Cultivation 0.0.1 full-range NeoForge release and cross-mod acceptance
+# Spec: ImmortalStorage 0.0.1 full-range NeoForge release and cross-mod acceptance
 
 ## Objective
 
-Release Cultivation `0.0.1` as separately built and tested NeoForge artifacts for every compatibility interval listed in `versions/supported_versions.json`, currently spanning Minecraft `1.21.1` through `26.2`. The implementation is composed from one loader-neutral/core source area plus exactly one NeoForge-version adapter. Every artifact must be tested in a real PCL2 client and dedicated/integrated server with Numen acting only as an external player through the official MCP and the separate test bridge.
+Release ImmortalStorage `0.0.1` as separately built and tested NeoForge artifacts for every compatibility interval listed in `versions/supported_versions.json`, currently spanning Minecraft `1.21.1` through `26.2`. The implementation is composed from one loader-neutral/core source area plus exactly one NeoForge-version adapter. Every artifact must be tested in a real PCL2 client and dedicated/integrated server with Numen acting only as an external player through the official MCP and the separate test bridge.
 
 The release is not complete until the required optional integrations are proven with the target mod absent, installed alone, in common pairs, and in the all-available-mod set. Every functional UI page must have a real-client screenshot for user review.
 
@@ -11,13 +11,13 @@ The release is not complete until the required optional integrations are proven 
 - `Goal.md` is the mutable product specification and takes precedence over this execution document.
 - `versions/supported_versions.json` is the release-coordinate ledger. Only entries with `status=released` and `published=true` are support claims.
 - The official NeoForge Maven metadata is the authority for pinned NeoForge coordinates. All 15 currently listed coordinates existed in the official repository on 2026-07-16; `26.2.0.18-beta` was then the newest 26.2 build, while the manifest still pinned `26.2.0.12-beta` and therefore requires a deliberate repin before its release build.
-- Optional-mod behavior must use the target mod's public/official API for the exact target version. Reference-addon code may inform transaction boundaries but must not be copied into Cultivation.
+- Optional-mod behavior must use the target mod's public/official API for the exact target version. Reference-addon code may inform transaction boundaries but must not be copied into ImmortalStorage.
 
 ## Tech stack
 
 - JDK 21.
 - NeoForge ModDevGradle integration projects, one per non-overlapping compatibility interval.
-- Unified core: `project/cultivation-core`.
+- Unified core: `project/immortalstorage-core`.
 - Version adapters: `project/version-compat/neoforge/<coordinate>`.
 - Optional integrations: isolated packages whose public/common entry points contain no target-mod types.
 - Runtime QA: real PCL2 instances, official Numen MCP on `127.0.0.1:8765`, independent authenticated bridge on `127.0.0.1:8766`.
@@ -40,7 +40,7 @@ The release is not complete until the required optional integrations are proven 
 
 - `Goal.md` — living product requirements.
 - `versions/` — machine-readable release intervals and schema.
-- `project/cultivation-core/` — resource ledgers, amount bridges, atomic transfer plans and other version-neutral logic.
+- `project/immortalstorage-core/` — resource ledgers, amount bridges, atomic transfer plans and other version-neutral logic.
 - `project/version-compat/neoforge/` — isolated API-break adapters and descriptors.
 - `project/neoforge-*/` — exact-version integration projects that compose core + one adapter.
 - `project/neoforge-1.21.1-mdk/src/main/java/.../compat/` — current optional integration implementations; later version projects must own their version-specific equivalents/adapters.
@@ -129,7 +129,7 @@ For every manifest entry:
 
 - Always: preserve existing worlds and full Data Components; use exact owner UUIDs; keep optional dependencies isolated; archive proof before support claims.
 - Ask first: destructive storage migration, mandatory dependency, publishing to a third-party account that requires new credentials, or changing the product version.
-- Never: add Numen/MCP/debug interfaces to Cultivation; mark a planned/untested coordinate released; fabricate third-party availability; use Ars Source for Iron's mana; silently delete/duplicate resources; copy restricted addon art/code.
+- Never: add Numen/MCP/debug interfaces to ImmortalStorage; mark a planned/untested coordinate released; fabricate third-party availability; use Ars Source for Iron's mana; silently delete/duplicate resources; copy restricted addon art/code.
 
 ## Current audited state (2026-07-16)
 

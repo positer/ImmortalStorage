@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "bottom": "immortalstorage:block/world_shard_miner_bottom",
+    "particle": "immortalstorage:block/world_shard_miner_side",
+    "side": "immortalstorage:block/world_shard_miner_side",
+    "top": "immortalstorage:block/world_shard_miner_top"
+  },
+  "elements": [
+    {
+      "from": [1, 0, 1],
+      "to": [15, 3, 15],
+      "faces": {
+        "down": {
+          "texture": "#bottom"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

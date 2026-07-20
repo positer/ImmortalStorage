@@ -1,18 +1,22 @@
-# Cultivation 修仙
+# 仙藏 ImmortalStorage
 
-> 当前稳定发行版为 0.0.2。AE2 联动由 Cultivation 内置电力、化学品、魔源、魔力与灵魂资源键适配，不要求安装额外 AEKey 中介模组；安装兼容的中介附属时会优先退让并桥接其标准资源键。
+![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
+
+> 当前稳定发行版为 0.0.2。AE2 联动由仙藏（ImmortalStorage）内置电力、化学品、魔源、魔力与灵魂资源键适配，不要求安装额外 AEKey 中介模组；安装兼容的中介附属时会优先退让并桥接其标准资源键。
 
 **简体中文** | [English](README_en.md)
 
-Cultivation 是一个面向 Minecraft 生存流程的修仙、个人存储、自动化与专属维度模组。玩家会从凡人启灵开始，通过古玉了解修行道路，积累灵气与材料，逐步突破十个阶段，扩展与角色绑定的空窍/仙窍存储，建设属于自己的仙窍维度，并在后期通过渡劫完成境界提升。
+仙藏（ImmortalStorage）是一个面向 Minecraft 生存流程的修仙、个人存储、自动化与专属维度模组。玩家会从凡人启灵开始，通过古玉了解修行道路，积累灵气与材料，逐步突破十个阶段，扩展与角色绑定的空窍/仙窍存储，建设属于自己的仙窍维度，并在后期通过渡劫完成境界提升。
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
 > 0.0.2 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
-**下载：**[Cultivation 0.0.2](https://github.com/positer/Cultivation/releases/tag/0.0.2)
+> **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**发行 JAR SHA256：**`839421B8518C6FE655B2E185C5D9152DC8BA98E86EE2B673BF404B15E69DC831`
+**下载：**[仙藏 ImmortalStorage 0.0.2](https://github.com/positer/ImmortalStorage/releases/tag/0.0.2)
+
+**发行 JAR SHA256：**`AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
 
 ## 模组特色
 
@@ -33,7 +37,7 @@ Cultivation 是一个面向 Minecraft 生存流程的修仙、个人存储、自
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| Cultivation | 0.0.2 |
+| 仙藏 ImmortalStorage | 0.0.2 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
@@ -41,9 +45,11 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar`。
+3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
+
+模组列表显示名为 **ImmortalStorage**，中文名为 **仙藏**；管理员命令根节点为 `/immortalstorage`，配置文件为 `immortalstorage-common.toml` 和 `immortalstorage-client.toml`。
 
 安装或更新任何内容模组前，请先备份重要世界。
 
@@ -62,7 +68,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-Patchouli 是可选依赖。未安装时，古玉继续打开 Cultivation 原有的独立指导界面；安装受支持的 Patchouli 后，同一个古玉会优先打开更详细的双语 Patchouli 手册，提供六类分级目录、真实配方页面和完整功能说明。不会生成第二本书，也不会把 Patchouli API 打包进 Cultivation JAR。
+Patchouli 是可选依赖。未安装时，古玉继续打开 ImmortalStorage 原有的独立指导界面；安装受支持的 Patchouli 后，同一个古玉会优先打开更详细的双语 Patchouli 手册，提供六类分级目录、真实配方页面和完整功能说明。不会生成第二本书，也不会把 Patchouli API 打包进 ImmortalStorage JAR。
 
 ## 修行阶段
 
@@ -141,7 +147,7 @@ Patchouli 是可选依赖。未安装时，古玉继续打开 Cultivation 原有
 
 ## 渡劫
 
-六阶以后的渡劫只能在玩家自己的仙窍中开始。渡劫期间，Cultivation 提供的常驻增益与飞行能力会暂时失效。
+六阶以后的渡劫只能在玩家自己的仙窍中开始。渡劫期间，ImmortalStorage 提供的常驻增益与飞行能力会暂时失效。
 
 默认敌人如下：
 
@@ -220,7 +226,7 @@ Patchouli 是可选依赖。未安装时，古玉继续打开 Cultivation 原有
 
 ### 扳手模式
 
-使用公开扳手语义兼容 Cultivation、通用机械、AE2、RS、机械动力等机器。对属于玩家的 Cultivation 功能方块 Shift 右键可完整拆下并获得掉落物。
+使用公开扳手语义兼容 ImmortalStorage、通用机械、AE2、RS、机械动力等机器。对属于玩家的 ImmortalStorage 功能方块 Shift 右键可完整拆下并获得掉落物。
 
 ### 镐子模式
 
@@ -284,17 +290,17 @@ JEI 和 EMI 均为可选依赖。安装后支持：
 
 普通自动化优先通过 NeoForge 官方物品/流体能力交互。所有可选兼容均放在独立边界中，未安装目标模组时不会静态引用其类型。
 
-0.0.2 使用 Cultivation 自己的共享资源 Key 与长整型权威账本表示 FE、通用机械化学品、Ars Nouveau Source、植物魔法 mana 和工业先锋灵魂。Iron's Spells 玩家魔力明确不接入。该核心接口不依赖 AE2；未安装 AE2 时，仙窍接口、终端和其他已安装模组仍可直接通过各自官方能力读取与写入这些资源。仙窍存储主目录把额外资源与物品、流体放在同一搜索、排序和连续滚动网格中显示。
+0.0.2 使用 ImmortalStorage 自己的共享资源 Key 与长整型权威账本表示 FE、通用机械化学品、Ars Nouveau Source、植物魔法 mana 和工业先锋灵魂。Iron's Spells 玩家魔力明确不接入。该核心接口不依赖 AE2；未安装 AE2 时，仙窍接口、终端和其他已安装模组仍可直接通过各自官方能力读取与写入这些资源。仙窍存储主目录把额外资源与物品、流体放在同一搜索、排序和连续滚动网格中显示。
 
-安装 AE2 后，Cultivation 的可选 AE2 适配层才会把同一共享 Key 包装成 AEKey，供仙窍交流磁盘和 AE2 网络访问。玩家不需要额外安装 Applied Flux、Applied Mekanistics、Ars Énergistique、Applied Botanics、Soulplied Energistics 或其他 AEKey 中介模组。AE2 适配层与无 AE2 路径共用同一份账本，不复制资源数量。
+安装 AE2 后，ImmortalStorage 的可选 AE2 适配层才会把同一共享 Key 包装成 AEKey，供仙窍交流磁盘和 AE2 网络访问。玩家不需要额外安装 Applied Flux、Applied Mekanistics、Ars Énergistique、Applied Botanics、Soulplied Energistics 或其他 AEKey 中介模组。AE2 适配层与无 AE2 路径共用同一份账本，不复制资源数量。
 
-若玩家同时安装上述受支持的 AE2 中间层附属，Cultivation 不注册竞争性的重复目录身份，而是优先映射其现有资源键到同一仙窍账本；缺少附属时才回退到 Cultivation 自有键。两条路径共享去重、revision 和模拟/执行事务，禁止目录双计或互相转换复制。
+若玩家同时安装上述受支持的 AE2 中间层附属，ImmortalStorage 不注册竞争性的重复目录身份，而是优先映射其现有资源键到同一仙窍账本；缺少附属时才回退到 ImmortalStorage 自有键。两条路径共享去重、revision 和模拟/执行事务，禁止目录双计或互相转换复制。
 
 当前工程包含 AE2、RS 交流存储介质与存储总线读取，以及通用机械能量/化学品、植物魔法魔力、Ars Nouveau Source、通量网络能量、工业先锋灵魂等兼容区域。具体可用功能取决于实际安装版本与服务器配置。
 
-仙窍存储界面的玩家背包槽保持为直接绑定原版 `Inventory` 的标准槽，供 R 键整理类辅助模组识别；Cultivation 不监听或占用 R 键。界面在背包右上方另提供三个 16x16 小图标按钮：扳手整理、绿色上箭头全部存入、红色下箭头按当前筛选取出，并保留完整悬停说明。Building Gadgets 2 1.3.9 的复制粘贴小帮手在玩家主手或副手持有时，可把当前空窍/仙窍物品作为材料来源，模拟检查不扣物，正式施工才执行抽取。Create 蓝图大炮可把仙窍管理器当作标准 NeoForge 方块物品仓库读取，不需要 Create 私有 API。
+仙窍存储界面的玩家背包槽保持为直接绑定原版 `Inventory` 的标准槽，供 R 键整理类辅助模组识别；ImmortalStorage 不监听或占用 R 键。界面在背包右上方另提供三个 16x16 小图标按钮：扳手整理、绿色上箭头全部存入、红色下箭头按当前筛选取出，并保留完整悬停说明。Building Gadgets 2 1.3.9 的复制粘贴小帮手在玩家主手或副手持有时，可把当前空窍/仙窍物品作为材料来源，模拟检查不扣物，正式施工才执行抽取。Create 蓝图大炮可把仙窍管理器当作标准 NeoForge 方块物品仓库读取，不需要 Create 私有 API。
 
-Beyond Dimensions 安装与否都不会停用、替换或迁移 Cultivation 自有空窍/仙窍存储；两套存储保持彼此独立，当前版本不安装外部权威后端路由。
+Beyond Dimensions 安装与否都不会停用、替换或迁移 ImmortalStorage 自有空窍/仙窍存储；两套存储保持彼此独立，当前版本不安装外部权威后端路由。
 
 植物魔法联动通过在仙窍接口上放置真实火花实现：接口向 Botania 注册官方 `SparkAttachable` 与 `ManaReceiver`，火花实体和强化负责网络流向，魔力直接进入或离开仙窍接口的共享魔力缓存。Ars Nouveau Source 同样通过官方的按位置 Source Provider 直接读写接口魔源缓存。这两类由方块本身直接完成、没有物理面参数的交互不受接口六面模式、主动推拉总开关或逐槽面掩码影响；即使六面全部关闭也保持可用。六面配置只约束物品、流体、FE、化学品等明确携带方向的能力。
 
@@ -302,7 +308,7 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 Cultivation 自�
 
 ## 游戏内配置
 
-在主菜单或暂停菜单中打开 **模组 -> Cultivation -> 配置**，即可使用 NeoForge 原生配置界面。所有现有分组、次级菜单、配置名称和 Tooltip 均已注册自然中文与英文翻译。
+在主菜单或暂停菜单中打开 **模组 -> ImmortalStorage -> 配置**，即可使用 NeoForge 原生配置界面。所有现有分组、次级菜单、配置名称和 Tooltip 均已注册自然中文与英文翻译。
 
 主要配置包括：
 
@@ -314,21 +320,21 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 Cultivation 自�
 - 源方块认领、破坏与爆炸权限；
 - 仙窍接口物品/流体缓存上限；
 - 灵器建筑模式单次方块上限。
-- 安装通用机械/通量网络、植物魔法或新生魔艺后，配置页会分别显示仙元转化 FE、Mana、魔源的允许开关、比例和每刻上限；同一设置也写入 `cultivation-common.toml`，默认开启。
+- 安装通用机械/通量网络、植物魔法或新生魔艺后，配置页会分别显示仙元转化 FE、Mana、魔源的允许开关、比例和每刻上限；同一设置也写入 `immortalstorage-common.toml`，默认开启。
 
 调整阶段、资源或兼容配置前，建议关闭服务器并备份世界。
 
 ## 快捷键与管理员指令
 
-所有 Cultivation 快捷键都可以在 Minecraft 控制设置中重新绑定。存储按键可以在大多数非文本界面上全局使用，其他模式按键保持在游戏场景内生效，避免抢占菜单输入。
+所有 ImmortalStorage 快捷键都可以在 Minecraft 控制设置中重新绑定。存储按键可以在大多数非文本界面上全局使用，其他模式按键保持在游戏场景内生效，避免抢占菜单输入。
 
 需要权限等级 2 的管理员指令：
 
 ```text
-/cultivation stage <0..10> [玩家]
-/cultivation unload [玩家]
-/cultivation reload [玩家]
-/cultivation speed <固定档位>x [玩家]
+/immortalstorage stage <0..10> [玩家]
+/immortalstorage unload [玩家]
+/immortalstorage reload [玩家]
+/immortalstorage speed <固定档位>x [玩家]
 ```
 
 不填写可选玩家参数时，默认作用于指令执行者。
@@ -342,7 +348,7 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 Cultivation 自�
 - 存储操作、合成补料、源兑换、接口传输和仙炉处理均由服务端权威事务执行。
 - 可选模组兼容按安装状态隔离，专用服务端不会加载客户端查看器类。
 - 源方块恢复 0.0.1 的原生方块物品模型；NeoForge `standalone` 只旁加载同一基础模型，自定义渲染器不再重复应用 GUI 变换或居中。产物角标与本体仍在同一次标准物品渲染中完成，并先于数量文字绘制。
-- 正式 Cultivation JAR 不包含 Numen、MCP、HTTP、Bearer Token 或外部调试端点；Numen 仅用于外部实机测试。
+- 正式 ImmortalStorage JAR 不包含 Numen、MCP、HTTP、Bearer Token 或外部调试端点；Numen 仅用于外部实机测试。
 
 ## 从源码构建
 
@@ -357,7 +363,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
 ```
 
 完整验证命令：
@@ -368,7 +374,7 @@ project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-
 
 0.0.2 当前通过完整 Gradle 测试、构建、生产类边界、版本组合、无 AE2 运行边界与 Ars Source 适配器校验。真实联动矩阵采用实际第三方 JAR 隔离启动：Mekanism 10.7.19.85 的 FE 推出已通过真实方块数值验证；Industrial Foregoing Souls 1.10.7 已按其官方仅抽出 `SLBSoulCap` 完成真实镭射底座到仙窍接口的主动抽入。Ars Nouveau 5.12.1 当前通过真实 `SourceManager` Provider 识别，Botania 通过正式 ManaReceiver/SparkAttachable 注册与真实池读取；二者的数量增减闭环、FE 新主动回退路径及其余组合矩阵仍待验收，不能误报为完整支持。Iron's Spells 仅作为普通共存模组参与启动测试，不接入仙窍存储。
 
-2026-07-19 的最新 1.21.1 候选制品通过 JDK 21 的 643 项测试，SHA256 为 `72C86FE604BB8A1EB2C535A75658BDB2F4058E5CD0D2626942855E4AF862B978`。包含 26 个外置 JAR 的 PCL2 组合实例已重新启动且进程正常响应，未生成新的崩溃报告；Cultivation 日志确认 AE2、RS、Mekanism、Botania、Ars Nouveau、Industrial Foregoing Souls、Flux Networks、Beyond Dimensions 与 Patchouli 联动同时被识别，Iron's Spells 仅作为不接入存储的普通共存模组加载，Create、Building Gadgets 2 与 Nemo's Inventory Sorting 也完成同进程加载。该结果只证明组合启动与注册；源方块最终视觉、三个小图标按钮、统一额外资源目录和 FE 双向数值闭环仍由用户在已启动客户端内验收，也不把其余 14 条计划版本线标记为已发布。
+2026-07-19 的最新 1.21.1 候选制品通过 JDK 21 的 643 项测试，SHA256 为 `72C86FE604BB8A1EB2C535A75658BDB2F4058E5CD0D2626942855E4AF862B978`。包含 26 个外置 JAR 的 PCL2 组合实例已重新启动且进程正常响应，未生成新的崩溃报告；ImmortalStorage 日志确认 AE2、RS、Mekanism、Botania、Ars Nouveau、Industrial Foregoing Souls、Flux Networks、Beyond Dimensions 与 Patchouli 联动同时被识别，Iron's Spells 仅作为不接入存储的普通共存模组加载，Create、Building Gadgets 2 与 Nemo's Inventory Sorting 也完成同进程加载。该结果只证明组合启动与注册；源方块最终视觉、三个小图标按钮、统一额外资源目录和 FE 双向数值闭环仍由用户在已启动客户端内验收，也不把其余 14 条计划版本线标记为已发布。
 
 接口输入回归修复后，PULL 面的 FE 与 Mekanism 化学品不再停留在接口目标缓存，而是直接提交到玩家仙窍权威账本；PUSH 面继续从配置缓存输出。Botania 火花和 Ars Source 属于无方向位置能力，直接解析权威账本，因此火花放置不再要求先配置一个 Mana 接口缓存槽。该候选新增一项输入路径回归测试，当前共 644 项。
 
@@ -386,7 +392,7 @@ Botania 魔力资源图标现与 Applied Botanics 的真实 AE2 渲染保持一�
 
 最新联动调试候选将 Botania/Ars 的无方向接口调整为“输入直达仙窍账本、读取与抽取仅限接口已配置缓存”：未配置缓存时对外显示为空池，配置后只暴露对应缓存。Botania 火花能力在玩家重登期间保持稳定，避免能力短暂消失导致火花掉落。Ars Nouveau 使用官方 `mana_still` 动画，并允许 Dominion Wand 将仙窍接口记录为中继起点或终点；手持该杖点击接口优先执行位置交互，不打开仙窍界面。Mekanism 化学品适配器显式实现按类型及任意类型的管线抽取入口。该候选以 JDK 21 通过 650 项测试，SHA256 为 `4122AE4C20D178F138C1C5A988CE2BAA83604DE5D116B4808DCA6AAFFCE6415A`。这些均为调试修复与待实机验收项，不新增 Goal.md 目标。
 
-随后修复了 Ars Relay Mixin 的继承方法 `@Shadow` 运行时失效，并把源方块物品图标的内容物缩放至 34%、移动到 BEWLR 中心坐标的右下象限，避免角标被推到槽位外。AE2 在检测到 Applied Flux、Applied Mekanistics、Ars Énergistique 或 Applied Botanics 时，会在注册完成后的 IMC 阶段才加载其标准键桥；附属键以高优先级作为目录输出，Cultivation 内置键保留为兼容读取后备，从而共享同一账本而不生成重复目录行或双写。最新候选以 JDK 21 通过 651 项测试，SHA256 为 `8C6E41E00125D30EE22BA0F6191AF29FCED62AABA9D234BC80877A344C6F2F8C`。实机三附属组合 Applied Flux 2.1.5 + Applied Mekanistics 1.6.3 + Ars Énergistique 2.1.1 已进入新调试世界且无 Cultivation/Mixin/键桥错误；Applied Botanics 1.6.0-alpha.3 与 AE2 19.2.17 在其自身 Part Capability 注册中崩溃，当前作为上游组合阻断隔离，不计入通过项。
+随后修复了 Ars Relay Mixin 的继承方法 `@Shadow` 运行时失效，并把源方块物品图标的内容物缩放至 34%、移动到 BEWLR 中心坐标的右下象限，避免角标被推到槽位外。AE2 在检测到 Applied Flux、Applied Mekanistics、Ars Énergistique 或 Applied Botanics 时，会在注册完成后的 IMC 阶段才加载其标准键桥；附属键以高优先级作为目录输出，ImmortalStorage 内置键保留为兼容读取后备，从而共享同一账本而不生成重复目录行或双写。最新候选以 JDK 21 通过 651 项测试，SHA256 为 `8C6E41E00125D30EE22BA0F6191AF29FCED62AABA9D234BC80877A344C6F2F8C`。实机三附属组合 Applied Flux 2.1.5 + Applied Mekanistics 1.6.3 + Ars Énergistique 2.1.1 已进入新调试世界且无 ImmortalStorage/Mixin/键桥错误；Applied Botanics 1.6.0-alpha.3 与 AE2 19.2.17 在其自身 Part Capability 注册中崩溃，当前作为上游组合阻断隔离，不计入通过项。
 
 中继与化学管道实测回归后，Ars Relay 不再允许同一仙窍接口同时保留为 `fromPos` 与 `toPos`：新绑定会清除冲突端点，旧存档中的同点循环会在首个中继 tick 自动修复，避免源在中继器与接口间反复回传。Mekanism 化学适配器同时显式覆盖管道使用的整栈 `insertChemical` 入口，按传入化学品的稳定注册键直接执行模拟/提交，不再依赖默认空罐遍历。该 debug 候选以 JDK 21 通过 653 项测试，SHA256 为 `1B5CA66CEB7ABDFB6C6F78BC185731633D4B7C17668F8E4B4A00B5F92FC856C9`，已部署并通过 PCL2 重启；这两项不写入 Goal.md。
 
@@ -423,7 +429,7 @@ Botania 魔力资源图标现与 Applied Botanics 的真实 AE2 渲染保持一�
 
 提交问题时，请附上：
 
-- Minecraft、NeoForge、Java 与 Cultivation 的准确版本；
+- Minecraft、NeoForge、Java 与 ImmortalStorage 的准确版本；
 - 问题发生于客户端、单人整合服务端还是专用服务端；
 - 已安装联动模组及其准确版本；
 - 最小复现步骤；
@@ -431,6 +437,6 @@ Botania 魔力资源图标现与 Applied Botanics 的真实 AE2 渲染保持一�
 
 ## 许可证
 
-Cultivation 使用仓库中的 All Rights Reserved 许可证。允许个人游玩与私人整合包使用；重新分发、商业使用、修改或发布衍生版本需要事先获得书面许可。
+ImmortalStorage 使用仓库中的 All Rights Reserved 许可证。允许个人游玩与私人整合包使用；重新分发、商业使用、修改或发布衍生版本需要事先获得书面许可。
 
 Minecraft 是 Mojang Studios 的商标。本项目为独立模组，与 Mojang Studios 或 Microsoft 无隶属或授权关系。

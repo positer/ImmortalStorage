@@ -1,16 +1,20 @@
-# Cultivation
+# ImmortalStorage
+
+![ImmortalStorage Logo](immortalstorage-logo.png)
 
 [简体中文](README.md) | **English**
 
-Cultivation is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
+ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
 > Release 0.0.2 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
-**Download:** [Cultivation 0.0.2](https://github.com/positer/Cultivation/releases/tag/0.0.2)
+> **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Release JAR SHA256:** `839421B8518C6FE655B2E185C5D9152DC8BA98E86EE2B673BF404B15E69DC831`
+**Download:** [ImmortalStorage 0.0.2](https://github.com/positer/ImmortalStorage/releases/tag/0.0.2)
+
+**Release JAR SHA256:** `AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
 
 ## Highlights
 
@@ -30,7 +34,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| Cultivation | 0.0.2 |
+| ImmortalStorage | 0.0.2 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
@@ -38,9 +42,11 @@ No recipe viewer or storage mod is required. Optional integrations activate only
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar` from GitHub Releases.
+3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
+
+The Mods screen displays **ImmortalStorage** (Chinese: **仙藏**). The administrator command root is `/immortalstorage`; configuration files are `immortalstorage-common.toml` and `immortalstorage-client.toml`.
 
 Back up important worlds before adding or updating any content mod.
 
@@ -58,9 +64,9 @@ Open the Jade to see:
 
 The guide is intended to make a normal playthrough possible even when JEI and EMI are absent.
 
-## Cultivation Progression
+## ImmortalStorage Progression
 
-Cultivation runs from stage 0, the mortal state, through stage 10.
+ImmortalStorage runs from stage 0, the mortal state, through stage 10.
 
 - Early stages revolve around awakening, Lingqi accumulation, Spirit Pills, and gradually expanding Kongqiao storage.
 - Stage 5 is the final finite-storage stage and prepares the one-time ascension into Xianqiao.
@@ -134,7 +140,7 @@ Time flow is dimension-local. Slowing or freezing the Xianqiao does not freeze t
 
 ## Tribulations
 
-Late-stage advancement takes place only inside the player's own Xianqiao realm. Cultivation-derived buffs and flight are temporarily suspended during the encounter.
+Late-stage advancement takes place only inside the player's own Xianqiao realm. ImmortalStorage-derived buffs and flight are temporarily suspended during the encounter.
 
 Default encounters are:
 
@@ -153,7 +159,7 @@ Enemy registry IDs and the maximum normal stage are configurable for modpacks.
 
 The Immortal Furnace is a three-lane cultivation furnace available both as a placed block and as an embedded Xianqiao module.
 
-- Accepts supported vanilla furnace and blast-furnace recipes except recipes intentionally reserved by Cultivation.
+- Accepts supported vanilla furnace and blast-furnace recipes except recipes intentionally reserved by ImmortalStorage.
 - Spirit Iron ores use blast-furnace or Immortal Furnace processing.
 - Spirit Crystal ores use the Immortal Furnace only.
 - TruePower processes one item in 50 ticks and supplies 150 furnace ticks in the Immortal Furnace rules.
@@ -210,7 +216,7 @@ Right-click air to toggle collection. While the enabled instrument remains in ei
 
 ### Wrench
 
-Uses public wrench conventions for Cultivation, Mekanism, AE2, Refined Storage, Create, and compatible machines. Shift-right-click safely dismantles owned Cultivation machines and returns the block.
+Uses public wrench conventions for ImmortalStorage, Mekanism, AE2, Refined Storage, Create, and compatible machines. Shift-right-click safely dismantles owned ImmortalStorage machines and returns the block.
 
 ### Pick
 
@@ -255,7 +261,7 @@ The Treasure Basin is logically independent. It does not exchange messages with 
 
 ## Recipe Viewers
 
-JEI and EMI are optional. When installed, Cultivation provides:
+JEI and EMI are optional. When installed, ImmortalStorage provides:
 
 - R/U recipe lookup and ingredient highlighting from terminal entries;
 - terminal search synchronization with loop prevention;
@@ -268,7 +274,7 @@ Installing neither viewer is supported. Installing both is also guarded against 
 
 ## Storage-Mod Compatibility
 
-Cultivation uses standard NeoForge item/fluid capability surfaces for ordinary automation. Optional integrations are isolated so an absent mod cannot cause a class-loading crash.
+ImmortalStorage uses standard NeoForge item/fluid capability surfaces for ordinary automation. Optional integrations are isolated so an absent mod cannot cause a class-loading crash.
 
 Implemented integration areas include AE2 and Refined Storage exchange media, storage-bus visibility, Mekanism energy/chemical access, Botania mana, Ars Nouveau Source, Flux Networks energy, and Industrial Foregoing Souls. Exact behavior depends on the installed mod version and the enabled server configuration.
 
@@ -276,7 +282,7 @@ Release 0.0.2 includes the adapters documented for the stated Minecraft/NeoForge
 
 ## Configuration
 
-Open Minecraft's **Mods** screen, select **Cultivation**, and choose **Configuration**. The built-in NeoForge configuration UI includes natural-language Simplified Chinese and English labels and tooltips.
+Open Minecraft's **Mods** screen, select **ImmortalStorage**, and choose **Configuration**. The built-in NeoForge configuration UI includes natural-language Simplified Chinese and English labels and tooltips.
 
 Notable options include:
 
@@ -293,15 +299,15 @@ Server owners should stop the server and back up the world before making progres
 
 ## Key Bindings and Commands
 
-All Cultivation key bindings can be changed from Minecraft's Controls screen. Storage opening is global over most non-text screens; other actions remain gameplay-scoped to avoid stealing input from menus.
+All ImmortalStorage key bindings can be changed from Minecraft's Controls screen. Storage opening is global over most non-text screens; other actions remain gameplay-scoped to avoid stealing input from menus.
 
 Permission-level-2 administrator commands:
 
 ```text
-/cultivation stage <0..10> [player]
-/cultivation unload [player]
-/cultivation reload [player]
-/cultivation speed <fixed-gear>x [player]
+/immortalstorage stage <0..10> [player]
+/immortalstorage unload [player]
+/immortalstorage reload [player]
+/immortalstorage speed <fixed-gear>x [player]
 ```
 
 When the optional player argument is omitted, the command targets the executor.
@@ -314,7 +320,7 @@ When the optional player argument is omitted, the command targets the executor.
 - Optional integrations are loaded behind explicit mod-presence boundaries.
 - Long-valued resources expose safe saturated integer views to int-only APIs.
 - Storage mutations, crafting refill, source conversion, interfaces, and furnace processing use server-authoritative transactions.
-- Production Cultivation contains no Numen, MCP, bearer-token, HTTP, or external-debug endpoint. Numen was used only as an external test tool.
+- Production ImmortalStorage contains no Numen, MCP, bearer-token, HTTP, or external-debug endpoint. Numen was used only as an external test tool.
 
 ## Building from Source
 
@@ -329,7 +335,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
 ```
 
 Useful verification tasks:
@@ -354,7 +360,7 @@ The current release gate passes 658 tests, plus production-class, version-compos
         ├── gradle.properties
         ├── gradle/
         └── src/
-            ├── main/java/       Cultivation implementation
+            ├── main/java/       ImmortalStorage implementation
             ├── main/resources/  assets, data, recipes, tags, and metadata
             └── test/java/       automated behavior and release-boundary tests
 ```
@@ -365,7 +371,7 @@ Reference mods, extracted third-party sources, local test instances, Numen bridg
 
 When reporting a problem, include:
 
-- Minecraft, NeoForge, Java, and Cultivation versions;
+- Minecraft, NeoForge, Java, and ImmortalStorage versions;
 - whether the issue occurs on client, integrated server, or dedicated server;
 - installed optional integration mods and their exact versions;
 - a minimal reproduction sequence;
@@ -373,6 +379,6 @@ When reporting a problem, include:
 
 ## License
 
-Cultivation is distributed under the repository's All Rights Reserved license. Personal play and private modpack use are permitted; redistribution, commercial use, modification, and derivative publication require prior written permission.
+ImmortalStorage is distributed under the repository's All Rights Reserved license. Personal play and private modpack use are permitted; redistribution, commercial use, modification, and derivative publication require prior written permission.
 
 Minecraft is a trademark of Mojang Studios. This project is independent and is not affiliated with Mojang Studios or Microsoft.

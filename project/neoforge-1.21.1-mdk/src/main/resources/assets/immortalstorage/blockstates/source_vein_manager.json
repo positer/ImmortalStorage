@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "immortalstorage:block/source_vein_manager" }
+  }
+}

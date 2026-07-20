@@ -1,9 +1,0 @@
-{
-  "parent": "minecraft:block/orientable_with_bottom",
-  "textures": {
-    "bottom": "cultivation:block/immortal_furnace_bottom",
-    "front": "cultivation:block/immortal_furnace_front",
-    "side": "cultivation:block/immortal_furnace_side",
-    "top": "cultivation:block/immortal_furnace_top"
-  }
-}

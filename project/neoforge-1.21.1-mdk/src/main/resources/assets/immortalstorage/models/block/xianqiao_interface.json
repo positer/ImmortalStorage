@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "immortalstorage:block/xianqiao_interface_side",
+    "down": "immortalstorage:block/xianqiao_interface_side",
+    "up": "immortalstorage:block/xianqiao_interface_top",
+    "north": "immortalstorage:block/xianqiao_interface_front",
+    "south": "immortalstorage:block/xianqiao_interface_side",
+    "west": "immortalstorage:block/xianqiao_interface_side",
+    "east": "immortalstorage:block/xianqiao_interface_side"
+  }
+}

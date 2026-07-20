@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": {
+      "item": "immortalstorage:spirit_iron"
+    },
+    "D": {
+      "item": "minecraft:dirt"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "G": {
+      "item": "minecraft:gravel"
+    },
+    "H": {
+      "item": "minecraft:wooden_hoe"
+    }
+  },
+  "pattern": [
+    "IDC",
+    "GHD",
+    "CGI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:dirt_vein"
+  }
+}

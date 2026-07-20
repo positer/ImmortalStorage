@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "immortalstorage:immortal_yuan"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "G": {
+      "item": "minecraft:gold_block"
+    },
+    "B": {
+      "item": "minecraft:enchanted_golden_apple"
+    },
+    "K": {
+      "item": "immortalstorage:spirit_core"
+    }
+  },
+  "pattern": [
+    "XCX",
+    "GBG",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:enchanted_golden_apple_vein"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name":"仙窍接口","icon":"immortalstorage:xianqiao_interface","category":"immortalstorage:automation","sortnum":10,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_interface","text":"仙窍接口可放在任意维度并绑定放置者。九个配置槽可缓存物品、流体及已安装联动的额外资源。空手左键清除目标；右键设置数量与逐槽六面掩码。"},
+    {"type":"patchouli:text","text":"主动抽入开启后，会从对应面的相邻容器吸入所有可存内容，不限于配置目标。主动推出从真实缓存输出。六面默认为关闭；关闭不会拒绝相邻模组主动访问能力。"},
+    {"type":"patchouli:text","text":"FE、Botania Mana、Ars魔源优先消耗接口真实缓存，只有不足差额才按服务器配置兑换仙元。Botania火花和Ars方块直接交互不携带方向，因此不受六面设置影响。"}
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "immortalstorage:immortal_yuan"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "M": {
+      "item": "minecraft:nether_star"
+    },
+    "B": {
+      "item": "minecraft:dragon_egg"
+    },
+    "K": {
+      "item": "immortalstorage:spirit_core"
+    }
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:dragon_egg_vein"
+  }
+}

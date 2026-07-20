@@ -1,7 +1,7 @@
 {
   "replace": false,
   "values": [
-    "cultivation:spirit_iron_ore",
-    "cultivation:deepslate_spirit_iron_ore"
+    "immortalstorage:spirit_iron_ore",
+    "immortalstorage:deepslate_spirit_iron_ore"
   ]
 }

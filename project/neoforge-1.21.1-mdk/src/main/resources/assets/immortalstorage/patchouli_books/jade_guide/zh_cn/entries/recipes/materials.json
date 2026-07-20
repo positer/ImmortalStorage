@@ -1,0 +1,8 @@
+{
+  "name":"基础材料配方","icon":"immortalstorage:spirit_core","category":"immortalstorage:recipes","sortnum":0,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_core","text":"灵核堆叠上限16，只作为关键中间材料。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_block","recipe2":"immortalstorage:spirit_crystal_block","text":"灵铁块与灵晶块均由九份材料压缩，可逆分解。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_spirit_iron_block","recipe2":"immortalstorage:immortal_furnace","text":"粗灵铁块用于储存粗矿；仙炉是后续材料加工和高速烧炼核心。"}
+  ]
+}

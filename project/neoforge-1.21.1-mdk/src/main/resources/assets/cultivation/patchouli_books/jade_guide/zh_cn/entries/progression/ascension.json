@@ -1,8 +1,0 @@
-{
-  "name":"五阶飞升与渡劫","icon":"cultivation:ascension_dan","category":"cultivation:progression","sortnum":10,
-  "pages":[
-    {"type":"patchouli:spotlight","item":"cultivation:ascension_dan","title":"有限转为无限","text":"五阶是有限空窍的最后阶段。先把灵气进度补满并准备飞升所需材料；飞升时身上和空窍中的真元按16:1一次性转换为仙元，之后新获得的真元不再自动转换。"},
-    {"type":"patchouli:text","text":"六阶以后只能在自己的仙窍维度渡劫。渡劫期间常驻增益暂时失效；击杀召唤目标后进阶。失败或死亡不会降阶：召唤物被清除、玩家原地保留物品复活，但当前仙元清零。"},
-    {"type":"patchouli:text","text":"默认目标依次为：六升七僵尸、七升八凋零骷髅、八升九卫道士、九升十坚守者。它们永久发光、力量III且拥有十倍基础生命。整合包可以修改目标和最高正常阶数。"}
-  ]
-}

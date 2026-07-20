@@ -1,0 +1,24 @@
+{
+  "type": "immortalstorage:yuan_substitution_shaped",
+  "category": "food",
+  "key": {
+    "Y": {
+      "tag": "immortalstorage:yuan_crafting_materials"
+    },
+    "R": {
+      "item": "immortalstorage:refined_pill"
+    },
+    "S": {
+      "item": "immortalstorage:spirit_crystal"
+    }
+  },
+  "pattern": [
+    "YRY",
+    "RSR",
+    "YRY"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:breakthrough_pill_embryo"
+  }
+}

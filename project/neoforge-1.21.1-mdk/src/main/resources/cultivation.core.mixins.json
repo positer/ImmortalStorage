@@ -1,8 +1,0 @@
-{
-  "required": true,
-  "minVersion": "0.8",
-  "package": "com.cultivation.cultivation.mixin.core",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": ["MerchantMenuMixin", "AbstractFurnaceSpiritDriveMixin", "AbstractFurnaceSpiritSwordTemperingMixin"],
-  "injectors": {"defaultRequire": 1}
-}

@@ -1,0 +1,8 @@
+{
+  "name":"从古玉开始","icon":"immortalstorage:jade_guide","category":"immortalstorage:progression","sortnum":0,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"immortalstorage:jade_guide","title":"古玉共鸣","text":"古玉会在出生时随身出现。零阶时携带它等待共鸣；启灵后右键即可查阅本书。$(br2)按正常流程修行不会在一至六阶降级。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:jade_guide","text":"若古玉遗失，可用书、绿宝石、灵晶与仙元无序合成。"},
+    {"type":"patchouli:text","text":"推荐顺序：积累灵气→炼制当前阶段丹药→扩展空窍→五阶完成特殊飞升→进入个人仙窍→在仙窍内渡劫。快捷键可在控制设置中重新绑定。"}
+  ]
+}

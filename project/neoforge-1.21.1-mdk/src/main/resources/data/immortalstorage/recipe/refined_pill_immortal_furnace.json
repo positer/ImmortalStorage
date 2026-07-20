@@ -1,0 +1,13 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "cookingtime": 25,
+  "experience": 0,
+  "ingredient": {
+    "item": "immortalstorage:refined_pill_embryo"
+  },
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:refined_pill"
+  }
+}

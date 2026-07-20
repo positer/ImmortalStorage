@@ -1,6 +1,6 @@
 # Version support and composition policy
 
-Cultivation uses product version `0.0.1`.  Product features are maintained once
+ImmortalStorage uses product version `0.0.1`.  Product features are maintained once
 in the unified core.  A released JAR is composed from that core and exactly one
 NeoForge compatibility adapter.
 

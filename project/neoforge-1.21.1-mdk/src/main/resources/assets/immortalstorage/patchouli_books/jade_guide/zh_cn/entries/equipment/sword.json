@@ -1,0 +1,8 @@
+{
+  "name":"灵剑与淬火","icon":"immortalstorage:spirit_sword","category":"immortalstorage:equipment","sortnum":10,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_sword","text":"灵剑的Tooltip与实际攻击共享同一伤害模型，并显示阶段加成、支付资源以及当前淬火点加成。可通过铁砧接受下界合金剑当前允许的附魔。"},
+    {"type":"patchouli:text","text":"灵剑可在熔炉、高炉、放置仙炉和内置仙炉中反复烧炼。每次完成增加一点淬火且不给经验，成品自动返回输入仓继续烧炼。每点淬火提高1%伤害。"},
+    {"type":"patchouli:text","text":"每次攻击后淬火点减为原来的50%并向下取整。灵气修复会消耗对应元气修复耐久；余额不足时攻击仍成立，但只造成基础武器伤害。"}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "immortalstorage:item/spirit_staff_explore"
+  },
+  "overrides": [
+    {
+      "predicate": {"immortalstorage:staff_mode": 1.0},
+      "model": "immortalstorage:item/spirit_staff_wrench"
+    },
+    {
+      "predicate": {"immortalstorage:staff_mode": 2.0},
+      "model": "immortalstorage:item/spirit_staff_pick"
+    },
+    {
+      "predicate": {"immortalstorage:staff_mode": 3.0},
+      "model": "immortalstorage:item/spirit_staff_build"
+    }
+  ]
+}

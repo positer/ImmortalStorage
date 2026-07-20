@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": {
+      "item": "immortalstorage:immortal_yuan"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    },
+    "M": {
+      "item": "minecraft:magma_cream"
+    }
+  },
+  "pattern": [
+    "XLX",
+    "LCM",
+    "XLX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:lava_vein"
+  }
+}

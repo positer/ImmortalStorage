@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": {
+      "item": "immortalstorage:spirit_iron"
+    },
+    "C": {
+      "item": "immortalstorage:spirit_crystal"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ICI",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_drive"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name":"丹药流程","icon":"immortalstorage:refined_pill","category":"immortalstorage:recipes","sortnum":10,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_pill_embryo","recipe2":"immortalstorage:refined_pill_embryo","text":"先合成丹胚，再通过对应烧炼配方炼成丹药。所有丹药可无视饱食度快速服用，Tooltip会写明效果。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:breakthrough_pill_embryo_yuan","text":"破限丹在五阶使用时只把灵气进度补满，不会自动完成飞升。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_pill_yuan","recipe2":"immortalstorage:immortal_pill_xian","text":"真元材料配方在六阶后通常允许仙元替代；但原本明确要求仙元的配方仍正常消耗仙元。"}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "immortalstorage:block/xianqiao_interface" },
+    "facing=east": { "model": "immortalstorage:block/xianqiao_interface", "y": 90 },
+    "facing=south": { "model": "immortalstorage:block/xianqiao_interface", "y": 180 },
+    "facing=west": { "model": "immortalstorage:block/xianqiao_interface", "y": 270 }
+  }
+}

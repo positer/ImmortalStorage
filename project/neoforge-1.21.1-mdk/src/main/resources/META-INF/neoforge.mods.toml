@@ -3,16 +3,16 @@ loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
 [[mixins]]
-config="cultivation.refinedstorage.mixins.json"
+config="immortalstorage.refinedstorage.mixins.json"
 
 [[mixins]]
-config="cultivation.core.mixins.json"
+config="immortalstorage.core.mixins.json"
 
 [[mixins]]
-config="cultivation.buildinggadgets.mixins.json"
+config="immortalstorage.buildinggadgets.mixins.json"
 
 [[mixins]]
-config="cultivation.arsnouveau.mixins.json"
+config="immortalstorage.arsnouveau.mixins.json"
 
 [[mods]]
 modId="${mod_id}"

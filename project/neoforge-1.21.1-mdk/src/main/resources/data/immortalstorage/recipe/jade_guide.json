@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "minecraft:emerald" },
+    { "item": "immortalstorage:spirit_crystal" },
+    { "item": "immortalstorage:immortal_yuan" }
+  ],
+  "result": { "count": 1, "id": "immortalstorage:jade_guide" }
+}
