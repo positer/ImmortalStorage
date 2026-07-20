@@ -6,11 +6,11 @@ Cultivation is a progression, personal-storage, automation, and dimension mod fo
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.1 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.2 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
-**Download:** [Cultivation 0.0.1](https://github.com/positer/Cultivation/releases/tag/0.0.1)
+**Download:** [Cultivation 0.0.2](https://github.com/positer/Cultivation/releases/tag/0.0.2)
 
-**Release JAR SHA256:** `B21C1089267F13F6C270B2F97A6871CFA59C89C6C247CAF6E1A9AF02E4431741`
+**Release JAR SHA256:** `839421B8518C6FE655B2E185C5D9152DC8BA98E86EE2B673BF404B15E69DC831`
 
 ## Highlights
 
@@ -30,7 +30,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| Cultivation | 0.0.1 |
+| Cultivation | 0.0.2 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
@@ -38,7 +38,7 @@ No recipe viewer or storage mod is required. Optional integrations activate only
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.1.jar` from GitHub Releases.
+3. Download `cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -272,7 +272,7 @@ Cultivation uses standard NeoForge item/fluid capability surfaces for ordinary a
 
 Implemented integration areas include AE2 and Refined Storage exchange media, storage-bus visibility, Mekanism energy/chemical access, Botania mana, Ars Nouveau Source, Flux Networks energy, and Industrial Foregoing Souls. Exact behavior depends on the installed mod version and the enabled server configuration.
 
-Additional storage compatibility expansion is intentionally not claimed as part of release 0.0.1 beyond the adapters included and tested for the stated Minecraft/NeoForge target.
+Release 0.0.2 includes the adapters documented for the stated Minecraft/NeoForge target. Other planned loader lines remain unreleased until their own build and runtime gates are complete.
 
 ## Configuration
 
@@ -329,7 +329,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.1.jar
+project/neoforge-1.21.1-mdk/build/libs/cultivation-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
 ```
 
 Useful verification tasks:
@@ -338,7 +338,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The current release gate passes 160 test suites and 608 tests, plus production-class, version-composition, and exact-artifact checks.
+The current release gate passes 658 tests, plus production-class, version-composition, and exact-artifact checks.
 
 ## Project Layout
 

@@ -3,7 +3,13 @@ package com.cultivation.core.resource;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** Stable loader-neutral identity for one typed long-valued resource. */
+/**
+ * Stable loader-neutral identity for one typed long-valued resource.
+ *
+ * <p>This is Cultivation's authoritative shared key. It deliberately contains
+ * no AE2, RS, or target-mod types; optional integrations translate to and from
+ * this identity at their own class-loading boundary.</p>
+ */
 public record ResourceChannelKey(String channel, String resourceId) {
     private static final Pattern CHANNEL = Pattern.compile("[a-z0-9_.-]+");
     private static final Pattern RESOURCE_LOCATION =

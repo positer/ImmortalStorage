@@ -28,6 +28,9 @@ public final class CultivationKeybinds {
             "key.cultivation.lingqi_or_realm", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.cultivation");
     public static final KeyMapping TIME_FLOW = new KeyMapping(
             "key.cultivation.time_flow", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S, "key.categories.cultivation");
+    public static final KeyMapping SPECIAL_OPERATION = new KeyMapping(
+            "key.cultivation.special_operation", InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.cultivation");
 
     public static void init(IEventBus modBus, IEventBus forgeBus) {
         modBus.addListener(CultivationKeybinds::registerKeys);
@@ -40,6 +43,7 @@ public final class CultivationKeybinds {
         e.register(OPEN_STORAGE);
         e.register(OPEN_LINGQI_OR_REALM);
         e.register(TIME_FLOW);
+        e.register(SPECIAL_OPERATION);
     }
 
     @SubscribeEvent

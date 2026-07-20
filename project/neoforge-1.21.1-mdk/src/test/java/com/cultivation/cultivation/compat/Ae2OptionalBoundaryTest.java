@@ -39,6 +39,17 @@ final class Ae2OptionalBoundaryTest {
         assertTrue(manager.contains("compat.ae2.Ae2Compat"));
         assertFalse(manager.contains("import appeng."));
         assertFalse(source("item", "custom", "XianqiaoExchangeCellItem.java").contains("appeng."));
+
+        String endpoint = source("api", "storage", "ExternalResourceStorage.java");
+        assertTrue(endpoint.contains("ResourceChannelKey"));
+        assertFalse(endpoint.contains("appeng."),
+                "the authoritative extra-resource API must work without AE2");
+
+        String sharedKey = Files.readString(PROJECT.resolve(Path.of(
+                "..", "cultivation-core", "src", "main", "java", "com", "cultivation",
+                "core", "resource", "ResourceChannelKey.java")).normalize());
+        assertFalse(sharedKey.contains("appeng."),
+                "the shared resource identity must not depend on AE2");
     }
 
     @Test

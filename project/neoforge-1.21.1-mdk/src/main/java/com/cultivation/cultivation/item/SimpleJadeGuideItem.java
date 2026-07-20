@@ -2,6 +2,7 @@ package com.cultivation.cultivation.item;
 
 import com.cultivation.cultivation.player.CultivationPlayerData;
 import com.cultivation.cultivation.network.ModPayloads;
+import com.cultivation.cultivation.compat.CompatManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -31,7 +32,9 @@ public class SimpleJadeGuideItem extends Item {
                 p.displayClientMessage(Component.translatable("message.cultivation.jade_guide.resonates"), false);
             }
             if (canOpenGuide(d.getStage()) && p instanceof ServerPlayer serverPlayer) {
-                PacketDistributor.sendToPlayer(serverPlayer, new ModPayloads.OpenJadeGuideScreen());
+                if (!openPatchouliGuide(serverPlayer)) {
+                    PacketDistributor.sendToPlayer(serverPlayer, new ModPayloads.OpenJadeGuideScreen());
+                }
             } else if (!canOpenGuide(d.getStage())) {
                 p.displayClientMessage(Component.translatable("message.cultivation.jade_guide.locked"), true);
             }
@@ -42,6 +45,19 @@ public class SimpleJadeGuideItem extends Item {
 
     static boolean canOpenGuide(int stage) {
         return stage >= 1;
+    }
+
+    private static boolean openPatchouliGuide(ServerPlayer player) {
+        if (!CompatManager.PATCHOULI_LOADED) return false;
+        try {
+            Class<?> bridge = Class.forName(
+                    "com.cultivation.cultivation.compat.patchouli.PatchouliJadeGuideCompat",
+                    true, SimpleJadeGuideItem.class.getClassLoader());
+            bridge.getMethod("open", ServerPlayer.class).invoke(null, player);
+            return true;
+        } catch (ReflectiveOperationException | LinkageError exception) {
+            throw new IllegalStateException("Patchouli Jade Guide integration is incompatible", exception);
+        }
     }
 
     @Override

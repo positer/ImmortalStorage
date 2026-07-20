@@ -518,6 +518,11 @@ public final class CultivationPlayerData implements INBTSerializable<CompoundTag
         return externalResourceLedger.revision();
     }
 
+    /** Immutable snapshot shared by optional storage-network adapters. */
+    public List<ResourceChannelEntry> getExternalResourceEntries() {
+        return externalResourceLedger.snapshot();
+    }
+
     public long insertExternalResource(
             ResourceChannelKey key, long amount, ResourceTransferAction action) {
         Objects.requireNonNull(key, "key");

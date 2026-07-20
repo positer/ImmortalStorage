@@ -2,6 +2,7 @@ package com.cultivation.cultivation.block.entity;
 
 import com.cultivation.cultivation.api.storage.PersonalStorageApi;
 import com.cultivation.cultivation.api.storage.PersonalStorageEndpoint;
+import com.cultivation.cultivation.api.storage.ExternalResourceStorage;
 import com.cultivation.cultivation.api.storage.terminal.StorageItemSummary;
 import com.cultivation.cultivation.api.storage.terminal.TerminalEntryKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidKey;
@@ -10,9 +11,13 @@ import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalStorageAction;
 import com.cultivation.cultivation.menu.custom.XianqiaoInterfaceMenu;
 import com.cultivation.cultivation.player.CultivationPlayerData;
+import com.cultivation.cultivation.compat.XianqiaoInterfaceCompatHooks;
+import com.cultivation.cultivation.config.CultivationConfig;
 import com.cultivation.core.resource.AtomicEnergyRefill;
 import com.cultivation.core.resource.ExternalResourceChannels;
 import com.cultivation.core.resource.ResourceChannelKey;
+import com.cultivation.core.resource.ResourceChannelEntry;
+import com.cultivation.core.resource.ResourceTransferAction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -41,6 +46,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -82,9 +88,11 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
     private final OwnerBinding ownerBinding = new OwnerBinding();
     private final TerminalItemStorage storageBridge = new OwnerStorageBridge();
     private final TerminalFluidStorage fluidStorageBridge = new OwnerFluidStorageBridge();
+    private final ExternalResourceStorage externalResourceStorageBridge =
+            new OwnerExternalResourceStorageBridge();
     private final XianqiaoInterfaceInventory inventory = new XianqiaoInterfaceInventory(
-            storageBridge, fluidStorageBridge, this::hasLiveStorage, this::markInventoryChanged,
-            this::markConfigurationChanged);
+            storageBridge, fluidStorageBridge, externalResourceStorageBridge,
+            this::hasLiveStorage, this::markInventoryChanged, this::markConfigurationChanged);
     private final IFluidHandler fluidInventory = new XianqiaoInterfaceFluidInventory(inventory);
     private final SideMode[] sideModes = new SideMode[Direction.values().length];
     private final IItemHandler[] sidedItemHandlers = new IItemHandler[Direction.values().length];
@@ -101,6 +109,7 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
     private long endpointCacheTick = Long.MIN_VALUE;
     private @Nullable UUID endpointCacheOwner;
     private @Nullable PersonalStorageEndpoint endpointCache;
+    private final Map<ResourceChannelKey, ConversionBudget> conversionBudgets = new HashMap<>();
 
     public XianqiaoInterfaceBlockEntity(BlockPos pos, BlockState state) {
         this(ModBlockEntities.XIANQIAO_INTERFACE.get(), pos, state);
@@ -111,20 +120,18 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         Arrays.fill(sideModes, SideMode.DISABLED);
         for (Direction side : Direction.values()) {
             sidedItemHandlers[side.ordinal()] = new XianqiaoInterfaceSidedItemHandler(
-                    inventory, () -> getSideMode(side));
+                    inventory, side);
             sidedFluidHandlers[side.ordinal()] = new XianqiaoInterfaceSidedFluidHandler(
-                    fluidInventory, () -> getSideMode(side));
+                    fluidInventory, inventory, side);
             sidedEnergyHandlers[side.ordinal()] = new XianqiaoInterfaceEnergyStorage(
-                    () -> resolveExternalResourceStore(ExternalResourceChannels.FE),
-                    () -> getSideMode(side));
+                    () -> resolveExternalResourcePipeStore(ExternalResourceChannels.FE, side));
         }
         unsidedItemHandler = new XianqiaoInterfaceSidedItemHandler(
-                inventory, () -> SideMode.DISABLED);
+                inventory, null);
         unsidedFluidHandler = new XianqiaoInterfaceSidedFluidHandler(
-                fluidInventory, () -> SideMode.DISABLED);
+                fluidInventory, inventory, null);
         unsidedEnergyHandler = new XianqiaoInterfaceEnergyStorage(
-                () -> resolveExternalResourceStore(ExternalResourceChannels.FE),
-                () -> SideMode.DISABLED);
+                () -> resolveExternalResourceCache(ExternalResourceChannels.FE));
     }
 
     public @Nullable UUID getOwner() {
@@ -201,6 +208,119 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         return CultivationPlayerData.get(player).externalResourceStore(channel);
     }
 
+    /**
+     * Resolves only this interface block's configured real cache. Directionless
+     * target-mod block interactions use this view and never reach through to
+     * the owner's backing ledger.
+     */
+    public @Nullable AtomicEnergyRefill.ResourceStore resolveExternalResourceCache(
+            ResourceChannelKey channel) {
+        if (channel == null || !hasLiveStorage() || !inventory.hasExternalTarget(channel)) return null;
+        return withConfiguredConversion(channel, inventory.externalCacheStore(channel));
+    }
+
+    /** Directionless integrations insert into Xianqiao but expose only configured cache for reads. */
+    public AtomicEnergyRefill.ResourceStore resolveDirectionlessExternalResource(
+            ResourceChannelKey channel) {
+        return new AtomicEnergyRefill.ResourceStore() {
+            @Override
+            public long amount() {
+                AtomicEnergyRefill.ResourceStore cache = resolveExternalResourceCache(channel);
+                return cache == null ? 0L : cache.amount();
+            }
+
+            @Override
+            public long extract(long requested, ResourceTransferAction action) {
+                AtomicEnergyRefill.ResourceStore cache = resolveExternalResourceCache(channel);
+                return cache == null ? 0L : cache.extract(requested, action);
+            }
+
+            @Override
+            public long insert(long offered, ResourceTransferAction action) {
+                AtomicEnergyRefill.ResourceStore ledger = resolveExternalResourceStore(channel);
+                return ledger == null ? 0L : ledger.insert(offered, action);
+            }
+        };
+    }
+
+    /** Sided cache view for directional optional capabilities. */
+    public @Nullable AtomicEnergyRefill.ResourceStore resolveExternalResourceCache(
+            ResourceChannelKey channel, @Nullable Direction side) {
+        if (channel == null || side == null || !hasLiveStorage()
+                || !inventory.hasExternalTarget(channel, side)) return null;
+        return withConfiguredConversion(channel, inventory.externalCacheStore(channel, side));
+    }
+
+    /** Pipe insertion is face-independent; pipe extraction retains the slot face mask. */
+    public @Nullable AtomicEnergyRefill.ResourceStore resolveExternalResourcePipeStore(
+            ResourceChannelKey channel, @Nullable Direction side) {
+        AtomicEnergyRefill.ResourceStore insertion = resolveExternalResourceCache(channel);
+        if (insertion == null) return null;
+        AtomicEnergyRefill.ResourceStore extraction = side == null
+                ? insertion : resolveExternalResourceCache(channel, side);
+        return new AtomicEnergyRefill.ResourceStore() {
+            @Override public long amount() { return extraction == null ? 0L : extraction.amount(); }
+            @Override public long extract(long requested, ResourceTransferAction action) {
+                return extraction == null ? 0L : extraction.extract(requested, action);
+            }
+            @Override public long insert(long offered, ResourceTransferAction action) {
+                return insertion.insert(offered, action);
+            }
+        };
+    }
+
+    /** PULL faces commit directly to Xianqiao; PUSH faces expose only their configured cache. */
+    public @Nullable AtomicEnergyRefill.ResourceStore resolveExternalResourceFaceStore(
+            ResourceChannelKey channel, @Nullable Direction side) {
+        if (channel == null || side == null) return null;
+        return switch (getSideMode(side)) {
+            // Input is keyed by the incoming resource itself; it must not require a preconfigured cache slot.
+            case PULL -> resolveExternalResourceStore(channel);
+            case PUSH -> inventory.hasExternalTarget(channel, side)
+                    ? resolveExternalResourceCache(channel, side) : null;
+            case DISABLED -> null;
+        };
+    }
+
+    private AtomicEnergyRefill.ResourceStore withConfiguredConversion(
+            ResourceChannelKey channel, AtomicEnergyRefill.ResourceStore cache) {
+        CultivationConfig.ConversionPolicy policy = CultivationConfig.conversionPolicy(channel);
+        return !policy.enabled() ? cache : new ConvertingCacheStore(channel, cache, policy);
+    }
+
+    private @Nullable CultivationPlayerData conversionOwnerData() {
+        if (!(level instanceof ServerLevel serverLevel)) return null;
+        UUID owner = ownerBinding.owner();
+        if (owner == null) return null;
+        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        if (player == null) return null;
+        CultivationPlayerData data = CultivationPlayerData.get(player);
+        return data.getStage() >= 8 ? data : null;
+    }
+
+    private long remainingConversionBudget(ResourceChannelKey channel, long maximum) {
+        if (level == null || maximum <= 0L) return 0L;
+        long tick = level.getGameTime();
+        ConversionBudget budget = conversionBudgets.computeIfAbsent(
+                channel, ignored -> new ConversionBudget(tick, 0L));
+        if (budget.tick != tick) {
+            budget.tick = tick;
+            budget.used = 0L;
+        }
+        return Math.max(0L, maximum - Math.min(maximum, budget.used));
+    }
+
+    private void useConversionBudget(ResourceChannelKey channel, long amount) {
+        if (amount <= 0L || level == null) return;
+        ConversionBudget budget = conversionBudgets.computeIfAbsent(
+                channel, ignored -> new ConversionBudget(level.getGameTime(), 0L));
+        if (budget.tick != level.getGameTime()) {
+            budget.tick = level.getGameTime();
+            budget.used = 0L;
+        }
+        budget.used = budget.used > Long.MAX_VALUE - amount ? Long.MAX_VALUE : budget.used + amount;
+    }
+
     public SideMode getSideMode(@Nullable Direction side) {
         return side == null ? SideMode.DISABLED : sideModes[side.ordinal()];
     }
@@ -245,6 +365,13 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
             if (mode == SideMode.PUSH && activePushEnabled) pushToSide(serverLevel, side);
             if (mode == SideMode.PULL && activePullEnabled) pullFromSide(serverLevel, side);
         }
+        XianqiaoInterfaceCompatHooks.serverTick(this, serverLevel);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        XianqiaoInterfaceCompatHooks.onLoad(this);
     }
 
     private void pushToSide(ServerLevel serverLevel, Direction side) {
@@ -253,10 +380,17 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
                 Capabilities.ItemHandler.BLOCK, targetPos, side.getOpposite());
         IFluidHandler fluidTarget = serverLevel.getCapability(
                 Capabilities.FluidHandler.BLOCK, targetPos, side.getOpposite());
+        IEnergyStorage energyTarget = serverLevel.getCapability(
+                Capabilities.EnergyStorage.BLOCK, targetPos, side.getOpposite());
         for (int slot = 0; slot < XianqiaoInterfaceInventory.SLOT_COUNT; slot++) {
             if (!inventory.isOutputFaceEnabled(slot, side)) continue;
             if (itemTarget != null) pushItemSlot(slot, itemTarget);
             if (fluidTarget != null) pushFluidSlot(slot, fluidTarget);
+        }
+        AtomicEnergyRefill.ResourceStore energy =
+                resolveExternalResourceFaceStore(ExternalResourceChannels.FE, side);
+        if (energyTarget != null && energy != null) {
+            XianqiaoInterfaceEnergyTransfer.push(energy, energyTarget);
         }
     }
 
@@ -294,8 +428,15 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
                 Capabilities.ItemHandler.BLOCK, targetPos, side.getOpposite());
         IFluidHandler fluidSource = serverLevel.getCapability(
                 Capabilities.FluidHandler.BLOCK, targetPos, side.getOpposite());
+        IEnergyStorage energySource = serverLevel.getCapability(
+                Capabilities.EnergyStorage.BLOCK, targetPos, side.getOpposite());
         if (itemSource != null) pullItems(itemSource, side);
         if (fluidSource != null) pullFluids(fluidSource, side);
+        AtomicEnergyRefill.ResourceStore energy =
+                resolveExternalResourceFaceStore(ExternalResourceChannels.FE, side);
+        if (energySource != null && energy != null) {
+            XianqiaoInterfaceEnergyTransfer.pull(energySource, energy);
+        }
     }
 
     private void pullItems(IItemHandler source, Direction side) {
@@ -358,6 +499,7 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         XianqiaoInterfaceInventory.ItemRemovalSettlement settlement;
         try {
             inventory.returnFluidBuffersAndRetainRemainders();
+            inventory.returnExternalBuffersAndRetainRemainders();
             settlement = inventory.settleItemBuffersForRemoval();
         } catch (RuntimeException | Error failure) {
             releaseState = ReleaseState.OPEN;
@@ -442,6 +584,13 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
                 slots.getCompound(index).putLong("Cached", 0L);
             }
         }
+        if (releaseState != ReleaseState.RELEASED
+                && tag.contains("ExternalResourceSlots", net.minecraft.nbt.Tag.TAG_LIST)) {
+            var slots = tag.getList("ExternalResourceSlots", net.minecraft.nbt.Tag.TAG_COMPOUND);
+            for (int index = 0; index < slots.size(); index++) {
+                slots.getCompound(index).putLong("Cached", 0L);
+            }
+        }
     }
 
     private boolean hasLiveStorage() {
@@ -476,6 +625,11 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         return endpoint == null ? null : endpoint.fluidStorage();
     }
 
+    private @Nullable ExternalResourceStorage resolveExternalResourceStorage() {
+        PersonalStorageEndpoint endpoint = resolveEndpoint();
+        return endpoint == null ? null : endpoint.externalResourceStorage();
+    }
+
     private void markInventoryChanged() {
         setChanged();
     }
@@ -491,8 +645,121 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         endpointCacheTick = Long.MIN_VALUE;
     }
 
+    /**
+     * Extraction view that consumes the real interface cache first and converts
+     * Immortal Yuan only for the remaining request. Conversion output left over
+     * from a whole Yuan is retained in the cache or the owner's shared ledger.
+     */
+    private final class ConvertingCacheStore implements AtomicEnergyRefill.ResourceStore {
+        private final ResourceChannelKey channel;
+        private final AtomicEnergyRefill.ResourceStore cache;
+        private final CultivationConfig.ConversionPolicy policy;
+
+        private ConvertingCacheStore(
+                ResourceChannelKey channel,
+                AtomicEnergyRefill.ResourceStore cache,
+                CultivationConfig.ConversionPolicy policy) {
+            this.channel = channel;
+            this.cache = cache;
+            this.policy = policy;
+        }
+
+        @Override
+        public long amount() {
+            return cache.amount();
+        }
+
+        @Override
+        public long extract(long requested, ResourceTransferAction action) {
+            if (requested <= 0L) return 0L;
+            long cached = cache.extract(requested, action);
+            long missing = requested - cached;
+            if (missing <= 0L) return cached;
+            CultivationPlayerData ownerData = conversionOwnerData();
+            long budget = remainingConversionBudget(channel, policy.maximumConversionPerTick());
+            long conversionUnits = budget / policy.resourcePerImmortalYuan();
+            if (ownerData == null || conversionUnits <= 0L || ownerData.getImmortalYuan() <= 0L) return cached;
+            long convertible = conversionUnits > Long.MAX_VALUE / policy.resourcePerImmortalYuan()
+                    ? Long.MAX_VALUE : conversionUnits * policy.resourcePerImmortalYuan();
+
+            AtomicEnergyRefill.Result converted = AtomicEnergyRefill.transfer(
+                    missing,
+                    convertible,
+                    policy.resourcePerImmortalYuan(),
+                    conversionRemainderStore(cache, channel),
+                    immortalYuanChargeSource(ownerData),
+                    (offered, transferAction) -> offered,
+                    action);
+            if (action.executes()) {
+                long generated = converted.chargeUnitsConsumed() > Long.MAX_VALUE / policy.resourcePerImmortalYuan()
+                        ? Long.MAX_VALUE
+                        : converted.chargeUnitsConsumed() * policy.resourcePerImmortalYuan();
+                useConversionBudget(channel, generated);
+            }
+            return cached + converted.delivered();
+        }
+
+        @Override
+        public long insert(long offered, ResourceTransferAction action) {
+            return cache.insert(offered, action);
+        }
+    }
+
+    private AtomicEnergyRefill.ResourceStore conversionRemainderStore(
+            AtomicEnergyRefill.ResourceStore cache, ResourceChannelKey channel) {
+        return new AtomicEnergyRefill.ResourceStore() {
+            @Override
+            public long amount() {
+                return 0L;
+            }
+
+            @Override
+            public long extract(long requested, ResourceTransferAction action) {
+                return 0L;
+            }
+
+            @Override
+            public long insert(long offered, ResourceTransferAction action) {
+                if (offered <= 0L) return 0L;
+                long cached = cache.insert(offered, action);
+                long remainder = offered - cached;
+                if (remainder <= 0L) return cached;
+                AtomicEnergyRefill.ResourceStore ledger = resolveExternalResourceStore(channel);
+                return cached + (ledger == null ? 0L : ledger.insert(remainder, action));
+            }
+        };
+    }
+
+    private static AtomicEnergyRefill.ChargeSource immortalYuanChargeSource(
+            CultivationPlayerData ownerData) {
+        return new AtomicEnergyRefill.ChargeSource() {
+            @Override
+            public long availableUnits() {
+                return ownerData.getImmortalYuan();
+            }
+
+            @Override
+            public long consume(long requestedUnits, ResourceTransferAction action) {
+                long accepted = Math.min(Math.max(0L, requestedUnits), ownerData.getImmortalYuan());
+                if (!action.executes() || accepted == 0L) return accepted;
+                return ownerData.consumeImmortalYuan(accepted) ? accepted : 0L;
+            }
+        };
+    }
+
+    private static final class ConversionBudget {
+        private long tick;
+        private long used;
+
+        private ConversionBudget(long tick, long used) {
+            this.tick = tick;
+            this.used = used;
+        }
+    }
+
     @Override
     public void setRemoved() {
+        XianqiaoInterfaceCompatHooks.onRemoved(this);
         clearEndpointCache();
         super.setRemoved();
     }
@@ -554,6 +821,33 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
         public long extract(TerminalFluidKey key, long amountMb, TerminalStorageAction action) {
             TerminalFluidStorage storage = resolveFluidStorage();
             return storage == null ? 0L : storage.extract(key, amountMb, action);
+        }
+    }
+
+    /** Resolves every optional-resource transaction through the public owner endpoint. */
+    private final class OwnerExternalResourceStorageBridge implements ExternalResourceStorage {
+        @Override
+        public long revision() {
+            ExternalResourceStorage storage = resolveExternalResourceStorage();
+            return storage == null ? 0L : storage.revision();
+        }
+
+        @Override
+        public List<ResourceChannelEntry> snapshot() {
+            ExternalResourceStorage storage = resolveExternalResourceStorage();
+            return storage == null ? List.of() : storage.snapshot();
+        }
+
+        @Override
+        public long insert(ResourceChannelKey key, long amount, ResourceTransferAction action) {
+            ExternalResourceStorage storage = resolveExternalResourceStorage();
+            return storage == null ? 0L : storage.insert(key, amount, action);
+        }
+
+        @Override
+        public long extract(ResourceChannelKey key, long amount, ResourceTransferAction action) {
+            ExternalResourceStorage storage = resolveExternalResourceStorage();
+            return storage == null ? 0L : storage.extract(key, amount, action);
         }
     }
 }

@@ -32,6 +32,42 @@ final class RsOptionalBoundaryTest {
     }
 
     @Test
+    void rsRegistersAndRendersCultivationsOwnExtraResourceKey() throws IOException {
+        String bootstrap = source(
+                "java/com/cultivation/cultivation/compat/refinedstorage/RsCompat.java");
+        String storage = source(
+                "java/com/cultivation/cultivation/compat/refinedstorage/XianqiaoRsStorage.java");
+        String resource = source(
+                "java/com/cultivation/cultivation/compat/refinedstorage/RsExternalResource.java");
+        String client = source(
+                "java/com/cultivation/cultivation/compat/refinedstorage/RsClientCompat.java");
+
+        assertTrue(bootstrap.contains("getResourceTypeRegistry"));
+        assertTrue(bootstrap.contains("RsExternalResourceType.INSTANCE"));
+        assertTrue(storage.contains("externalResourceStorage"));
+        assertTrue(storage.contains("resource instanceof RsExternalResource"));
+        assertTrue(resource.contains("implements PlatformResourceKey"));
+        assertTrue(resource.contains("ResourceChannelKey"));
+        assertTrue(client.contains("registerResourceRendering"));
+    }
+
+    @Test
+    void rsTypesRemainInsideTheirOptionalClassLoadingBoundary() throws IOException {
+        Path javaRoot = ROOT.resolve("java");
+        Path rsRoot = javaRoot.resolve(
+                "com/cultivation/cultivation/compat/refinedstorage");
+        try (var files = Files.walk(javaRoot)) {
+            for (Path file : files.filter(path -> path.toString().endsWith(".java")).toList()) {
+                if (file.startsWith(rsRoot)
+                        || file.toString().contains("mixin\\refinedstorage")) continue;
+                String text = Files.readString(file);
+                assertFalse(text.contains("import com.refinedmods"),
+                        () -> "hard RS reference escaped optional boundary: " + file);
+            }
+        }
+    }
+
+    @Test
     void recipeAndMetadataStayOptionalAndPinnedToRsTwoPointZeroNine() throws IOException {
         String recipe = source("resources/data/cultivation/recipe/xianqiao_rs_exchange_disk.json");
         String modsToml = source("resources/META-INF/neoforge.mods.toml");

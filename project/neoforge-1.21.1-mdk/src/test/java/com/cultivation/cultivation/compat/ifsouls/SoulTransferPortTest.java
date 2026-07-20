@@ -6,8 +6,6 @@ import com.cultivation.core.resource.ResourceChannelKey;
 import com.cultivation.core.resource.ResourceTransferAction;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class SoulTransferPortTest {
@@ -17,43 +15,34 @@ final class SoulTransferPortTest {
     @Test
     void pullAcceptsAndPushExtractsWithSimulationPreservingTheLongLedger() {
         LongResourceLedger ledger = new LongResourceLedger();
-        AtomicReference<SoulTransferPort.Mode> mode =
-                new AtomicReference<>(SoulTransferPort.Mode.PULL);
-        SoulTransferPort port = new SoulTransferPort(() -> store(ledger), mode::get);
+        SoulTransferPort port = new SoulTransferPort(() -> store(ledger));
 
         assertEquals(64, port.fill(64, false));
         assertEquals(0L, ledger.amount(SOUL));
         assertEquals(64, port.fill(64, true));
         assertEquals(64L, ledger.amount(SOUL));
-        assertEquals(0, port.drain(10, true));
-
-        mode.set(SoulTransferPort.Mode.PUSH);
         assertEquals(10, port.drain(10, false));
         assertEquals(64L, ledger.amount(SOUL));
         assertEquals(10, port.drain(10, true));
         assertEquals(54L, ledger.amount(SOUL));
-        assertEquals(0, port.fill(1, true));
+        assertEquals(1, port.fill(1, false));
     }
 
     @Test
     void disabledAndMissingStoresFailClosedWhileLongAmountsSaturateForIntCallers() {
         LongResourceLedger ledger = new LongResourceLedger();
         ledger.insert(SOUL, (long) Integer.MAX_VALUE + 99L, ResourceTransferAction.EXECUTE);
-        AtomicReference<AtomicEnergyRefill.ResourceStore> storage =
-                new AtomicReference<>(store(ledger));
-        AtomicReference<SoulTransferPort.Mode> mode =
-                new AtomicReference<>(SoulTransferPort.Mode.PUSH);
-        SoulTransferPort port = new SoulTransferPort(storage::get, mode::get);
+        java.util.concurrent.atomic.AtomicReference<AtomicEnergyRefill.ResourceStore> storage =
+                new java.util.concurrent.atomic.AtomicReference<>(store(ledger));
+        SoulTransferPort port = new SoulTransferPort(storage::get);
 
         assertEquals(Integer.MAX_VALUE, port.stored(0));
         assertEquals(Integer.MAX_VALUE, port.capacity(0));
         assertEquals(Integer.MAX_VALUE, port.drain(Integer.MAX_VALUE, false));
         assertEquals((long) Integer.MAX_VALUE + 99L, ledger.amount(SOUL));
 
-        mode.set(SoulTransferPort.Mode.DISABLED);
-        assertEquals(0, port.tankCount());
-        assertEquals(0, port.drain(1, true));
         storage.set(null);
+        assertEquals(0, port.tankCount());
         assertEquals(0, port.stored(0));
     }
 

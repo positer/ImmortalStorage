@@ -2,6 +2,42 @@
 
 All notable user-facing changes are documented here.
 
+## [0.0.2] - 2026-07-20
+
+### Added
+
+- A rebindable grave-accent special-operation key for Spirit Instrument build-layer removal and server-authoritative Spirit Sword summon/return from the embedded Immortal Furnace.
+- Persistent three-lane sword recall reservations that pause only the reserved lane, survive reconnects and restarts, and resume the exact recalled sword without duplication.
+- Unified Xianqiao external-resource storage and terminal display for FE, Mekanism chemicals, Botania Mana, Ars Nouveau Source, and Industrial Foregoing Souls.
+- Built-in AE2 external resource keys with installed-addon retreat bridges, plus Refined Storage resource types, so Xianqiao resources remain visible without requiring storage-addon mods.
+- Building Gadgets 2 copy/paste access to held-player Kongqiao/Xianqiao storage and Create Schematicannon access through the Xianqiao Manager item capability.
+- Compact inventory sort/deposit/withdraw controls and R-key sorter-compatible vanilla player slots.
+- MEK-style 3x2 adjacent-face previews for interface modes, source modes, and per-cache output masks.
+
+### Changed
+
+- Xianqiao Interface active pull/push switches now control scheduled block automation only; passive pipes use matching caches and per-cache output face masks.
+- External caches default to 1,000 units and enforce resource-appropriate server-side limits.
+- Fluid and chemical containers configure the exact held container on left click and their contained resource on right click.
+- Stage 9/10 uncapped Immortal Pills grant 2,000 ticks of natural ImmortalPower generation instead of restoring 50% of an unlimited cap.
+- Beyond Dimensions remains an optional coexistence mod and no longer replaces or disables Cultivation personal storage.
+
+### Fixed
+
+- FE and Mekanism chemical transfers now commit to the authoritative Xianqiao ledger and support both passive pipe access and configured active automation.
+- Botania sparks persist across relogging and expose only configured interface Mana caches for extraction while still accepting input to storage.
+- Ars Nouveau Dominion Wand binding records the interface without opening its UI; relay endpoint loops are repaired and Source transfer uses configured caches.
+- Source Vein inventory rendering restores the base block model and draws the contained resource badge in the lower-right corner.
+- External-resource names, chemical colors, animated Mana/Source textures, tooltips, and unified terminal entries now use the corresponding registered resources.
+
+### Verification
+
+- Minecraft: 1.21.1
+- Loader: NeoForge 21.1.235
+- Java: 21
+- Tests: 658 passed
+- Release JAR SHA256: `839421B8518C6FE655B2E185C5D9152DC8BA98E86EE2B673BF404B15E69DC831`
+
 ## [0.0.1] - 2026-07-18
 
 ### Added
@@ -35,4 +71,3 @@ All notable user-facing changes are documented here.
 - Loader: NeoForge 21.1.235
 - Java: 21
 - Release version: 0.0.1
-

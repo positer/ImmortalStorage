@@ -8,6 +8,12 @@ config="cultivation.refinedstorage.mixins.json"
 [[mixins]]
 config="cultivation.core.mixins.json"
 
+[[mixins]]
+config="cultivation.buildinggadgets.mixins.json"
+
+[[mixins]]
+config="cultivation.arsnouveau.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -82,5 +88,19 @@ side="BOTH"
 modId="beyonddimensions"
 type="optional"
 versionRange="[0.7.24]"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="ars_nouveau"
+type="optional"
+versionRange="[5.8.4,6)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="patchouli"
+type="optional"
+versionRange="[1.21.1-90,)"
 ordering="AFTER"
 side="BOTH"

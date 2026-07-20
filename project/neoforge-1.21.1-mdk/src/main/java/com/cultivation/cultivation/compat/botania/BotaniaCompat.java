@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /**
  * Botania-only bootstrap. This class must be loaded reflectively only after
@@ -36,7 +35,6 @@ public final class BotaniaCompat {
 
     private static volatile Function<XianqiaoInterfaceBlockEntity,
             AtomicEnergyRefill.ResourceStore> storageResolver = ignored -> null;
-    private static volatile Predicate<XianqiaoInterfaceBlockEntity> outputMode = ignored -> false;
 
     /**
      * Installs loader-neutral live resolvers from the common endpoint layer.
@@ -45,10 +43,8 @@ public final class BotaniaCompat {
      */
     public static void installBridge(
             Function<XianqiaoInterfaceBlockEntity,
-                    AtomicEnergyRefill.ResourceStore> resolver,
-            Predicate<XianqiaoInterfaceBlockEntity> outputting) {
+                    AtomicEnergyRefill.ResourceStore> resolver) {
         storageResolver = resolver == null ? ignored -> null : resolver;
-        outputMode = outputting == null ? ignored -> false : outputting;
         ADAPTERS.clear();
     }
 
@@ -106,14 +102,12 @@ public final class BotaniaCompat {
 
     private static @Nullable XianqiaoBotaniaManaAdapter adapterOrNull(
             XianqiaoInterfaceBlockEntity blockEntity) {
-        AtomicEnergyRefill.ResourceStore current = storageResolver.apply(blockEntity);
-        if (current == null || blockEntity.getLevel() == null) return null;
+        if (blockEntity.getLevel() == null) return null;
         synchronized (ADAPTERS) {
             return ADAPTERS.computeIfAbsent(blockEntity, key ->
                     new XianqiaoBotaniaManaAdapter(
                             key.getLevel(), key.getBlockPos(),
-                            () -> storageResolver.apply(key),
-                            () -> outputMode.test(key)));
+                            () -> storageResolver.apply(key)));
         }
     }
 

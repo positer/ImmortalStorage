@@ -12,6 +12,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -96,6 +98,20 @@ final class SourceVeinCreativeSemanticsTest {
                     IFluidHandler.FluidAction.EXECUTE));
         }
         assertEquals(before, persistedBacking(source));
+    }
+
+    @Test
+    void milkSourceResolvesTheEnabledOfficialFluidAndActivelyPushesIt() {
+        NeoForgeMod.enableMilkFluid();
+        SourceVeinBlockEntity source = source(VeinKind.MILK, Long.MAX_VALUE, 1_000L);
+        source.setSideMode(net.minecraft.core.Direction.EAST,
+                SourceVeinBlockEntity.SourceSideMode.byId(2));
+        FluidTank target = new FluidTank(4_000);
+
+        assertEquals(NeoForgeMod.MILK.value(), source.sampleFluid());
+        source.pushFluidToHandler(net.minecraft.core.Direction.EAST, target, source.sampleFluid());
+        assertEquals(1_000, target.getFluidAmount());
+        assertEquals(NeoForgeMod.MILK.value(), target.getFluid().getFluid());
     }
 
     @Test

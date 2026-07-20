@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class XianqiaoInterfaceMenuTest {
+    @Test
+    void externalResourcesDefaultToOneThousandUnits() {
+        assertEquals(1_000L, XianqiaoInterfaceMenu.DEFAULT_EXTERNAL_CACHE_AMOUNT);
+    }
     @BeforeAll
     static void bootstrapMinecraftRegistries() {
         Bootstrap.bootStrap();
@@ -63,6 +68,21 @@ final class XianqiaoInterfaceMenuTest {
         assertFalse(XianqiaoInterfaceMenu.configureTarget(
                 backend, 0, new ItemStack(Items.EMERALD, 3)));
         assertTrue(backend.getTarget(0).isEmpty());
+    }
+
+    @Test
+    void leftClickKeepsAFluidContainerAsAnExactItemWhileRightClickSelectsItsFluid() {
+        XianqiaoInterfaceInventory backend = new XianqiaoInterfaceInventory(new EmptyStorage(), () -> true);
+        ItemStack bucket = new ItemStack(Items.WATER_BUCKET);
+        bucket.set(DataComponents.CUSTOM_NAME, Component.literal("exact container"));
+
+        assertTrue(XianqiaoInterfaceMenu.configureTargetFromCarried(backend, 0, bucket, 0));
+        assertTrue(ItemStack.isSameItemSameComponents(bucket, backend.getTarget(0)));
+        assertTrue(backend.getFluidTarget(0).isEmpty());
+
+        assertTrue(XianqiaoInterfaceMenu.configureTargetFromCarried(backend, 0, bucket, 1));
+        assertTrue(backend.getTarget(0).isEmpty());
+        assertTrue(backend.getFluidTarget(0).is(Fluids.WATER));
     }
 
     private static final class EmptyStorage implements TerminalItemStorage {

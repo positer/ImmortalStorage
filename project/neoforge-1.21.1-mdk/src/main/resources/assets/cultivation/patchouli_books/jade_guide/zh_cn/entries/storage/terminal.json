@@ -1,0 +1,8 @@
+{
+  "name":"个人存储终端","icon":"cultivation:xianqiao_manager","category":"cultivation:storage","sortnum":0,
+  "pages":[
+    {"type":"patchouli:text","text":"一至五阶使用有限物品空窍，六阶开始使用聚合物品的仙窍；流体仅对仙窍开放。存储快捷键可全局覆盖大多数非文本界面，Esc返回此前界面。"},
+    {"type":"patchouli:text","text":"终端支持连续滚动、名称/Tooltip/标签/命名空间搜索、数量/名称/模组排序、装备管理和原版拖动均分。物品与流体共用目录；流体按桶数显示。"},
+    {"type":"patchouli:text","text":"内置3×3合成台会自动从当前个人存储补足材料；“匹配NBT”只控制补料是否要求完整数据组件一致。手持一组耗尽后，也可在仙窍管理页开启精确补充。"}
+  ]
+}

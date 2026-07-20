@@ -51,6 +51,13 @@ final class BeyondDimensionsOptionalBoundaryTest {
 
     @Test
     void concreteAdapterUsesPrimaryNetAndOfficialLongStorageTypes() throws IOException {
+        String manager = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "CompatManager.java")));
+        assertFalse(manager.contains("initializeBeyondDimensions"),
+                "Beyond Dimensions must not replace or disable Cultivation personal storage");
+        assertFalse(manager.contains("BeyondDimensionsCompat"),
+                "the legacy authority-backend bootstrap must remain dormant");
+
         String compat = Files.readString(JAVA.resolve(Path.of(
                 "com", "cultivation", "cultivation", "compat", "beyonddimensions",
                 "BeyondDimensionsCompat.java")));

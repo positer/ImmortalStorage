@@ -3,12 +3,14 @@ package com.cultivation.cultivation.block.custom;
 import com.cultivation.cultivation.block.entity.ModBlockEntities;
 import com.cultivation.cultivation.block.entity.XianqiaoInterfaceBlockEntity;
 import com.cultivation.cultivation.player.CultivationPlayerData;
+import com.cultivation.cultivation.compat.XianqiaoInterfaceCompatHooks;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -68,6 +70,20 @@ public final class XianqiaoInterfaceBlock extends HorizontalDirectionalBlock imp
                 && level.getBlockEntity(pos) instanceof XianqiaoInterfaceBlockEntity interfaceEntity) {
             interfaceEntity.tryBindOwner(player);
         }
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack, BlockState state, Level level, BlockPos pos,
+            Player player, net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
+        if (!(level.getBlockEntity(pos) instanceof XianqiaoInterfaceBlockEntity interfaceEntity)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+        InteractionResult result = XianqiaoInterfaceCompatHooks.useItemOn(
+                interfaceEntity, player, stack, hand, hit);
+        return result == InteractionResult.PASS
+                ? ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION
+                : ItemInteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override

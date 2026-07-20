@@ -52,6 +52,11 @@ final class BotaniaOptionalBoundaryTest {
                 "XianqiaoBotaniaManaAdapter.java")));
         assertTrue(adapter.contains("implements ManaPool, SparkAttachable"));
         assertTrue(adapter.contains("receiveMana(int delta)"));
+        assertTrue(adapter.contains("canAttachSpark(ItemStack stack)"));
+        assertTrue(adapter.contains("return true;"),
+                "spark attachment must remain stable while the owner briefly disconnects");
+        assertFalse(adapter.contains("SideMode"),
+                "face settings must not gate Botania's directionless spark network");
         String window = Files.readString(JAVA.resolve(Path.of(
                 "com", "cultivation", "cultivation", "compat", "botania",
                 "BotaniaManaWindow.java")));
@@ -65,8 +70,15 @@ final class BotaniaOptionalBoundaryTest {
         assertTrue(compat.contains("ManaReceiver.LOOKUP.find(level, pos, side)"));
         assertTrue(compat.contains("receiver instanceof ManaPool pool"));
         assertTrue(compat.contains("SparkAttachable.LOOKUP"));
+        assertTrue(compat.contains("BlockCapability.createVoid"));
         assertTrue(compat.contains("BotaniaForgeCapabilities.getBlockApiLookupById"));
         assertTrue(compat.contains("RegisterCapabilitiesEvent"));
+
+        String manager = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "CompatManager.java")));
+        assertTrue(manager.contains(
+                "blockEntity.resolveDirectionlessExternalResource("));
+        assertTrue(manager.contains("ExternalResourceChannels.BOTANIA_MANA"));
     }
 
     private static Path locateProject() {

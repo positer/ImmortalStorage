@@ -3,6 +3,10 @@ package com.cultivation.cultivation.client.screen;
 import com.cultivation.cultivation.block.entity.XianqiaoInterfaceBlockEntity;
 import com.cultivation.cultivation.menu.custom.XianqiaoInterfaceMenu;
 import com.cultivation.cultivation.network.ModPayloads;
+import com.cultivation.cultivation.compat.ExternalResourceCatalog;
+import com.cultivation.cultivation.item.ModItems;
+import com.cultivation.core.resource.ExternalResourceChannels;
+import com.cultivation.core.resource.ResourceChannelKey;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -49,10 +53,10 @@ public final class XianqiaoInterfaceScreen
     private static final int GHOST_TINT = 0x1F63B7BE;
     private static final int SCREEN_WIDTH = 176;
     private static final int SCREEN_HEIGHT = 243;
-    private static final int SIDE_GRID_X = 30;
+    private static final int SIDE_GRID_X = 56;
     private static final int SIDE_GRID_Y = 97;
-    private static final int SIDE_BUTTON_WIDTH = 36;
-    private static final int SIDE_COLUMN_STRIDE = 39;
+    private static final int SIDE_BUTTON_WIDTH = 20;
+    private static final int SIDE_COLUMN_STRIDE = 22;
     private static final int SIDE_ROW_STRIDE = 21;
     private static final float MODAL_Z = 500.0F;
     private static final int DIALOG_WIDTH = 176;
@@ -61,16 +65,19 @@ public final class XianqiaoInterfaceScreen
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private final Map<Direction, Button> sideButtons = new EnumMap<>(Direction.class);
+    private final Map<Direction, FacePreviewButton> sideButtons = new EnumMap<>(Direction.class);
     private EditBox amountInput;
     private Button applyAmountButton;
     private Button cancelAmountButton;
     private Button activePullButton;
     private Button activePushButton;
-    private final Map<Direction, Button> slotFaceButtons = new EnumMap<>(Direction.class);
+    private final Map<Direction, FacePreviewButton> slotFaceButtons = new EnumMap<>(Direction.class);
+    private final List<Button> externalResourceButtons = new ArrayList<>();
     private int selectedTarget;
     private long lastConfigurationRevision = Long.MIN_VALUE;
     private boolean amountDialogOpen;
+    private boolean externalDialogOpen;
+    private int externalResourceOffset;
 
     public XianqiaoInterfaceScreen(
             XianqiaoInterfaceMenu menu, Inventory inventory, Component title) {
@@ -90,11 +97,12 @@ public final class XianqiaoInterfaceScreen
                     + (index % 3) * SIDE_COLUMN_STRIDE;
             int buttonY = this.topPos + SIDE_GRID_Y
                     + (index / 3) * SIDE_ROW_STRIDE;
-            Button button = this.addRenderableWidget(Button.builder(
-                            sideLabel(side), ignored -> cycleSideMode(side))
-                    .bounds(buttonX, buttonY, SIDE_BUTTON_WIDTH, 20)
-                    .tooltip(Tooltip.create(sideTooltip(side)))
-                    .build());
+            FacePreviewButton button = new FacePreviewButton(
+                    buttonX, buttonY, SIDE_BUTTON_WIDTH, Component.literal(shortSide(side)),
+                    () -> adjacentBlockPreview(side), () -> interfaceModeColor(side),
+                    ignored -> cycleSideMode(side));
+            button.setTooltip(Tooltip.create(sideTooltip(side)));
+            this.addRenderableWidget(button);
             sideButtons.put(side, button);
         }
         int dialogX = dialogX();
@@ -125,10 +133,11 @@ public final class XianqiaoInterfaceScreen
         slotFaceButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
-            Button maskButton = Button.builder(Component.empty(), ignored -> toggleSlotFace(side))
-                    .bounds(dialogX + 42 + (index % 3) * 32,
-                            dialogY + 62 + (index / 3) * 20, MASK_BUTTON_SIZE, MASK_BUTTON_SIZE)
-                    .build();
+            FacePreviewButton maskButton = new FacePreviewButton(
+                    dialogX + 42 + (index % 3) * 32,
+                    dialogY + 62 + (index / 3) * 20, MASK_BUTTON_SIZE,
+                    Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    () -> 0xFF777777, ignored -> toggleSlotFace(side));
             this.addWidget(maskButton);
             slotFaceButtons.put(side, maskButton);
         }
@@ -136,6 +145,7 @@ public final class XianqiaoInterfaceScreen
         this.addWidget(applyAmountButton);
         this.addWidget(cancelAmountButton);
         setDialogWidgetsVisible(false);
+        rebuildExternalResourceButtons();
         updateControls();
     }
 
@@ -183,10 +193,22 @@ public final class XianqiaoInterfaceScreen
         super.render(graphics, mouseX, mouseY, partialTick);
         if (amountDialogOpen) {
             renderAmountDialog(graphics, mouseX, mouseY, partialTick);
+        } else if (externalDialogOpen) {
+            renderExternalResourceDialog(graphics, mouseX, mouseY, partialTick);
         } else {
+            Optional<ExternalResourceHover> externalHover = externalResourceHover();
             Optional<TerminalFluidScreenAccess.FluidHover> fluidHover =
                     cultivation$getFluidAt(mouseX, mouseY);
-            if (menu.getCarried().isEmpty() && fluidHover.isPresent()) {
+            if (menu.getCarried().isEmpty() && externalHover.isPresent()) {
+                ExternalResourceHover hover = externalHover.get();
+                ExternalResourceCatalog.Definition definition =
+                        ExternalResourceCatalog.definition(hover.key());
+                List<Component> tooltip = new ArrayList<>();
+                tooltip.add(ExternalResourceCatalog.displayName(hover.key()));
+                tooltip.add(Component.literal(Long.toString(hover.amount())
+                        + (definition.unit().isBlank() ? "" : " " + definition.unit())));
+                graphics.renderTooltip(this.font, tooltip, Optional.empty(), mouseX, mouseY);
+            } else if (menu.getCarried().isEmpty() && fluidHover.isPresent()) {
                 TerminalFluidScreenAccess.FluidHover hover = fluidHover.get();
                 graphics.renderTooltip(this.font,
                         List.of(
@@ -201,6 +223,23 @@ public final class XianqiaoInterfaceScreen
             }
         }
     }
+
+    private Optional<ExternalResourceHover> externalResourceHover() {
+        if (this.hoveredSlot == null) return Optional.empty();
+        int slotIndex = this.menu.slots.indexOf(this.hoveredSlot);
+        if (slotIndex < 0 || slotIndex >= XianqiaoInterfaceMenu.PLAYER_START) {
+            return Optional.empty();
+        }
+        int resourceSlot = slotIndex % XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT;
+        if (!menu.isExternalTarget(resourceSlot)) return Optional.empty();
+        ResourceChannelKey key = menu.getExternalTarget(resourceSlot);
+        if (key == null) return Optional.empty();
+        long amount = slotIndex < XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT
+                ? menu.getConfiguredAmount(resourceSlot) : menu.getCachedAmount(resourceSlot);
+        return amount > 0L ? Optional.of(new ExternalResourceHover(key, amount)) : Optional.empty();
+    }
+
+    private record ExternalResourceHover(ResourceChannelKey key, long amount) {}
 
     /**
      * Renders mixed resource identities and synchronized totals in vanilla's
@@ -231,6 +270,14 @@ public final class XianqiaoInterfaceScreen
             return;
         }
 
+        if (menu.isExternalTarget(resourceSlot)) {
+            ResourceChannelKey key = menu.getExternalTarget(resourceSlot);
+            if (key != null) {
+                renderExternalResource(graphics, key, amount, slot.x, slot.y);
+            }
+            return;
+        }
+
         ItemStack identity = menu.getConfiguredTarget(resourceSlot);
         if (identity.isEmpty()) return;
         identity = identity.copyWithCount(1);
@@ -255,12 +302,39 @@ public final class XianqiaoInterfaceScreen
                 || slotIndex >= XianqiaoInterfaceMenu.PLAYER_START
                 || !slot.getItem().isEmpty()) return;
         int resourceSlot = slotIndex - XianqiaoInterfaceMenu.BUFFER_START;
-        if (!menu.isFluidTarget(resourceSlot)) return;
         long amount = menu.getCachedAmount(resourceSlot);
+        if (menu.isExternalTarget(resourceSlot)) {
+            ResourceChannelKey key = menu.getExternalTarget(resourceSlot);
+            if (amount > 0L && key != null) {
+                renderExternalResource(graphics, key, amount, slot.x, slot.y);
+            }
+            return;
+        }
+        if (!menu.isFluidTarget(resourceSlot)) return;
         FluidStack fluid = configuredFluidIdentity(resourceSlot);
         if (amount <= 0L || fluid.isEmpty()) return;
         renderFluidSprite(graphics, fluid, slot.x, slot.y);
         renderAmountOverlay(graphics, formatBuckets(amount) + "B", slot.x, slot.y);
+    }
+
+    private void renderExternalResource(
+            GuiGraphics graphics, ResourceChannelKey key, long amount, int x, int y) {
+        ExternalResourceCatalog.Definition definition = ExternalResourceCatalog.definition(key);
+        if (definition.solidColor()) {
+            graphics.fill(x, y, x + 16, y + 16, definition.color());
+        } else {
+            graphics.blit(definition.icon(), x, y, 0.0F, 0.0F,
+                    16, 16, 16, externalTextureHeight(key));
+        }
+        renderAmountOverlay(graphics, Long.toString(amount), x, y);
+    }
+
+    private static int externalTextureHeight(ResourceChannelKey key) {
+        return switch (key.channel()) {
+            case "botania_mana" -> 512;
+            case "ars_nouveau_source" -> 320;
+            default -> 16;
+        };
     }
 
     @Override
@@ -281,11 +355,17 @@ public final class XianqiaoInterfaceScreen
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (externalDialogOpen) {
+            for (Button resourceButton : externalResourceButtons) {
+                if (clickDialogWidget(resourceButton, mouseX, mouseY, button)) return true;
+            }
+            return true;
+        }
         if (amountDialogOpen) {
             if (clickDialogWidget(amountInput, mouseX, mouseY, button)) return true;
             if (clickDialogWidget(applyAmountButton, mouseX, mouseY, button)) return true;
             if (clickDialogWidget(cancelAmountButton, mouseX, mouseY, button)) return true;
-            for (Map.Entry<Direction, Button> entry : slotFaceButtons.entrySet()) {
+            for (Map.Entry<Direction, FacePreviewButton> entry : slotFaceButtons.entrySet()) {
                 if (clickDialogWidget(entry.getValue(), mouseX, mouseY, button)) {
                     toggleSlotFace(entry.getKey());
                     return true;
@@ -300,7 +380,20 @@ public final class XianqiaoInterfaceScreen
             if (relativeX % 18 < 16) {
                 selectedTarget = slot;
                 if (menu.getCarried().isEmpty() && menu.getConfiguredAmount(slot) > 0L) {
-                    openAmountDialog(slot);
+                    // Empty-hand primary click follows the normal menu slot
+                    // path. The authoritative menu then clears the target and
+                    // atomically returns its real cache before discarding the
+                    // identity. Secondary click remains the amount editor.
+                    if (button == 0) {
+                        return super.mouseClicked(mouseX, mouseY, button);
+                    }
+                    if (button == 1) {
+                        openAmountDialog(slot);
+                        return true;
+                    }
+                } else if (menu.getCarried().isEmpty() && button == 1
+                        && !menu.availableExternalResources().isEmpty()) {
+                    openExternalResourceDialog(slot);
                     return true;
                 }
             }
@@ -311,11 +404,19 @@ public final class XianqiaoInterfaceScreen
     @Override
     protected boolean isHovering(
             int x, int y, int width, int height, double mouseX, double mouseY) {
-        return !amountDialogOpen && super.isHovering(x, y, width, height, mouseX, mouseY);
+        return !amountDialogOpen && !externalDialogOpen
+                && super.isHovering(x, y, width, height, mouseX, mouseY);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (externalDialogOpen) {
+            if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                closeExternalResourceDialog();
+                return true;
+            }
+            return true;
+        }
         if (amountDialogOpen) {
             if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
                 closeAmountDialog();
@@ -339,6 +440,7 @@ public final class XianqiaoInterfaceScreen
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
+        if (externalDialogOpen) return true;
         if (amountDialogOpen) {
             if (this.getFocused() == amountInput) amountInput.charTyped(codePoint, modifiers);
             return true;
@@ -349,6 +451,7 @@ public final class XianqiaoInterfaceScreen
     @Override
     public boolean mouseDragged(
             double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (externalDialogOpen) return true;
         if (amountDialogOpen) {
             GuiEventListener focused = this.getFocused();
             if (focused != null) {
@@ -361,6 +464,7 @@ public final class XianqiaoInterfaceScreen
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (externalDialogOpen) return true;
         if (amountDialogOpen) {
             GuiEventListener focused = this.getFocused();
             if (focused != null) focused.mouseReleased(mouseX, mouseY, button);
@@ -372,6 +476,16 @@ public final class XianqiaoInterfaceScreen
     @Override
     public boolean mouseScrolled(
             double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (externalDialogOpen) {
+            int maximum = Math.max(0, menu.availableExternalResources().size() - 5);
+            int delta = scrollY < 0.0D ? 1 : scrollY > 0.0D ? -1 : 0;
+            int next = Math.max(0, Math.min(maximum, externalResourceOffset + delta));
+            if (next != externalResourceOffset) {
+                externalResourceOffset = next;
+                refreshExternalResourceButtons();
+            }
+            return true;
+        }
         if (amountDialogOpen) return true;
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
@@ -392,6 +506,14 @@ public final class XianqiaoInterfaceScreen
         if (menu.isFluidTarget(selectedTarget)) {
             amount = fluidInputToMillibuckets(amountInput.getValue());
             amount = Math.min(menu.getFluidTargetLimitMb(), amount);
+        } else if (menu.isExternalTarget(selectedTarget)) {
+            try {
+                amount = Long.parseLong(amountInput.getValue());
+            } catch (NumberFormatException ignored) {
+                amount = Long.MAX_VALUE;
+            }
+            ResourceChannelKey key = menu.getExternalTarget(selectedTarget);
+            amount = ExternalResourceChannels.clampCacheAmount(key, amount);
         } else {
             try {
                 amount = Long.parseLong(amountInput.getValue());
@@ -432,20 +554,30 @@ public final class XianqiaoInterfaceScreen
     }
 
     private void updateControls() {
-        for (Map.Entry<Direction, Button> entry : sideButtons.entrySet()) {
+        for (Map.Entry<Direction, FacePreviewButton> entry : sideButtons.entrySet()) {
             Button sideButton = entry.getValue();
             sideButton.setMessage(sideLabel(entry.getKey()));
             sideButton.setTooltip(Tooltip.create(sideTooltip(entry.getKey())));
-            sideButton.visible = !amountDialogOpen;
-            sideButton.active = menu.getBlockEntity() != null && !amountDialogOpen;
+            sideButton.visible = !amountDialogOpen && !externalDialogOpen;
+            sideButton.active = menu.getBlockEntity() != null
+                    && !amountDialogOpen && !externalDialogOpen;
         }
-        activePullButton.setMessage(Component.literal(menu.isActivePullEnabled() ? "抽开" : "抽关"));
-        activePushButton.setMessage(Component.literal(menu.isActivePushEnabled() ? "推开" : "推关"));
-        activePullButton.visible = !amountDialogOpen;
-        activePushButton.visible = !amountDialogOpen;
-        for (Map.Entry<Direction, Button> entry : slotFaceButtons.entrySet()) {
+        activePullButton.setMessage(Component.literal("抽"));
+        activePushButton.setMessage(Component.literal("推"));
+        activePullButton.setAlpha(menu.isActivePullEnabled() ? 1.0F : 0.35F);
+        activePushButton.setAlpha(menu.isActivePushEnabled() ? 1.0F : 0.35F);
+        activePullButton.setTooltip(Tooltip.create(Component.literal(
+                "主动抽入 - " + (menu.isActivePullEnabled() ? "开启" : "关闭"))));
+        activePushButton.setTooltip(Tooltip.create(Component.literal(
+                "主动推出 - " + (menu.isActivePushEnabled() ? "开启" : "关闭"))));
+        activePullButton.visible = !amountDialogOpen && !externalDialogOpen;
+        activePushButton.visible = !amountDialogOpen && !externalDialogOpen;
+        for (Map.Entry<Direction, FacePreviewButton> entry : slotFaceButtons.entrySet()) {
             boolean enabled = menu.isSlotFaceEnabled(selectedTarget, entry.getKey());
-            entry.getValue().setMessage(Component.literal(shortSide(entry.getKey()) + (enabled ? "✓" : "×")));
+            entry.getValue().setAlpha(enabled ? 1.0F : 0.35F);
+            entry.getValue().setTooltip(Tooltip.create(Component.literal(
+                    fullSideName(entry.getKey()) + "（" + shortSide(entry.getKey()) + "）- 管道抽取"
+                            + (enabled ? "开放" : "关闭"))));
         }
         validateAmount();
     }
@@ -466,12 +598,33 @@ public final class XianqiaoInterfaceScreen
 
     private static String shortSide(Direction side) {
         return switch (side) {
-            case UP -> "上";
-            case DOWN -> "下";
-            case NORTH -> "北";
-            case SOUTH -> "南";
-            case WEST -> "西";
-            case EAST -> "东";
+            case UP -> "U";
+            case DOWN -> "D";
+            case NORTH -> "N";
+            case SOUTH -> "S";
+            case WEST -> "W";
+            case EAST -> "E";
+        };
+    }
+
+    private String fullSideName(Direction side) {
+        return Component.translatable(
+                "container.cultivation.xianqiao_interface.side_full." + side.getName()).getString();
+    }
+
+    private ItemStack adjacentBlockPreview(Direction side) {
+        XianqiaoInterfaceBlockEntity blockEntity = menu.getBlockEntity();
+        if (blockEntity == null || blockEntity.getLevel() == null) return ItemStack.EMPTY;
+        ItemStack preview = new ItemStack(blockEntity.getLevel().getBlockState(
+                blockEntity.getBlockPos().relative(side)).getBlock().asItem());
+        return preview.isEmpty() ? ItemStack.EMPTY : preview;
+    }
+
+    private int interfaceModeColor(Direction side) {
+        return switch (menu.getSideMode(side)) {
+            case PULL -> 0xFF38A85A;
+            case PUSH -> 0xFFD44A4A;
+            case DISABLED -> 0xFF777777;
         };
     }
 
@@ -500,6 +653,109 @@ public final class XianqiaoInterfaceScreen
         if (isDialogWidget(this.getFocused())) this.setFocused(null);
         setDialogWidgetsVisible(false);
         updateControls();
+    }
+
+    private void rebuildExternalResourceButtons() {
+        for (Button button : externalResourceButtons) removeWidget(button);
+        externalResourceButtons.clear();
+        int x = dialogX() + 10;
+        int y = dialogY() + 27;
+        int width = DIALOG_WIDTH - 20;
+        for (int index = 0; index < 5; index++) {
+            final int buttonIndex = index;
+            Button button = Button.builder(Component.empty(),
+                            ignored -> configureExternalResourceButton(buttonIndex))
+                    .bounds(x, y + index * 20, width, 18)
+                    .build();
+            button.visible = false;
+            button.active = false;
+            addWidget(button);
+            externalResourceButtons.add(button);
+        }
+        refreshExternalResourceButtons();
+    }
+
+    private void refreshExternalResourceButtons() {
+        List<ResourceChannelKey> resources = menu.availableExternalResources();
+        int maximum = Math.max(0, resources.size() - externalResourceButtons.size());
+        externalResourceOffset = Math.max(0, Math.min(maximum, externalResourceOffset));
+        for (int index = 0; index < externalResourceButtons.size(); index++) {
+            int resourceIndex = externalResourceOffset + index;
+            Button button = externalResourceButtons.get(index);
+            boolean present = resourceIndex < resources.size();
+            button.setMessage(present
+                    ? ExternalResourceCatalog.displayName(resources.get(resourceIndex))
+                    : Component.empty());
+            button.visible = externalDialogOpen && present;
+            button.active = externalDialogOpen && present;
+        }
+    }
+
+    private void configureExternalResourceButton(int buttonIndex) {
+        List<ResourceChannelKey> resources = menu.availableExternalResources();
+        int resourceIndex = externalResourceOffset + buttonIndex;
+        if (resourceIndex >= 0 && resourceIndex < resources.size()) {
+            configureExternalResource(resources.get(resourceIndex));
+        }
+    }
+
+    private void openExternalResourceDialog(int slot) {
+        selectedTarget = slot;
+        lastConfigurationRevision = menu.getConfigRevision();
+        externalResourceOffset = 0;
+        externalDialogOpen = true;
+        refreshExternalResourceButtons();
+        updateControls();
+    }
+
+    private void closeExternalResourceDialog() {
+        externalDialogOpen = false;
+        setExternalDialogWidgetsVisible(false);
+        updateControls();
+    }
+
+    private void setExternalDialogWidgetsVisible(boolean visible) {
+        if (visible) {
+            refreshExternalResourceButtons();
+            return;
+        }
+        for (Button button : externalResourceButtons) {
+            button.visible = false;
+            button.active = false;
+        }
+    }
+
+    private void configureExternalResource(ResourceChannelKey key) {
+        if (menu.getBlockEntity() == null || key == null) return;
+        PacketDistributor.sendToServer(new ModPayloads.SetXianqiaoInterfaceExternalTarget(
+                menu.containerId, menu.getBlockEntity().getBlockPos(), lastConfigurationRevision,
+                selectedTarget, key.channel(), key.resourceId(),
+                XianqiaoInterfaceMenu.DEFAULT_EXTERNAL_CACHE_AMOUNT));
+        closeExternalResourceDialog();
+    }
+
+    private void renderExternalResourceDialog(
+            GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        graphics.flush();
+        graphics.pose().pushPose();
+        graphics.pose().translate(0.0F, 0.0F, MODAL_Z);
+        try {
+            graphics.fill(0, 0, this.width, this.height, 0x78000000);
+            int x = dialogX();
+            int y = dialogY();
+            VanillaGuiPainter.panel(graphics, x, y, DIALOG_WIDTH, DIALOG_HEIGHT);
+            graphics.fill(x + 2, y + 2, x + DIALOG_WIDTH - 2, y + 19, 0xFFD8D8D8);
+            graphics.hLine(x + 3, x + DIALOG_WIDTH - 4, y + 19, 0xFF8B8B8B);
+            graphics.drawString(font,
+                    Component.translatable("container.cultivation.xianqiao_interface.external_title",
+                            selectedTarget + 1), x + 8, y + 7, TEXT, false);
+            for (Button button : externalResourceButtons) {
+                button.render(graphics, mouseX, mouseY, partialTick);
+            }
+            graphics.flush();
+        } finally {
+            graphics.pose().popPose();
+        }
     }
 
     private void setDialogWidgetsVisible(boolean visible) {
@@ -585,6 +841,12 @@ public final class XianqiaoInterfaceScreen
 
     private Component amountSummary() {
         long amount = parsedAmountForSummary();
+        if (menu.isExternalTarget(selectedTarget)) {
+            ResourceChannelKey key = menu.getExternalTarget(selectedTarget);
+            return Component.translatable(
+                    "container.cultivation.xianqiao_interface.external_amount_hint",
+                    amount, key == null ? "?" : key.resourceId());
+        }
         if (!menu.isFluidTarget(selectedTarget)) {
             return Component.translatable("container.cultivation.xianqiao_interface.item_amount_hint",
                     amount, menu.getItemTargetLimit());
@@ -651,7 +913,7 @@ public final class XianqiaoInterfaceScreen
 
     @Override
     public List<TerminalFluidScreenAccess.FluidHover> cultivation$getVisibleFluids() {
-        if (amountDialogOpen) return List.of();
+        if (amountDialogOpen || externalDialogOpen) return List.of();
         List<TerminalFluidScreenAccess.FluidHover> result = new ArrayList<>();
         for (int slot = 0; slot < XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT; slot++) {
             if (!menu.isFluidTarget(slot)) continue;

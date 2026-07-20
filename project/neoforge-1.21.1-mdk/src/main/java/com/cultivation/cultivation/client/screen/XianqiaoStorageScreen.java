@@ -42,6 +42,9 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     private Button autoFurnaceFuelButton;
     private Button autoFurnaceFillButton;
     private Button handAutoRefillButton;
+    private Button sortInventoryButton;
+    private Button depositInventoryButton;
+    private Button withdrawInventoryButton;
     private final long[] cachedItemAmounts = new long[XianqiaoStorageMenu.BUFFERED_STORAGE_SLOTS];
     private final String[] cachedItemAmountLabels = new String[XianqiaoStorageMenu.BUFFERED_STORAGE_SLOTS];
     private final int[] cachedItemAmountWidths = new int[XianqiaoStorageMenu.BUFFERED_STORAGE_SLOTS];
@@ -120,6 +123,23 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.cultivation.terminal.hand_refill_hint")))
                 .build());
+        int inventoryActionsY = this.topPos + this.imageHeight - 106;
+        int inventoryActionsX = this.leftPos + this.imageWidth - 58;
+        this.sortInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
+                inventoryActionsX, inventoryActionsY, TerminalInventoryActionButton.Icon.WRENCH,
+                Component.translatable("container.cultivation.terminal.inventory_sort"),
+                Tooltip.create(Component.translatable("container.cultivation.terminal.inventory_sort_hint")),
+                button -> requestMenuButton(XianqiaoStorageMenu.SORT_PLAYER_INVENTORY_BUTTON)));
+        this.depositInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
+                inventoryActionsX + 18, inventoryActionsY, TerminalInventoryActionButton.Icon.DEPOSIT,
+                Component.translatable("container.cultivation.terminal.inventory_deposit"),
+                Tooltip.create(Component.translatable("container.cultivation.terminal.inventory_deposit_hint")),
+                button -> requestMenuButton(XianqiaoStorageMenu.DEPOSIT_PLAYER_INVENTORY_BUTTON)));
+        this.withdrawInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
+                inventoryActionsX + 36, inventoryActionsY, TerminalInventoryActionButton.Icon.WITHDRAW,
+                Component.translatable("container.cultivation.terminal.inventory_withdraw"),
+                Tooltip.create(Component.translatable("container.cultivation.terminal.inventory_withdraw_hint")),
+                button -> requestMenuButton(XianqiaoStorageMenu.WITHDRAW_FILTERED_BUTTON)));
         updateRealmWidgets();
     }
 
@@ -128,6 +148,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         renderTerminalChrome(graphics, true);
         renderStorageSlotsClipped(graphics, storageSlotCountInternal());
         renderFluidStorage(graphics);
+        renderExternalResourceStorage(graphics);
         if (this.furnaceVisible) {
             VanillaGuiPainter.terminalFurnaceModule(graphics, this.leftPos, this.topPos, this.imageHeight,
                     this.menu.getFurnaceLitProgress(), new int[] {
@@ -162,6 +183,17 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                             Component.literal(TerminalFluidAmountFormatter.exactMillibuckets(hover.amountMb()))),
                     Optional.empty(), mouseX, mouseY);
         } else {
+            var external = externalCellAt(mouseX, mouseY);
+            if (external != null) {
+                var definition = com.cultivation.cultivation.compat.ExternalResourceCatalog
+                        .definition(external.key());
+                graphics.renderTooltip(this.font, List.of(
+                        com.cultivation.cultivation.compat.ExternalResourceCatalog.displayName(external.key()),
+                        Component.literal(Long.toString(external.amount())
+                                + (definition.unit().isEmpty() ? "" : " " + definition.unit()))),
+                        Optional.empty(), mouseX, mouseY);
+                return;
+            }
             this.renderTooltip(graphics, mouseX, mouseY);
         }
     }
@@ -174,6 +206,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 this.inventoryLabelY, 0xFF404040, false);
         renderStorageAmountOverlays(graphics);
         renderFluidAmountOverlays(graphics);
+        renderExternalResourceAmountOverlays(graphics);
     }
 
     @Override
@@ -377,6 +410,56 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         }
     }
 
+    private void renderExternalResourceStorage(GuiGraphics graphics) {
+        Rect2i clip = storageBounds();
+        graphics.enableScissor(clip.getX(), clip.getY(),
+                clip.getX() + clip.getWidth(), clip.getY() + clip.getHeight());
+        try {
+            var window = visibleBufferedRows();
+            for (int row = window.fromInclusive(); row < window.toExclusive(); row++) {
+                for (int column = 0; column < TerminalLayout.COLUMNS; column++) {
+                    int index = row * TerminalLayout.COLUMNS + column;
+                    var entry = this.menu.displayedExternalEntryAtIndex(index);
+                    if (entry == null) continue;
+                    var definition = com.cultivation.cultivation.compat.ExternalResourceCatalog.definition(entry.key());
+                    if (definition.solidColor()) {
+                        graphics.fill(fluidVisualX(index), fluidVisualY(index),
+                                fluidVisualX(index) + 16, fluidVisualY(index) + 16,
+                                definition.color());
+                    } else {
+                        graphics.blit(definition.icon(), fluidVisualX(index), fluidVisualY(index),
+                                0.0F, 0.0F, 16, 16, 16,
+                                externalTextureHeight(entry.key()));
+                    }
+                }
+            }
+        } finally {
+            graphics.disableScissor();
+        }
+    }
+
+    private static int externalTextureHeight(
+            com.cultivation.core.resource.ResourceChannelKey key) {
+        return switch (key.channel()) {
+            case "botania_mana" -> 512;
+            case "ars_nouveau_source" -> 320;
+            default -> 16;
+        };
+    }
+
+    private void renderExternalResourceAmountOverlays(GuiGraphics graphics) {
+        var window = visibleBufferedRows();
+        for (int row = window.fromInclusive(); row < window.toExclusive(); row++) {
+            for (int column = 0; column < TerminalLayout.COLUMNS; column++) {
+                int index = row * TerminalLayout.COLUMNS + column;
+                var entry = this.menu.displayedExternalEntryAtIndex(index);
+                if (entry == null || entry.amount() <= 0L) continue;
+                renderFluidAmount(graphics, index, entry.amount(),
+                        fluidVisualX(index) - this.leftPos, fluidVisualY(index) - this.topPos);
+            }
+        }
+    }
+
     private void renderFluidAmountOverlays(GuiGraphics graphics) {
         Rect2i clip = storageBounds();
         boolean needsScissor = fractionalScrollOffset() != 0;
@@ -449,6 +532,12 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         if (cell == null) return null;
         return new FluidCell(cell.viewIndex(),
                 this.menu.displayedFluidEntryAtIndex(cell.viewIndex()), cell.bounds());
+    }
+
+    private com.cultivation.cultivation.api.storage.terminal.TerminalExternalResourceEntry externalCellAt(
+            double mouseX, double mouseY) {
+        StorageViewCell cell = storageCellAt(mouseX, mouseY);
+        return cell == null ? null : this.menu.displayedExternalEntryAtIndex(cell.viewIndex());
     }
 
     private String cachedItemAmountLabel(int viewIndex, long amount) {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.IntPredicate;
 
 /** Pure three-channel state machine shared by embedded and placed immortal furnaces. */
 public final class ImmortalFurnaceEngine {
@@ -46,9 +47,15 @@ public final class ImmortalFurnaceEngine {
     }
 
     public boolean tick(long gameTick, Container inventory, FuelResolver fuelResolver, RecipeResolver recipeResolver) {
+        return tick(gameTick, inventory, fuelResolver, recipeResolver, channel -> false);
+    }
+
+    public boolean tick(long gameTick, Container inventory, FuelResolver fuelResolver,
+                        RecipeResolver recipeResolver, IntPredicate suspendedChannel) {
         Objects.requireNonNull(inventory, "inventory");
         Objects.requireNonNull(fuelResolver, "fuelResolver");
         Objects.requireNonNull(recipeResolver, "recipeResolver");
+        Objects.requireNonNull(suspendedChannel, "suspendedChannel");
         if (lastGameTick == gameTick) return false;
         lastGameTick = gameTick;
 
@@ -58,24 +65,25 @@ public final class ImmortalFurnaceEngine {
             changed = true;
         }
 
-        RecipePlan[] plans = resolvePlans(inventory, recipeResolver);
+        RecipePlan[] plans = resolvePlans(inventory, recipeResolver, suspendedChannel);
         if (!isLit()) {
             ItemStack fuelStack = inventory.getItem(fuelSlot);
             List<FuelProfile> candidates = fuelStack.isEmpty()
                     ? List.of() : sanitizeCandidates(fuelResolver.candidates(fuelStack));
             boolean hasRunnableCandidate = candidates.stream()
-                    .anyMatch(candidate -> canRunAnyChannel(inventory, plans, candidate));
+                    .anyMatch(candidate -> canRunAnyChannel(inventory, plans, candidate, suspendedChannel));
             if (!hasRunnableCandidate) {
                 fuelResolver.notRunnable(fuelStack);
             } else if (fuelResolver.canAttemptPayment(fuelStack)) {
                 for (FuelProfile candidate : candidates) {
-                    if (!canRunAnyChannel(inventory, plans, candidate)) continue;
+                    if (!canRunAnyChannel(inventory, plans, candidate, suspendedChannel)) continue;
                     FuelProfile authorized = fuelResolver.authorize(fuelStack, candidate);
                     if (authorized == null || !authorized.equals(candidate)) continue;
                     FuelProfile paidFuel = fuelResolver.consume(fuelStack, candidate);
                     if (paidFuel == null || !paidFuel.equals(candidate)) continue;
                     if (!paidFuel.equals(activeFuel)) {
                         for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
+                            if (suspendedChannel.test(channel)) continue;
                             changed |= resetChannel(channel);
                         }
                     }
@@ -93,6 +101,7 @@ public final class ImmortalFurnaceEngine {
 
         if (!isLit() || !activeFuel.usable()) return changed;
         for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
+            if (suspendedChannel.test(channel)) continue;
             ItemStack input = inventory.getItem(inputSlots[channel]);
             RecipePlan plan = plans[channel];
             if (input.isEmpty() || plan == null) {
@@ -125,17 +134,21 @@ public final class ImmortalFurnaceEngine {
         return changed;
     }
 
-    private RecipePlan[] resolvePlans(Container inventory, RecipeResolver resolver) {
+    private RecipePlan[] resolvePlans(Container inventory, RecipeResolver resolver,
+                                      IntPredicate suspendedChannel) {
         RecipePlan[] plans = new RecipePlan[CHANNEL_COUNT];
         for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
+            if (suspendedChannel.test(channel)) continue;
             ItemStack input = inventory.getItem(inputSlots[channel]);
             if (!input.isEmpty()) plans[channel] = resolver.resolve(input).orElse(null);
         }
         return plans;
     }
 
-    private boolean canRunAnyChannel(Container inventory, RecipePlan[] plans, FuelProfile fuel) {
+    private boolean canRunAnyChannel(Container inventory, RecipePlan[] plans, FuelProfile fuel,
+                                     IntPredicate suspendedChannel) {
         for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
+            if (suspendedChannel.test(channel)) continue;
             ItemStack input = inventory.getItem(inputSlots[channel]);
             RecipePlan plan = plans[channel];
             if (input.isEmpty() || plan == null) continue;

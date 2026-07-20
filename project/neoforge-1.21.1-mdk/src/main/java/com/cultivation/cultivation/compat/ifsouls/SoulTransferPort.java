@@ -9,20 +9,14 @@ import java.util.function.Supplier;
 
 /** Loader-neutral transaction core for the optional int-valued soul capability. */
 public final class SoulTransferPort {
-    public enum Mode { PULL, PUSH, DISABLED }
-
     private final Supplier<AtomicEnergyRefill.ResourceStore> storage;
-    private final Supplier<Mode> mode;
 
-    public SoulTransferPort(
-            Supplier<AtomicEnergyRefill.ResourceStore> storage,
-            Supplier<Mode> mode) {
+    public SoulTransferPort(Supplier<AtomicEnergyRefill.ResourceStore> storage) {
         this.storage = Objects.requireNonNull(storage, "storage");
-        this.mode = Objects.requireNonNull(mode, "mode");
     }
 
     public int tankCount() {
-        return storage.get() == null || mode.get() == Mode.DISABLED ? 0 : 1;
+        return storage.get() == null ? 0 : 1;
     }
 
     public int stored(int tank) {
@@ -35,7 +29,7 @@ public final class SoulTransferPort {
     }
 
     public int fill(int amount, boolean execute) {
-        if (amount <= 0 || mode.get() != Mode.PULL) return 0;
+        if (amount <= 0) return 0;
         AtomicEnergyRefill.ResourceStore current = storage.get();
         if (current == null) return 0;
         long accepted = current.insert(amount, action(execute));
@@ -44,7 +38,7 @@ public final class SoulTransferPort {
     }
 
     public int drain(int amount, boolean execute) {
-        if (amount <= 0 || mode.get() != Mode.PUSH) return 0;
+        if (amount <= 0) return 0;
         AtomicEnergyRefill.ResourceStore current = storage.get();
         if (current == null) return 0;
         long extracted = current.extract(amount, action(execute));
@@ -53,7 +47,7 @@ public final class SoulTransferPort {
     }
 
     private boolean valid(int tank) {
-        return tank == 0 && mode.get() != Mode.DISABLED;
+        return tank == 0;
     }
 
     private static ResourceTransferAction action(boolean execute) {

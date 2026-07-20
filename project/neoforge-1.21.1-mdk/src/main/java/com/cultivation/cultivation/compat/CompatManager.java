@@ -2,20 +2,25 @@ package com.cultivation.cultivation.compat;
 
 import com.cultivation.cultivation.CultivationMod;
 import com.cultivation.cultivation.block.entity.XianqiaoInterfaceBlockEntity;
+import com.cultivation.cultivation.player.CultivationPlayerData;
 import com.cultivation.core.resource.AtomicEnergyRefill;
 import com.cultivation.core.resource.ExternalResourceChannels;
-import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.List;
 
 public final class CompatManager {
     public static final boolean AE2_LOADED = modPresent("ae2");
@@ -25,11 +30,11 @@ public final class CompatManager {
     public static final boolean FLUX_NETWORKS_LOADED = modPresent("fluxnetworks");
     public static final boolean BOTANIA_LOADED = modPresent("botania");
     public static final boolean ARS_NOUVEAU_LOADED = modPresent("ars_nouveau");
-    public static final boolean IRON_SPELLS_LOADED = modPresent("irons_spellbooks");
     public static final boolean INDUSTRIAL_FOREGOING_SOULS_LOADED =
             modPresent("industrialforegoingsouls");
     public static final boolean NATURES_AURA_LOADED = modPresent("naturesaura");
     public static final boolean BEYOND_DIMENSIONS_LOADED = modPresent("beyonddimensions");
+    public static final boolean PATCHOULI_LOADED = modPresent("patchouli");
 
     private static boolean modPresent(String id) {
         try {
@@ -52,14 +57,22 @@ public final class CompatManager {
                 + ", Flux Networks=" + FLUX_NETWORKS_LOADED
                 + ", Botania=" + BOTANIA_LOADED
                 + ", Ars Nouveau=" + ARS_NOUVEAU_LOADED
-                + ", Iron's Spells=" + IRON_SPELLS_LOADED
                 + ", Industrial Foregoing Souls=" + INDUSTRIAL_FOREGOING_SOULS_LOADED
                 + ", Nature's Aura=" + NATURES_AURA_LOADED
-                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED;
+                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED
+                + ", Patchouli=" + PATCHOULI_LOADED;
     }
 
     public static void logCompat() {
         CultivationMod.LOG.info("[Compat] {}", summary());
+    }
+
+    /** Called only from the physical client setup class. */
+    public static void initializeClientIntegrations() {
+        if (RS_LOADED) {
+            invokeOptionalBootstrap(
+                    "com.cultivation.cultivation.compat.refinedstorage.RsClientCompat");
+        }
     }
 
     /**
@@ -68,7 +81,11 @@ public final class CompatManager {
      * corresponding mod is known to be present.
      */
     public static void initializeOptionalIntegrations(IEventBus modBus) {
-        if (AE2_LOADED) modBus.addListener(CompatManager::initializeAe2);
+        registerExternalResourceCatalogues();
+        if (AE2_LOADED) {
+            modBus.addListener(CompatManager::registerAe2ExternalResourceKeyType);
+            modBus.addListener(CompatManager::initializeAe2);
+        }
         if (RS_LOADED) modBus.addListener(CompatManager::initializeRs);
         if (MEKANISM_LOADED) {
             installMekanismBridge();
@@ -82,9 +99,53 @@ public final class CompatManager {
             installIndustrialForegoingSoulsBridge();
             modBus.addListener(CompatManager::registerIndustrialForegoingSoulsCapabilities);
         }
-        if (BEYOND_DIMENSIONS_LOADED) {
-            modBus.addListener(CompatManager::initializeBeyondDimensions);
+        if (ARS_NOUVEAU_LOADED) {
+            installArsNouveauBridge();
+            modBus.addListener(CompatManager::initializeArsNouveau);
         }
+    }
+
+    private static void registerExternalResourceCatalogues() {
+        ExternalResourceCatalog.register(
+                ResourceLocation.fromNamespaceAndPath(CultivationMod.MODID, "builtin_external_resources"),
+                () -> List.of(
+                        ExternalResourceChannels.FE,
+                        ExternalResourceChannels.BOTANIA_MANA,
+                        ExternalResourceChannels.ARS_NOUVEAU_SOURCE,
+                        ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL));
+        registerResource(ExternalResourceChannels.FE,
+                builtinAddonTexture("ae2_fe"), "FE", 0xFFFF4B35,
+                "resource.cultivation.external.name.energy");
+        registerResource(ExternalResourceChannels.BOTANIA_MANA,
+                builtinAddonTexture("ae2_botania_mana"),
+                "Mana", 0xFF2CC6FF, "resource.cultivation.external.name.botania_mana");
+        registerResource(ExternalResourceChannels.ARS_NOUVEAU_SOURCE,
+                builtinAddonTexture("ae2_ars_source"),
+                "Source", 0xFF8D5BE8, "resource.cultivation.external.name.ars_source");
+        registerResource(ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL,
+                optionalTexture(INDUSTRIAL_FOREGOING_SOULS_LOADED, "industrialforegoingsouls",
+                        "textures/gui/soul_tank.png", "soul_surge"),
+                "Soul", 0xFF6FD6E8, "resource.cultivation.external.name.soul");
+    }
+
+    private static ResourceLocation optionalTexture(
+            boolean loaded, String namespace, String path, String fallback) {
+        return loaded
+                ? ResourceLocation.fromNamespaceAndPath(namespace, path)
+                : ResourceLocation.fromNamespaceAndPath(CultivationMod.MODID,
+                        "textures/gui/external_resource/" + fallback + ".png");
+    }
+
+    private static ResourceLocation builtinAddonTexture(String name) {
+        return ResourceLocation.fromNamespaceAndPath(CultivationMod.MODID,
+                "textures/gui/external_resource/" + name + ".png");
+    }
+
+    private static void registerResource(
+            com.cultivation.core.resource.ResourceChannelKey key,
+            ResourceLocation texture, String unit, int color, String translationKey) {
+        ExternalResourceCatalog.registerDefinition(key, texture, unit, color,
+                Component.translatable(translationKey), false);
     }
 
     private static void initializeAe2(InterModEnqueueEvent event) {
@@ -92,31 +153,49 @@ public final class CompatManager {
                 "com.cultivation.cultivation.compat.ae2.Ae2Compat"));
     }
 
+    private static void registerAe2ExternalResourceKeyType(RegisterEvent event) {
+        if (!event.getRegistryKey().equals(Registries.BLOCK)) return;
+        invokeOptionalMethod(
+                "com.cultivation.cultivation.compat.ae2.Ae2Compat",
+                "registerExternalResourceKeyType",
+                new Class<?>[0]);
+    }
+
     private static void initializeRs(InterModEnqueueEvent event) {
         event.enqueueWork(() -> invokeOptionalBootstrap(
                 "com.cultivation.cultivation.compat.refinedstorage.RsCompat"));
     }
 
-    private static void initializeBeyondDimensions(InterModEnqueueEvent event) {
+    private static void initializeArsNouveau(InterModEnqueueEvent event) {
         event.enqueueWork(() -> invokeOptionalBootstrap(
-                "com.cultivation.cultivation.compat.beyonddimensions.BeyondDimensionsCompat"));
+                "com.cultivation.cultivation.compat.arsnouveau.ArsNouveauCompat"));
+    }
+
+    private static void installArsNouveauBridge() {
+        Function<XianqiaoInterfaceBlockEntity, AtomicEnergyRefill.ResourceStore> resolver =
+                blockEntity -> blockEntity.resolveDirectionlessExternalResource(
+                        ExternalResourceChannels.ARS_NOUVEAU_SOURCE);
+        invokeOptionalMethod(
+                "com.cultivation.cultivation.compat.arsnouveau.ArsNouveauCompat",
+                "installBridge",
+                new Class<?>[]{Function.class},
+                resolver);
     }
 
     private static void installBotaniaBridge() {
         Function<XianqiaoInterfaceBlockEntity, AtomicEnergyRefill.ResourceStore> resolver =
                 CompatManager::resolveBotaniaManaStorage;
-        Predicate<XianqiaoInterfaceBlockEntity> outputting =
-                CompatManager::hasBotaniaPushFace;
         invokeOptionalMethod(
                 "com.cultivation.cultivation.compat.botania.BotaniaCompat",
                 "installBridge",
-                new Class<?>[]{Function.class, Predicate.class},
-                resolver, outputting);
+                new Class<?>[]{Function.class},
+                resolver);
     }
 
     private static void installMekanismBridge() {
         Function<XianqiaoInterfaceBlockEntity, AtomicEnergyRefill.ResourceStore> resolver =
-                blockEntity -> blockEntity.resolveExternalResourceStore(ExternalResourceChannels.FE);
+                blockEntity -> blockEntity.resolveExternalResourceCache(
+                        ExternalResourceChannels.FE);
         invokeOptionalMethod(
                 "com.cultivation.cultivation.compat.mekanism.MekanismCompat",
                 "installBridge",
@@ -142,7 +221,7 @@ public final class CompatManager {
 
     private static void installIndustrialForegoingSoulsBridge() {
         Function<XianqiaoInterfaceBlockEntity, AtomicEnergyRefill.ResourceStore> resolver =
-                blockEntity -> blockEntity.resolveExternalResourceStore(
+                blockEntity -> blockEntity.resolveExternalResourceCache(
                         ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL);
         invokeOptionalMethod(
                 "com.cultivation.cultivation.compat.ifsouls.IndustrialForegoingSoulsCompat",
@@ -162,16 +241,8 @@ public final class CompatManager {
 
     private static @Nullable AtomicEnergyRefill.ResourceStore resolveBotaniaManaStorage(
             XianqiaoInterfaceBlockEntity blockEntity) {
-        return blockEntity.resolveExternalResourceStore(ExternalResourceChannels.BOTANIA_MANA);
-    }
-
-    private static boolean hasBotaniaPushFace(XianqiaoInterfaceBlockEntity blockEntity) {
-        for (Direction side : Direction.values()) {
-            if (blockEntity.getSideMode(side) == XianqiaoInterfaceBlockEntity.SideMode.PUSH) {
-                return true;
-            }
-        }
-        return false;
+        return blockEntity.resolveDirectionlessExternalResource(
+                ExternalResourceChannels.BOTANIA_MANA);
     }
 
     private static void invokeOptionalBootstrap(String className) {

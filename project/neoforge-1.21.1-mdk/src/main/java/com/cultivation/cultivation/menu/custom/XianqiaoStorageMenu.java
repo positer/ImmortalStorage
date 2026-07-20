@@ -8,6 +8,7 @@ import com.cultivation.cultivation.api.storage.terminal.TerminalEntry;
 import com.cultivation.cultivation.api.storage.terminal.TerminalEntryCatalog;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidCatalog;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidEntry;
+import com.cultivation.cultivation.api.storage.terminal.TerminalExternalResourceEntry;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
@@ -17,6 +18,8 @@ import com.cultivation.cultivation.menu.ModMenus;
 import com.cultivation.cultivation.network.storage.PersonalStorageFluidHandler;
 import com.cultivation.cultivation.network.storage.PersonalStorageLongItemStorage;
 import com.cultivation.cultivation.player.CultivationPlayerData;
+import com.cultivation.cultivation.compat.ExternalResourceCatalog;
+import com.cultivation.core.resource.ResourceChannelEntry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,6 +36,7 @@ import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -44,6 +48,7 @@ import net.neoforged.neoforge.items.wrapper.PlayerInvWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
 
 /** Server-authoritative aggregated Xianqiao storage terminal. */
 public class XianqiaoStorageMenu extends AbstractContainerMenu implements StorageTerminalView, CraftingTransferTarget {
@@ -58,6 +63,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public static final int CRAFT_MATCH_COMPONENTS_BUTTON = 12;
     public static final int AUTO_FURNACE_FILL_BUTTON = 13;
     public static final int HAND_AUTO_REFILL_BUTTON = 14;
+    public static final int SORT_PLAYER_INVENTORY_BUTTON = 15;
+    public static final int DEPOSIT_PLAYER_INVENTORY_BUTTON = 16;
+    public static final int WITHDRAW_FILTERED_BUTTON = 17;
     public static final int CRAFT_START = VISIBLE_STORAGE_SLOTS;
     public static final int CRAFT_END = CRAFT_START + 9;
     public static final int CRAFT_RESULT_SLOT = CRAFT_END;
@@ -97,6 +105,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private boolean filteredEntriesInitialized;
     private List<TerminalFluidEntry> filteredFluidEntries = List.of();
     private boolean filteredFluidEntriesInitialized;
+    private List<TerminalExternalResourceEntry> filteredExternalEntries = List.of();
     private int activeModule = -1;
     private int visibleRows = VISIBLE_ROWS;
     private int baseRow;
@@ -121,6 +130,10 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private int lastFluidSnapshotBufferBaseRow = -1;
     private TerminalQuery lastFluidSnapshotQuery;
     private long lastObservedFluidStorageRevision = Long.MIN_VALUE;
+    private long clientExternalRevision;
+    private long lastExternalSnapshotRevision = -1L;
+    private int clientTotalFluidEntries;
+    private int clientTotalExternalEntries;
 
     public XianqiaoStorageMenu(int id, Inventory inv, FriendlyByteBuf buf) {
         this(id, inv, inv.player);
@@ -162,6 +175,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         if (!player.level().isClientSide()) {
             rebuildCatalog();
             rebuildFluidCatalog();
+            rebuildExternalCatalog();
         }
 
         for (int row = 0; row < MAX_BUFFERED_ROWS; row++) {
@@ -223,11 +237,13 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         if (!player.level().isClientSide()) {
             rebuildCatalog();
             rebuildFluidCatalog();
+            rebuildExternalCatalog();
         }
         super.broadcastChanges();
         if (player instanceof ServerPlayer serverPlayer
                 && (catalog.revision() != lastSnapshotRevision
                 || fluidCatalog.revision() != lastFluidSnapshotRevision
+                || externalRevision() != lastExternalSnapshotRevision
                 || visibleRows != lastSnapshotRows
                 || bufferBaseRow != lastSnapshotBufferBaseRow || !terminalQuery.equals(lastSnapshotQuery)
                 || (activeModule == 0 && catalog.revision() != lastRecipeSourcesSnapshotRevision))) {
@@ -515,6 +531,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         baseRow = 0;
         if (!rebuildCatalog()) rebuildFilteredEntries(false);
         if (!rebuildFluidCatalog()) rebuildFilteredFluidEntries(false);
+        rebuildExternalCatalog();
         resetBufferWindow();
         broadcastChanges();
     }
@@ -540,8 +557,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         long endExclusive = firstVisibleRow + TerminalViewport.maxIntersectingRows(visibleRows);
         return absoluteRow >= firstVisibleRow && absoluteRow < endExclusive;
     }
-    static int combinedDirectoryRows(int itemEntries, int fluidEntries) {
-        long total = (long) Math.max(0, itemEntries) + Math.max(0, fluidEntries);
+    static int combinedDirectoryRows(int itemEntries, int fluidEntries, int externalEntries) {
+        long total = (long) Math.max(0, itemEntries) + Math.max(0, fluidEntries)
+                + Math.max(0, externalEntries);
         return (int) Math.min(Integer.MAX_VALUE,
                 (total + VISIBLE_COLS - 1L) / VISIBLE_COLS);
     }
@@ -553,6 +571,12 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         long absolute = (long) Math.max(0, bufferedBaseRow) * VISIBLE_COLS + Math.max(0, viewIndex);
         long fluidIndex = absolute - Math.max(0, itemEntries);
         return fluidIndex >= 0L && fluidIndex < Math.max(0, fluidEntries) ? (int) fluidIndex : -1;
+    }
+    static int combinedExternalIndex(int bufferedBaseRow, int viewIndex, int itemEntries,
+                                     int fluidEntries, int externalEntries) {
+        long absolute = (long) Math.max(0, bufferedBaseRow) * VISIBLE_COLS + Math.max(0, viewIndex);
+        long index = absolute - Math.max(0, itemEntries) - Math.max(0, fluidEntries);
+        return index >= 0L && index < Math.max(0, externalEntries) ? (int) index : -1;
     }
     public boolean isFurnaceVisible() { return activeModule == 2; }
     public boolean isFurnaceLit() { return furnace.isLit(); }
@@ -615,16 +639,90 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             broadcastChanges();
             return true;
         }
+        if (buttonId == SORT_PLAYER_INVENTORY_BUTTON) {
+            sortPlayerMainInventory();
+            broadcastChanges();
+            return true;
+        }
+        if (buttonId == DEPOSIT_PLAYER_INVENTORY_BUTTON) {
+            depositPlayerInventory();
+            return true;
+        }
+        if (buttonId == WITHDRAW_FILTERED_BUTTON) {
+            withdrawFilteredEntries();
+            return true;
+        }
         if (buttonId < 0 || buttonId > 2) return false;
         setActiveModule(activeModule == buttonId ? -1 : buttonId);
         return true;
+    }
+
+    private void sortPlayerMainInventory() {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (int slot = PLAYER_START; slot < PLAYER_START + 27; slot++) {
+            ItemStack current = slots.get(slot).getItem();
+            if (!current.isEmpty()) stacks.add(current.copy());
+            slots.get(slot).set(ItemStack.EMPTY);
+        }
+        List<ItemStack> merged = new ArrayList<>();
+        for (ItemStack stack : stacks) {
+            for (ItemStack target : merged) {
+                if (stack.isEmpty()) break;
+                if (!ItemStack.isSameItemSameComponents(target, stack)) continue;
+                int moved = Math.min(stack.getCount(), target.getMaxStackSize() - target.getCount());
+                if (moved > 0) {
+                    target.grow(moved);
+                    stack.shrink(moved);
+                }
+            }
+            if (!stack.isEmpty()) merged.add(stack);
+        }
+        merged.sort(Comparator
+                .comparing((ItemStack stack) -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
+                .thenComparing(stack -> stack.getComponentsPatch().toString()));
+        for (int index = 0; index < merged.size() && index < 27; index++) {
+            slots.get(PLAYER_START + index).set(merged.get(index));
+        }
+    }
+
+    private void depositPlayerInventory() {
+        data.batchXianqiaoMutations(() -> {
+            for (int slot = PLAYER_START; slot < slots.size(); slot++) {
+                ItemStack source = slots.get(slot).getItem();
+                if (source.isEmpty()) continue;
+                slots.get(slot).set(TerminalMenuSupport.insertXianqiao(data, source.copy()));
+            }
+        });
+        rebuildCatalog();
+        broadcastChanges();
+    }
+
+    private void withdrawFilteredEntries() {
+        rebuildCatalog();
+        List<TerminalEntry> ordered = List.copyOf(filteredEntries);
+        data.batchXianqiaoMutations(() -> {
+            for (TerminalEntry entry : ordered) {
+                while (true) {
+                    ItemStack extracted = extractFromUnifiedStorage(
+                            entry.displayStack(), entry.displayStack().getMaxStackSize());
+                    if (extracted.isEmpty()) break;
+                    ItemStack moving = extracted.copy();
+                    moveItemStackTo(moving, PLAYER_START, slots.size(), false);
+                    if (!moving.isEmpty()) TerminalMenuSupport.insertXianqiao(data, moving);
+                    if (moving.getCount() == extracted.getCount()) return;
+                }
+            }
+        });
+        rebuildCatalog();
+        broadcastChanges();
     }
     public int getVisibleRows() { return visibleRows; }
     public int getBaseRow() { return baseRow; }
     public int getTotalRows() {
         return player.level().isClientSide() && clientTotalRows >= 0
                 ? clientTotalRows
-                : combinedDirectoryRows(filteredEntries.size(), filteredFluidEntries.size());
+                : combinedDirectoryRows(filteredEntries.size(), filteredFluidEntries.size(),
+                        filteredExternalEntries.size());
     }
 
     public int totalItemEntries() {
@@ -658,12 +756,14 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     }
 
     public void applyClientFluidSnapshot(long revision, int rows, int snapshotBaseRow, int snapshotBufferBaseRow,
-                                         int totalRows, int totalItemEntries, List<TerminalFluidEntry> entries) {
+                                         int totalRows, int totalItemEntries, int totalFluidEntries,
+                                         List<TerminalFluidEntry> entries) {
         if (!player.level().isClientSide()) return;
         visibleRows = TerminalViewport.clampRows(rows);
         clientSnapshotBufferBaseRow = Math.max(0, snapshotBufferBaseRow);
         clientTotalRows = Math.max(0, totalRows);
         clientTotalItemEntries = Math.max(0, totalItemEntries);
+        clientTotalFluidEntries = Math.max(0, totalFluidEntries);
         int requestedBase = TerminalViewport.clampBaseRow(clientRequestedBaseRow, visibleRows, clientTotalRows);
         int bufferEnd = clientSnapshotBufferBaseRow + bufferedRowCount();
         baseRow = requestedBase >= clientSnapshotBufferBaseRow
@@ -673,6 +773,14 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         clientFluidRevision = Math.max(0L, revision);
         filteredFluidEntries = entries == null ? List.of() : List.copyOf(entries);
         filteredFluidEntriesInitialized = true;
+    }
+
+    public void applyClientExternalSnapshot(long revision, int totalExternalEntries,
+                                            List<TerminalExternalResourceEntry> entries) {
+        if (!player.level().isClientSide()) return;
+        clientExternalRevision = Math.max(0L, revision);
+        clientTotalExternalEntries = Math.max(0, totalExternalEntries);
+        filteredExternalEntries = entries == null ? List.of() : List.copyOf(entries);
     }
 
     @Override public void slotsChanged(Container changed) {
@@ -758,6 +866,34 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             baseRow = TerminalViewport.clampBaseRow(baseRow, visibleRows, getTotalRows());
             ensureBufferCoversViewport();
         }
+    }
+
+    private void rebuildExternalCatalog() {
+        if (player.level().isClientSide()) return;
+        String search = terminalQuery.normalizedText();
+        Comparator<TerminalExternalResourceEntry> comparator = switch (terminalQuery.sortOrder()) {
+            case AMOUNT -> Comparator.comparingLong(TerminalExternalResourceEntry::amount);
+            case NAME, MOD_ID -> Comparator.comparing(entry -> entry.key().resourceId());
+        };
+        if (terminalQuery.sortDirection() == TerminalQuery.SortDirection.DESCENDING) {
+            comparator = comparator.reversed();
+        }
+        filteredExternalEntries = data.getExternalResourceEntries().stream()
+                .filter(entry -> entry.amount() > 0L && ExternalResourceCatalog.contains(entry.key()))
+                .filter(entry -> search.isEmpty()
+                        || entry.key().channel().toLowerCase(java.util.Locale.ROOT).contains(search)
+                        || entry.key().resourceId().toLowerCase(java.util.Locale.ROOT).contains(search)
+                        || ExternalResourceCatalog.displayName(entry.key()).getString()
+                        .toLowerCase(java.util.Locale.ROOT).contains(search))
+                .map(entry -> new TerminalExternalResourceEntry(externalEntryId(entry), entry.key(), entry.amount()))
+                .sorted(comparator.thenComparing(entry -> entry.key().channel()))
+                .toList();
+    }
+
+    private static long externalEntryId(ResourceChannelEntry entry) {
+        long id = ((long) entry.key().channel().hashCode() << 32)
+                ^ Integer.toUnsignedLong(entry.key().resourceId().hashCode()) ^ 0x4558545245534f55L;
+        return id == 0L ? 1L : id;
     }
 
     private TerminalEntry entryAtViewIndex(int viewIndex) {
@@ -860,11 +996,46 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
 
     private int totalDirectoryEntries() {
         return totalItemEntries() + (player.level().isClientSide()
-                ? inferredClientFluidEntryCount() : filteredFluidEntries.size());
+                ? clientTotalFluidEntries + clientTotalExternalEntries
+                : filteredFluidEntries.size() + filteredExternalEntries.size());
     }
 
     private int inferredClientFluidEntryCount() {
-        return Math.max(0, clientTotalRows * VISIBLE_COLS - clientTotalItemEntries);
+        return clientTotalFluidEntries;
+    }
+
+    public TerminalExternalResourceEntry displayedExternalEntryAtIndex(int viewIndex) {
+        int itemCount = totalItemEntries();
+        int fluidCount = player.level().isClientSide() ? clientTotalFluidEntries : filteredFluidEntries.size();
+        int externalCount = player.level().isClientSide() ? clientTotalExternalEntries : filteredExternalEntries.size();
+        int absolute = combinedExternalIndex(bufferedBaseRow(), viewIndex,
+                itemCount, fluidCount, externalCount);
+        if (absolute < 0) return null;
+        int firstBuffered = Math.max(0, bufferedBaseRow() * VISIBLE_COLS - itemCount - fluidCount);
+        int index = player.level().isClientSide() ? absolute - firstBuffered : absolute;
+        return index >= 0 && index < filteredExternalEntries.size() ? filteredExternalEntries.get(index) : null;
+    }
+
+    public List<TerminalExternalResourceEntry> bufferedExternalEntries() {
+        int itemCount = filteredEntries.size();
+        int fluidCount = filteredFluidEntries.size();
+        int bufferStart = bufferBaseRow * VISIBLE_COLS;
+        int bufferEnd = bufferStart + bufferedRowCount() * VISIBLE_COLS;
+        int from = Math.min(filteredExternalEntries.size(), Math.max(0, bufferStart - itemCount - fluidCount));
+        int to = Math.min(filteredExternalEntries.size(), Math.max(0, bufferEnd - itemCount - fluidCount));
+        return List.copyOf(filteredExternalEntries.subList(from, to));
+    }
+
+    public int totalFluidEntries() {
+        return player.level().isClientSide() ? clientTotalFluidEntries : filteredFluidEntries.size();
+    }
+
+    public int totalExternalEntries() {
+        return player.level().isClientSide() ? clientTotalExternalEntries : filteredExternalEntries.size();
+    }
+
+    public long externalRevision() {
+        return player.level().isClientSide() ? clientExternalRevision : data.getExternalResourceRevision();
     }
 
     /** Current rows plus the clipped bottom row, never outside the sent 2R buffer. */
@@ -949,6 +1120,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         lastFluidSnapshotRows = visibleRows;
         lastFluidSnapshotBufferBaseRow = bufferBaseRow;
         lastFluidSnapshotQuery = terminalQuery;
+    }
+    public void markExternalTerminalSnapshotSent(long revision) {
+        if (!player.level().isClientSide()) lastExternalSnapshotRevision = revision;
     }
     @Override public void applyRecipeSourceChunk(long sourceRevision, int chunkIndex, int chunkCount,
                                                  List<TransferIngredient> entries) {

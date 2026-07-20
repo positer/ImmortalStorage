@@ -53,6 +53,12 @@ final class XianqiaoInterfaceUiArchitectureTest {
                 "the selected target amount must be directly typeable instead of inferred only from held count");
         assertTrue(screen.contains("SetXianqiaoInterfaceSideMode"));
         assertTrue(screen.contains("SetXianqiaoInterfaceTargetAmount"));
+        assertTrue(screen.contains("SetXianqiaoInterfaceExternalTarget"));
+        assertTrue(screen.contains("XianqiaoInterfaceMenu.DEFAULT_EXTERNAL_CACHE_AMOUNT"));
+        assertTrue(screen.contains("FacePreviewButton"));
+        assertTrue(screen.contains("adjacentBlockPreview"));
+        assertTrue(screen.contains("openExternalResourceDialog"));
+        assertTrue(screen.contains("refreshExternalResourceButtons"));
         assertTrue(screen.contains("SIDE_ORDER"),
                 "all six physical faces need independent controls");
         assertTrue(menu.contains("getConfigRevision"),
@@ -69,6 +75,27 @@ final class XianqiaoInterfaceUiArchitectureTest {
                 "item/fluid ghost and cache amounts must be rendered from synchronized long totals");
         assertTrue(screen.contains("menu.getItemTargetLimit()"));
         assertTrue(screen.contains("menu.getFluidTargetLimitMb()"));
+        assertTrue(menu.contains("AMOUNT_HIGH_DATA_START"),
+                "external-resource desired amounts must synchronize as full longs");
+        assertTrue(menu.contains("CACHED_HIGH_DATA_START"),
+                "external-resource cached amounts must synchronize as full longs");
+    }
+
+    @Test
+    void emptyHandPrimaryClickClearsInsteadOfOpeningTheAmountDialog() throws IOException {
+        String screen = source("client", "screen", "XianqiaoInterfaceScreen.java");
+        String menu = source("menu", "custom", "XianqiaoInterfaceMenu.java");
+
+        int primary = screen.indexOf("if (button == 0)");
+        int normalMenuPath = screen.indexOf(
+                "return super.mouseClicked(mouseX, mouseY, button);", primary);
+        int secondary = screen.indexOf("if (button == 1)", normalMenuPath);
+        int amountDialog = screen.indexOf("openAmountDialog(slot);", secondary);
+        assertTrue(primary >= 0 && normalMenuPath > primary && secondary > normalMenuPath
+                        && amountDialog > secondary,
+                "empty-hand left click must reach the authoritative clear path before the modal");
+        assertTrue(menu.contains("if (carried.isEmpty()) return backend.clearSlot(slot);"));
+        assertTrue(menu.contains("configureTargetFromCarried(backend, slotId, getCarried(), button)"));
     }
 
     @Test

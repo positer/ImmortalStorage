@@ -107,7 +107,7 @@ final class SourceVeinArchitectureContractTest {
         assertTrue(methodBody(block, "public InteractionResult useWithoutItem")
                 .contains("isShiftKeyDown"));
         assertTrue(mod.contains("NeoForgeMod.enableMilkFluid()"));
-        assertTrue(definitions.contains("case MILK -> { namespace = \"neoforge\"; yield \"milk\"; }"),
+        assertTrue(definitions.contains("case MILK -> \"milk\""),
                 "the data-driven builtin milk source must resolve NeoForge's official milk fluid id");
         assertTrue(methodBody(entity, "public Fluid sampleFluid()")
                         .contains("BuiltInRegistries.FLUID.get(definition.outputId())"),
@@ -181,6 +181,33 @@ final class SourceVeinArchitectureContractTest {
         assertTrue(fluids.contains("SourceVeinStorageIndex.extractFluid"));
         assertTrue(methodBody(menu, "private boolean rebuildCatalog()")
                 .contains("itemStorage.snapshot()"));
+    }
+
+    @Test
+    void sourceItemsShowACompactOutputIdentityWithoutChangingTheirBaseModel() throws IOException {
+        String setup = source("client", "ClientSetup.java");
+        String renderer = source("client", "render", "SourceVeinItemRenderer.java");
+        String blockItem = source("item", "SourceVeinBlockItem.java");
+
+        assertTrue(setup.contains("ModelEvent.RegisterAdditional"));
+        assertTrue(setup.contains("ModelResourceLocation.standalone("));
+        assertTrue(blockItem.contains("getCustomRenderer()"));
+        assertTrue(blockItem.contains("SourceVeinItemRenderer.INSTANCE"));
+        assertTrue(renderer.contains("extends BlockEntityWithoutLevelRenderer"));
+        assertTrue(renderer.contains("poseStack.translate(0.27F, 0.27F, 1.25F)"),
+                "the output identity belongs in the lower-right quarter of the existing item model");
+        assertTrue(renderer.contains("poseStack.scale(0.34F, 0.34F, 0.34F)"));
+        assertTrue(renderer.contains("output, ItemDisplayContext.NONE"));
+        assertTrue(renderer.contains("FluidUtil.getFilledBucket(new FluidStack(fluid, 1_000))"),
+                "fluid sources must prefer the corresponding filled bucket");
+        assertTrue(renderer.contains("renderModelLists("));
+        assertFalse(renderer.contains("base.getTransforms().getTransform(context).apply"),
+                "ItemRenderer already applies the custom model transform before entering the BEWLR");
+        assertFalse(renderer.contains("poseStack.translate(-0.5F, -0.5F, -0.5F)"),
+                "ItemRenderer already centers the custom model before entering the BEWLR");
+        assertFalse(setup.contains("RegisterItemDecorationsEvent"),
+                "the badge must render before vanilla stack-count decorations");
+
     }
 
     private static String source(String... relative) throws IOException {

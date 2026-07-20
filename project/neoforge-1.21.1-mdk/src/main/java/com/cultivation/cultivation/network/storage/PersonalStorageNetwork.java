@@ -1,10 +1,14 @@
 package com.cultivation.cultivation.network.storage;
 
+import com.cultivation.cultivation.api.storage.ExternalResourceStorage;
 import com.cultivation.cultivation.api.storage.PersonalStorageEndpoint;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
 import com.cultivation.cultivation.dimension.CultivationDimensions;
 import com.cultivation.cultivation.player.CultivationPlayerData;
+import com.cultivation.core.resource.ResourceChannelEntry;
+import com.cultivation.core.resource.ResourceChannelKey;
+import com.cultivation.core.resource.ResourceTransferAction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,6 +18,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 
@@ -134,6 +139,7 @@ public final class PersonalStorageNetwork {
         private final IItemHandler itemHandler;
         private final TerminalItemStorage itemStorage;
         private final @Nullable PersonalStorageFluidHandler fluidHandler;
+        private final ExternalResourceStorage externalResourceStorage;
         private final BooleanSupplier accessAllowed;
 
         private final boolean online;
@@ -164,6 +170,34 @@ public final class PersonalStorageNetwork {
             this.fluidHandler = includeFluids
                     ? new PersonalStorageFluidHandler(data, this.onChanged, this.accessAllowed, server, owner)
                     : null;
+            this.externalResourceStorage = new ExternalResourceStorage() {
+                @Override
+                public long revision() {
+                    return data.getExternalResourceRevision();
+                }
+
+                @Override
+                public List<ResourceChannelEntry> snapshot() {
+                    return accessAllowed.getAsBoolean() && data.getStage() >= 8
+                            ? data.getExternalResourceEntries() : List.of();
+                }
+
+                @Override
+                public long insert(ResourceChannelKey key, long amount, ResourceTransferAction action) {
+                    if (!accessAllowed.getAsBoolean()) return 0L;
+                    long inserted = data.insertExternalResource(key, amount, action);
+                    if (inserted > 0L && action.executes()) Endpoint.this.onChanged.run();
+                    return inserted;
+                }
+
+                @Override
+                public long extract(ResourceChannelKey key, long amount, ResourceTransferAction action) {
+                    if (!accessAllowed.getAsBoolean()) return 0L;
+                    long extracted = data.extractExternalResource(key, amount, action);
+                    if (extracted > 0L && action.executes()) Endpoint.this.onChanged.run();
+                    return extracted;
+                }
+            };
             this.online = online;
         }
 
@@ -222,6 +256,11 @@ public final class PersonalStorageNetwork {
         @Override
         public @Nullable IFluidHandler fluidHandler() {
             return fluidHandler;
+        }
+
+        @Override
+        public ExternalResourceStorage externalResourceStorage() {
+            return externalResourceStorage;
         }
 
     }

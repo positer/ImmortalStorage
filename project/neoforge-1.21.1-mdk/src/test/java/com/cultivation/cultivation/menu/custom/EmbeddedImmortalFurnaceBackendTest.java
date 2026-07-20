@@ -333,6 +333,20 @@ final class EmbeddedImmortalFurnaceBackendTest {
         assertTrue(events.contains("d.getStage() >= 5"));
     }
 
+    @Test
+    void spiritSwordRecallUsesPersistentAuthoritativeReservations() throws Exception {
+        String backend = Files.readString(source("EmbeddedImmortalFurnaceBackend.java"));
+        String engine = Files.readString(source("ImmortalFurnaceEngine.java"));
+        assertTrue(backend.contains("SpiritSwordReservations"));
+        assertTrue(backend.contains("UUID[] recallTokens"));
+        assertTrue(backend.contains("writeRecall(summoned, player.getUUID(), channel, token)"));
+        assertTrue(backend.contains("matchingReservedChannel(player, identity)"));
+        assertTrue(backend.contains("if (isRecallReserved(channel)) continue;"),
+                "auto fill and template capture must leave recalled channels idle");
+        assertTrue(engine.contains("if (suspendedChannel.test(channel)) continue;"),
+                "reserved channels must preserve their active recipe and progress");
+    }
+
     private static EmbeddedImmortalFurnaceBackend threeChannelBackend(int inputCount) {
         EmbeddedImmortalFurnaceBackend backend = new EmbeddedImmortalFurnaceBackend();
         backend.setItem(EmbeddedImmortalFurnaceBackend.INPUT, new ItemStack(Items.IRON_ORE, inputCount));

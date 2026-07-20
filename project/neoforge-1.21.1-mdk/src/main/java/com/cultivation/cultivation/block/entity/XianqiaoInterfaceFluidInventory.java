@@ -28,13 +28,13 @@ final class XianqiaoInterfaceFluidInventory implements IFluidHandler {
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
-        return tank >= 0 && tank < XianqiaoInterfaceInventory.SLOT_COUNT && !stack.isEmpty();
+        return resources.isFluidValidForCache(tank, stack);
     }
 
     @Override
     public int fill(@NotNull FluidStack resource, FluidAction action) {
         if (resource.isEmpty()) return 0;
-        long accepted = resources.insertFluidBulk(
+        long accepted = resources.insertFluidIntoCaches(
                 resource, resource.getAmount(), action == FluidAction.SIMULATE);
         return (int) accepted;
     }

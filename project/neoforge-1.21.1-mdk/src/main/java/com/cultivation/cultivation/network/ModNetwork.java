@@ -29,7 +29,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.List;
 
 public final class ModNetwork {
-    public static final String PROTOCOL = "5";
+    public static final String PROTOCOL = "6";
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL).optional();
@@ -52,6 +52,9 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.RemoveSpiritStaffBuildLayer.TYPE,
                 ModPayloads.RemoveSpiritStaffBuildLayer.STREAM_CODEC,
                 ModNetwork::handleSpiritStaffBuildRemoval);
+        registrar.playToServer(ModPayloads.SpiritSwordFurnaceOperation.TYPE,
+                ModPayloads.SpiritSwordFurnaceOperation.STREAM_CODEC,
+                ModNetwork::handleSpiritSwordFurnaceOperation);
         registrar.playToServer(ModPayloads.SetSourceSideMode.TYPE, ModPayloads.SetSourceSideMode.STREAM_CODEC, ModNetwork::handleSetSourceSideMode);
         registrar.playToServer(ModPayloads.AdjustSourceFlux.TYPE, ModPayloads.AdjustSourceFlux.STREAM_CODEC, ModNetwork::handleAdjustSourceFlux);
         registrar.playToServer(ModPayloads.SetSourceFluxLimit.TYPE, ModPayloads.SetSourceFluxLimit.STREAM_CODEC, ModNetwork::handleSetSourceFluxLimit);
@@ -61,6 +64,7 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceActiveTransfer.TYPE, ModPayloads.SetXianqiaoInterfaceActiveTransfer.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceActiveTransfer);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceItemTarget.TYPE, ModPayloads.SetXianqiaoInterfaceItemTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceItemTarget);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceFluidTarget.TYPE, ModPayloads.SetXianqiaoInterfaceFluidTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceFluidTarget);
+        registrar.playToServer(ModPayloads.SetXianqiaoInterfaceExternalTarget.TYPE, ModPayloads.SetXianqiaoInterfaceExternalTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceExternalTarget);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.cultivation.cultivation.client.ClientNetworkHandlers.register(registrar);
         }
@@ -328,8 +332,17 @@ public final class ModNetwork {
         }
         PacketDistributor.sendToPlayer(player, new ModPayloads.TerminalFluidViewSnapshot(
                 menu.containerId, menu.fluidRevision(), menu.getVisibleRows(), menu.getBaseRow(),
-                menu.bufferedBaseRow(), menu.getTotalRows(), menu.totalItemEntries(), List.copyOf(entries)));
+                menu.bufferedBaseRow(), menu.getTotalRows(), menu.totalItemEntries(),
+                menu.totalFluidEntries(), List.copyOf(entries)));
         menu.markFluidTerminalSnapshotSent(menu.fluidRevision());
+        List<ModPayloads.TerminalExternalViewSnapshot.Entry> external = new java.util.ArrayList<>();
+        for (var entry : menu.bufferedExternalEntries()) {
+            external.add(new ModPayloads.TerminalExternalViewSnapshot.Entry(
+                    entry.entryId(), entry.key().channel(), entry.key().resourceId(), entry.amount()));
+        }
+        PacketDistributor.sendToPlayer(player, new ModPayloads.TerminalExternalViewSnapshot(
+                menu.containerId, menu.externalRevision(), menu.totalExternalEntries(), List.copyOf(external)));
+        menu.markExternalTerminalSnapshotSent(menu.externalRevision());
     }
 
     public static void sendRecipeSources(ServerPlayer player, net.minecraft.world.inventory.AbstractContainerMenu menu,
@@ -425,13 +438,18 @@ public final class ModNetwork {
             BlockPos clicked = request.blockPos();
             if (!player.level().hasChunkAt(clicked)
                     || player.distanceToSqr(clicked.getCenter()) > 64.0D) return;
-            var preview = com.cultivation.cultivation.item.custom.SpiritStaffBuildExecutor.preview(
-                    player, net.minecraft.world.InteractionHand.values()[request.hand()],
-                    clicked, Direction.values()[request.face()],
+            var preview = request.removal()
+                    ? com.cultivation.cultivation.item.custom.SpiritStaffBuildExecutor.previewRemoval(
+                    player, net.minecraft.world.InteractionHand.values()[request.hand()], clicked,
+                    Direction.values()[request.face()],
+                    com.cultivation.cultivation.config.CultivationConfig.SPIRIT_STAFF_BUILD_LIMIT.get())
+                    : com.cultivation.cultivation.item.custom.SpiritStaffBuildExecutor.preview(
+                    player, net.minecraft.world.InteractionHand.values()[request.hand()], clicked,
+                    Direction.values()[request.face()],
                     com.cultivation.cultivation.config.CultivationConfig.SPIRIT_STAFF_BUILD_LIMIT.get());
             List<Long> positions = preview.positions().stream().map(BlockPos::asLong).toList();
             PacketDistributor.sendToPlayer(player, new ModPayloads.SpiritStaffBuildPreviewSnapshot(
-                    request.requestId(), request.pos(), request.face(), request.hand(),
+                    request.requestId(), request.pos(), request.face(), request.hand(), request.removal(),
                     preview.failure().ordinal(), positions));
         });
     }
@@ -452,6 +470,29 @@ public final class ModNetwork {
             player.displayClientMessage(result.succeeded()
                     ? Component.translatable("message.cultivation.spirit_staff.build.removed", result.placed())
                     : Component.translatable("message.cultivation.spirit_staff.build.blocked"), true);
+        });
+    }
+
+    private static void handleSpiritSwordFurnaceOperation(
+            ModPayloads.SpiritSwordFurnaceOperation request, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || request.hand() < 0
+                    || request.hand() >= net.minecraft.world.InteractionHand.values().length) return;
+            var hand = net.minecraft.world.InteractionHand.values()[request.hand()];
+            CultivationPlayerData data = CultivationPlayerData.get(player);
+            if (data.getStage() < 6) return;
+            if (request.action() == ModPayloads.SpiritSwordFurnaceOperation.SUMMON) {
+                if (data.getEmbeddedImmortalFurnace().summonSpiritSword(player, hand)) {
+                    player.displayClientMessage(Component.translatable(
+                            "message.cultivation.spirit_sword.summoned"), true);
+                }
+            } else if (request.action() == ModPayloads.SpiritSwordFurnaceOperation.STORE) {
+                if (data.getEmbeddedImmortalFurnace().storeSpiritSword(player, hand)) {
+                    player.displayClientMessage(Component.translatable(
+                            "message.cultivation.spirit_sword.stored"), true);
+                }
+            }
         });
     }
 
@@ -505,9 +546,15 @@ public final class ModNetwork {
                     || payload.slot() >= com.cultivation.cultivation.block.entity.XianqiaoInterfaceInventory.SLOT_COUNT) {
                 return;
             }
-            boolean updated = source.getInventory().getFluidTarget(payload.slot()).isEmpty()
-                    ? source.getInventory().setTargetAmount(payload.slot(), payload.amount())
-                    : source.getInventory().setFluidTargetAmount(payload.slot(), payload.amount());
+            boolean updated;
+            if (source.getInventory().getExternalTarget(payload.slot()) != null) {
+                updated = source.getInventory().setExternalTargetAmount(
+                        payload.slot(), Math.max(0L, payload.amount()));
+            } else if (!source.getInventory().getFluidTarget(payload.slot()).isEmpty()) {
+                updated = source.getInventory().setFluidTargetAmount(payload.slot(), payload.amount());
+            } else {
+                updated = source.getInventory().setTargetAmount(payload.slot(), payload.amount());
+            }
             if (!updated) {
                 menu.broadcastChanges();
                 return;
@@ -523,10 +570,11 @@ public final class ModNetwork {
                     || payload.slot() < 0 || payload.slot() >= XianqiaoInterfaceInventory.SLOT_COUNT
                     || payload.side() < 0 || payload.side() >= Direction.values().length) return;
             XianqiaoInterfaceBlockEntity source = validateOpenXianqiaoInterface(
-                    player, payload.containerId(), payload.blockPos(), payload.configRevision());
+                    player, payload.containerId(), payload.blockPos());
             if (source == null) return;
             source.getInventory().setOutputFaceEnabled(
                     payload.slot(), Direction.values()[payload.side()], payload.enabled());
+            player.containerMenu.broadcastChanges();
         });
     }
 
@@ -585,8 +633,46 @@ public final class ModNetwork {
         });
     }
 
+    private static void handleSetXianqiaoInterfaceExternalTarget(
+            ModPayloads.SetXianqiaoInterfaceExternalTarget payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || payload.slot() < 0
+                    || payload.slot() >= XianqiaoInterfaceInventory.SLOT_COUNT) return;
+            XianqiaoInterfaceBlockEntity source = validateOpenXianqiaoInterface(
+                    player, payload.containerId(), payload.blockPos(), payload.configRevision());
+            if (source == null) return;
+            com.cultivation.core.resource.ResourceChannelKey key;
+            try {
+                key = new com.cultivation.core.resource.ResourceChannelKey(
+                        payload.channel(), payload.resourceId());
+            } catch (IllegalArgumentException exception) {
+                return;
+            }
+            if (!com.cultivation.cultivation.compat.ExternalResourceCatalog.contains(key)) return;
+            long amount = com.cultivation.core.resource.ExternalResourceChannels
+                    .clampCacheAmount(key, payload.requestedAmount());
+            boolean updated = amount == 0L
+                    ? source.getInventory().clearSlot(payload.slot())
+                    : source.getInventory().setExternalTarget(payload.slot(), key, amount);
+            if (updated) player.containerMenu.broadcastChanges();
+        });
+    }
+
     private static XianqiaoInterfaceBlockEntity validateOpenXianqiaoInterface(
             ServerPlayer player, int containerId, BlockPos pos, long configRevision) {
+        XianqiaoInterfaceBlockEntity source = validateOpenXianqiaoInterface(
+                player, containerId, pos);
+        if (source == null) return null;
+        if (source.getConfigRevision() != configRevision) {
+            player.containerMenu.broadcastChanges();
+            return null;
+        }
+        return source;
+    }
+
+    private static XianqiaoInterfaceBlockEntity validateOpenXianqiaoInterface(
+            ServerPlayer player, int containerId, BlockPos pos) {
         if (player.containerMenu.containerId != containerId
                 || !(player.containerMenu instanceof XianqiaoInterfaceMenu menu)
                 || menu.getBlockEntity() == null
@@ -596,10 +682,6 @@ public final class ModNetwork {
                 || !(player.level().getBlockEntity(pos) instanceof XianqiaoInterfaceBlockEntity source)
                 || source != menu.getBlockEntity() || !source.canUse(player)
                 || !menu.stillValid(player)) return null;
-        if (source.getConfigRevision() != configRevision) {
-            menu.broadcastChanges();
-            return null;
-        }
         return source;
     }
 

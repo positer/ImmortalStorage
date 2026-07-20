@@ -86,7 +86,7 @@ final class XianqiaoInterfaceMixedResourceTest {
     }
 
     @Test
-    void stableFluidCapabilityUploadsOnlyInPullAndDrainsOnlyRealCachesInPush() {
+    void fluidPipeAccessIgnoresActiveModesButExtractionKeepsSlotFaceMask() {
         FakeItems items = new FakeItems();
         FakeFluids fluids = new FakeFluids();
         XianqiaoInterfaceInventory inventory = new XianqiaoInterfaceInventory(
@@ -96,22 +96,17 @@ final class XianqiaoInterfaceMixedResourceTest {
         assertTrue(inventory.setFluidTarget(0, water));
         assertEquals(1_000, inventory.replenishAllSlots(TerminalStorageAction.EXECUTE));
 
-        AtomicReference<XianqiaoInterfaceBlockEntity.SideMode> mode =
-                new AtomicReference<>(XianqiaoInterfaceBlockEntity.SideMode.PULL);
+        assertTrue(inventory.setOutputFaceEnabled(0, net.minecraft.core.Direction.EAST, true));
         IFluidHandler stable = new XianqiaoInterfaceSidedFluidHandler(
-                new XianqiaoInterfaceFluidInventory(inventory), mode::get);
-        assertEquals(500, stable.fill(water.copyWithAmount(500), IFluidHandler.FluidAction.EXECUTE));
-        assertEquals(1_500L, fluids.amount(water));
-        assertTrue(stable.drain(500, IFluidHandler.FluidAction.EXECUTE).isEmpty());
-
-        mode.set(XianqiaoInterfaceBlockEntity.SideMode.PUSH);
+                new XianqiaoInterfaceFluidInventory(inventory), inventory,
+                net.minecraft.core.Direction.EAST);
         assertEquals(500, stable.drain(500, IFluidHandler.FluidAction.EXECUTE).getAmount());
-        assertEquals(500, inventory.getBufferedFluid(0).getAmount());
-        assertEquals(0, stable.fill(water, IFluidHandler.FluidAction.EXECUTE));
-
-        mode.set(XianqiaoInterfaceBlockEntity.SideMode.DISABLED);
-        assertEquals(0, stable.getTanks());
-        assertTrue(stable.drain(500, IFluidHandler.FluidAction.EXECUTE).isEmpty());
+        IFluidHandler blocked = new XianqiaoInterfaceSidedFluidHandler(
+                new XianqiaoInterfaceFluidInventory(inventory), inventory,
+                net.minecraft.core.Direction.WEST);
+        assertEquals(500, blocked.fill(water.copyWithAmount(500), IFluidHandler.FluidAction.EXECUTE));
+        assertEquals(1_000L, fluids.amount(water));
+        assertTrue(blocked.drain(500, IFluidHandler.FluidAction.EXECUTE).isEmpty());
     }
 
     @Test

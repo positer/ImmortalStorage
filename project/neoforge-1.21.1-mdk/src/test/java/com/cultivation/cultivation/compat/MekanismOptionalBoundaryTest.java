@@ -40,7 +40,22 @@ final class MekanismOptionalBoundaryTest {
                 "com", "cultivation", "cultivation", "compat", "mekanism", "MekanismCompat.java")));
         assertTrue(compat.contains("strict_energy_handler"));
         assertTrue(compat.contains("IStrictEnergyHandler.class"));
+        assertTrue(compat.contains("chemical_handler"));
+        assertTrue(compat.contains("IChemicalHandler.class"));
         assertTrue(compat.contains("RegisterCapabilitiesEvent"));
+        assertTrue(compat.contains("activeChemicalTransferTick"));
+        assertTrue(compat.contains(
+                "mode == XianqiaoInterfaceBlockEntity.SideMode.PUSH"));
+        assertTrue(compat.contains("&& blockEntity.isActivePushEnabled()"));
+        assertTrue(compat.contains("XianqiaoInterfaceCompatHooks"));
+
+        String chemical = Files.readString(JAVA.resolve(Path.of(
+                "com", "cultivation", "cultivation", "compat", "mekanism",
+                "XianqiaoMekanismChemicalAdapter.java")));
+        assertTrue(chemical.contains("implements IChemicalHandler"));
+        assertTrue(chemical.contains("ExternalResourceChannels.mekanismChemical"));
+        assertTrue(chemical.contains("Long.MAX_VALUE"));
+        assertTrue(chemical.contains("ResourceTransferAction.SIMULATE"));
 
         String manager = Files.readString(JAVA.resolve(Path.of(
                 "com", "cultivation", "cultivation", "compat", "CompatManager.java")));

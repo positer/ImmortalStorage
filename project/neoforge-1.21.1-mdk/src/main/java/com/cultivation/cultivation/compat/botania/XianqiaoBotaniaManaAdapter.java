@@ -9,7 +9,6 @@ import vazkii.botania.api.mana.spark.ManaSpark;
 import vazkii.botania.api.mana.spark.SparkAttachable;
 
 import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -17,23 +16,23 @@ import java.util.function.Supplier;
  *
  * <p>The supplier is deliberately re-resolved for every operation. Logging
  * out, dropping below stage eight or replacing the owning attachment therefore
- * fails closed even when NeoForge has cached this capability object.</p>
+ * fails closed even when NeoForge has cached this capability object. Botania's
+ * spark network has no face context, so this adapter intentionally ignores the
+ * interface's six sided item/fluid/energy modes and transacts directly with the
+ * mana cache. Spark augments decide network flow direction.</p>
  */
 public final class XianqiaoBotaniaManaAdapter implements ManaPool, SparkAttachable {
     private final Level level;
     private final BlockPos pos;
     private final Supplier<AtomicEnergyRefill.ResourceStore> storage;
-    private final BooleanSupplier outputting;
 
     public XianqiaoBotaniaManaAdapter(
             Level level,
             BlockPos pos,
-            Supplier<AtomicEnergyRefill.ResourceStore> storage,
-            BooleanSupplier outputting) {
+            Supplier<AtomicEnergyRefill.ResourceStore> storage) {
         this.level = Objects.requireNonNull(level, "level");
         this.pos = Objects.requireNonNull(pos, "pos").immutable();
         this.storage = Objects.requireNonNull(storage, "storage");
-        this.outputting = Objects.requireNonNull(outputting, "outputting");
     }
 
     @Override
@@ -72,17 +71,17 @@ public final class XianqiaoBotaniaManaAdapter implements ManaPool, SparkAttachab
 
     @Override
     public boolean canReceiveManaFromBursts() {
-        return storage.get() != null && !isOutputtingPower() && !isFull();
+        return storage.get() != null && !isFull();
     }
 
     @Override
     public boolean isOutputtingPower() {
-        return storage.get() != null && outputting.getAsBoolean();
+        return false;
     }
 
     @Override
     public boolean canAttachSpark(ItemStack stack) {
-        return storage.get() != null;
+        return true;
     }
 
     @Override
@@ -93,13 +92,13 @@ public final class XianqiaoBotaniaManaAdapter implements ManaPool, SparkAttachab
     @Override
     public int getAvailableSpaceForMana() {
         AtomicEnergyRefill.ResourceStore current = storage.get();
-        if (current == null || isOutputtingPower()) return 0;
+        if (current == null) return 0;
         return BotaniaManaWindow.availableSpace(current);
     }
 
     @Override
     public boolean areIncomingTransfersDone() {
-        return storage.get() == null || isOutputtingPower() || isFull();
+        return storage.get() == null || isFull();
     }
 
 }

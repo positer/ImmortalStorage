@@ -6,7 +6,11 @@ import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalStorageAction;
 import com.cultivation.cultivation.block.entity.XianqiaoInterfaceBlockEntity;
 import com.cultivation.cultivation.block.entity.XianqiaoInterfaceInventory;
+import com.cultivation.cultivation.block.ModBlocks;
+import com.cultivation.cultivation.compat.ExternalResourceCatalog;
+import com.cultivation.cultivation.compat.XianqiaoInterfaceCompatHooks;
 import com.cultivation.cultivation.menu.ModMenus;
+import com.cultivation.core.resource.ResourceChannelKey;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -37,6 +41,7 @@ import java.util.List;
  * consuming it; clicking it with an empty cursor clears the target.</p>
  */
 public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
+    public static final long DEFAULT_EXTERNAL_CACHE_AMOUNT = 1_000L;
     public static final int CONFIG_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
     public static final int BUFFER_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
     public static final int BUFFER_START = CONFIG_SLOT_COUNT;
@@ -52,15 +57,18 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     private static final int REVISION_LOW_DATA = SIDE_DATA_START + 6;
     private static final int REVISION_HIGH_DATA = REVISION_LOW_DATA + 1;
     private static final int TYPE_DATA_START = REVISION_HIGH_DATA + 1;
-    private static final int AMOUNT_DATA_START = TYPE_DATA_START + CONFIG_SLOT_COUNT;
-    private static final int CACHED_DATA_START = AMOUNT_DATA_START + CONFIG_SLOT_COUNT;
-    private static final int ITEM_LIMIT_DATA = CACHED_DATA_START + CONFIG_SLOT_COUNT;
+    private static final int AMOUNT_LOW_DATA_START = TYPE_DATA_START + CONFIG_SLOT_COUNT;
+    private static final int AMOUNT_HIGH_DATA_START = AMOUNT_LOW_DATA_START + CONFIG_SLOT_COUNT;
+    private static final int CACHED_LOW_DATA_START = AMOUNT_HIGH_DATA_START + CONFIG_SLOT_COUNT;
+    private static final int CACHED_HIGH_DATA_START = CACHED_LOW_DATA_START + CONFIG_SLOT_COUNT;
+    private static final int ITEM_LIMIT_DATA = CACHED_HIGH_DATA_START + CONFIG_SLOT_COUNT;
     private static final int FLUID_LIMIT_DATA = ITEM_LIMIT_DATA + 1;
     private static final int SLOT_MASK_DATA_START = FLUID_LIMIT_DATA + 1;
     private static final int ACTIVE_PULL_DATA = SLOT_MASK_DATA_START + CONFIG_SLOT_COUNT;
     private static final int ACTIVE_PUSH_DATA = ACTIVE_PULL_DATA + 1;
     private static final int CONFIG_DATA_COUNT = ACTIVE_PUSH_DATA + 1;
     public static final String FLUID_DISPLAY_TAG = "CultivationInterfaceFluid";
+    public static final String EXTERNAL_DISPLAY_TAG = "CultivationInterfaceExternalResource";
 
     private final XianqiaoInterfaceBlockEntity blockEntity;
     private final XianqiaoInterfaceInventory backend;
@@ -91,23 +99,26 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                         long revision = blockEntity.getConfigRevision();
                         if (index == REVISION_LOW_DATA) return (int) revision;
                         if (index == REVISION_HIGH_DATA) return (int) (revision >>> 32);
-                        if (index >= TYPE_DATA_START && index < AMOUNT_DATA_START) {
+                        if (index >= TYPE_DATA_START && index < AMOUNT_LOW_DATA_START) {
                             int slot = index - TYPE_DATA_START;
-                            return blockEntity.getInventory().getFluidTarget(slot).isEmpty() ? 0 : 1;
+                            if (!blockEntity.getInventory().getFluidTarget(slot).isEmpty()) return 1;
+                            return blockEntity.getInventory().getExternalTarget(slot) == null ? 0 : 2;
                         }
-                        if (index >= AMOUNT_DATA_START && index < CACHED_DATA_START) {
-                            int slot = index - AMOUNT_DATA_START;
-                            FluidStack fluid = blockEntity.getInventory().getFluidTarget(slot);
-                            return fluid.isEmpty()
-                                    ? blockEntity.getInventory().getTarget(slot).getCount()
-                                    : fluid.getAmount();
+                        if (index >= AMOUNT_LOW_DATA_START && index < AMOUNT_HIGH_DATA_START) {
+                            return (int) configuredAmount(blockEntity.getInventory(),
+                                    index - AMOUNT_LOW_DATA_START);
                         }
-                        if (index >= CACHED_DATA_START && index < ITEM_LIMIT_DATA) {
-                            int slot = index - CACHED_DATA_START;
-                            FluidStack fluid = blockEntity.getInventory().getBufferedFluid(slot);
-                            return fluid.isEmpty()
-                                    ? blockEntity.getInventory().getBufferedStack(slot).getCount()
-                                    : fluid.getAmount();
+                        if (index >= AMOUNT_HIGH_DATA_START && index < CACHED_LOW_DATA_START) {
+                            return (int) (configuredAmount(blockEntity.getInventory(),
+                                    index - AMOUNT_HIGH_DATA_START) >>> 32);
+                        }
+                        if (index >= CACHED_LOW_DATA_START && index < CACHED_HIGH_DATA_START) {
+                            return (int) cachedAmount(blockEntity.getInventory(),
+                                    index - CACHED_LOW_DATA_START);
+                        }
+                        if (index >= CACHED_HIGH_DATA_START && index < ITEM_LIMIT_DATA) {
+                            return (int) (cachedAmount(blockEntity.getInventory(),
+                                    index - CACHED_HIGH_DATA_START) >>> 32);
                         }
                         if (index == ITEM_LIMIT_DATA) {
                             return blockEntity.getInventory().getItemTargetLimit();
@@ -167,7 +178,7 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
         if (slotId >= 0 && slotId < CONFIG_SLOT_COUNT) {
             if (clickType != ClickType.PICKUP || !hasLiveAccess(player)) return;
-            if (configureTargetFromCarried(slotId, getCarried())) {
+            if (configureTargetFromCarried(backend, slotId, getCarried(), button)) {
                 configurationMirror.setItem(slotId, displayTarget(backend, slotId));
                 broadcastChanges();
             }
@@ -288,14 +299,38 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                 && configurationData.get(TYPE_DATA_START + slot) == 1;
     }
 
+    public boolean isExternalTarget(int slot) {
+        return slot >= 0 && slot < CONFIG_SLOT_COUNT
+                && configurationData.get(TYPE_DATA_START + slot) == 2;
+    }
+
     public long getConfiguredAmount(int slot) {
         return slot >= 0 && slot < CONFIG_SLOT_COUNT
-                ? Integer.toUnsignedLong(configurationData.get(AMOUNT_DATA_START + slot)) : 0L;
+                ? decodeLong(AMOUNT_LOW_DATA_START, AMOUNT_HIGH_DATA_START, slot) : 0L;
     }
 
     public long getCachedAmount(int slot) {
         return slot >= 0 && slot < CONFIG_SLOT_COUNT
-                ? Integer.toUnsignedLong(configurationData.get(CACHED_DATA_START + slot)) : 0L;
+                ? decodeLong(CACHED_LOW_DATA_START, CACHED_HIGH_DATA_START, slot) : 0L;
+    }
+
+    public ResourceChannelKey getExternalTarget(int slot) {
+        if (!isExternalTarget(slot)) return null;
+        ItemStack display = getConfiguredTarget(slot);
+        CompoundTag marker = display.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        if (!marker.contains(EXTERNAL_DISPLAY_TAG, Tag.TAG_COMPOUND)) return null;
+        CompoundTag external = marker.getCompound(EXTERNAL_DISPLAY_TAG);
+        try {
+            return new ResourceChannelKey(external.getString("Channel"), external.getString("Resource"));
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
+    public List<ResourceChannelKey> availableExternalResources() {
+        return ExternalResourceCatalog.available().stream()
+                .filter(key -> !"mekanism_chemical".equals(key.channel()))
+                .toList();
     }
 
     public int getItemTargetLimit() {
@@ -321,15 +356,24 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
         return backend.setTarget(slot, configured);
     }
 
-    private boolean configureTargetFromCarried(int slot, ItemStack carried) {
-        if (carried == null || slot < 0 || slot >= CONFIG_SLOT_COUNT) return false;
+    static boolean configureTargetFromCarried(
+            XianqiaoInterfaceInventory backend, int slot, ItemStack carried, int button) {
+        if (backend == null || carried == null || slot < 0 || slot >= CONFIG_SLOT_COUNT) return false;
         if (carried.isEmpty()) return backend.clearSlot(slot);
-        var containedFluid = FluidUtil.getFluidContained(carried.copyWithCount(1));
-        if (containedFluid.isPresent()) {
-            FluidStack fluid = containedFluid.get();
-            int amount = Math.min(backend.getFluidTargetLimitMb(),
-                    Math.max(1, fluid.getAmount()));
-            return backend.setFluidTarget(slot, fluid.copyWithAmount(amount));
+        if (button == 1) {
+            var containedFluid = FluidUtil.getFluidContained(carried.copyWithCount(1));
+            if (containedFluid.isPresent()) {
+                FluidStack fluid = containedFluid.get();
+                int amount = Math.min(backend.getFluidTargetLimitMb(),
+                        Math.max(1, fluid.getAmount()));
+                return backend.setFluidTarget(slot, fluid.copyWithAmount(amount));
+            }
+            var external = XianqiaoInterfaceCompatHooks.containedExternalResource(carried);
+            if (external.isPresent()) {
+                var content = external.get();
+                return backend.setExternalTarget(
+                        slot, content.key(), content.amount());
+            }
         }
         return configureTarget(backend, slot, carried);
     }
@@ -338,7 +382,18 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
         ItemStack item = backend.getTarget(slot);
         if (!item.isEmpty()) return item.copyWithCount(1);
         FluidStack fluid = backend.getFluidTarget(slot);
-        if (fluid.isEmpty()) return ItemStack.EMPTY;
+        if (fluid.isEmpty()) {
+            ResourceChannelKey external = backend.getExternalTarget(slot);
+            if (external == null) return ItemStack.EMPTY;
+            ItemStack display = new ItemStack(ModBlocks.XIANQIAO_INTERFACE.get());
+            CompoundTag marker = display.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            CompoundTag encoded = new CompoundTag();
+            encoded.putString("Channel", external.channel());
+            encoded.putString("Resource", external.resourceId());
+            marker.put(EXTERNAL_DISPLAY_TAG, encoded);
+            display.set(DataComponents.CUSTOM_DATA, CustomData.of(marker));
+            return display;
+        }
         ItemStack display = FluidUtil.getFilledBucket(fluid);
         if (display.isEmpty()) display = new ItemStack(Items.BUCKET);
         if (blockEntity != null && blockEntity.getLevel() != null) {
@@ -350,6 +405,25 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
             }
         }
         return display.copyWithCount(1);
+    }
+
+    private long decodeLong(int lowStart, int highStart, int slot) {
+        return Integer.toUnsignedLong(configurationData.get(lowStart + slot))
+                | ((long) configurationData.get(highStart + slot) << 32);
+    }
+
+    private static long configuredAmount(XianqiaoInterfaceInventory inventory, int slot) {
+        ResourceChannelKey external = inventory.getExternalTarget(slot);
+        if (external != null) return inventory.getExternalDesiredAmount(slot);
+        FluidStack fluid = inventory.getFluidTarget(slot);
+        return fluid.isEmpty() ? inventory.getTarget(slot).getCount() : fluid.getAmount();
+    }
+
+    private static long cachedAmount(XianqiaoInterfaceInventory inventory, int slot) {
+        ResourceChannelKey external = inventory.getExternalTarget(slot);
+        if (external != null) return inventory.getExternalCachedAmount(slot);
+        FluidStack fluid = inventory.getBufferedFluid(slot);
+        return fluid.isEmpty() ? inventory.getBufferedStack(slot).getCount() : fluid.getAmount();
     }
 
     private void uploadCarried(int backendSlot, int amount) {

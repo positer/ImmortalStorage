@@ -84,6 +84,25 @@ final class ImmortalFurnaceEngineFuelContainerTest {
     }
 
     @Test
+    void suspendedChannelPreservesProgressWhileOtherChannelsContinue() {
+        SimpleContainer inventory = new SimpleContainer(7);
+        inventory.setItem(0, new ItemStack(Items.IRON_ORE));
+        inventory.setItem(3, new ItemStack(Items.IRON_ORE));
+        inventory.setItem(1, new ItemStack(Items.BLAZE_ROD));
+        ImmortalFurnaceEngine engine = new ImmortalFurnaceEngine(
+                new int[] {0, 3, 5}, 1, new int[] {2, 4, 6});
+        engine.setProgress(0, 17);
+        engine.setActiveRecipe(0, ResourceLocation.fromNamespaceAndPath("test", "iron"));
+
+        engine.tick(0L, inventory, stack -> ImmortalFurnaceEngine.TRUE_YUAN,
+                ImmortalFurnaceEngineFuelContainerTest::ironRecipe, channel -> channel == 0);
+
+        assertEquals(17, engine.progress(0));
+        assertEquals(ResourceLocation.fromNamespaceAndPath("test", "iron"), engine.activeRecipe(0));
+        assertEquals(1, engine.progress(1));
+    }
+
+    @Test
     void rejectedCredentialPaymentDoesNotIgniteOrConsumeTheDrive() {
         SimpleContainer inventory = new SimpleContainer(7);
         inventory.setItem(0, new ItemStack(Items.IRON_ORE));

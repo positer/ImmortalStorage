@@ -20,8 +20,16 @@ public final class Ae2Compat {
 
     private Ae2Compat() {}
 
+    /** Called during the block registry event, matching AE2 addon registration timing. */
+    public static synchronized void registerExternalResourceKeyType() {
+        CultivationExternalResourceKeyType.register();
+        Ae2ExternalKeyBridges.register(CultivationExternalResourceKeyBridge.INSTANCE);
+    }
+
     /** Registers the exchange-cell bridge exactly once for this class loader. */
     public static synchronized void initialize() {
+        registerExternalResourceKeyType();
+        InstalledAddonExternalKeyBridges.registerPresent();
         boolean changed = false;
         if (!gridServiceRegistered) {
             GridServices.register(XianqiaoExchangeGridService.class, XianqiaoExchangeGridService.class);

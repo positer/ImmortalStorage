@@ -121,12 +121,17 @@ final class SpiritStaffFunctionalContractTest {
         assertTrue(network.contains("playToServer(ModPayloads.RequestSpiritStaffBuildPreview.TYPE"));
         assertTrue(network.contains("SpiritStaffBuildExecutor.preview("),
                 "the server must calculate the same material-aware job used by placement");
+        assertTrue(network.contains("SpiritStaffBuildExecutor.previewRemoval("),
+                "the red removal outline must use the same server removal geometry as commit");
         assertTrue(payloads.contains("public static final int MAX_POSITIONS = 4096"));
         assertTrue(payloads.contains("if (size < 0 || size > MAX_POSITIONS)"),
                 "oversized payloads must be rejected rather than truncated with unread bytes");
         assertTrue(client.contains("snapshot.requestId() != requestId"));
         assertTrue(client.contains("snapshot.pos() != requestedTarget.pos()"));
         assertTrue(client.contains("snapshot.hand() != requestedTarget.hand()"));
+        assertTrue(client.contains("snapshot.removal() != requestedTarget.removal()"));
+        assertTrue(client.contains("requestedTarget.removal() ? 1.0F : 0.15F"),
+                "holding the special-operation key must render a red removal outline");
         assertTrue(client.contains("if (targetChanged)"),
                 "refreshing an unchanged target must retain the previous full-frame outline");
         assertFalse(client.contains("SpiritStaffBuildPlan.create("),

@@ -1,11 +1,17 @@
 package com.cultivation.cultivation.block.entity;
 
+import com.cultivation.cultivation.api.storage.ExternalResourceStorage;
 import com.cultivation.cultivation.api.storage.terminal.StorageItemSummary;
 import com.cultivation.cultivation.api.storage.terminal.TerminalEntryKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalStorageAction;
+import com.cultivation.core.resource.AtomicEnergyRefill;
+import com.cultivation.core.resource.ExternalResourceChannels;
+import com.cultivation.core.resource.ResourceChannelEntry;
+import com.cultivation.core.resource.ResourceChannelKey;
+import com.cultivation.core.resource.ResourceTransferAction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -25,10 +31,11 @@ import java.util.function.Supplier;
 /**
  * Nine independent mixed-resource interface slots.
  *
- * <p>Each slot owns one item or fluid identity plus long-valued desired and
- * cached amounts. NeoForge stack/int limits are applied only by the item and
- * fluid capability adapters. Per-slot limits come from the server common
- * config through {@link XianqiaoInterfaceLimits}.</p>
+ * <p>Each slot owns one item, fluid or optional external-resource identity
+ * plus long-valued desired and cached amounts. NeoForge stack/int limits are
+ * applied only by the item and fluid capability adapters. Per-slot limits
+ * come from the server common config through
+ * {@link XianqiaoInterfaceLimits}.</p>
  */
 public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     public static final int SLOT_COUNT = 9;
@@ -43,6 +50,7 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     private static final String TARGETS_TAG = "Targets";
     private static final String BUFFERS_TAG = "Buffers";
     private static final String FLUID_SLOTS_TAG = "FluidSlots";
+    private static final String EXTERNAL_SLOTS_TAG = "ExternalResourceSlots";
 
     private static final TerminalFluidStorage NO_FLUID_STORAGE = new TerminalFluidStorage() {
         @Override public long revision() { return 0L; }
@@ -50,9 +58,19 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         @Override public long insert(TerminalFluidKey key, long amountMb, TerminalStorageAction action) { return 0L; }
         @Override public long extract(TerminalFluidKey key, long amountMb, TerminalStorageAction action) { return 0L; }
     };
+    private static final ExternalResourceStorage NO_EXTERNAL_RESOURCE_STORAGE =
+            new ExternalResourceStorage() {
+                @Override public long revision() { return 0L; }
+                @Override public List<ResourceChannelEntry> snapshot() { return List.of(); }
+                @Override public long insert(
+                        ResourceChannelKey key, long amount, ResourceTransferAction action) { return 0L; }
+                @Override public long extract(
+                        ResourceChannelKey key, long amount, ResourceTransferAction action) { return 0L; }
+            };
 
     private final TerminalItemStorage itemStorage;
     private final TerminalFluidStorage fluidStorage;
+    private final ExternalResourceStorage externalResourceStorage;
     private final BooleanSupplier accessAllowed;
     private final Runnable onChanged;
     private final Runnable onConfigurationChanged;
@@ -86,17 +104,37 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     public XianqiaoInterfaceInventory(
             TerminalItemStorage itemStorage, TerminalFluidStorage fluidStorage,
             BooleanSupplier accessAllowed, Runnable onChanged, Runnable onConfigurationChanged) {
-        this(itemStorage, fluidStorage, accessAllowed, onChanged,
+        this(itemStorage, fluidStorage, NO_EXTERNAL_RESOURCE_STORAGE,
+                accessAllowed, onChanged,
                 onConfigurationChanged, XianqiaoInterfaceLimits::current);
+    }
+
+    public XianqiaoInterfaceInventory(
+            TerminalItemStorage itemStorage, TerminalFluidStorage fluidStorage,
+            ExternalResourceStorage externalResourceStorage,
+            BooleanSupplier accessAllowed, Runnable onChanged, Runnable onConfigurationChanged) {
+        this(itemStorage, fluidStorage, externalResourceStorage, accessAllowed,
+                onChanged, onConfigurationChanged, XianqiaoInterfaceLimits::current);
     }
 
     XianqiaoInterfaceInventory(
             TerminalItemStorage itemStorage, TerminalFluidStorage fluidStorage,
             BooleanSupplier accessAllowed, Runnable onChanged, Runnable onConfigurationChanged,
             Supplier<XianqiaoInterfaceLimits.Snapshot> limitSupplier) {
+        this(itemStorage, fluidStorage, NO_EXTERNAL_RESOURCE_STORAGE, accessAllowed,
+                onChanged, onConfigurationChanged, limitSupplier);
+    }
+
+    XianqiaoInterfaceInventory(
+            TerminalItemStorage itemStorage, TerminalFluidStorage fluidStorage,
+            ExternalResourceStorage externalResourceStorage,
+            BooleanSupplier accessAllowed, Runnable onChanged, Runnable onConfigurationChanged,
+            Supplier<XianqiaoInterfaceLimits.Snapshot> limitSupplier) {
         if (itemStorage == null) throw new IllegalArgumentException("terminal item storage is required");
         this.itemStorage = itemStorage;
         this.fluidStorage = fluidStorage == null ? NO_FLUID_STORAGE : fluidStorage;
+        this.externalResourceStorage = externalResourceStorage == null
+                ? NO_EXTERNAL_RESOURCE_STORAGE : externalResourceStorage;
         this.accessAllowed = accessAllowed == null ? () -> false : accessAllowed;
         this.onChanged = onChanged == null ? () -> {} : onChanged;
         this.onConfigurationChanged = onConfigurationChanged == null ? () -> {} : onConfigurationChanged;
@@ -131,6 +169,40 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         ResourceSlot resource = resources[slot];
         return isAvailable() && resource.fluidKey != null && resource.cached > 0L
                 ? resource.fluidKey.prototype().copyWithAmount((int) resource.cached) : FluidStack.EMPTY;
+    }
+
+    public synchronized ResourceChannelKey getExternalTarget(int slot) {
+        checkSlot(slot);
+        return isAvailable() ? resources[slot].externalKey : null;
+    }
+
+    public synchronized long getExternalDesiredAmount(int slot) {
+        checkSlot(slot);
+        ResourceSlot resource = resources[slot];
+        return isAvailable() && resource.externalKey != null ? resource.desired : 0L;
+    }
+
+    public synchronized long getExternalCachedAmount(int slot) {
+        checkSlot(slot);
+        ResourceSlot resource = resources[slot];
+        return isAvailable() && resource.externalKey != null ? resource.cached : 0L;
+    }
+
+    public synchronized boolean hasExternalTarget(ResourceChannelKey key) {
+        if (!isAvailable() || key == null) return false;
+        for (ResourceSlot resource : resources) {
+            if (key.equals(resource.externalKey)) return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean hasExternalTarget(ResourceChannelKey key, Direction side) {
+        if (!isAvailable() || key == null || side == null) return false;
+        for (ResourceSlot resource : resources) {
+            if (key.equals(resource.externalKey)
+                    && (resource.outputFaceMask & (1 << side.ordinal())) != 0) return true;
+        }
+        return false;
     }
 
     public synchronized int getOutputFaceMask(int slot) {
@@ -226,6 +298,110 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
                 ? FluidStack.EMPTY : current.fluidKey.prototype().copyWithAmount((int) clamped));
     }
 
+    /** Configures one loader-neutral optional resource identity. */
+    public synchronized boolean setExternalTarget(
+            int slot, ResourceChannelKey requestedKey, long requestedAmount) {
+        checkSlot(slot);
+        if (!isAvailable()) return false;
+        if (requestedKey == null || requestedAmount <= 0L) return clearSlot(slot);
+        long clampedAmount = ExternalResourceChannels.clampCacheAmount(
+                requestedKey, requestedAmount);
+        if (clampedAmount <= 0L) return clearSlot(slot);
+        ResourceSlot current = resources[slot];
+        if (requestedKey.equals(current.externalKey)) {
+            if (current.desired == clampedAmount) return true;
+            current.desired = clampedAmount;
+            changedConfiguration();
+            return true;
+        }
+        if (current.cached > 0L && !returnWholeBuffer(current)) return false;
+        current.clear();
+        current.setExternal(requestedKey, clampedAmount, 0L);
+        changedConfiguration();
+        return true;
+    }
+
+    public synchronized boolean setExternalTargetAmount(int slot, long requestedAmount) {
+        checkSlot(slot);
+        ResourceSlot current = resources[slot];
+        if (current.externalKey == null) return requestedAmount <= 0L && clearSlot(slot);
+        return setExternalTarget(slot, current.externalKey, requestedAmount);
+    }
+
+    /**
+     * Returns a direct view over this block's real configured caches only.
+     * It never exposes the owner's backing Xianqiao ledger directly.
+     */
+    public AtomicEnergyRefill.ResourceStore externalCacheStore(ResourceChannelKey key) {
+        return externalCacheStore(key, null);
+    }
+
+    /** Sided view used only by APIs whose official call carries a physical face. */
+    public AtomicEnergyRefill.ResourceStore externalCacheStore(
+            ResourceChannelKey key, Direction requiredSide) {
+        if (key == null) return null;
+        return new AtomicEnergyRefill.ResourceStore() {
+            @Override public long amount() { return externalCachedAmount(key, requiredSide); }
+            @Override public long extract(long requested, ResourceTransferAction action) {
+                return extractExternalCache(key, requiredSide, requested, action);
+            }
+            @Override public long insert(long offered, ResourceTransferAction action) {
+                return insertExternalCache(key, requiredSide, offered, action);
+            }
+        };
+    }
+
+    private synchronized long externalCachedAmount(ResourceChannelKey key, Direction requiredSide) {
+        if (!isAvailable() || key == null) return 0L;
+        long total = 0L;
+        for (ResourceSlot resource : resources) {
+            if (!matchesExternalCache(resource, key, requiredSide)) continue;
+            if (Long.MAX_VALUE - total < resource.cached) return Long.MAX_VALUE;
+            total += resource.cached;
+        }
+        return total;
+    }
+
+    private synchronized long insertExternalCache(
+            ResourceChannelKey key, Direction requiredSide,
+            long offered, ResourceTransferAction action) {
+        if (!isAvailable() || key == null || offered <= 0L || action == null) return 0L;
+        long remaining = offered;
+        for (ResourceSlot resource : resources) {
+            if (!matchesExternalCache(resource, key, requiredSide) || remaining == 0L) continue;
+            long room = Math.max(0L, resource.desired - resource.cached);
+            long accepted = Math.min(remaining, room);
+            if (action.executes() && accepted > 0L) resource.cached += accepted;
+            remaining -= accepted;
+        }
+        long accepted = offered - remaining;
+        if (action.executes() && accepted > 0L) onChanged.run();
+        return accepted;
+    }
+
+    private synchronized long extractExternalCache(
+            ResourceChannelKey key, Direction requiredSide,
+            long requested, ResourceTransferAction action) {
+        if (!isAvailable() || key == null || requested <= 0L || action == null) return 0L;
+        long remaining = requested;
+        for (ResourceSlot resource : resources) {
+            if (!matchesExternalCache(resource, key, requiredSide) || remaining == 0L) continue;
+            long extracted = Math.min(remaining, resource.cached);
+            if (action.executes() && extracted > 0L) resource.cached -= extracted;
+            remaining -= extracted;
+        }
+        long extracted = requested - remaining;
+        if (action.executes() && extracted > 0L) onChanged.run();
+        return extracted;
+    }
+
+    private static boolean matchesExternalCache(
+            ResourceSlot resource, ResourceChannelKey key, Direction requiredSide) {
+        return key.equals(resource.externalKey)
+                && (requiredSide == null
+                || (resource.outputFaceMask & (1 << requiredSide.ordinal())) != 0);
+    }
+
     public synchronized boolean clearSlot(int slot) {
         checkSlot(slot);
         if (!isAvailable()) return false;
@@ -238,7 +414,7 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     }
 
     /** Resolves one signed AE-style cache plan. */
-    public synchronized int replenishSlot(int slot, TerminalStorageAction action) {
+    public synchronized long replenishSlot(int slot, TerminalStorageAction action) {
         checkSlot(slot);
         if (!isAvailable() || action == null) return 0;
         reconcileConfiguredLimits();
@@ -261,15 +437,26 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
                         ? fluidStorage.extract(resource.fluidKey, requested, action)
                         : fluidStorage.insert(resource.fluidKey, requested, action);
             }
+        } else if (resource.externalKey != null) {
+            synchronized (externalResourceStorage) {
+                if (!isAvailable()) return 0L;
+                ResourceTransferAction resourceAction = action == TerminalStorageAction.SIMULATE
+                        ? ResourceTransferAction.SIMULATE : ResourceTransferAction.EXECUTE;
+                moved = delta > 0L
+                        ? externalResourceStorage.extract(
+                                resource.externalKey, requested, resourceAction)
+                        : externalResourceStorage.insert(
+                                resource.externalKey, requested, resourceAction);
+            }
         } else {
-            return 0;
+            return 0L;
         }
         checkTransfer(moved, requested, delta > 0L ? "cache refill" : "cache excess return");
         if (action.executes() && moved > 0L) {
             resource.cached += delta > 0L ? moved : -moved;
             onChanged.run();
         }
-        return (int) moved;
+        return moved;
     }
 
     /** One server tick is one AE-style scheduling round over all nine slots. */
@@ -281,10 +468,10 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     }
 
     /** Compatibility entry point retained for deterministic unit tests. */
-    public synchronized int replenishNextSlot(TerminalStorageAction action) {
-        if (!isAvailable() || action == null) return 0;
+    public synchronized long replenishNextSlot(TerminalStorageAction action) {
+        if (!isAvailable() || action == null) return 0L;
         int slot = nextRefillSlot;
-        int moved = replenishSlot(slot, action);
+        long moved = replenishSlot(slot, action);
         if (action.executes()) nextRefillSlot = (nextRefillSlot + 1) % SLOT_COUNT;
         return moved;
     }
@@ -399,6 +586,28 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         return accepted;
     }
 
+    public synchronized long insertItemIntoCaches(ItemStack stack, long amount, boolean simulate) {
+        if (stack == null || stack.isEmpty() || amount <= 0L || !isAvailable()) return 0L;
+        long remaining = amount;
+        for (int slot = 0; slot < resources.length && remaining > 0L; slot++) {
+            ResourceSlot resource = resources[slot];
+            if (resource.itemKey == null || !resource.itemKey.matches(stack)) continue;
+            long room = Math.max(0L, resource.desired - resource.cached);
+            long accepted = Math.min(remaining, room);
+            if (!simulate && accepted > 0L) resource.cached += accepted;
+            remaining -= accepted;
+        }
+        long accepted = amount - remaining;
+        if (!simulate && accepted > 0L) onChanged.run();
+        return accepted;
+    }
+
+    public synchronized boolean isItemValidForCache(int slot, ItemStack stack) {
+        if (!validSlot(slot) || stack == null || stack.isEmpty() || !isAvailable()) return false;
+        ResourceSlot resource = resources[slot];
+        return resource.itemKey != null && resource.itemKey.matches(stack);
+    }
+
     public synchronized long insertFluidIntoCache(int slot, FluidStack stack, boolean simulate) {
         if (!validSlot(slot) || stack == null || stack.isEmpty() || !isAvailable()) return 0L;
         ResourceSlot resource = resources[slot];
@@ -409,6 +618,29 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
             onChanged.run();
         }
         return accepted;
+    }
+
+    public synchronized long insertFluidIntoCaches(FluidStack stack, long amount, boolean simulate) {
+        if (stack == null || stack.isEmpty() || amount <= 0L || !isAvailable()) return 0L;
+        TerminalFluidKey key = TerminalFluidKey.of(stack);
+        long remaining = amount;
+        for (ResourceSlot resource : resources) {
+            if (remaining == 0L) break;
+            if (resource.fluidKey == null || !resource.fluidKey.equals(key)) continue;
+            long room = Math.max(0L, resource.desired - resource.cached);
+            long accepted = Math.min(remaining, room);
+            if (!simulate && accepted > 0L) resource.cached += accepted;
+            remaining -= accepted;
+        }
+        long accepted = amount - remaining;
+        if (!simulate && accepted > 0L) onChanged.run();
+        return accepted;
+    }
+
+    public synchronized boolean isFluidValidForCache(int slot, FluidStack stack) {
+        if (!validSlot(slot) || stack == null || stack.isEmpty() || !isAvailable()) return false;
+        ResourceSlot resource = resources[slot];
+        return resource.fluidKey != null && resource.fluidKey.equals(TerminalFluidKey.of(stack));
     }
 
     public synchronized long fluidCacheRoom(int slot) {
@@ -463,13 +695,20 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
 
     /** Drains matching duplicate slots in order while returning one legal int FluidStack. */
     public synchronized FluidStack drainFluid(FluidStack requested, int amountMb, boolean simulate) {
+        return drainFluid(requested, amountMb, simulate, null);
+    }
+
+    public synchronized FluidStack drainFluid(
+            FluidStack requested, int amountMb, boolean simulate, Direction requiredSide) {
         if (requested == null || requested.isEmpty() || amountMb <= 0 || !isAvailable()) return FluidStack.EMPTY;
         TerminalFluidKey key = TerminalFluidKey.of(requested);
         int remaining = amountMb;
         int moved = 0;
         for (ResourceSlot resource : resources) {
             if (remaining == 0) break;
-            if (resource.fluidKey == null || !resource.fluidKey.equals(key) || resource.cached <= 0L) continue;
+            if (resource.fluidKey == null || !resource.fluidKey.equals(key) || resource.cached <= 0L
+                    || requiredSide != null
+                    && (resource.outputFaceMask & (1 << requiredSide.ordinal())) == 0) continue;
             int part = (int) Math.min(remaining, resource.cached);
             moved += part;
             remaining -= part;
@@ -499,6 +738,22 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         }
         if (fluids.isEmpty()) tag.remove(FLUID_SLOTS_TAG);
         else tag.put(FLUID_SLOTS_TAG, fluids);
+
+        ListTag external = new ListTag();
+        for (int slot = 0; slot < SLOT_COUNT; slot++) {
+            ResourceSlot resource = resources[slot];
+            if (resource.externalKey == null) continue;
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("Slot", slot);
+            entry.putString("Channel", resource.externalKey.channel());
+            entry.putString("Resource", resource.externalKey.resourceId());
+            entry.putLong("Desired", resource.desired);
+            entry.putLong("Cached", resource.cached);
+            entry.putInt("OutputFaces", resource.outputFaceMask);
+            external.add(entry);
+        }
+        if (external.isEmpty()) tag.remove(EXTERNAL_SLOTS_TAG);
+        else tag.put(EXTERNAL_SLOTS_TAG, external);
     }
 
     public synchronized void loadState(CompoundTag tag, HolderLookup.Provider registries) {
@@ -520,6 +775,27 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
                 long cached = Math.min(Integer.MAX_VALUE, Math.max(0L, entry.getLong("Cached")));
                 resources[slot].setFluid(TerminalFluidKey.of(prototype), desired, cached);
                 resources[slot].outputFaceMask = sanitizeOutputFaceMask(entry.getInt("OutputFaces"));
+            }
+        }
+        if (tag.contains(EXTERNAL_SLOTS_TAG, Tag.TAG_LIST)) {
+            ListTag external = tag.getList(EXTERNAL_SLOTS_TAG, Tag.TAG_COMPOUND);
+            for (int index = 0; index < external.size(); index++) {
+                CompoundTag entry = external.getCompound(index);
+                int slot = entry.getInt("Slot");
+                if (!validSlot(slot) || !resources[slot].empty()) continue;
+                try {
+                    ResourceChannelKey key = new ResourceChannelKey(
+                            entry.getString("Channel"), entry.getString("Resource"));
+                    long desired = ExternalResourceChannels.clampCacheAmount(
+                            key, entry.getLong("Desired"));
+                    if (desired <= 0L) continue;
+                    long cached = Math.max(0L, entry.getLong("Cached"));
+                    resources[slot].setExternal(key, desired, cached);
+                    resources[slot].outputFaceMask =
+                            sanitizeOutputFaceMask(entry.getInt("OutputFaces"));
+                } catch (IllegalArgumentException ignored) {
+                    // Corrupt or stale optional resource identities fail closed.
+                }
             }
         }
     }
@@ -583,10 +859,31 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         }
     }
 
+    /** Returns optional-resource caches where possible and retains exact remainders in NBT. */
+    public synchronized void returnExternalBuffersAndRetainRemainders() {
+        for (ResourceSlot resource : resources) {
+            if (resource.externalKey == null || resource.cached <= 0L) continue;
+            long committed;
+            synchronized (externalResourceStorage) {
+                long simulated = externalResourceStorage.insert(
+                        resource.externalKey, resource.cached, ResourceTransferAction.SIMULATE);
+                checkTransfer(simulated, resource.cached, "simulated removal external-resource return");
+                committed = simulated <= 0L ? 0L : externalResourceStorage.insert(
+                        resource.externalKey, simulated, ResourceTransferAction.EXECUTE);
+                checkTransfer(committed, simulated, "committed removal external-resource return");
+            }
+            if (committed > 0L) {
+                resource.cached -= committed;
+                onChanged.run();
+            }
+        }
+    }
+
     private boolean returnWholeBuffer(ResourceSlot resource) {
         if (resource.cached <= 0L) return true;
         if (resource.itemKey != null) return atomicReturnItem(resource);
         if (resource.fluidKey != null) return atomicReturnFluid(resource);
+        if (resource.externalKey != null) return atomicReturnExternal(resource);
         return true;
     }
 
@@ -627,6 +924,33 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
             if (committed > 0L) {
                 long rolledBack = fluidStorage.extract(resource.fluidKey, committed, TerminalStorageAction.EXECUTE);
                 if (rolledBack != committed) throw new IllegalStateException("fluid cache return compensation failed");
+            }
+            return false;
+        }
+    }
+
+    private boolean atomicReturnExternal(ResourceSlot resource) {
+        long amount = resource.cached;
+        synchronized (externalResourceStorage) {
+            if (!isAvailable()) return false;
+            long simulated = externalResourceStorage.insert(
+                    resource.externalKey, amount, ResourceTransferAction.SIMULATE);
+            if (simulated != amount || !isAvailable()) return false;
+            long committed = externalResourceStorage.insert(
+                    resource.externalKey, amount, ResourceTransferAction.EXECUTE);
+            checkTransfer(committed, amount, "external-resource cache return");
+            if (committed == amount) {
+                resource.cached = 0L;
+                onChanged.run();
+                return true;
+            }
+            if (committed > 0L) {
+                long rolledBack = externalResourceStorage.extract(
+                        resource.externalKey, committed, ResourceTransferAction.EXECUTE);
+                if (rolledBack != committed) {
+                    throw new IllegalStateException(
+                            "external-resource cache return compensation failed");
+                }
             }
             return false;
         }
@@ -797,15 +1121,19 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
     private static final class ResourceSlot {
         private TerminalEntryKey itemKey;
         private TerminalFluidKey fluidKey;
+        private ResourceChannelKey externalKey;
         private long desired;
         private long cached;
         private int outputFaceMask;
 
-        private boolean empty() { return itemKey == null && fluidKey == null; }
+        private boolean empty() {
+            return itemKey == null && fluidKey == null && externalKey == null;
+        }
 
         private void setItem(TerminalEntryKey key, long desired, long cached) {
             this.itemKey = key;
             this.fluidKey = null;
+            this.externalKey = null;
             this.desired = desired;
             this.cached = cached;
         }
@@ -813,6 +1141,15 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         private void setFluid(TerminalFluidKey key, long desired, long cached) {
             this.itemKey = null;
             this.fluidKey = key;
+            this.externalKey = null;
+            this.desired = desired;
+            this.cached = cached;
+        }
+
+        private void setExternal(ResourceChannelKey key, long desired, long cached) {
+            this.itemKey = null;
+            this.fluidKey = null;
+            this.externalKey = key;
             this.desired = desired;
             this.cached = cached;
         }
@@ -820,6 +1157,7 @@ public final class XianqiaoInterfaceInventory implements BulkItemInsertTarget {
         private void clear() {
             itemKey = null;
             fluidKey = null;
+            externalKey = null;
             desired = 0L;
             cached = 0L;
             outputFaceMask = 0;

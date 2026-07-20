@@ -91,11 +91,11 @@ final class XianqiaoInterfaceDirectionStateTest {
         BulkItemInsertTarget previouslyAcquired = (BulkItemInsertTarget) pull;
         assertEquals(0L, previouslyAcquired.insertBulk(
                 new ItemStack(Items.COBBLESTONE), 250_000L, false),
-                "an already cached wrapper must fail closed after its face is disabled");
+                "no configured cobblestone cache exists; the active face mode is irrelevant");
 
         Object unsided = handlerMethod.invoke(blockEntity, new Object[] {null});
         if (unsided instanceof IItemHandler handler) {
-            assertEquals(0, handler.getSlots());
+            assertEquals(0, handler.getSlots(), "an unbound interface has no live cache");
             ItemStack offered = new ItemStack(Items.COBBLESTONE, 8);
             assertEquals(8, handler.insertItem(0, offered, false).getCount());
             assertTrue(handler.extractItem(0, 8, false).isEmpty());

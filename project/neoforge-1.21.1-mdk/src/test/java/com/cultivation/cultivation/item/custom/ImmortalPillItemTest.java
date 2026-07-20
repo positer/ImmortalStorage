@@ -7,12 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class ImmortalPillItemTest {
     @Test
-    void unboundedStageRewardIsFiniteAndInfiniteStageNeedsNoMaterialization() {
+    void finiteStagesRestoreHalfCapAndUnboundedStagesGrantTwoThousandTicksOfGeneration() {
         CultivationPlayerData data = new CultivationPlayerData();
+        data.setStage(8);
+        assertEquals(512L, ImmortalPillItem.immortalYuanReward(data));
+
         data.setStage(9);
-        assertEquals(4_096L, ImmortalPillItem.immortalYuanReward(data));
+        assertEquals(3_200L, ImmortalPillItem.immortalYuanReward(data));
 
         data.setStage(10);
-        assertEquals(4_096L, ImmortalPillItem.immortalYuanReward(data));
+        assertEquals(25_600L, ImmortalPillItem.immortalYuanReward(data));
     }
 }

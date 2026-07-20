@@ -38,4 +38,10 @@ public interface PersonalStorageEndpoint {
 
     /** Optional standard NeoForge bridge over {@link #fluidStorage()}. */
     default @Nullable IFluidHandler fluidHandler() { return null; }
+
+    /**
+     * Optional stage-eight+ namespace for energy, chemicals, mana, source,
+     * soul and other integration-defined long-valued resources.
+     */
+    default @Nullable ExternalResourceStorage externalResourceStorage() { return null; }
 }

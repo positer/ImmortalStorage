@@ -43,6 +43,10 @@ final class IndustrialForegoingSoulsOptionalBoundaryTest {
                 "IndustrialForegoingSoulsCompat.java")));
         assertTrue(compat.contains("SoulCapabilities.BLOCK"));
         assertTrue(compat.contains("RegisterCapabilitiesEvent"));
+        assertTrue(compat.contains("activeTransferTick"));
+        assertTrue(compat.contains("XianqiaoInterfaceCompatHooks"));
+        assertTrue(compat.contains("SoulActiveTransfer.push"));
+        assertTrue(compat.contains("SoulActiveTransfer.pull"));
 
         String manager = Files.readString(JAVA.resolve(Path.of(
                 "com", "cultivation", "cultivation", "compat", "CompatManager.java")));

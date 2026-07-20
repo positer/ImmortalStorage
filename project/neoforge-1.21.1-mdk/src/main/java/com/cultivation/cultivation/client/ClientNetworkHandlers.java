@@ -13,6 +13,9 @@ public final class ClientNetworkHandlers {
         registrar.playToClient(ModPayloads.TerminalFluidViewSnapshot.TYPE,
                 ModPayloads.TerminalFluidViewSnapshot.STREAM_CODEC,
                 ClientNetworkHandlers::handleTerminalFluidViewSnapshot);
+        registrar.playToClient(ModPayloads.TerminalExternalViewSnapshot.TYPE,
+                ModPayloads.TerminalExternalViewSnapshot.STREAM_CODEC,
+                ClientNetworkHandlers::handleTerminalExternalViewSnapshot);
         registrar.playToClient(ModPayloads.TerminalRecipeSources.TYPE,
                 ModPayloads.TerminalRecipeSources.STREAM_CODEC,
                 ClientNetworkHandlers::handleTerminalRecipeSources);
@@ -86,7 +89,24 @@ public final class ClientNetworkHandlers {
             }
             menu.applyClientFluidSnapshot(snapshot.revision(), snapshot.visibleRows(), snapshot.baseRow(),
                     snapshot.bufferBaseRow(), snapshot.totalRows(), snapshot.totalItemEntries(),
+                    snapshot.totalFluidEntries(),
                     java.util.List.copyOf(entries));
+        });
+    }
+
+    public static void handleTerminalExternalViewSnapshot(
+            ModPayloads.TerminalExternalViewSnapshot snapshot, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.player == null
+                    || !(minecraft.player.containerMenu instanceof com.cultivation.cultivation.menu.custom.XianqiaoStorageMenu menu)
+                    || menu.containerId != snapshot.containerId()) return;
+            java.util.List<com.cultivation.cultivation.api.storage.terminal.TerminalExternalResourceEntry> entries =
+                    snapshot.entries().stream().map(entry ->
+                            new com.cultivation.cultivation.api.storage.terminal.TerminalExternalResourceEntry(
+                                    entry.entryId(), new com.cultivation.core.resource.ResourceChannelKey(
+                                    entry.channel(), entry.resourceId()), entry.amount())).toList();
+            menu.applyClientExternalSnapshot(snapshot.revision(), snapshot.totalExternalEntries(), entries);
         });
     }
 

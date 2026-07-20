@@ -9,6 +9,7 @@ import appeng.api.stacks.KeyCounter;
 import appeng.api.storage.MEStorage;
 import appeng.api.storage.cells.CellState;
 import appeng.api.storage.cells.StorageCell;
+import com.cultivation.cultivation.api.storage.ExternalResourceStorage;
 import com.cultivation.cultivation.api.storage.PersonalStorageApi;
 import com.cultivation.cultivation.api.storage.PersonalStorageEndpoint;
 import com.cultivation.cultivation.api.storage.terminal.StorageItemSummary;
@@ -17,6 +18,8 @@ import com.cultivation.cultivation.api.storage.terminal.TerminalFluidKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalItemStorage;
 import com.cultivation.cultivation.api.storage.terminal.TerminalStorageAction;
+import com.cultivation.core.resource.ResourceChannelKey;
+import com.cultivation.core.resource.ResourceTransferAction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -37,7 +40,8 @@ import java.util.UUID;
  */
 final class XianqiaoExchangeStorageCell implements StorageCell {
     private static final long AE2_INFINITE_DISPLAY_AMOUNT = Integer.MAX_VALUE;
-    private static final RevisionStamp OFFLINE_STAMP = new RevisionStamp(false, 0, 0L, false, 0L);
+    private static final RevisionStamp OFFLINE_STAMP =
+            new RevisionStamp(false, 0, 0L, false, 0L, false, 0L);
     private static final EndpointResolver LIVE_ENDPOINT_RESOLVER = (server, owner) ->
             server == null ? null : PersonalStorageApi.resolveXianqiao(server, owner);
 
@@ -115,6 +119,10 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
         } else if (what instanceof AEFluidKey fluidKey && access.fluids() != null) {
             inserted = access.fluids().insert(
                     TerminalFluidKey.of(fluidKey.toStack(1)), amount, action);
+        } else if (access.externalResources() != null) {
+            ResourceChannelKey key = Ae2ExternalKeyBridges.toResourceKey(what);
+            inserted = key == null ? 0L : access.externalResources().insert(
+                    key, amount, resourceAction(mode));
         } else {
             return 0L;
         }
@@ -138,6 +146,10 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
         } else if (what instanceof AEFluidKey fluidKey && access.fluids() != null) {
             extracted = access.fluids().extract(
                     TerminalFluidKey.of(fluidKey.toStack(1)), amount, action);
+        } else if (access.externalResources() != null) {
+            ResourceChannelKey key = Ae2ExternalKeyBridges.toResourceKey(what);
+            extracted = key == null ? 0L : access.externalResources().extract(
+                    key, amount, resourceAction(mode));
         } else {
             return 0L;
         }
@@ -215,6 +227,14 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
                     }
                 });
             }
+            if (access.externalResources() != null) {
+                access.externalResources().snapshot().forEach(entry -> {
+                    AEKey key = Ae2ExternalKeyBridges.toAeKey(entry.key());
+                    if (key != null && entry.amount() > 0L) {
+                        amounts.merge(key, entry.amount(), XianqiaoExchangeStorageCell::saturatedSum);
+                    }
+                });
+            }
             cachedStamp = stamp;
             cachedAmounts = Collections.unmodifiableMap(amounts);
             return new StorageSnapshot(stamp, cachedAmounts);
@@ -235,13 +255,16 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
         TerminalItemStorage items = endpoint.itemStorage();
         if (items == null) return null;
         TerminalFluidStorage fluids = endpoint.fluidStorage();
+        ExternalResourceStorage externalResources = endpoint.externalResourceStorage();
         RevisionStamp stamp = new RevisionStamp(
                 true,
                 endpoint.stage(),
                 items.revision(),
                 fluids != null,
-                fluids == null ? 0L : fluids.revision());
-        return new EndpointAccess(items, fluids, stamp);
+                fluids == null ? 0L : fluids.revision(),
+                externalResources != null,
+                externalResources == null ? 0L : externalResources.revision());
+        return new EndpointAccess(items, fluids, externalResources, stamp);
     }
 
     private synchronized void clearSnapshotCache() {
@@ -251,6 +274,10 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
 
     private static TerminalStorageAction terminalAction(Actionable mode) {
         return mode.isSimulate() ? TerminalStorageAction.SIMULATE : TerminalStorageAction.EXECUTE;
+    }
+
+    private static ResourceTransferAction resourceAction(Actionable mode) {
+        return mode.isSimulate() ? ResourceTransferAction.SIMULATE : ResourceTransferAction.EXECUTE;
     }
 
     private static long boundTransfer(long transferred, long requested) {
@@ -284,11 +311,14 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
             int stage,
             long itemRevision,
             boolean fluidsAvailable,
-            long fluidRevision) {}
+            long fluidRevision,
+            boolean externalResourcesAvailable,
+            long externalResourceRevision) {}
 
     private record EndpointAccess(
             TerminalItemStorage items,
             @Nullable TerminalFluidStorage fluids,
+            @Nullable ExternalResourceStorage externalResources,
             RevisionStamp stamp) {}
 
     private record StorageSnapshot(RevisionStamp stamp, Map<AEKey, Long> amounts) {}

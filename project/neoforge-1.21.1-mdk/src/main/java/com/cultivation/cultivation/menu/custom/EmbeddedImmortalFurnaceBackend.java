@@ -15,6 +15,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
@@ -42,9 +44,13 @@ import java.util.function.Supplier;
  * three independent work channels sharing one fuel slot.
  */
 public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
-    private static final int NBT_VERSION = 1;
+    private static final int NBT_VERSION = 2;
     private static final String ITEMS_TAG = "Items";
     private static final String RECIPE_USAGE_TAG = "RecipeUsage";
+    private static final String RECALL_BACKEND_TAG = "spiritSwordRecallBackend";
+    private static final String RECALL_TOKEN_TAG = "spiritSwordRecallToken";
+    private static final String RECALL_OWNER_TAG = "spiritSwordRecallOwner";
+    private static final String RECALL_CHANNEL_TAG = "spiritSwordRecallChannel";
     static final int INPUT = 0;
     static final int FUEL = 1;
     static final int RESULT = 2;
@@ -81,6 +87,9 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
     private final ItemStack[] refillTemplates = {
             ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY
     };
+    private UUID backendId = UUID.randomUUID();
+    private final UUID[] recallTokens = new UUID[ImmortalFurnaceEngine.CHANNEL_COUNT];
+    private boolean internalMutation;
 
     private final ContainerData dataAccess = new ContainerData() {
         @Override
@@ -133,6 +142,17 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
         tag.put(ITEMS_TAG, items);
         tag.putBoolean("AutoConsume", autoConsume);
         tag.putBoolean("AutoFill", autoFill);
+        tag.putUUID("BackendId", backendId);
+        ListTag reservations = new ListTag();
+        for (int channel = 0; channel < recallTokens.length; channel++) {
+            UUID token = recallTokens[channel];
+            if (token == null) continue;
+            CompoundTag entry = new CompoundTag();
+            entry.putInt("Channel", channel);
+            entry.putUUID("Token", token);
+            reservations.add(entry);
+        }
+        tag.put("SpiritSwordReservations", reservations);
         ListTag refillItems = new ListTag();
         for (int channel = 0; channel < refillTemplates.length; channel++) {
             ItemStack template = refillTemplates[channel];
@@ -179,12 +199,14 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
         autoConsume = false;
         autoFill = false;
         java.util.Arrays.fill(refillTemplates, ItemStack.EMPTY);
+        java.util.Arrays.fill(recallTokens, null);
         for (int channel = 0; channel < ImmortalFurnaceEngine.CHANNEL_COUNT; channel++) {
             engine.setProgress(channel, 0);
             engine.setTotalTime(channel, ImmortalFurnaceEngine.TRUE_YUAN.cookingTicks());
             engine.setActiveRecipe(channel, null);
         }
         if (tag == null || tag.isEmpty()) return;
+        backendId = tag.hasUUID("BackendId") ? tag.getUUID("BackendId") : UUID.randomUUID();
 
         ListTag items = tag.getList(ITEMS_TAG, Tag.TAG_COMPOUND);
         for (int index = 0; index < items.size(); index++) {
@@ -196,6 +218,14 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
         }
         autoConsume = tag.getBoolean("AutoConsume");
         autoFill = tag.getBoolean("AutoFill");
+        ListTag reservations = tag.getList("SpiritSwordReservations", Tag.TAG_COMPOUND);
+        for (int index = 0; index < reservations.size(); index++) {
+            CompoundTag entry = reservations.getCompound(index);
+            int channel = entry.getInt("Channel");
+            if (channel >= 0 && channel < recallTokens.length && entry.hasUUID("Token")) {
+                recallTokens[channel] = entry.getUUID("Token");
+            }
+        }
         ListTag refillItems = tag.getList("RefillTemplates", Tag.TAG_COMPOUND);
         for (int index = 0; index < refillItems.size(); index++) {
             CompoundTag entry = refillItems.getCompound(index);
@@ -311,6 +341,74 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
         return findRecipe(player, stack).isPresent();
     }
 
+    public boolean summonSpiritSword(ServerPlayer player, InteractionHand hand) {
+        if (player == null || hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty()) return false;
+        for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
+            ItemStack sword = getItem(INPUT_SLOTS[channel]);
+            if (!(sword.getItem() instanceof SpiritSwordItem) || recallTokens[channel] != null) continue;
+            UUID token = UUID.randomUUID();
+            ItemStack summoned = sword.copy();
+            writeRecall(summoned, player.getUUID(), channel, token);
+            recallTokens[channel] = token;
+            internalMutation = true;
+            try {
+                setItem(INPUT_SLOTS[channel], ItemStack.EMPTY);
+            } finally {
+                internalMutation = false;
+            }
+            player.setItemInHand(hand, summoned);
+            setChanged();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean storeSpiritSword(ServerPlayer player, InteractionHand hand) {
+        if (player == null) return false;
+        ItemStack held = player.getItemInHand(hand);
+        if (!(held.getItem() instanceof SpiritSwordItem) || held.getCount() != 1) return false;
+        RecallIdentity identity = readRecall(held);
+        int channel = matchingReservedChannel(player, identity);
+        boolean resume = channel >= 0;
+        if (!resume) channel = firstAvailableChannel();
+        if (channel < 0) return false;
+
+        ItemStack stored = held.copy();
+        clearRecall(stored);
+        internalMutation = true;
+        try {
+            setItem(INPUT_SLOTS[channel], stored);
+        } finally {
+            internalMutation = false;
+        }
+        player.setItemInHand(hand, ItemStack.EMPTY);
+        if (resume) {
+            recallTokens[channel] = null;
+        } else {
+            engine.setProgress(channel, 0);
+            engine.setActiveRecipe(channel, null);
+            refillTemplates[channel] = stored.copy();
+        }
+        setChanged();
+        return true;
+    }
+
+    public boolean isRecallReserved(int channel) {
+        return channel >= 0 && channel < recallTokens.length && recallTokens[channel] != null;
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        int channel = channelForInputSlot(slot);
+        if (!internalMutation && channel >= 0 && stack != null && !stack.isEmpty()
+                && recallTokens[channel] != null) {
+            recallTokens[channel] = null;
+            engine.setProgress(channel, 0);
+            engine.setActiveRecipe(channel, null);
+        }
+        super.setItem(slot, stack);
+    }
+
     /** Advances this player-owned furnace exactly once from the server player tick. */
     public void tick(ServerPlayer player) {
         if (player == null || !(player.level() instanceof ServerLevel level)) return;
@@ -338,6 +436,7 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
 
     private void rememberInputTemplates() {
         for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
+            if (isRecallReserved(channel)) continue;
             ItemStack input = getItem(INPUT_SLOTS[channel]);
             if (input.isEmpty()) continue;
             ItemStack remembered = refillTemplates[channel];
@@ -352,6 +451,7 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
     private void refillInputsFromStorage(CultivationPlayerData storage) {
         if (storage == null) return;
         for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
+            if (isRecallReserved(channel)) continue;
             ItemStack template = refillTemplates[channel];
             if (template.isEmpty()) continue;
             int slot = INPUT_SLOTS[channel];
@@ -390,8 +490,63 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
 
     void tickCore(long gameTick, ImmortalFurnaceEngine.FuelResolver fuelResolver,
                   ImmortalFurnaceEngine.RecipeResolver recipeResolver) {
-        if (engine.tick(gameTick, this, fuelResolver, recipeResolver)) setChanged();
+        if (engine.tick(gameTick, this, fuelResolver, recipeResolver, this::isRecallReserved)) setChanged();
     }
+
+    private int firstAvailableChannel() {
+        for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
+            if (!isRecallReserved(channel) && getItem(INPUT_SLOTS[channel]).isEmpty()) return channel;
+        }
+        return -1;
+    }
+
+    private int matchingReservedChannel(ServerPlayer player, RecallIdentity identity) {
+        if (identity == null || !player.getUUID().equals(identity.owner())
+                || !backendId.equals(identity.backend()) || identity.channel() < 0
+                || identity.channel() >= recallTokens.length) return -1;
+        UUID authoritative = recallTokens[identity.channel()];
+        return authoritative != null && authoritative.equals(identity.token()) ? identity.channel() : -1;
+    }
+
+    private int channelForInputSlot(int slot) {
+        for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
+            if (INPUT_SLOTS[channel] == slot) return channel;
+        }
+        return -1;
+    }
+
+    private void writeRecall(ItemStack stack, UUID owner, int channel, UUID token) {
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        tag.putUUID(RECALL_OWNER_TAG, owner);
+        tag.putUUID(RECALL_BACKEND_TAG, backendId);
+        tag.putUUID(RECALL_TOKEN_TAG, token);
+        tag.putInt(RECALL_CHANNEL_TAG, channel);
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    private static RecallIdentity readRecall(ItemStack stack) {
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        if (!tag.hasUUID(RECALL_OWNER_TAG) || !tag.hasUUID(RECALL_BACKEND_TAG)
+                || !tag.hasUUID(RECALL_TOKEN_TAG) || !tag.contains(RECALL_CHANNEL_TAG, Tag.TAG_INT)) return null;
+        return new RecallIdentity(tag.getUUID(RECALL_OWNER_TAG), tag.getUUID(RECALL_BACKEND_TAG),
+                tag.getUUID(RECALL_TOKEN_TAG), tag.getInt(RECALL_CHANNEL_TAG));
+    }
+
+    private static void clearRecall(ItemStack stack) {
+        CompoundTag tag = stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+        tag.remove(RECALL_OWNER_TAG);
+        tag.remove(RECALL_BACKEND_TAG);
+        tag.remove(RECALL_TOKEN_TAG);
+        tag.remove(RECALL_CHANNEL_TAG);
+        stack.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    private record RecallIdentity(UUID owner, UUID backend, UUID token, int channel) {}
 
     void awardUsedRecipes(Player player) {
         Map<ResourceLocation, Integer> recipesUsed = engine.combinedRecipeUsage();

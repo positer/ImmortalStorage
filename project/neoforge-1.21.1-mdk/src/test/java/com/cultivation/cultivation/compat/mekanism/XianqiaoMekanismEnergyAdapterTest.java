@@ -5,8 +5,6 @@ import com.cultivation.core.resource.ResourceTransferAction;
 import mekanism.api.Action;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -14,21 +12,16 @@ final class XianqiaoMekanismEnergyAdapterTest {
     @Test
     void strictEnergyUsesRemainderOnInsertAndAmountOnExtract() {
         Store store = new Store(10L);
-        AtomicReference<XianqiaoMekanismEnergyAdapter.Mode> mode =
-                new AtomicReference<>(XianqiaoMekanismEnergyAdapter.Mode.PULL);
-        var handler = new XianqiaoMekanismEnergyAdapter(() -> store, mode::get);
+        var handler = new XianqiaoMekanismEnergyAdapter(() -> store);
 
         assertEquals(1, handler.getEnergyContainerCount());
         assertEquals(0L, handler.insertEnergy(0, 5L, Action.SIMULATE));
         assertEquals(10L, handler.getEnergy(0));
         assertEquals(0L, handler.insertEnergy(0, 5L, Action.EXECUTE));
         assertEquals(15L, handler.getEnergy(0));
-        assertEquals(0L, handler.extractEnergy(0, 4L, Action.EXECUTE),
-                "PULL must not expose extraction");
-
-        mode.set(XianqiaoMekanismEnergyAdapter.Mode.PUSH);
-        assertEquals(5L, handler.insertEnergy(0, 5L, Action.EXECUTE),
-                "PUSH returns the entire unaccepted insertion remainder");
+        assertEquals(4L, handler.extractEnergy(0, 4L, Action.EXECUTE));
+        assertEquals(11L, handler.getEnergy(0));
+        assertEquals(0L, handler.insertEnergy(0, 4L, Action.EXECUTE));
         assertEquals(7L, handler.extractEnergy(0, 7L, Action.SIMULATE));
         assertEquals(15L, handler.getEnergy(0));
         assertEquals(7L, handler.extractEnergy(0, 7L, Action.EXECUTE));
@@ -37,9 +30,9 @@ final class XianqiaoMekanismEnergyAdapterTest {
 
     @Test
     void missingDisabledAndDirectSetFailClosed() {
-        AtomicReference<AtomicEnergyRefill.ResourceStore> live = new AtomicReference<>(null);
-        var handler = new XianqiaoMekanismEnergyAdapter(
-                live::get, () -> XianqiaoMekanismEnergyAdapter.Mode.DISABLED);
+        java.util.concurrent.atomic.AtomicReference<AtomicEnergyRefill.ResourceStore> live =
+                new java.util.concurrent.atomic.AtomicReference<>(null);
+        var handler = new XianqiaoMekanismEnergyAdapter(live::get);
 
         assertEquals(0L, handler.getEnergy(0));
         assertEquals(9L, handler.insertEnergy(0, 9L, Action.EXECUTE));

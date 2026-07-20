@@ -1,0 +1,8 @@
+{
+  "name":"真元与仙元","icon":"cultivation:immortal_yuan","category":"cultivation:progression","sortnum":20,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"cultivation:true_yuan","title":"真实资源物品","text":"真元与仙元都是普通物品，可存入个人存储并被合成、村民交易和其他模组能力读取。存在阶段上限时，按身上加个人存储的总和计算；六阶后真元无上限。"},
+    {"type":"patchouli:crafting","recipe":"cultivation:immortal_yuan_to_true_yuan","text":"一枚仙元可合成64真元。真元还能烧炼10件物品，仙元可烧炼500件物品。"},
+    {"type":"patchouli:text","text":"十阶默认每20刻生成256仙元且存储无上限。服务器可开启无消耗仙元通道。放置真元/仙元可形成可染色光源核心；空手右键切换模型显示，仙元光源还会抑制当前区块的敌对生物自然生成。"}
+  ]
+}

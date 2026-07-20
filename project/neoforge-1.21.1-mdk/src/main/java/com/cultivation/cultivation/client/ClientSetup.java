@@ -25,6 +25,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -36,16 +37,20 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::clientSetup);
         modBus.addListener(ClientSetup::registerScreens);
         modBus.addListener(ClientSetup::registerRenderers);
+        modBus.addListener(ClientSetup::registerAdditionalModels);
         CultivationKeybinds.init(modBus, forgeBus);
         forgeBus.addListener(ClientItemTooltips::onTooltip);
         SpiritStaffBuildPreview.init(forgeBus);
     }
 
     private static void clientSetup(final FMLClientSetupEvent e) {
-        e.enqueueWork(() -> ItemProperties.register(
-                ModItems.SPIRIT_STAFF.get(),
-                ResourceLocation.fromNamespaceAndPath(CultivationMod.MODID, "staff_mode"),
-                (stack, level, entity, seed) -> SpiritStaffItem.getMode(stack)));
+        e.enqueueWork(() -> {
+            ItemProperties.register(
+                    ModItems.SPIRIT_STAFF.get(),
+                    ResourceLocation.fromNamespaceAndPath(CultivationMod.MODID, "staff_mode"),
+                    (stack, level, entity, seed) -> SpiritStaffItem.getMode(stack));
+            com.cultivation.cultivation.compat.CompatManager.initializeClientIntegrations();
+        });
     }
 
     private static void registerScreens(RegisterMenuScreensEvent e) {
@@ -64,6 +69,16 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WORLD_SHARD_MINER.get(), WorldShardMinerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.YUAN_LIGHT.get(), YuanLightRenderer::new);
+    }
+
+    private static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!(item instanceof com.cultivation.cultivation.item.SourceVeinBlockItem)) continue;
+            ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+            event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(
+                    ResourceLocation.fromNamespaceAndPath(
+                            id.getNamespace(), "item/" + id.getPath() + "_base")));
+        }
     }
 
     private ClientSetup() {}

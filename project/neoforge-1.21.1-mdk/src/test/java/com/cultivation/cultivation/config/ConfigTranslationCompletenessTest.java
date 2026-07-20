@@ -29,7 +29,17 @@ final class ConfigTranslationCompletenessTest {
             "progression.maximumStage", "progression.stageTenInfiniteImmortalYuan",
             "progression.tribulation_targets", "progression.tribulation_targets.stage6To7",
             "progression.tribulation_targets.stage7To8", "progression.tribulation_targets.stage8To9",
-            "progression.tribulation_targets.stage9To10");
+            "progression.tribulation_targets.stage9To10",
+            "resource_conversion", "resource_conversion.fe", "resource_conversion.botaniaMana",
+            "resource_conversion.arsSource", "resource_conversion.fe.enabled",
+            "resource_conversion.botaniaMana.enabled", "resource_conversion.arsSource.enabled",
+            "resource_conversion.fe.resourcePerImmortalYuan",
+            "resource_conversion.botaniaMana.resourcePerImmortalYuan",
+            "resource_conversion.arsSource.resourcePerImmortalYuan",
+            "resource_conversion.fe.maximumConversionPerTick",
+            "resource_conversion.botaniaMana.maximumConversionPerTick",
+            "resource_conversion.arsSource.maximumConversionPerTick");
+    private static final int DYNAMIC_CONVERSION_KEYS = 12;
 
     @Test
     void everyCommonConfigSectionAndValueHasNaturalLanguageInBothLocales() throws IOException {
@@ -51,10 +61,15 @@ final class ConfigTranslationCompletenessTest {
         String source = Files.readString(locateSource());
         Pattern binding = Pattern.compile("translation\\(key\\(\\\"([^\\\"]+)\\\"\\)\\)");
         List<String> boundKeys = binding.matcher(source).results().map(match -> match.group(1)).toList();
-        assertEquals(KEYS.size(), boundKeys.size(), "every current config section/value must bind one explicit translation key");
-        for (String key : KEYS) {
+        assertEquals(KEYS.size() - DYNAMIC_CONVERSION_KEYS, boundKeys.size(),
+                "static config sections and values must bind one explicit translation key");
+        for (String key : KEYS.subList(0, KEYS.size() - DYNAMIC_CONVERSION_KEYS)) {
             assertTrue(boundKeys.contains(key), () -> "missing explicit config translation binding for " + key);
         }
+        assertTrue(source.contains("translation(key(\"resource_conversion.\" + name))"));
+        assertTrue(source.contains("translation(key(\"resource_conversion.\" + name + \".enabled\"))"));
+        assertTrue(source.contains("translation(key(\"resource_conversion.\" + name + \".resourcePerImmortalYuan\"))"));
+        assertTrue(source.contains("translation(key(\"resource_conversion.\" + name + \".maximumConversionPerTick\"))"));
     }
 
     private static Path locateLang() {

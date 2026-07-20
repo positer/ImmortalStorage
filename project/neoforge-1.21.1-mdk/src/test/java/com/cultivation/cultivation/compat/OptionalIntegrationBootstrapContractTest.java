@@ -18,7 +18,7 @@ final class OptionalIntegrationBootstrapContractTest {
     void managerUsesTheGoalModIdsAndDeclaresEveryRequiredGate() throws IOException {
         String manager = managerSource();
         assertTrue(manager.contains("modPresent(\"industrialforegoingsouls\")"));
-        assertTrue(manager.contains("modPresent(\"irons_spellbooks\")"));
+        assertFalse(manager.contains("modPresent(\"irons_spellbooks\")"));
         assertTrue(manager.contains("modPresent(\"fluxnetworks\")"));
         assertFalse(manager.contains("modPresent(\"soulsweapons\")"));
     }
@@ -30,8 +30,9 @@ final class OptionalIntegrationBootstrapContractTest {
         assertTrue(manager.contains("registerBotaniaCapabilities"));
         assertTrue(manager.contains("installBotaniaBridge"));
         assertTrue(manager.contains("ExternalResourceChannels.BOTANIA_MANA"));
-        assertTrue(manager.contains("resolveExternalResourceStore"));
-        assertTrue(manager.contains("SideMode.PUSH"));
+        assertTrue(manager.contains("resolveDirectionlessExternalResource"));
+        assertFalse(manager.contains("SideMode.PUSH"),
+                "Botania spark/mana interaction is directionless and must not be gated by face modes");
 
         String endpoint = Files.readString(JAVA.resolve(Path.of(
                 "com", "cultivation", "cultivation", "block", "entity",

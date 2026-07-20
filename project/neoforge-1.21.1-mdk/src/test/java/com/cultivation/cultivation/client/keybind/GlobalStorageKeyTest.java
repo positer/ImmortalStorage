@@ -20,6 +20,18 @@ final class GlobalStorageKeyTest {
         assertTrue(terminal.contains("this.minecraft.setScreen(returnScreen)"));
     }
 
+    @Test
+    void specialOperationUsesRebindableGraveAccentMapping() throws Exception {
+        Path root = locateMainSources();
+        String keys = Files.readString(root.resolve("client/keybind/CultivationKeybinds.java"));
+        String preview = Files.readString(root.resolve("client/render/SpiritStaffBuildPreview.java"));
+        assertTrue(keys.contains("SPECIAL_OPERATION = new KeyMapping("));
+        assertTrue(keys.contains("GLFW.GLFW_KEY_GRAVE_ACCENT"));
+        assertTrue(preview.contains("CultivationKeybinds.SPECIAL_OPERATION.isDown()"));
+        assertTrue(preview.contains("SpiritSwordFurnaceOperation.STORE"));
+        assertTrue(preview.contains("SpiritSwordFurnaceOperation.SUMMON"));
+    }
+
     private static Path locateMainSources() {
         Path current = Path.of("").toAbsolutePath();
         while (current != null) {

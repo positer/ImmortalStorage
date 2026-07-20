@@ -184,7 +184,7 @@ public final class SourceDefinitions {
         String namespace = "minecraft";
         String path = switch (kind) {
             case WATER -> "water";
-            case MILK -> { namespace = "neoforge"; yield "milk"; }
+            case MILK -> "milk";
             case LAVA -> "lava";
             case COBBLE -> "cobblestone";
             case STONE -> "stone";

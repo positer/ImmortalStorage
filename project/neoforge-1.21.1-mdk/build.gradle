@@ -53,6 +53,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
     mavenCentral()
 }
 
@@ -112,6 +117,10 @@ sourceSets.test {
     runtimeClasspath += sourceSets.main.runtimeClasspath
 }
 
+configurations {
+    arsNouveauProbe
+}
+
 dependencies {
     compileOnly 'mezz.jei:jei-1.21.1-common-api:19.37.0.363'
     compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.37.0.363'
@@ -132,6 +141,13 @@ dependencies {
     compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
         transitive = false
     }
+    compileOnly('curse.maven:ars-nouveau-401955:6640732') {
+        transitive = false
+    }
+    compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
+    compileOnly('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE:api') {
+        transitive = false
+    }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -145,6 +161,9 @@ dependencies {
     testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
         transitive = false
     }
+    arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
+        transitive = false
+    }
 
     if (providers.gradleProperty('enableRecipeViewerRuntime').map(String::toBoolean).getOrElse(false)) {
         runtimeOnly 'mezz.jei:jei-1.21.1-neoforge:19.37.0.363@jar'
@@ -154,6 +173,25 @@ dependencies {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+}
+
+// Prove the production-facing shared resource API can be loaded when AE2 is
+// completely absent at runtime. AE2 remains on the compile classpath solely so
+// the optional adapter can be compiled, but this standalone probe removes its
+// JAR and avoids the NeoForge JUnit launcher (which requires generated launch
+// arguments unrelated to the API boundary under test).
+tasks.register('verifyWithoutAe2Runtime', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    mainClass = 'com.cultivation.cultivation.compat.NoAe2RuntimeProbe'
+    classpath = sourceSets.test.runtimeClasspath.filter { file ->
+        !file.name.toLowerCase(java.util.Locale.ROOT).startsWith('appliedenergistics2-')
+    }
+}
+
+tasks.register('verifyArsSourceAdapter', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    mainClass = 'com.cultivation.cultivation.compat.arsnouveau.XianqiaoArsSourceAdapterProbe'
+    classpath = sourceSets.test.runtimeClasspath + configurations.arsNouveauProbe
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -393,6 +431,8 @@ tasks.register('verifyVersionArtifact') {
 }
 
 tasks.named('check').configure {
+    dependsOn tasks.named('verifyWithoutAe2Runtime')
+    dependsOn tasks.named('verifyArsSourceAdapter')
     dependsOn tasks.named('verifyProductionJarBoundary')
     dependsOn tasks.named('verifyVersionComposition')
     dependsOn tasks.named('verifyVersionArtifact')

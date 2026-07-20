@@ -8,16 +8,11 @@ import java.util.function.Supplier;
 
 /** Official int soul capability facade over the owner-bound long resource ledger. */
 public final class XianqiaoSoulHandler implements ISoulHandler {
-    public enum Mode { PULL, PUSH, DISABLED }
-
     private final SoulTransferPort port;
 
-    public XianqiaoSoulHandler(
-            Supplier<AtomicEnergyRefill.ResourceStore> storage,
-            Supplier<Mode> mode) {
+    public XianqiaoSoulHandler(Supplier<AtomicEnergyRefill.ResourceStore> storage) {
         Objects.requireNonNull(storage, "storage");
-        Objects.requireNonNull(mode, "mode");
-        this.port = new SoulTransferPort(storage, () -> transferMode(mode.get()));
+        this.port = new SoulTransferPort(storage);
     }
 
     @Override
@@ -45,11 +40,4 @@ public final class XianqiaoSoulHandler implements ISoulHandler {
         return port.drain(amount, action.execute());
     }
 
-    private static SoulTransferPort.Mode transferMode(Mode mode) {
-        return switch (mode) {
-            case PULL -> SoulTransferPort.Mode.PULL;
-            case PUSH -> SoulTransferPort.Mode.PUSH;
-            case DISABLED -> SoulTransferPort.Mode.DISABLED;
-        };
-    }
 }

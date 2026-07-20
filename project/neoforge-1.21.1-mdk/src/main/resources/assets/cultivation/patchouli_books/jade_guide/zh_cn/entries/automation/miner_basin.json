@@ -1,0 +1,8 @@
+{
+  "name":"开采器与聚宝盆","icon":"cultivation:world_shard_miner","category":"cultivation:automation","sortnum":20,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"cultivation:world_shard_miner","text":"世界碎片开采器使用完整同种底座：钻石块为主世界、下界残骸为下界、紫颂砖为末地。底座一至四级控制速度；可在任何维度激活。"},
+    {"type":"patchouli:text","text":"默认从当前世界实际矿物生成规则计算权重，也可由整合包固定表覆盖。在仙窍中产物直入存储；其他维度进入一个木桶容量的内部缓存，满后停机。"},
+    {"type":"patchouli:crafting","recipe":"cultivation:treasure_basin","text":"聚宝盆只观察正下方已激活开采器的状态来选择战利品模式，双方没有主动通信。聚宝盆拥有独立缓存并能遮挡信标光束。"}
+  ]
+}

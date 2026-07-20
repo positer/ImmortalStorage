@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.EnumMap;
@@ -29,7 +30,7 @@ public class SourceVeinScreen extends AbstractContainerScreen<SourceVeinMenu> {
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST
     };
-    private final Map<Direction, Button> sideButtons = new EnumMap<>(Direction.class);
+    private final Map<Direction, FacePreviewButton> sideButtons = new EnumMap<>(Direction.class);
     private EditBox fluxInput;
     private Button applyFluxButton;
     private long lastSyncedFlux;
@@ -61,12 +62,14 @@ public class SourceVeinScreen extends AbstractContainerScreen<SourceVeinMenu> {
         validateFluxInput(this.fluxInput.getValue());
         for (int index = 0; index < SIDE_BUTTONS.length; index++) {
             Direction side = SIDE_BUTTONS[index];
-            int x = this.leftPos + 30 + (index % 3) * 39;
+            int x = this.leftPos + 56 + (index % 3) * 22;
             int y = this.topPos + 61 + (index / 3) * 21;
-            Button button = this.addRenderableWidget(Button.builder(sideLabel(side), ignored -> cycleMode(side))
-                    .bounds(x, y, 36, 20)
-                    .tooltip(Tooltip.create(sideTooltip(side)))
-                    .build());
+            FacePreviewButton button = new FacePreviewButton(
+                    x, y, 20, Component.literal(shortSide(side)),
+                    () -> adjacentBlockPreview(side), () -> sourceModeColor(side),
+                    ignored -> cycleMode(side));
+            button.setTooltip(Tooltip.create(sideTooltip(side)));
+            this.addRenderableWidget(button);
             this.sideButtons.put(side, button);
         }
     }
@@ -194,10 +197,36 @@ public class SourceVeinScreen extends AbstractContainerScreen<SourceVeinMenu> {
     }
 
     private void updateButtonMessages() {
-        for (Map.Entry<Direction, Button> entry : this.sideButtons.entrySet()) {
-            entry.getValue().setMessage(sideLabel(entry.getKey()));
+        for (Map.Entry<Direction, FacePreviewButton> entry : this.sideButtons.entrySet()) {
             entry.getValue().setTooltip(Tooltip.create(sideTooltip(entry.getKey())));
         }
+    }
+
+    private ItemStack adjacentBlockPreview(Direction side) {
+        SourceVeinBlockEntity blockEntity = menu.getBlockEntity();
+        if (blockEntity == null || blockEntity.getLevel() == null) return ItemStack.EMPTY;
+        ItemStack preview = new ItemStack(blockEntity.getLevel().getBlockState(
+                blockEntity.getBlockPos().relative(side)).getBlock().asItem());
+        return preview.isEmpty() ? ItemStack.EMPTY : preview;
+    }
+
+    private int sourceModeColor(Direction side) {
+        return switch (SourceVeinBlockEntity.SourceSideMode.byId(menu.getSideModeId(side))) {
+            case DISABLED -> 0xFF777777;
+            case PUSH -> 0xFFD44A4A;
+            case BYPASS_PUSH -> 0xFF9A4BC2;
+        };
+    }
+
+    private static String shortSide(Direction side) {
+        return switch (side) {
+            case UP -> "U";
+            case DOWN -> "D";
+            case NORTH -> "N";
+            case SOUTH -> "S";
+            case WEST -> "W";
+            case EAST -> "E";
+        };
     }
 
     private Component sideLabel(Direction side) {

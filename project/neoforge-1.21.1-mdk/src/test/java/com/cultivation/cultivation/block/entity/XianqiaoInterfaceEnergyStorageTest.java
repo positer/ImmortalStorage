@@ -4,30 +4,22 @@ import com.cultivation.core.resource.AtomicEnergyRefill;
 import com.cultivation.core.resource.ResourceTransferAction;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class XianqiaoInterfaceEnergyStorageTest {
     @Test
-    void pullReceivesPushExtractsAndSimulationDoesNotMutate() {
+    void pipeAccessIsBidirectionalAndSimulationDoesNotMutate() {
         Store store = new Store(10L);
-        AtomicReference<XianqiaoInterfaceBlockEntity.SideMode> mode =
-                new AtomicReference<>(XianqiaoInterfaceBlockEntity.SideMode.PULL);
-        var energy = new XianqiaoInterfaceEnergyStorage(() -> store, mode::get);
+        var energy = new XianqiaoInterfaceEnergyStorage(() -> store);
 
         assertTrue(energy.canReceive());
-        assertFalse(energy.canExtract());
+        assertTrue(energy.canExtract());
         assertEquals(5, energy.receiveEnergy(5, true));
         assertEquals(10, energy.getEnergyStored());
         assertEquals(5, energy.receiveEnergy(5, false));
         assertEquals(15, energy.getEnergyStored());
 
-        mode.set(XianqiaoInterfaceBlockEntity.SideMode.PUSH);
-        assertFalse(energy.canReceive());
-        assertTrue(energy.canExtract());
         assertEquals(7, energy.extractEnergy(7, true));
         assertEquals(15, energy.getEnergyStored());
         assertEquals(7, energy.extractEnergy(7, false));
@@ -35,21 +27,19 @@ final class XianqiaoInterfaceEnergyStorageTest {
     }
 
     @Test
-    void disabledOrMissingOwnerFailsClosedAndLongAmountsSaturate() {
+    void missingOwnerFailsClosedAndLongAmountsSaturate() {
         Store store = new Store(Long.MAX_VALUE);
-        AtomicReference<AtomicEnergyRefill.ResourceStore> live = new AtomicReference<>(store);
-        AtomicReference<XianqiaoInterfaceBlockEntity.SideMode> mode =
-                new AtomicReference<>(XianqiaoInterfaceBlockEntity.SideMode.DISABLED);
-        var energy = new XianqiaoInterfaceEnergyStorage(live::get, mode::get);
+        java.util.concurrent.atomic.AtomicReference<AtomicEnergyRefill.ResourceStore> live =
+                new java.util.concurrent.atomic.AtomicReference<>(store);
+        var energy = new XianqiaoInterfaceEnergyStorage(live::get);
 
         assertEquals(Integer.MAX_VALUE, energy.getEnergyStored());
         assertEquals(Integer.MAX_VALUE, energy.getMaxEnergyStored());
         assertEquals(0, energy.receiveEnergy(1, false));
-        assertEquals(0, energy.extractEnergy(1, false));
+        assertEquals(1, energy.extractEnergy(1, false));
 
         live.set(null);
-        mode.set(XianqiaoInterfaceBlockEntity.SideMode.PULL);
-        assertFalse(energy.canReceive());
+        org.junit.jupiter.api.Assertions.assertFalse(energy.canReceive());
         assertEquals(0, energy.getEnergyStored());
     }
 

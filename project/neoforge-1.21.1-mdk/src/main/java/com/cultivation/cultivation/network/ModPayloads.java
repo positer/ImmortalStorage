@@ -153,7 +153,7 @@ public enum ModPayloads {
     /** Current 2R-buffered typed-fluid directory; amounts remain exact long mB. */
     public record TerminalFluidViewSnapshot(int containerId, long revision, int visibleRows,
                                              int baseRow, int bufferBaseRow, int totalRows,
-                                             int totalItemEntries,
+                                             int totalItemEntries, int totalFluidEntries,
                                              List<Entry> entries) implements CustomPacketPayload {
         public static final int MAX_ENTRIES = TerminalViewSnapshot.MAX_ENTRIES;
         public static final StreamCodec<RegistryFriendlyByteBuf, TerminalFluidViewSnapshot> STREAM_CODEC = new StreamCodec<>() {
@@ -166,6 +166,7 @@ public enum ModPayloads {
                 int bufferBaseRow = buffer.readVarInt();
                 int totalRows = buffer.readVarInt();
                 int totalItemEntries = buffer.readVarInt();
+                int totalFluidEntries = buffer.readVarInt();
                 int size = buffer.readVarInt();
                 if (size < 0 || size > MAX_ENTRIES) {
                     throw new io.netty.handler.codec.DecoderException("Invalid terminal fluid snapshot size: " + size);
@@ -176,7 +177,7 @@ public enum ModPayloads {
                             buffer.readVarLong()));
                 }
                 return new TerminalFluidViewSnapshot(containerId, revision, visibleRows, baseRow,
-                        bufferBaseRow, totalRows, totalItemEntries, List.copyOf(entries));
+                        bufferBaseRow, totalRows, totalItemEntries, totalFluidEntries, List.copyOf(entries));
             }
 
             @Override
@@ -188,6 +189,7 @@ public enum ModPayloads {
                 buffer.writeVarInt(snapshot.bufferBaseRow());
                 buffer.writeVarInt(snapshot.totalRows());
                 buffer.writeVarInt(snapshot.totalItemEntries());
+                buffer.writeVarInt(snapshot.totalFluidEntries());
                 int size = Math.min(MAX_ENTRIES, snapshot.entries().size());
                 buffer.writeVarInt(size);
                 for (int index = 0; index < size; index++) {
@@ -212,6 +214,52 @@ public enum ModPayloads {
             }
             @Override public FluidStack stack() { return stack.copyWithAmount(1); }
         }
+    }
+
+    /** Current external-resource rows in the same unified item/fluid terminal directory. */
+    public record TerminalExternalViewSnapshot(int containerId, long revision, int totalExternalEntries,
+                                               List<Entry> entries) implements CustomPacketPayload {
+        public static final int MAX_ENTRIES = TerminalViewSnapshot.MAX_ENTRIES;
+        public static final StreamCodec<RegistryFriendlyByteBuf, TerminalExternalViewSnapshot> STREAM_CODEC =
+                new StreamCodec<>() {
+                    @Override public TerminalExternalViewSnapshot decode(RegistryFriendlyByteBuf buffer) {
+                        int containerId = buffer.readVarInt();
+                        long revision = buffer.readVarLong();
+                        int total = buffer.readVarInt();
+                        int size = buffer.readVarInt();
+                        if (size < 0 || size > MAX_ENTRIES) {
+                            throw new io.netty.handler.codec.DecoderException(
+                                    "Invalid terminal external snapshot size: " + size);
+                        }
+                        List<Entry> entries = new ArrayList<>(size);
+                        for (int i = 0; i < size; i++) {
+                            entries.add(new Entry(buffer.readVarLong(), buffer.readUtf(), buffer.readUtf(),
+                                    buffer.readVarLong()));
+                        }
+                        return new TerminalExternalViewSnapshot(containerId, revision, total, List.copyOf(entries));
+                    }
+                    @Override public void encode(RegistryFriendlyByteBuf buffer,
+                                                 TerminalExternalViewSnapshot snapshot) {
+                        buffer.writeVarInt(snapshot.containerId());
+                        buffer.writeVarLong(snapshot.revision());
+                        buffer.writeVarInt(snapshot.totalExternalEntries());
+                        int size = Math.min(MAX_ENTRIES, snapshot.entries().size());
+                        buffer.writeVarInt(size);
+                        for (int i = 0; i < size; i++) {
+                            Entry entry = snapshot.entries().get(i);
+                            buffer.writeVarLong(entry.entryId());
+                            buffer.writeUtf(entry.channel());
+                            buffer.writeUtf(entry.resourceId());
+                            buffer.writeVarLong(entry.amount());
+                        }
+                    }
+                };
+        public static final CustomPacketPayload.Type<TerminalExternalViewSnapshot> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        CultivationMod.MODID, "terminal_external_view_snapshot"));
+        @Override public CustomPacketPayload.Type<TerminalExternalViewSnapshot> type() { return TYPE; }
+
+        public record Entry(long entryId, String channel, String resourceId, long amount) {}
     }
 
     /** Opens the client-only Ancient Jade guide after server-authoritative item use. */
@@ -373,10 +421,10 @@ public enum ModPayloads {
     }
 
     /** Request one non-mutating, server-authoritative Spirit Staff build job. */
-    public record RequestSpiritStaffBuildPreview(int requestId, long pos, int face, int hand)
+    public record RequestSpiritStaffBuildPreview(int requestId, long pos, int face, int hand, boolean removal)
             implements CustomPacketPayload {
-        public RequestSpiritStaffBuildPreview(int requestId, BlockPos pos, int face, int hand) {
-            this(requestId, pos.asLong(), face, hand);
+        public RequestSpiritStaffBuildPreview(int requestId, BlockPos pos, int face, int hand, boolean removal) {
+            this(requestId, pos.asLong(), face, hand, removal);
         }
 
         public BlockPos blockPos() { return BlockPos.of(pos); }
@@ -387,6 +435,7 @@ public enum ModPayloads {
                         ByteBufCodecs.VAR_LONG, RequestSpiritStaffBuildPreview::pos,
                         ByteBufCodecs.VAR_INT, RequestSpiritStaffBuildPreview::face,
                         ByteBufCodecs.VAR_INT, RequestSpiritStaffBuildPreview::hand,
+                        ByteBufCodecs.BOOL, RequestSpiritStaffBuildPreview::removal,
                         RequestSpiritStaffBuildPreview::new);
         public static final CustomPacketPayload.Type<RequestSpiritStaffBuildPreview> TYPE =
                 new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
@@ -394,7 +443,7 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<RequestSpiritStaffBuildPreview> type() { return TYPE; }
     }
 
-    /** Ctrl+right-click request for one no-drop connected-layer removal. */
+    /** Bound special-operation request for one no-drop connected-layer removal. */
     public record RemoveSpiritStaffBuildLayer(long pos, int face, int hand) implements CustomPacketPayload {
         public RemoveSpiritStaffBuildLayer(BlockPos pos, int face, int hand) {
             this(pos.asLong(), face, hand);
@@ -412,9 +461,24 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<RemoveSpiritStaffBuildLayer> type() { return TYPE; }
     }
 
+    /** Idempotent intent for summoning or returning a Spirit Sword. */
+    public record SpiritSwordFurnaceOperation(int action, int hand) implements CustomPacketPayload {
+        public static final int SUMMON = 0;
+        public static final int STORE = 1;
+        public static final StreamCodec<RegistryFriendlyByteBuf, SpiritSwordFurnaceOperation> STREAM_CODEC =
+                StreamCodec.composite(
+                        ByteBufCodecs.VAR_INT, SpiritSwordFurnaceOperation::action,
+                        ByteBufCodecs.VAR_INT, SpiritSwordFurnaceOperation::hand,
+                        SpiritSwordFurnaceOperation::new);
+        public static final CustomPacketPayload.Type<SpiritSwordFurnaceOperation> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        CultivationMod.MODID, "spirit_sword_furnace_operation"));
+        @Override public CustomPacketPayload.Type<SpiritSwordFurnaceOperation> type() { return TYPE; }
+    }
+
     /** Bounded server build job rendered without recalculating storage on the client. */
     public record SpiritStaffBuildPreviewSnapshot(
-            int requestId, long pos, int face, int hand, int failure, List<Long> positions)
+            int requestId, long pos, int face, int hand, boolean removal, int failure, List<Long> positions)
             implements CustomPacketPayload {
         public static final int MAX_POSITIONS = 4096;
 
@@ -433,6 +497,7 @@ public enum ModPayloads {
                         long pos = buffer.readVarLong();
                         int face = buffer.readVarInt();
                         int hand = buffer.readVarInt();
+                        boolean removal = buffer.readBoolean();
                         int failure = buffer.readVarInt();
                         int size = buffer.readVarInt();
                         if (size < 0 || size > MAX_POSITIONS) {
@@ -441,7 +506,7 @@ public enum ModPayloads {
                         List<Long> positions = new ArrayList<>(size);
                         for (int i = 0; i < size; i++) positions.add(buffer.readVarLong());
                         return new SpiritStaffBuildPreviewSnapshot(
-                                requestId, pos, face, hand, failure, positions);
+                                requestId, pos, face, hand, removal, failure, positions);
                     }
 
                     @Override
@@ -451,6 +516,7 @@ public enum ModPayloads {
                         buffer.writeVarLong(snapshot.pos());
                         buffer.writeVarInt(snapshot.face());
                         buffer.writeVarInt(snapshot.hand());
+                        buffer.writeBoolean(snapshot.removal());
                         buffer.writeVarInt(snapshot.failure());
                         buffer.writeVarInt(snapshot.positions().size());
                         for (long position : snapshot.positions()) buffer.writeVarLong(position);
@@ -748,5 +814,51 @@ public enum ModPayloads {
                 new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
                         CultivationMod.MODID, "set_xianqiao_interface_fluid_target"));
         @Override public CustomPacketPayload.Type<SetXianqiaoInterfaceFluidTarget> type() { return TYPE; }
+    }
+
+    /** Configures one installed external-resource identity and its long cache target. */
+    public record SetXianqiaoInterfaceExternalTarget(
+            int containerId, long pos, long configRevision, int slot,
+            String channel, String resourceId, long requestedAmount) implements CustomPacketPayload {
+        public SetXianqiaoInterfaceExternalTarget {
+            if (channel == null || channel.length() > 64
+                    || resourceId == null || resourceId.length() > 256) {
+                throw new IllegalArgumentException("invalid external resource identity");
+            }
+        }
+
+        public SetXianqiaoInterfaceExternalTarget(
+                int containerId, BlockPos pos, long configRevision, int slot,
+                String channel, String resourceId, long requestedAmount) {
+            this(containerId, pos.asLong(), configRevision, slot, channel, resourceId, requestedAmount);
+        }
+
+        public BlockPos blockPos() { return BlockPos.of(pos); }
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, SetXianqiaoInterfaceExternalTarget> STREAM_CODEC =
+                new StreamCodec<>() {
+                    @Override public SetXianqiaoInterfaceExternalTarget decode(RegistryFriendlyByteBuf buffer) {
+                        return new SetXianqiaoInterfaceExternalTarget(
+                                buffer.readVarInt(), buffer.readVarLong(), buffer.readVarLong(),
+                                buffer.readVarInt(), buffer.readUtf(64), buffer.readUtf(256),
+                                buffer.readVarLong());
+                    }
+
+                    @Override public void encode(
+                            RegistryFriendlyByteBuf buffer,
+                            SetXianqiaoInterfaceExternalTarget payload) {
+                        buffer.writeVarInt(payload.containerId());
+                        buffer.writeVarLong(payload.pos());
+                        buffer.writeVarLong(payload.configRevision());
+                        buffer.writeVarInt(payload.slot());
+                        buffer.writeUtf(payload.channel(), 64);
+                        buffer.writeUtf(payload.resourceId(), 256);
+                        buffer.writeVarLong(payload.requestedAmount());
+                    }
+                };
+        public static final CustomPacketPayload.Type<SetXianqiaoInterfaceExternalTarget> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        CultivationMod.MODID, "set_xianqiao_interface_external_target"));
+        @Override public CustomPacketPayload.Type<SetXianqiaoInterfaceExternalTarget> type() { return TYPE; }
     }
 }

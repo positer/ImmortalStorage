@@ -1,0 +1,8 @@
+{
+  "name":"灵器四模式","icon":"cultivation:spirit_staff","category":"cultivation:equipment","sortnum":0,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"cultivation:spirit_staff","text":"灵器可切换探索、扳手、镐子、建筑模式。不能在附魔台随机附魔，但能通过铁砧接受当前下界合金镐兼容的附魔。"},
+    {"type":"patchouli:text","text":"探索：对空气右键开关；启用且仍手持时，打开箱子、木桶或Lootr容器会把当前页面内容事务性收入个人存储。扳手：兼容公开扳手语义，Shift右键安全拆下Cultivation机器。"},
+    {"type":"patchouli:text","text":"镐子：下界合金等级，左键正常使用时运/精准并消耗耐久；六阶后右键消耗一仙元执行固定精准采集，不受附魔影响。建筑：预览并批量放置，默认64；按住特殊操作键右键无掉落删除一层。该键默认反引号并可重绑。空手使用同一按键可召来内置仙炉中的灵剑，手持灵剑则送回空闲或保留通道。"}
+  ]
+}

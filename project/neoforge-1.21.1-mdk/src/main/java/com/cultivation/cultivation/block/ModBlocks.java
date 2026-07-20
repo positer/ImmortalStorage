@@ -3,6 +3,7 @@ package com.cultivation.cultivation.block;
 import com.cultivation.cultivation.CultivationMod;
 import com.cultivation.cultivation.block.custom.*;
 import com.cultivation.cultivation.item.ModItems;
+import com.cultivation.cultivation.item.SourceVeinBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -122,7 +123,9 @@ public final class ModBlocks {
 
     private static Supplier<Block> reg(String id, Supplier<Block> b) {
         Supplier<Block> ro = BLOCKS.register(id, b);
-        ModItems.ITEMS.register(id, () -> new BlockItem(ro.get(), ModItems.setItemId(id, new Item.Properties())));
+        ModItems.ITEMS.register(id, () -> ro.get() instanceof SourceVeinBlock source
+                ? new SourceVeinBlockItem(source, ModItems.setItemId(id, new Item.Properties()))
+                : new BlockItem(ro.get(), ModItems.setItemId(id, new Item.Properties())));
         return ro;
     }
 

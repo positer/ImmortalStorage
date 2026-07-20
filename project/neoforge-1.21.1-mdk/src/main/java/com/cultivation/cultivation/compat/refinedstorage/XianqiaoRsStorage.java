@@ -2,6 +2,7 @@ package com.cultivation.cultivation.compat.refinedstorage;
 
 import com.cultivation.cultivation.api.storage.PersonalStorageApi;
 import com.cultivation.cultivation.api.storage.PersonalStorageEndpoint;
+import com.cultivation.cultivation.api.storage.ExternalResourceStorage;
 import com.cultivation.cultivation.api.storage.terminal.StorageItemSummary;
 import com.cultivation.cultivation.api.storage.terminal.TerminalEntryKey;
 import com.cultivation.cultivation.api.storage.terminal.TerminalFluidKey;
@@ -18,6 +19,7 @@ import com.refinedmods.refinedstorage.common.api.storage.SerializableStorage;
 import com.refinedmods.refinedstorage.common.api.storage.StorageType;
 import com.refinedmods.refinedstorage.common.support.resource.FluidResource;
 import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
+import com.cultivation.core.resource.ResourceTransferAction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -83,6 +85,14 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                         stack.getFluid(), stack.getComponentsPatch()), amount));
             });
         }
+        if (access.externalResources() != null) {
+            access.externalResources().snapshot().forEach(entry -> {
+                long amount = RsAmountPolicy.advertised(entry.amount());
+                if (entry.key() != null && amount > 0L) {
+                    result.add(new ResourceAmount(new RsExternalResource(entry.key()), amount));
+                }
+            });
+        }
         return List.copyOf(result);
     }
 
@@ -114,6 +124,10 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                     fluid.components());
             inserted = access.fluids().insert(
                     TerminalFluidKey.of(stack), amount, terminalAction);
+        } else if (resource instanceof RsExternalResource external
+                && access.externalResources() != null) {
+            inserted = access.externalResources().insert(
+                    external.resource(), amount, resourceAction(action));
         } else {
             return 0L;
         }
@@ -138,6 +152,10 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                     fluid.components());
             extracted = access.fluids().extract(
                     TerminalFluidKey.of(stack), amount, terminalAction);
+        } else if (resource instanceof RsExternalResource external
+                && access.externalResources() != null) {
+            extracted = access.externalResources().extract(
+                    external.resource(), amount, resourceAction(action));
         } else {
             return 0L;
         }
@@ -200,7 +218,7 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
         if (endpoint == null || !endpoint.online() || !owner.equals(endpoint.owner())) return null;
         TerminalItemStorage items = endpoint.itemStorage();
         if (items == null) return null;
-        return new EndpointAccess(items, endpoint.fluidStorage());
+        return new EndpointAccess(items, endpoint.fluidStorage(), endpoint.externalResourceStorage());
     }
 
     private static TerminalStorageAction terminalAction(Action action) {
@@ -209,8 +227,15 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                 : TerminalStorageAction.EXECUTE;
     }
 
+    private static ResourceTransferAction resourceAction(Action action) {
+        return action == Action.SIMULATE
+                ? ResourceTransferAction.SIMULATE
+                : ResourceTransferAction.EXECUTE;
+    }
+
     private record EndpointAccess(
             TerminalItemStorage items,
-            @Nullable TerminalFluidStorage fluids) {
+            @Nullable TerminalFluidStorage fluids,
+            @Nullable ExternalResourceStorage externalResources) {
     }
 }

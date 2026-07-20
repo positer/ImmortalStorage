@@ -198,9 +198,9 @@ final class TerminalFluidContainerTransferTest {
 
     @Test
     void combinedDirectoryMapsItemsThenFluidsInsideOneRowWindow() {
-        assertEquals(0, XianqiaoStorageMenu.combinedDirectoryRows(0, 0));
-        assertEquals(1, XianqiaoStorageMenu.combinedDirectoryRows(8, 1));
-        assertEquals(2, XianqiaoStorageMenu.combinedDirectoryRows(8, 2));
+        assertEquals(0, XianqiaoStorageMenu.combinedDirectoryRows(0, 0, 0));
+        assertEquals(1, XianqiaoStorageMenu.combinedDirectoryRows(8, 1, 0));
+        assertEquals(2, XianqiaoStorageMenu.combinedDirectoryRows(8, 2, 1));
 
         assertEquals(7, XianqiaoStorageMenu.combinedItemIndex(0, 7, 8));
         assertEquals(-1, XianqiaoStorageMenu.combinedItemIndex(0, 8, 8));

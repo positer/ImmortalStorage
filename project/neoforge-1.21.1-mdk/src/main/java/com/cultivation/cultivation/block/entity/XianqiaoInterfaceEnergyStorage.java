@@ -10,13 +10,9 @@ import java.util.function.Supplier;
 /** Int-valued NeoForge FE facade over the live owner-bound long ledger. */
 final class XianqiaoInterfaceEnergyStorage implements IEnergyStorage {
     private final Supplier<AtomicEnergyRefill.ResourceStore> storage;
-    private final Supplier<XianqiaoInterfaceBlockEntity.SideMode> mode;
 
-    XianqiaoInterfaceEnergyStorage(
-            Supplier<AtomicEnergyRefill.ResourceStore> storage,
-            Supplier<XianqiaoInterfaceBlockEntity.SideMode> mode) {
+    XianqiaoInterfaceEnergyStorage(Supplier<AtomicEnergyRefill.ResourceStore> storage) {
         this.storage = Objects.requireNonNull(storage, "storage");
-        this.mode = Objects.requireNonNull(mode, "mode");
     }
 
     @Override
@@ -48,12 +44,12 @@ final class XianqiaoInterfaceEnergyStorage implements IEnergyStorage {
 
     @Override
     public boolean canExtract() {
-        return storage.get() != null && mode.get() == XianqiaoInterfaceBlockEntity.SideMode.PUSH;
+        return storage.get() != null;
     }
 
     @Override
     public boolean canReceive() {
-        return storage.get() != null && mode.get() == XianqiaoInterfaceBlockEntity.SideMode.PULL;
+        return storage.get() != null;
     }
 
     private static ResourceTransferAction action(boolean simulate) {

@@ -2,6 +2,8 @@ package com.cultivation.cultivation.client.render;
 
 import com.cultivation.cultivation.item.custom.SpiritStaffItem;
 import com.cultivation.cultivation.item.custom.SpiritStaffBuildExecutor;
+import com.cultivation.cultivation.item.custom.SpiritSwordItem;
+import com.cultivation.cultivation.client.keybind.CultivationKeybinds;
 import com.cultivation.cultivation.network.ModPayloads;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -35,19 +37,28 @@ public final class SpiritStaffBuildPreview {
     public static void init(IEventBus forgeBus) {
         forgeBus.addListener(SpiritStaffBuildPreview::renderWorldPreview);
         forgeBus.addListener(SpiritStaffBuildPreview::renderHudCount);
-        forgeBus.addListener(SpiritStaffBuildPreview::removeLayerOnControlUse);
+        forgeBus.addListener(SpiritStaffBuildPreview::specialOperationOnUse);
     }
 
-    private static void removeLayerOnControlUse(InputEvent.InteractionKeyMappingTriggered event) {
+    private static void specialOperationOnUse(InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (!event.isUseItem() || !net.minecraft.client.gui.screens.Screen.hasControlDown()
-                || minecraft.player == null || minecraft.screen != null
-                || !(minecraft.hitResult instanceof BlockHitResult hit)) return;
+        if (!event.isUseItem() || !CultivationKeybinds.SPECIAL_OPERATION.isDown()
+                || minecraft.player == null || minecraft.screen != null) return;
         ItemStack held = minecraft.player.getItemInHand(event.getHand());
-        if (!(held.getItem() instanceof SpiritStaffItem)
-                || SpiritStaffItem.getMode(held) != SpiritStaffItem.MODE_BUILD) return;
-        PacketDistributor.sendToServer(new ModPayloads.RemoveSpiritStaffBuildLayer(
-                hit.getBlockPos(), hit.getDirection().ordinal(), event.getHand().ordinal()));
+        if (held.getItem() instanceof SpiritStaffItem
+                && SpiritStaffItem.getMode(held) == SpiritStaffItem.MODE_BUILD
+                && minecraft.hitResult instanceof BlockHitResult hit) {
+            PacketDistributor.sendToServer(new ModPayloads.RemoveSpiritStaffBuildLayer(
+                    hit.getBlockPos(), hit.getDirection().ordinal(), event.getHand().ordinal()));
+        } else if (held.getItem() instanceof SpiritSwordItem) {
+            PacketDistributor.sendToServer(new ModPayloads.SpiritSwordFurnaceOperation(
+                    ModPayloads.SpiritSwordFurnaceOperation.STORE, event.getHand().ordinal()));
+        } else if (event.getHand() == InteractionHand.MAIN_HAND && held.isEmpty()) {
+            PacketDistributor.sendToServer(new ModPayloads.SpiritSwordFurnaceOperation(
+                    ModPayloads.SpiritSwordFurnaceOperation.SUMMON, event.getHand().ordinal()));
+        } else {
+            return;
+        }
         event.setSwingHand(true);
         event.setCanceled(true);
     }
@@ -66,8 +77,9 @@ public final class SpiritStaffBuildPreview {
         }
 
         BlockHitResult hit = event.getTarget();
+        boolean removal = CultivationKeybinds.SPECIAL_OPERATION.isDown();
         PreviewTarget current = new PreviewTarget(
-                hit.getBlockPos().asLong(), hit.getDirection().ordinal(), hand.ordinal());
+                hit.getBlockPos().asLong(), hit.getDirection().ordinal(), hand.ordinal(), removal);
         long gameTick = minecraft.level.getGameTime();
         boolean targetChanged = !current.equals(requestedTarget);
         if (targetChanged || gameTick - lastRequestTick >= 5L) {
@@ -79,7 +91,7 @@ public final class SpiritStaffBuildPreview {
                 previewFailure = null;
             }
             PacketDistributor.sendToServer(new ModPayloads.RequestSpiritStaffBuildPreview(
-                    requestId, hit.getBlockPos(), hit.getDirection().ordinal(), hand.ordinal()));
+                    requestId, hit.getBlockPos(), hit.getDirection().ordinal(), hand.ordinal(), removal));
         }
         if (previewFailure == null) return;
         previewCount = serverPositions.size();
@@ -91,8 +103,11 @@ public final class SpiritStaffBuildPreview {
         poseStack.translate(-camera.x, -camera.y, -camera.z);
         VertexConsumer lines = event.getMultiBufferSource().getBuffer(RenderType.lines());
         for (BlockPos pos : serverPositions) {
+            float red = requestedTarget.removal() ? 1.0F : 0.15F;
+            float green = requestedTarget.removal() ? 0.15F : 0.95F;
+            float blue = requestedTarget.removal() ? 0.15F : 0.85F;
             LevelRenderer.renderLineBox(poseStack, lines, new AABB(pos).inflate(0.002D),
-                    0.15F, 0.95F, 0.85F, 0.9F);
+                    red, green, blue, 0.9F);
         }
         poseStack.popPose();
     }
@@ -102,7 +117,9 @@ public final class SpiritStaffBuildPreview {
         Minecraft minecraft = Minecraft.getInstance();
         String key;
         if (previewCount > 0) {
-            key = "message.cultivation.spirit_staff.build.preview";
+            key = requestedTarget != null && requestedTarget.removal()
+                    ? "message.cultivation.spirit_staff.build.preview_removal"
+                    : "message.cultivation.spirit_staff.build.preview";
         } else if (previewFailure == SpiritStaffBuildExecutor.Failure.NO_MATERIALS) {
             key = "message.cultivation.spirit_staff.build.preview_no_materials";
         } else if (previewFailure == SpiritStaffBuildExecutor.Failure.NOT_A_BLOCK_ITEM) {
@@ -117,14 +134,15 @@ public final class SpiritStaffBuildPreview {
                 minecraft.font, label,
                 event.getGuiGraphics().guiWidth() / 2,
                 event.getGuiGraphics().guiHeight() / 2 + 24,
-                previewCount == 0 ? 0xFFFF5555 : 0xFF55FFFF);
+                previewCount == 0 || requestedTarget != null && requestedTarget.removal()
+                        ? 0xFFFF5555 : 0xFF55FFFF);
         previewCount = -1;
     }
 
     public static void applyServerSnapshot(ModPayloads.SpiritStaffBuildPreviewSnapshot snapshot) {
         if (snapshot == null || snapshot.requestId() != requestId || requestedTarget == null
                 || snapshot.pos() != requestedTarget.pos() || snapshot.face() != requestedTarget.face()
-                || snapshot.hand() != requestedTarget.hand()) {
+                || snapshot.hand() != requestedTarget.hand() || snapshot.removal() != requestedTarget.removal()) {
             return;
         }
         SpiritStaffBuildExecutor.Failure[] failures = SpiritStaffBuildExecutor.Failure.values();
@@ -154,7 +172,7 @@ public final class SpiritStaffBuildPreview {
         return null;
     }
 
-    private record PreviewTarget(long pos, int face, int hand) {}
+    private record PreviewTarget(long pos, int face, int hand, boolean removal) {}
 
     private SpiritStaffBuildPreview() {}
 }

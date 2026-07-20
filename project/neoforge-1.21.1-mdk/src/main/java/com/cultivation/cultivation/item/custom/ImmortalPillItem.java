@@ -15,7 +15,7 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 public class ImmortalPillItem extends Item {
-    private static final long UNBOUNDED_STAGE_REWARD = 4_096L;
+    private static final int UNBOUNDED_REWARD_TICKS = 2_000;
     public ImmortalPillItem(Properties props) {
         super(props.food(new FoodProperties.Builder().nutrition(20).saturationModifier(20f)
                 .alwaysEdible().fast().build()));
@@ -55,7 +55,12 @@ public class ImmortalPillItem extends Item {
     static long immortalYuanReward(CultivationPlayerData data) {
         if (data == null || data.isInfiniteImmortalYuan()) return 0L;
         long cap = data.getImmortalYuanCapLong();
-        return cap > 0L ? cap : UNBOUNDED_STAGE_REWARD;
+        if (cap > 0L) return Math.max(1L, cap / 2L);
+        int interval = data.getImmortalYuanGenInterval();
+        long amount = data.getImmortalYuanGenAmount();
+        if (interval <= 0 || amount <= 0L) return 0L;
+        long periods = UNBOUNDED_REWARD_TICKS / interval;
+        return periods > Long.MAX_VALUE / amount ? Long.MAX_VALUE : periods * amount;
     }
 
     @Override

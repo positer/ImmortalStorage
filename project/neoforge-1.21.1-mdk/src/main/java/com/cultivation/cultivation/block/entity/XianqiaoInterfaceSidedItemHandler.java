@@ -1,72 +1,59 @@
 package com.cultivation.cultivation.block.entity;
 
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
-
-/** Stable live-policy wrapper for one physical Xianqiao Interface face. */
+/** Direction-independent pipe view over the interface's configured item caches. */
 final class XianqiaoInterfaceSidedItemHandler implements BulkItemInsertTarget {
     private final XianqiaoInterfaceInventory delegate;
-    private final Supplier<XianqiaoInterfaceBlockEntity.SideMode> modeSupplier;
+    private final Direction side;
 
-    XianqiaoInterfaceSidedItemHandler(
-            XianqiaoInterfaceInventory delegate,
-            Supplier<XianqiaoInterfaceBlockEntity.SideMode> modeSupplier) {
+    XianqiaoInterfaceSidedItemHandler(XianqiaoInterfaceInventory delegate, Direction side) {
         this.delegate = delegate;
-        this.modeSupplier = modeSupplier;
+        this.side = side;
     }
 
     @Override
     public int getSlots() {
-        return enabled() ? delegate.getSlots() : 0;
+        return delegate.getSlots();
     }
 
     @Override
     public @NotNull ItemStack getStackInSlot(int slot) {
-        return pushing() ? delegate.getStackInSlot(slot) : ItemStack.EMPTY;
+        return extractAllowed(slot) ? delegate.getStackInSlot(slot) : ItemStack.EMPTY;
     }
 
     @Override
     public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-        return pulling() ? delegate.insertItem(slot, stack, simulate) : stack;
+        long accepted = delegate.insertItemIntoCache(slot, stack, simulate);
+        if (accepted <= 0L) return stack;
+        return accepted == stack.getCount() ? ItemStack.EMPTY
+                : stack.copyWithCount((int) (stack.getCount() - accepted));
     }
 
     @Override
     public long insertBulk(ItemStack prototype, long amount, boolean simulate) {
-        return pulling() ? delegate.insertBulk(prototype, amount, simulate) : 0L;
+        return delegate.insertItemIntoCaches(prototype, amount, simulate);
     }
 
     @Override
     public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-        return pushing() ? delegate.extractItem(slot, amount, simulate) : ItemStack.EMPTY;
+        return extractAllowed(slot) ? delegate.extractItem(slot, amount, simulate) : ItemStack.EMPTY;
     }
 
     @Override
     public int getSlotLimit(int slot) {
-        return enabled() ? delegate.getSlotLimit(slot) : 0;
+        return delegate.getSlotLimit(slot);
     }
 
     @Override
     public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-        return pulling() && delegate.isItemValid(slot, stack);
+        return delegate.isItemValidForCache(slot, stack);
     }
 
-    private boolean enabled() {
-        return mode() != XianqiaoInterfaceBlockEntity.SideMode.DISABLED;
-    }
-
-    private boolean pulling() {
-        return mode() == XianqiaoInterfaceBlockEntity.SideMode.PULL;
-    }
-
-    private boolean pushing() {
-        return mode() == XianqiaoInterfaceBlockEntity.SideMode.PUSH;
-    }
-
-    private XianqiaoInterfaceBlockEntity.SideMode mode() {
-        XianqiaoInterfaceBlockEntity.SideMode mode = modeSupplier == null ? null : modeSupplier.get();
-        return mode == null ? XianqiaoInterfaceBlockEntity.SideMode.DISABLED : mode;
+    private boolean extractAllowed(int slot) {
+        return side == null || delegate.isOutputFaceEnabled(slot, side);
     }
 }
