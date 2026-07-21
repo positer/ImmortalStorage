@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.0.3 - development
+## [0.0.3] - 2026-07-21
+
+### Added
+
+- Personal Xianqiao realms now support vanilla beds: using a bed no longer explodes, records the exact personal dimension as the player's respawn point, and restores the dynamic realm before later respawn resolution.
+- Assigned consistent vanilla rarity tiers to all ImmortalStorage items and block items according to recipe complexity, ingredient scarcity, progression stage, and functional power.
+
+### Changed
+
+- Substitute Puppet respawn-anchor bindings are cleared when the bound anchor is broken or destroyed by an explosion; stale bindings are also repaired on inventory tick, player login, and immediately before activation.
+
+### Fixed
 
 - Fixed the Applied Botanics + Ars Nouveau capability-registration interaction through an AppBot-gated Botania official-lookup compatibility shim; the complete integration matrix now loads successfully.
 - Bundled Patchouli 1.21.1-93 with NeoForge Jar-in-Jar and made the Ancient Jade handbook the only guide implementation; removed the legacy standalone guide UI, payload and maintenance tests.

@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.Tiers;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -18,7 +19,32 @@ public final class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, ImmortalStorageMod.MODID);
 
     public static Item.Properties setItemId(String name, Item.Properties props) {
-        return props;
+        return props.rarity(rarityFor(name));
+    }
+
+    /** Keep rarity consistent for standalone items and every registered block item. */
+    public static Rarity rarityFor(String name) {
+        return switch (name) {
+            case "ascension_dan", "white_day_thunder",
+                    "immortal_ruin_forged_spirit_sword", "stabilized_miniature_immortal_ruin",
+                    "world_shard_miner", "nether_star_vein", "enchanted_golden_apple_vein",
+                    "dragon_egg_vein" -> Rarity.EPIC;
+            case "immortal_yuan", "breakthrough_pill_embryo", "breakthrough_pill",
+                    "immortal_pill", "nurturing_crystal", "nurturing_crystal_bedrock",
+                    "premixed_heavy_compound", "substitute_puppet", "miniature_immortal_ruin",
+                    "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
+                    "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
+                    "diamond_vein", "emerald_vein" -> Rarity.RARE;
+            case "jade_guide", "true_yuan", "refined_pill_embryo", "refined_pill",
+                    "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",
+                    "spirit_crystal_block", "spirit_core", "spirit_sword", "spirit_staff",
+                    "spirit_drive", "immortal_furnace", "treasure_basin",
+                    "inactive_nurturing_crystal_bedrock", "small_nurturing_crystal_bud",
+                    "medium_nurturing_crystal_bud", "large_nurturing_crystal_bud",
+                    "nurturing_crystal_cluster", "crude_spirit_iron_vein", "spirit_crystal_vein",
+                    "raw_gold_vein", "lapis_vein", "redstone_vein" -> Rarity.UNCOMMON;
+            default -> Rarity.COMMON;
+        };
     }
 
     public static <T extends Item> Supplier<T> registerItem(String name, Function<Item.Properties, T> func) {

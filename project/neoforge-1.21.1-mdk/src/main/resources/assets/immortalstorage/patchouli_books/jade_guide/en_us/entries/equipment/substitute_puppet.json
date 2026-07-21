@@ -7,6 +7,6 @@
     {"type":"patchouli:crafting","recipe":"immortalstorage:substitute_puppet","text":"The Substitute Puppet stacks to one. Use it in air once to register its owner. Its tooltip shows owner, respawn anchor and durability."},
     {"type":"patchouli:text","text":"Hold the puppet in one hand and Nurturing Crystal in the other, then use it. Eight crystals restore one durability, consuming as many complete groups as possible up to sixteen."},
     {"type":"patchouli:text","text":"When its owner dies, a puppet in inventory, Kongqiao or Xianqiao storage triggers a cooldown-free Totem effect and spends one durability. The activation animation displays the puppet."},
-    {"type":"patchouli:text","text":"Use the puppet on a Respawn Anchor to bind it. A later activation teleports the owner there across dimensions without cheat permission. Use the puppet in air to clear the anchor."}
+    {"type":"patchouli:text","text":"Use the puppet on a Respawn Anchor to bind it. A later activation teleports the owner there across dimensions without cheat permission. Use the puppet in air to clear the anchor; breaking or exploding the bound anchor also clears it automatically."}
   ]
 }

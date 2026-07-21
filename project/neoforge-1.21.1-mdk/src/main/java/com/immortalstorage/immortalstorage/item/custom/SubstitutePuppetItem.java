@@ -116,6 +116,7 @@ public final class SubstitutePuppetItem extends Item {
             tag.putString(OWNER_NAME, currentName);
             write(stack, tag);
         }
+        clearInvalidAnchor(player, stack);
     }
 
     public static boolean consumeUse(ItemStack stack) {
@@ -124,7 +125,35 @@ public final class SubstitutePuppetItem extends Item {
         return true;
     }
 
+    public static boolean clearAnchorIfMatches(ItemStack stack, ResourceKey<Level> dimension, BlockPos pos) {
+        if (!stack.is(ModItems.SUBSTITUTE_PUPPET.get())) return false;
+        CompoundTag tag = data(stack);
+        if (!tag.contains(ANCHOR_DIMENSION) || !tag.contains(ANCHOR_POS)) return false;
+        if (!dimension.location().toString().equals(tag.getString(ANCHOR_DIMENSION))
+                || tag.getLong(ANCHOR_POS) != pos.asLong()) return false;
+        clearAnchor(stack, tag);
+        return true;
+    }
+
+    public static boolean clearInvalidAnchor(ServerPlayer player, ItemStack stack) {
+        CompoundTag tag = data(stack);
+        ResourceLocation dimensionId = ResourceLocation.tryParse(tag.getString(ANCHOR_DIMENSION));
+        if (dimensionId == null || !tag.contains(ANCHOR_POS)) return false;
+        ResourceKey<Level> key = ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, dimensionId);
+        var targetLevel = player.server.getLevel(key);
+        if (targetLevel == null) {
+            targetLevel = com.immortalstorage.immortalstorage.dimension.RealmHelper
+                    .resolveOwnedPersonalRealm(player, key);
+        }
+        if (targetLevel == null || targetLevel.getBlockState(BlockPos.of(tag.getLong(ANCHOR_POS))).is(Blocks.RESPAWN_ANCHOR)) {
+            return false;
+        }
+        clearAnchor(stack, tag);
+        return true;
+    }
+
     public static boolean teleportToAnchor(ServerPlayer player, ItemStack stack) {
+        if (clearInvalidAnchor(player, stack)) return false;
         CompoundTag tag = data(stack);
         ResourceLocation dimensionId = ResourceLocation.tryParse(tag.getString(ANCHOR_DIMENSION));
         if (dimensionId == null || !tag.contains(ANCHOR_POS)) return false;
@@ -135,6 +164,12 @@ public final class SubstitutePuppetItem extends Item {
         player.teleportTo(targetLevel, pos.getX() + 0.5D, pos.getY() + 1.0D, pos.getZ() + 0.5D,
                 player.getYRot(), player.getXRot());
         return true;
+    }
+
+    private static void clearAnchor(ItemStack stack, CompoundTag tag) {
+        tag.remove(ANCHOR_DIMENSION);
+        tag.remove(ANCHOR_POS);
+        write(stack, tag);
     }
 
     private static CompoundTag data(ItemStack stack) {

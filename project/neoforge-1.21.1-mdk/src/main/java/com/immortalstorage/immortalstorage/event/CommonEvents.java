@@ -31,6 +31,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.bus.api.EventPriority;
 
 public class CommonEvents {
     public CommonEvents() {}
@@ -63,9 +64,12 @@ public class CommonEvents {
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer p) {
+            com.immortalstorage.immortalstorage.dimension.RealmHelper.ensureRespawnRealmRegistered(p);
             grantStartingJade(p);
             TribulationHelper.reconcile(p);
-            ImmortalStoragePlayerData.get(p).syncTo(p);
+            ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(p);
+            clearInvalidPuppetAnchors(p, data);
+            data.syncTo(p);
             restoreStageEffects(p);
         }
     }
@@ -124,6 +128,45 @@ public class CommonEvents {
         }
     }
 
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onRespawnAnchorBroken(BlockEvent.BreakEvent event) {
+        if (event.isCanceled() || !(event.getLevel() instanceof ServerLevel level)
+                || !event.getState().is(net.minecraft.world.level.block.Blocks.RESPAWN_ANCHOR)) return;
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+            clearMatchingPuppetAnchors(player, level.dimension(), event.getPos());
+        }
+    }
+
+    private static void clearMatchingPuppetAnchors(ServerPlayer player,
+                                                   net.minecraft.resources.ResourceKey<Level> dimension,
+                                                   BlockPos pos) {
+        for (ItemStack stack : player.getInventory().items) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .clearAnchorIfMatches(stack, dimension, pos);
+        }
+        for (ItemStack stack : player.getInventory().armor) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .clearAnchorIfMatches(stack, dimension, pos);
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .clearAnchorIfMatches(stack, dimension, pos);
+        }
+        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
+        for (ItemStack stack : data.getKongqiaoItems()) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .clearAnchorIfMatches(stack, dimension, pos);
+        }
+        java.util.List<ItemStack> xianqiao = data.getXianqiaoStorageItems();
+        for (int slot = 0; slot < xianqiao.size(); slot++) {
+            ItemStack stack = xianqiao.get(slot);
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .clearAnchorIfMatches(stack, dimension, pos)) {
+                data.setXianqiaoSlot(slot, stack);
+            }
+        }
+    }
+
     @SubscribeEvent
     public void onBlockPlace(BlockEvent.EntityPlaceEvent e) {
         markPersonalRealmModified(e.getLevel(), e.getPos());
@@ -142,9 +185,17 @@ public class CommonEvents {
 
     @SubscribeEvent
     public void onExplosionDetonate(ExplosionEvent.Detonate e) {
-        if (ImmortalStorageConfig.SOURCE_ALLOW_MOB_BREAK.get()) return;
         if (!(e.getLevel() instanceof Level level)) return;
         if (level.isClientSide) return;
+        if (level instanceof ServerLevel serverLevel) {
+            for (BlockPos pos : e.getAffectedBlocks()) {
+                if (!level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.RESPAWN_ANCHOR)) continue;
+                for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+                    clearMatchingPuppetAnchors(player, serverLevel.dimension(), pos);
+                }
+            }
+        }
+        if (ImmortalStorageConfig.SOURCE_ALLOW_MOB_BREAK.get()) return;
         if (e.getExplosion().getDirectSourceEntity() instanceof Player) return;
         e.getAffectedBlocks().removeIf(pos -> level.getBlockEntity(pos) instanceof SourceVeinBlockEntity);
     }
@@ -238,7 +289,6 @@ public class CommonEvents {
             ItemStack puppet = puppetLocation.stack();
             if (!puppet.isEmpty()
                     && com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.consumeUse(puppet)) {
-                puppetLocation.commit().run();
                 e.setCanceled(true);
                 p.setHealth(1.0F);
                 p.removeAllEffects();
@@ -249,6 +299,7 @@ public class CommonEvents {
                 p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
                 p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800, 0));
                 com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.teleportToAnchor(p, puppet);
+                puppetLocation.commit().run();
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(p,
                         new com.immortalstorage.immortalstorage.network.ModPayloads.ShowSubstitutePuppetActivation(
                                 puppet.copyWithCount(1)));
@@ -283,6 +334,28 @@ public class CommonEvents {
     }
 
     private record SubstitutePuppetLocation(ItemStack stack, Runnable commit) {}
+
+    private static void clearInvalidPuppetAnchors(ServerPlayer player, ImmortalStoragePlayerData data) {
+        for (ItemStack stack : player.getInventory().items) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.clearInvalidAnchor(player, stack);
+        }
+        for (ItemStack stack : player.getInventory().armor) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.clearInvalidAnchor(player, stack);
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.clearInvalidAnchor(player, stack);
+        }
+        for (ItemStack stack : data.getKongqiaoItems()) {
+            com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.clearInvalidAnchor(player, stack);
+        }
+        java.util.List<ItemStack> xianqiao = data.getXianqiaoStorageItems();
+        for (int slot = 0; slot < xianqiao.size(); slot++) {
+            ItemStack stack = xianqiao.get(slot);
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.clearInvalidAnchor(player, stack)) {
+                data.setXianqiaoSlot(slot, stack);
+            }
+        }
+    }
 
     @SubscribeEvent
     public void onLivingHurt(LivingIncomingDamageEvent e) {

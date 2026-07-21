@@ -14,7 +14,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 **Download:** [ImmortalStorage 0.0.3](https://github.com/positer/ImmortalStorage/releases/tag/0.0.3)
 
-**Release JAR SHA256:** `621B39F385DBCF648988AAAA9EF0D2DA863A007EEA9E1D8C6AB330A7457FC3F6`
+**Release JAR SHA256:** `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`
 
 ## Highlights
 
@@ -34,7 +34,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| ImmortalStorage | 0.0.2 |
+| ImmortalStorage | 0.0.3 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
@@ -42,7 +42,7 @@ No recipe viewer or storage mod is required. Optional integrations activate only
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar` from GitHub Releases.
+3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -137,6 +137,10 @@ Every ascended player owns a stable UUID-bound personal dimension.
 Stages 6-8 use a visible vanilla world border. Crossing the legal space returns the owner to the nearest valid position and displays a boundary warning. Boundary checks run only while the owner is inside that exact realm, avoiding unnecessary world-side overhead.
 
 Time flow is dimension-local. Slowing or freezing the Xianqiao does not freeze the overworld and never removes the ability to leave the realm.
+
+Vanilla beds work inside a personal Xianqiao realm. Using a bed sleeps normally and records that exact personal dimension as the player's respawn point instead of causing a dimension explosion; the server restores the dynamic realm when the saved respawn target must be resolved.
+
+Item-name colors use one progression-aware rarity policy: basic materials remain Common, mid-game crystals, spirit equipment, and machines are Uncommon, expensive Xianqiao, survival, and advanced resource devices are Rare, and dragon-egg/nether-star-class infinite sources or endgame ruin equipment are Epic.
 
 ## Tribulations
 
@@ -335,7 +339,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar
 ```
 
 Useful verification tasks:
@@ -344,7 +348,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The current release gate passes 658 tests, plus production-class, version-composition, and exact-artifact checks.
+The 0.0.3 release gate passes 653 tests on JDK 21, plus production-class, version-composition, and exact-artifact checks. Release JAR SHA256: `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`.
 
 ## Project Layout
 

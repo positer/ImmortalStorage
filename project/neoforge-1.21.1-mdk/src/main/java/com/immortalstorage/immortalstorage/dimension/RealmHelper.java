@@ -44,6 +44,23 @@ public final class RealmHelper {
 
     private RealmHelper() {}
 
+    /** Restore a saved personal-realm respawn target before vanilla needs to resolve it. */
+    public static void ensureRespawnRealmRegistered(ServerPlayer player) {
+        if (player == null || player.server == null) return;
+        ResourceKey<Level> respawnDimension = player.getRespawnDimension();
+        java.util.Optional<UUID> owner = ImmortalStorageDimensions.personalRealmOwner(respawnDimension);
+        if (owner.isPresent() && owner.get().equals(player.getUUID())) {
+            PersonalRealmLevelFactory.getOrCreate(player.server, owner.get());
+        }
+    }
+
+    public static ServerLevel resolveOwnedPersonalRealm(ServerPlayer player, ResourceKey<Level> target) {
+        if (player == null || player.server == null || target == null) return null;
+        java.util.Optional<UUID> owner = ImmortalStorageDimensions.personalRealmOwner(target);
+        if (owner.isEmpty() || !owner.get().equals(player.getUUID())) return null;
+        return PersonalRealmLevelFactory.getOrCreate(player.server, owner.get());
+    }
+
     /** Try to enter the realm.  Returns true on success. */
     public static boolean enterRealm(ServerPlayer player) {
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
