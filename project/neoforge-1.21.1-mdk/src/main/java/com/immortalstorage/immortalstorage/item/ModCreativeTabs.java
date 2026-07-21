@@ -35,10 +35,16 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ASCENSION_DAN.get());
                         output.accept(ModItems.WHITE_DAY_THUNDER.get());
                         output.accept(ModItems.SPIRIT_IRON.get());
+                        output.accept(ModItems.SPIRIT_IRON_NUGGET.get());
                         output.accept(ModItems.CRUDE_SPIRIT_IRON.get());
                         output.accept(ModItems.SPIRIT_CRYSTAL.get());
+                        output.accept(ModItems.NURTURING_CRYSTAL.get());
                         output.accept(ModItems.SPIRIT_CORE.get());
+                        output.accept(ModItems.PREMIXED_HEAVY_COMPOUND.get());
+                        output.accept(ModItems.SUBSTITUTE_PUPPET.get());
+                        output.accept(ModItems.MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModItems.SPIRIT_SWORD.get());
+                        output.accept(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get());
                         output.accept(ModItems.SPIRIT_STAFF.get());
                         params.holders().lookupOrThrow(Registries.ENCHANTMENT)
                                 .get(com.immortalstorage.immortalstorage.enchantment.ModEnchantments.SPIRIT_REPAIR)
@@ -64,6 +70,13 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.TREASURE_BASIN.get());
                         output.accept(ModBlocks.SPIRIT_IRON_BLOCK.get());
                         output.accept(ModBlocks.SPIRIT_CRYSTAL_BLOCK.get());
+                        output.accept(ModBlocks.INACTIVE_NURTURING_CRYSTAL_BEDROCK.get());
+                        output.accept(ModBlocks.NURTURING_CRYSTAL_BEDROCK.get());
+                        output.accept(ModBlocks.SMALL_NURTURING_CRYSTAL_BUD.get());
+                        output.accept(ModBlocks.MEDIUM_NURTURING_CRYSTAL_BUD.get());
+                        output.accept(ModBlocks.LARGE_NURTURING_CRYSTAL_BUD.get());
+                        output.accept(ModBlocks.NURTURING_CRYSTAL_CLUSTER.get());
+                        output.accept(ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.CRUDE_SPIRIT_IRON_BLOCK.get());
                         output.accept(ModBlocks.WATER_VEIN.get());
                         output.accept(ModBlocks.MILK_VEIN.get());

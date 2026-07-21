@@ -34,7 +34,6 @@ public final class CompatManager {
             modPresent("industrialforegoingsouls");
     public static final boolean NATURES_AURA_LOADED = modPresent("naturesaura");
     public static final boolean BEYOND_DIMENSIONS_LOADED = modPresent("beyonddimensions");
-    public static final boolean PATCHOULI_LOADED = modPresent("patchouli");
 
     private static boolean modPresent(String id) {
         try {
@@ -59,8 +58,7 @@ public final class CompatManager {
                 + ", Ars Nouveau=" + ARS_NOUVEAU_LOADED
                 + ", Industrial Foregoing Souls=" + INDUSTRIAL_FOREGOING_SOULS_LOADED
                 + ", Nature's Aura=" + NATURES_AURA_LOADED
-                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED
-                + ", Patchouli=" + PATCHOULI_LOADED;
+                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED;
     }
 
     public static void logCompat() {

@@ -113,6 +113,27 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<TerminalEntryAction> type() { return TYPE; }
     }
 
+    public record ShowSubstitutePuppetActivation(ItemStack stack) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ShowSubstitutePuppetActivation> STREAM_CODEC =
+                StreamCodec.composite(ItemStack.STREAM_CODEC, ShowSubstitutePuppetActivation::stack,
+                        ShowSubstitutePuppetActivation::new);
+        public static final CustomPacketPayload.Type<ShowSubstitutePuppetActivation> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "show_substitute_puppet_activation"));
+        @Override public CustomPacketPayload.Type<ShowSubstitutePuppetActivation> type() { return TYPE; }
+    }
+
+    public record SetStabilizedRuinValue(int containerId, int index, int value) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SetStabilizedRuinValue> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, SetStabilizedRuinValue::containerId,
+                ByteBufCodecs.VAR_INT, SetStabilizedRuinValue::index,
+                ByteBufCodecs.VAR_INT, SetStabilizedRuinValue::value,
+                SetStabilizedRuinValue::new);
+        public static final CustomPacketPayload.Type<SetStabilizedRuinValue> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "set_stabilized_ruin_value"));
+        @Override public CustomPacketPayload.Type<SetStabilizedRuinValue> type() { return TYPE; }
+    }
+
     /** Selects the item or typed-fluid directory within the same Xianqiao menu. */
     public record SetTerminalChannel(int containerId, boolean fluid) implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, SetTerminalChannel> STREAM_CODEC =
@@ -260,16 +281,6 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<TerminalExternalViewSnapshot> type() { return TYPE; }
 
         public record Entry(long entryId, String channel, String resourceId, long amount) {}
-    }
-
-    /** Opens the client-only Ancient Jade guide after server-authoritative item use. */
-    public record OpenJadeGuideScreen() implements CustomPacketPayload {
-        public static final StreamCodec<RegistryFriendlyByteBuf, OpenJadeGuideScreen> STREAM_CODEC =
-                StreamCodec.unit(new OpenJadeGuideScreen());
-        public static final CustomPacketPayload.Type<OpenJadeGuideScreen> TYPE =
-                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
-                        ImmortalStorageMod.MODID, "open_jade_guide"));
-        @Override public CustomPacketPayload.Type<OpenJadeGuideScreen> type() { return TYPE; }
     }
 
     /** Server-authoritative terminal recipe placement requested by an optional recipe viewer. */

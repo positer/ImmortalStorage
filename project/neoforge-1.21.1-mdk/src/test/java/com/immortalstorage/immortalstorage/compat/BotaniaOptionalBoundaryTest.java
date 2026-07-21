@@ -17,10 +17,12 @@ final class BotaniaOptionalBoundaryTest {
     void botaniaTypesStayInsideTheIndependentOptionalModule() throws IOException {
         Path optionalRoot = JAVA.resolve(Path.of(
                 "com", "immortalstorage", "immortalstorage", "compat", "botania"));
+        Path appliedBotanicsShim = JAVA.resolve(Path.of(
+                "com", "immortalstorage", "immortalstorage", "mixin", "appliedbotanics"));
         assertTrue(Files.isDirectory(optionalRoot));
         try (var files = Files.walk(JAVA)) {
             for (Path source : files.filter(path -> path.toString().endsWith(".java")).toList()) {
-                if (source.startsWith(optionalRoot)) continue;
+                if (source.startsWith(optionalRoot) || source.startsWith(appliedBotanicsShim)) continue;
                 String text = Files.readString(source);
                 assertFalse(text.contains("vazkii.botania"),
                         () -> "hard Botania reference escaped optional module: " + source);

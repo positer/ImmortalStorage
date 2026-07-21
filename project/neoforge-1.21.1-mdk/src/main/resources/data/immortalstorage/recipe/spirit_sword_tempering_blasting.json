@@ -4,6 +4,6 @@
   "group": "immortalstorage:spirit_sword_tempering",
   "cookingtime": 100,
   "experience": 0.0,
-  "ingredient": { "item": "immortalstorage:spirit_sword" },
+  "ingredient": { "tag": "immortalstorage:spirit_swords" },
   "result": { "count": 1, "id": "immortalstorage:spirit_sword" }
 }

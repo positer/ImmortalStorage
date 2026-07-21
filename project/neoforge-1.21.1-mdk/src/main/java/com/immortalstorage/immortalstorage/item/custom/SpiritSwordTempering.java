@@ -34,6 +34,14 @@ public final class SpiritSwordTempering {
         return (float) Math.min(Float.MAX_VALUE, bonus);
     }
 
+    public static float bonusDamage(ItemStack stack, float ordinaryDamage, long points) {
+        if (ordinaryDamage <= 0.0F || points <= 0L) return 0.0F;
+        double rate = stack != null && stack.getItem() instanceof ImmortalRuinForgedSpiritSwordItem
+                ? ImmortalRuinForgedSpiritSwordItem.temperingMultiplier() : 0.01D;
+        double bonus = ordinaryDamage * Math.min(points, 1_000_000_000L) * rate;
+        return (float) Math.min(Float.MAX_VALUE, bonus);
+    }
+
     public static void setPoints(ItemStack stack, long points) {
         if (stack == null || stack.isEmpty()) return;
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();

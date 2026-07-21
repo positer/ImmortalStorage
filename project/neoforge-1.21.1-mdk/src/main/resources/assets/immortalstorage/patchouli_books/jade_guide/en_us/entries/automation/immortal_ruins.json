@@ -1,0 +1,14 @@
+{
+  "name": "Miniature Immortal Ruins",
+  "icon": "immortalstorage:miniature_immortal_ruin",
+  "category": "immortalstorage:automation",
+  "sortnum": 30,
+  "pages": [
+    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"Miniature Immortal Ruin stacks to one. Place it as an unbreakable, non-colliding partial block. Empty-hand use reverses both field state and black/white rendering."},
+    {"type":"patchouli:text","text":"It attracts non-player living entities in a horizontal 13x13x1 region and deals five magic damage per tick in its center. Reverse mode repels. Use the Spirit Instrument in wrench mode to configure player effect, entity/player damage, and None/Light/Medium/Strong/Teleport force. Reverse mode converts Teleport to Strong."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"Surround a Miniature Immortal Ruin with Nurturing Crystal and Crying Obsidian. The stabilized block has 54 inventory slots."},
+    {"type":"patchouli:text","text":"Its settings page accepts x/y/z sizes and +x/+y/+z relative offsets, all bounded by 13. It also controls white outline preview, function enable, frequency and Redstone On/Off/Ignore."},
+    {"type":"patchouli:text","text":"Normal mode collects every dropped item in the selected area. Sneak-use empty-handed reverses it: size is fixed to 1x1x1 and the first occupied slot is dropped into an air target or inserted directly into a NeoForge item storage."},
+    {"type":"patchouli:text","text":"Normal pick mining drops Miniature Immortal Ruin. Silk Touch drops a stabilized block with no settings. Sneak-wrench dismantling preserves all settings. Craft a configured stabilized block alone once to reset it."}
+  ]
+}

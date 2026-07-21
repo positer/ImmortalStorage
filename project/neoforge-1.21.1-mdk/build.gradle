@@ -145,7 +145,10 @@ dependencies {
         transitive = false
     }
     compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
-    compileOnly('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE:api') {
+    implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
+        transitive = false
+    }
+    jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
         transitive = false
     }
     testImplementation platform('org.junit:junit-bom:5.11.4')

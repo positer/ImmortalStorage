@@ -1,0 +1,12 @@
+{
+  "name": "Immortal-Ruin-Forged Sword",
+  "icon": "immortalstorage:immortal_ruin_forged_spirit_sword",
+  "category": "immortalstorage:equipment",
+  "sortnum": 30,
+  "pages": [
+    {"type":"patchouli:smithing","recipe":"immortalstorage:immortal_ruin_forged_spirit_sword","text":"Use Miniature Immortal Ruin as the template, Spirit Sword as the base and Spirit Core as the addition. Enchantments and tempering remain while durability refreshes."},
+    {"type":"patchouli:text","text":"It retains stage damage, Spirit Repair, self-cycling tempering and sword recall. If several supported swords are in the embedded furnace, recall chooses the most recently used."},
+    {"type":"patchouli:text","text":"Each tempering point grants 1.5% damage and sweep range is 50% wider than the Spirit Sword. Tempering still halves after a hit."},
+    {"type":"patchouli:text","text":"Use it to spend five Immortal Yuan and teleport targets in a 13x13x13 region one block in front of the wielder. Their velocity is cleared and they are restrained for one second. The config controls whether other players are affected."}
+  ]
+}

@@ -14,6 +14,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 
 public class SpiritSwordItem extends SwordItem {
     public SpiritSwordItem(Item.Properties props) {
@@ -45,6 +48,7 @@ public class SpiritSwordItem extends SwordItem {
 
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        markUsed(stack, attacker.level().getGameTime());
         float ordinaryDamage = SpiritSwordCombatModel.BASE_DAMAGE;
         if (attacker instanceof Player p && !p.level().isClientSide) {
             ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
@@ -57,11 +61,22 @@ public class SpiritSwordItem extends SwordItem {
             float stageBonus = paid ? profile.bonusDamage() : 0.0F;
             ordinaryDamage += stageBonus;
             long tempering = SpiritSwordTempering.consumeHalf(stack);
-            float temperingBonus = SpiritSwordTempering.bonusDamage(ordinaryDamage, tempering);
+            float temperingBonus = SpiritSwordTempering.bonusDamage(stack, ordinaryDamage, tempering);
             float combinedBonus = stageBonus + temperingBonus;
             if (combinedBonus > 0.0F) target.hurt(p.damageSources().playerAttack(p), combinedBonus);
         }
         return super.hurtEnemy(stack, target, attacker);
+    }
+
+    public static void markUsed(ItemStack stack, long gameTime) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putLong("spiritSwordLastUsed", Math.max(0L, gameTime));
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    public static long lastUsed(ItemStack stack) {
+        return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag()
+                .getLong("spiritSwordLastUsed");
     }
 
     @Override

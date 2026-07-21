@@ -29,6 +29,7 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.IntValue XIANQIAO_INTERFACE_ITEM_SLOT_LIMIT;
     public static final ModConfigSpec.IntValue XIANQIAO_INTERFACE_FLUID_SLOT_LIMIT_MB;
     public static final ModConfigSpec.IntValue SPIRIT_STAFF_BUILD_LIMIT;
+    public static final ModConfigSpec.BooleanValue IMMORTAL_RUIN_SWORD_AFFECTS_OTHER_PLAYERS;
     public static final ModConfigSpec.IntValue NORMAL_PROGRESSION_MAX_STAGE;
     public static final ModConfigSpec.BooleanValue STAGE_TEN_INFINITE_IMMORTAL_YUAN;
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_6;
@@ -83,6 +84,12 @@ public final class ImmortalStorageConfig {
                 .translation(key("spirit_staff.buildLimit"))
                 .comment("Maximum blocks placed by one Spirit Staff build-mode action.")
                 .defineInRange("buildLimit", 64, 1, 4096);
+        BUILDER.pop();
+        BUILDER.translation(key("immortal_ruin_sword")).push("immortal_ruin_sword");
+        IMMORTAL_RUIN_SWORD_AFFECTS_OTHER_PLAYERS = BUILDER
+                .translation(key("immortal_ruin_sword.affectsOtherPlayers"))
+                .comment("Allow the Immortal-Ruin-Forged Spirit Sword teleport and one-second restraint to affect other players.")
+                .define("affectsOtherPlayers", true);
         BUILDER.pop();
         BUILDER.translation(key("progression")).push("progression");
         NORMAL_PROGRESSION_MAX_STAGE = BUILDER

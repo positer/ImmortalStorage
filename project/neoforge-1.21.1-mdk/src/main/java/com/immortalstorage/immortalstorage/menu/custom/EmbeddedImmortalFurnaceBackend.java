@@ -343,24 +343,33 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
 
     public boolean summonSpiritSword(ServerPlayer player, InteractionHand hand) {
         if (player == null || hand != InteractionHand.MAIN_HAND || !player.getMainHandItem().isEmpty()) return false;
+        int selectedChannel = -1;
+        long selectedLastUsed = Long.MIN_VALUE;
         for (int channel = 0; channel < INPUT_SLOTS.length; channel++) {
             ItemStack sword = getItem(INPUT_SLOTS[channel]);
             if (!(sword.getItem() instanceof SpiritSwordItem) || recallTokens[channel] != null) continue;
-            UUID token = UUID.randomUUID();
-            ItemStack summoned = sword.copy();
-            writeRecall(summoned, player.getUUID(), channel, token);
-            recallTokens[channel] = token;
-            internalMutation = true;
-            try {
-                setItem(INPUT_SLOTS[channel], ItemStack.EMPTY);
-            } finally {
-                internalMutation = false;
+            long lastUsed = SpiritSwordItem.lastUsed(sword);
+            if (selectedChannel < 0 || lastUsed > selectedLastUsed) {
+                selectedChannel = channel;
+                selectedLastUsed = lastUsed;
             }
-            player.setItemInHand(hand, summoned);
-            setChanged();
-            return true;
         }
-        return false;
+        if (selectedChannel < 0) return false;
+        int channel = selectedChannel;
+        ItemStack sword = getItem(INPUT_SLOTS[channel]);
+        UUID token = UUID.randomUUID();
+        ItemStack summoned = sword.copy();
+        writeRecall(summoned, player.getUUID(), channel, token);
+        recallTokens[channel] = token;
+        internalMutation = true;
+        try {
+            setItem(INPUT_SLOTS[channel], ItemStack.EMPTY);
+        } finally {
+            internalMutation = false;
+        }
+        player.setItemInHand(hand, summoned);
+        setChanged();
+        return true;
     }
 
     public boolean storeSpiritSword(ServerPlayer player, InteractionHand hand) {

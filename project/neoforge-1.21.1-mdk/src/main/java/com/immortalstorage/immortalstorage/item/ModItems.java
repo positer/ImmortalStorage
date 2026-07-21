@@ -49,11 +49,20 @@ public final class ModItems {
     public static final Supplier<Item> WHITE_DAY_THUNDER = registerItem("white_day_thunder", WhiteDayThunderItem::new);
 
     public static final Supplier<Item> SPIRIT_IRON = registerItem("spirit_iron", Item::new);
+    public static final Supplier<Item> SPIRIT_IRON_NUGGET = registerItem("spirit_iron_nugget", Item::new);
     public static final Supplier<Item> CRUDE_SPIRIT_IRON = registerItem("crude_spirit_iron", Item::new);
     public static final Supplier<Item> SPIRIT_CRYSTAL = registerItem("spirit_crystal", Item::new);
+    public static final Supplier<Item> NURTURING_CRYSTAL = registerItem("nurturing_crystal", Item::new);
     public static final Supplier<Item> SPIRIT_CORE = registerItem("spirit_core", p -> new SpiritCoreItem(p.stacksTo(16)));
+    public static final Supplier<Item> PREMIXED_HEAVY_COMPOUND = registerItem("premixed_heavy_compound", Item::new);
+    public static final Supplier<Item> SUBSTITUTE_PUPPET = registerItem("substitute_puppet", SubstitutePuppetItem::new,
+            new Item.Properties().stacksTo(1).durability(SubstitutePuppetItem.MAX_DURABILITY));
+    public static final Supplier<Item> MINIATURE_IMMORTAL_RUIN = registerItem(
+            "miniature_immortal_ruin", MiniatureImmortalRuinItem::new, new Item.Properties().stacksTo(1));
 
     public static final Supplier<Item> SPIRIT_SWORD = registerItem("spirit_sword", SpiritSwordItem::new);
+    public static final Supplier<Item> IMMORTAL_RUIN_FORGED_SPIRIT_SWORD = registerItem(
+            "immortal_ruin_forged_spirit_sword", ImmortalRuinForgedSpiritSwordItem::new);
     public static final Supplier<Item> SPIRIT_STAFF = registerItem("spirit_staff", SpiritStaffItem::new,
             new Item.Properties().attributes(DiggerItem.createAttributes(Tiers.NETHERITE, 4.0F, -2.4F)));
     public static final Supplier<Item> SPIRIT_DRIVE = registerItem("spirit_drive", SpiritDriveItem::new);

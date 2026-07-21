@@ -34,7 +34,12 @@ final class SpiritSwordTemperingContractTest {
                 "spirit_sword_tempering_immortal_furnace.json"}) {
             String json = Files.readString(recipes.resolve(name));
             assertTrue(json.contains("\"experience\": 0.0"));
+            assertTrue(json.contains("\"tag\": \"immortalstorage:spirit_swords\""));
         }
+        String tag = Files.readString(locateResources().resolve(
+                "data/immortalstorage/tags/item/spirit_swords.json"));
+        assertTrue(tag.contains("immortalstorage:spirit_sword"));
+        assertTrue(tag.contains("immortalstorage:immortal_ruin_forged_spirit_sword"));
     }
 
     private static Path locateMain() { return locate("src/main/java/com/immortalstorage/immortalstorage"); }

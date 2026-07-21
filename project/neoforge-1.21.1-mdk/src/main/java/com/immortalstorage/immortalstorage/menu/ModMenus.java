@@ -10,6 +10,8 @@ import com.immortalstorage.immortalstorage.menu.custom.KongqiaoMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.TreasureBasinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinManagerMenu;
+import com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -40,6 +42,12 @@ public final class ModMenus {
 
     public static final Supplier<MenuType<SourceVeinManagerMenu>> SOURCE_VEIN_MANAGER =
             MENUS.register("source_vein_manager", () -> IMenuTypeExtension.create(SourceVeinManagerMenu::new));
+
+    public static final Supplier<MenuType<StabilizedMiniatureImmortalRuinMenu>> STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            MENUS.register("stabilized_miniature_immortal_ruin",
+                    () -> IMenuTypeExtension.create(StabilizedMiniatureImmortalRuinMenu::new));
+    public static final Supplier<MenuType<MiniatureImmortalRuinMenu>> MINIATURE_IMMORTAL_RUIN =
+            MENUS.register("miniature_immortal_ruin", () -> IMenuTypeExtension.create(MiniatureImmortalRuinMenu::new));
 
     private ModMenus() {}
 }

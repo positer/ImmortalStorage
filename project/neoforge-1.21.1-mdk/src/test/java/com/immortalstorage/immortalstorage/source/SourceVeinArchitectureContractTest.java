@@ -187,6 +187,7 @@ final class SourceVeinArchitectureContractTest {
     void sourceItemsShowACompactOutputIdentityWithoutChangingTheirBaseModel() throws IOException {
         String setup = source("client", "ClientSetup.java");
         String renderer = source("client", "render", "SourceVeinItemRenderer.java");
+        String decorator = source("client", "render", "SourceVeinOutputDecorator.java");
         String blockItem = source("item", "SourceVeinBlockItem.java");
 
         assertTrue(setup.contains("ModelEvent.RegisterAdditional"));
@@ -194,10 +195,9 @@ final class SourceVeinArchitectureContractTest {
         assertTrue(blockItem.contains("getCustomRenderer()"));
         assertTrue(blockItem.contains("SourceVeinItemRenderer.INSTANCE"));
         assertTrue(renderer.contains("extends BlockEntityWithoutLevelRenderer"));
-        assertTrue(renderer.contains("poseStack.translate(0.27F, 0.27F, 1.25F)"),
-                "the output identity belongs in the lower-right quarter of the existing item model");
-        assertTrue(renderer.contains("poseStack.scale(0.34F, 0.34F, 0.34F)"));
-        assertTrue(renderer.contains("output, ItemDisplayContext.NONE"));
+        assertTrue(renderer.contains("context == ItemDisplayContext.GUI"));
+        assertTrue(renderer.contains("if (context == ItemDisplayContext.GUI) return;"),
+                "slot viewers use the scoped GUI decorator instead of a global BEWLR transform");
         assertTrue(renderer.contains("FluidUtil.getFilledBucket(new FluidStack(fluid, 1_000))"),
                 "fluid sources must prefer the corresponding filled bucket");
         assertTrue(renderer.contains("renderModelLists("));
@@ -205,8 +205,13 @@ final class SourceVeinArchitectureContractTest {
                 "ItemRenderer already applies the custom model transform before entering the BEWLR");
         assertFalse(renderer.contains("poseStack.translate(-0.5F, -0.5F, -0.5F)"),
                 "ItemRenderer already centers the custom model before entering the BEWLR");
-        assertFalse(setup.contains("RegisterItemDecorationsEvent"),
-                "the badge must render before vanilla stack-count decorations");
+        assertTrue(setup.contains("RegisterItemDecorationsEvent"));
+        assertTrue(setup.contains("SourceVeinOutputDecorator.INSTANCE"),
+                "inventory, creative, JEI and EMI slots must share the standard decoration path");
+        assertFalse(decorator.contains("enableScissor"),
+                "decorators must inherit caller clipping because scissor ignores PoseStack translations");
+        assertFalse(decorator.contains("disableScissor"),
+                "decorators must not pop a caller-owned scissor stack");
 
     }
 

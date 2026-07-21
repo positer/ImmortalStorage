@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.3 - development
+
+- Fixed the Applied Botanics + Ars Nouveau capability-registration interaction through an AppBot-gated Botania official-lookup compatibility shim; the complete integration matrix now loads successfully.
+- Bundled Patchouli 1.21.1-93 with NeoForge Jar-in-Jar and made the Ancient Jade handbook the only guide implementation; removed the legacy standalone guide UI, payload and maintenance tests.
+- Added the Nurturing Crystal material and budding growth chain, Spirit Iron Nuggets, Substitute Puppet, Miniature Immortal Ruin, Stabilized Miniature Immortal Ruin, Premixed Heavy Compound, and Immortal-Ruin-Forged Spirit Sword.
+- Fixed multi-stack Xianqiao Interface pulls through conservation-first transactions and redrew the interface faces with 90-degree rotational symmetry.
+- Added deterministic texture generation from vanilla/user-provided source images with source provenance retained under the reference texture directory.
+- Added owner-bound Substitute Puppet revival, recharge and respawn-anchor behavior, plus custom activation rendering.
+- Added multiplayer-safe server-authoritative ruin fields, stabilized area collection/ejection, redstone gating, configuration persistence, wrench NBT pickup, and explicit NBT reset crafting.
+
 All notable user-facing changes are documented here.
 
 ## [0.0.2] - 2026-07-20

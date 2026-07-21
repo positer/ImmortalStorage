@@ -1,7 +1,7 @@
 {
   "name":"查看器与存储网络","icon":"immortalstorage:xianqiao_exchange_cell","category":"immortalstorage:compat","sortnum":0,
   "pages":[
-    {"type":"patchouli:text","text":"安装JEI或EMI后，终端支持R/U、材料识别、搜索同步、缺料提示和配方转移；仙炉拥有独立配方分类。未安装查看器仍可依靠本书和内置指导书游玩。"},
+    {"type":"patchouli:text","text":"安装JEI或EMI后，终端支持R/U、材料识别、搜索同步、缺料提示和配方转移；仙炉拥有独立配方分类。未安装查看器时，本古玉手册仍提供完整流程和真实配方页。"},
     {"type":"patchouli:text","text":"AE2/RS交流磁盘绑定玩家UUID并显示最新用户名。同一网络只挂载一张指向同一玩家的磁盘。仙藏内置共享资源Key，无需额外AEKey中介模组。"},
     {"type":"patchouli:text","text":"仙元资源转化可在模组配置页和immortalstorage-common.toml调整。只有安装对应模组时才显示FE、Botania Mana或Ars Source分组；每类均可独立关闭、调整比例与每刻上限。"}
   ]

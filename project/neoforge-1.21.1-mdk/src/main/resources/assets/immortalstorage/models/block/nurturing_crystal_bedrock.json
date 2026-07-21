@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "immortalstorage:block/nurturing_crystal_bedrock"
+  }
+}

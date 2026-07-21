@@ -65,6 +65,8 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceItemTarget.TYPE, ModPayloads.SetXianqiaoInterfaceItemTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceItemTarget);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceFluidTarget.TYPE, ModPayloads.SetXianqiaoInterfaceFluidTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceFluidTarget);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceExternalTarget.TYPE, ModPayloads.SetXianqiaoInterfaceExternalTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceExternalTarget);
+        registrar.playToServer(ModPayloads.SetStabilizedRuinValue.TYPE,
+                ModPayloads.SetStabilizedRuinValue.STREAM_CODEC, ModNetwork::handleSetStabilizedRuinValue);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.immortalstorage.immortalstorage.client.ClientNetworkHandlers.register(registrar);
         }
@@ -73,6 +75,15 @@ public final class ModNetwork {
     private static ServerPlayer serverPlayer(IPayloadContext ctx) {
         Player player = ctx.player();
         return player instanceof ServerPlayer sp ? sp : null;
+    }
+
+    private static void handleSetStabilizedRuinValue(ModPayloads.SetStabilizedRuinValue payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || player.containerMenu.containerId != payload.containerId()
+                    || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu)) return;
+            menu.setAuthoritativeValue(payload.index(), payload.value());
+        });
     }
 
     private static boolean hasLiveXianqiaoMenu(ServerPlayer player, XianqiaoStorageMenu menu) {

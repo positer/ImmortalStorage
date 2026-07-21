@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import vazkii.patchouli.api.PatchouliAPI;
 
-/** Patchouli-only entry point; the common item reaches it only after a mod-id gate. */
+/** Single authoritative Ancient Jade handbook entry point. */
 public final class PatchouliJadeGuideCompat {
     private static final ResourceLocation BOOK = ResourceLocation.fromNamespaceAndPath(
             ImmortalStorageMod.MODID, "jade_guide");

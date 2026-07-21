@@ -12,6 +12,13 @@
     "immortalstorage:xianqiao_manager",
     "immortalstorage:xianqiao_interface",
     "immortalstorage:source_vein_manager",
-    "#immortalstorage:source_veins"
+    "immortalstorage:stabilized_miniature_immortal_ruin",
+    "#immortalstorage:source_veins",
+    "immortalstorage:inactive_nurturing_crystal_bedrock",
+    "immortalstorage:nurturing_crystal_bedrock",
+    "immortalstorage:nurturing_crystal_cluster",
+    "immortalstorage:small_nurturing_crystal_bud",
+    "immortalstorage:medium_nurturing_crystal_bud",
+    "immortalstorage:large_nurturing_crystal_bud"
   ]
 }

@@ -78,6 +78,31 @@ public final class ModBlocks {
     public static final Supplier<Block> SPIRIT_CRYSTAL_BLOCK = reg("spirit_crystal_block",
             () -> new net.minecraft.world.level.block.Block(setBlockId("spirit_crystal_block",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK))));
+    public static final Supplier<Block> INACTIVE_NURTURING_CRYSTAL_BEDROCK = reg("inactive_nurturing_crystal_bedrock",
+            () -> new Block(setBlockId("inactive_nurturing_crystal_bedrock",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK))));
+    public static final Supplier<Block> NURTURING_CRYSTAL_BEDROCK = reg("nurturing_crystal_bedrock",
+            () -> new NurturingCrystalBedrockBlock(setBlockId("nurturing_crystal_bedrock",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.BUDDING_AMETHYST).randomTicks())));
+    public static final Supplier<Block> SMALL_NURTURING_CRYSTAL_BUD = reg("small_nurturing_crystal_bud",
+            () -> new NurturingCrystalClusterBlock(3, 4, setBlockId("small_nurturing_crystal_bud",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.SMALL_AMETHYST_BUD))));
+    public static final Supplier<Block> MEDIUM_NURTURING_CRYSTAL_BUD = reg("medium_nurturing_crystal_bud",
+            () -> new NurturingCrystalClusterBlock(4, 3, setBlockId("medium_nurturing_crystal_bud",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.MEDIUM_AMETHYST_BUD))));
+    public static final Supplier<Block> LARGE_NURTURING_CRYSTAL_BUD = reg("large_nurturing_crystal_bud",
+            () -> new NurturingCrystalClusterBlock(5, 3, setBlockId("large_nurturing_crystal_bud",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.LARGE_AMETHYST_BUD))));
+    public static final Supplier<Block> NURTURING_CRYSTAL_CLUSTER = reg("nurturing_crystal_cluster",
+            () -> new NurturingCrystalClusterBlock(7, 3, setBlockId("nurturing_crystal_cluster",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_CLUSTER))));
+    public static final Supplier<Block> STABILIZED_MINIATURE_IMMORTAL_RUIN = reg("stabilized_miniature_immortal_ruin",
+            () -> new StabilizedMiniatureImmortalRuinBlock(setBlockId("stabilized_miniature_immortal_ruin",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion())));
+    public static final Supplier<Block> MINIATURE_IMMORTAL_RUIN = BLOCKS.register("miniature_immortal_ruin_block",
+            () -> new MiniatureImmortalRuinBlock(setBlockId("miniature_immortal_ruin_block",
+                    BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3_600_000.0F)
+                            .pushReaction(PushReaction.BLOCK))));
     public static final Supplier<Block> CRUDE_SPIRIT_IRON_BLOCK = reg("crude_spirit_iron_block",
             () -> new net.minecraft.world.level.block.Block(setBlockId("crude_spirit_iron_block",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.RAW_IRON_BLOCK))));

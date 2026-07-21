@@ -1,0 +1,7 @@
+{
+  "parent": "immortalstorage:block/arcane_machine_frame",
+  "textures": {
+    "frame": "minecraft:block/crying_obsidian",
+    "particle": "minecraft:block/crying_obsidian"
+  }
+}

@@ -19,17 +19,17 @@ public final class ClientNetworkHandlers {
         registrar.playToClient(ModPayloads.TerminalRecipeSources.TYPE,
                 ModPayloads.TerminalRecipeSources.STREAM_CODEC,
                 ClientNetworkHandlers::handleTerminalRecipeSources);
-        registrar.playToClient(ModPayloads.OpenJadeGuideScreen.TYPE,
-                ModPayloads.OpenJadeGuideScreen.STREAM_CODEC,
-                ClientNetworkHandlers::handleOpenJadeGuide);
         registrar.playToClient(ModPayloads.SpiritStaffBuildPreviewSnapshot.TYPE,
                 ModPayloads.SpiritStaffBuildPreviewSnapshot.STREAM_CODEC,
                 ClientNetworkHandlers::handleSpiritStaffBuildPreview);
+        registrar.playToClient(ModPayloads.ShowSubstitutePuppetActivation.TYPE,
+                ModPayloads.ShowSubstitutePuppetActivation.STREAM_CODEC,
+                ClientNetworkHandlers::handleSubstitutePuppetActivation);
     }
 
-    private static void handleOpenJadeGuide(ModPayloads.OpenJadeGuideScreen ignored, IPayloadContext ctx) {
-        ctx.enqueueWork(() -> Minecraft.getInstance().setScreen(
-                new com.immortalstorage.immortalstorage.client.screen.JadeGuideScreen()));
+    private static void handleSubstitutePuppetActivation(
+            ModPayloads.ShowSubstitutePuppetActivation payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> Minecraft.getInstance().gameRenderer.displayItemActivation(payload.stack()));
     }
 
     private static void handleSpiritStaffBuildPreview(

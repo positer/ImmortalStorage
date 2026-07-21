@@ -11,6 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +33,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -217,6 +219,13 @@ public class SpiritStaffItem extends Item {
 
     private static InteractionResult wrench(UseOnContext context, ServerPlayer player) {
         BlockEntity blockEntity = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (!player.isShiftKeyDown()
+                && blockEntity instanceof net.minecraft.world.MenuProvider menuProvider
+                && (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity
+                || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity)) {
+            player.openMenu(menuProvider, context.getClickedPos());
+            return InteractionResult.CONSUME;
+        }
         if (player.isShiftKeyDown() && isSafeWrenchTarget(blockEntity)) {
             return safelyDismantle(context, blockEntity, player);
         }
@@ -298,14 +307,18 @@ public class SpiritStaffItem extends Item {
         return blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity
                 || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.SourceVeinManagerBlockEntity
                 || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoInterfaceBlockEntity
-                || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity;
+                || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity
+                || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity
+                || blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity;
     }
 
     private static boolean isSafeWrenchState(BlockState state) {
         return state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.SourceVeinBlock
                 || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.SourceVeinManagerBlock
                 || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.XianqiaoInterfaceBlock
-                || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.XianqiaoManagerBlock;
+                || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.XianqiaoManagerBlock
+                || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.MiniatureImmortalRuinBlock
+                || state.getBlock() instanceof com.immortalstorage.immortalstorage.block.custom.StabilizedMiniatureImmortalRuinBlock;
     }
 
     private static InteractionResult safelyDismantle(
@@ -318,6 +331,24 @@ public class SpiritStaffItem extends Item {
         BlockPos pos = context.getClickedPos();
         if (!player.canInteractWithBlock(pos, 1.0D)
                 || !context.getLevel().mayInteract(player, pos)) {
+            return InteractionResult.CONSUME;
+        }
+        if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity ruin) {
+            ItemStack dropped = new ItemStack(com.immortalstorage.immortalstorage.block.ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
+            CompoundTag blockData = ruin.saveWithFullMetadata(player.registryAccess());
+            dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(blockData));
+            context.getLevel().removeBlock(pos, false);
+            Block.popResource(context.getLevel(), pos, dropped);
+            context.getItemInHand().hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
+            return InteractionResult.CONSUME;
+        }
+        if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity) {
+            BlockState state = context.getLevel().getBlockState(pos);
+            context.getLevel().levelEvent(2001, pos, Block.getId(state));
+            context.getLevel().removeBlock(pos, false);
+            Block.popResource(context.getLevel(), pos, new ItemStack(
+                    com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get()));
+            context.getItemInHand().hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
             return InteractionResult.CONSUME;
         }
         return player.gameMode.destroyBlock(pos)
@@ -338,6 +369,12 @@ public class SpiritStaffItem extends Item {
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity manager) {
             return player.getUUID().equals(manager.getOwner());
+        }
+        if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity) {
+            return true;
+        }
+        if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity) {
+            return true;
         }
         return false;
     }

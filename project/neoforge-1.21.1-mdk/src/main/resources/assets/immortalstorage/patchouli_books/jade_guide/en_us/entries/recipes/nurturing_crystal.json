@@ -1,0 +1,14 @@
+{
+  "name": "Nurturing Crystal Chain",
+  "icon": "immortalstorage:nurturing_crystal",
+  "category": "immortalstorage:recipes",
+  "sortnum": 20,
+  "pages": [
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_nugget","recipe2":"immortalstorage:spirit_iron_from_nuggets","text":"Spirit Iron unpacks into nine pale-violet nuggets and crafts back. The nuggets are used by the Substitute Puppet and Miniature Immortal Ruin."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:inactive_nurturing_crystal_bedrock","title":"Immortal Furnace Recipe","text":"A Spirit Crystal Block becomes inactive Nurturing Crystal Bedrock only in an Immortal Furnace; furnaces and blast furnaces do not accept it."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:nurturing_crystal_bedrock","text":"Surround inactive bedrock with eight Immortal Power. Active bedrock grows four crystal stages in any dimension. Personal-realm time flow accelerates the dimension ticks that drive growth."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:nurturing_crystal","title":"Mature Clusters","text":"Only the final cluster drops Nurturing Crystal. It requires Netherite mining level, drops one by default and supports Fortune. The bedrock uses the common budding-block tag for compatible growth accelerators."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:premixed_heavy_compound","text":"Nurturing Crystal, a Netherite Block and a Spirit Core craft shapelessly into Premixed Heavy Compound."},
+    {"type":"patchouli:spotlight","item":"minecraft:heavy_core","title":"Heavy Core","text":"Premixed Heavy Compound becomes one Heavy Core only in an Immortal Furnace."}
+  ]
+}

@@ -14,6 +14,9 @@ config="immortalstorage.buildinggadgets.mixins.json"
 [[mixins]]
 config="immortalstorage.arsnouveau.mixins.json"
 
+[[mixins]]
+config="immortalstorage.appliedbotanics.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
@@ -100,7 +103,7 @@ side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="patchouli"
-type="optional"
-versionRange="[1.21.1-90,)"
-ordering="AFTER"
+type="required"
+versionRange="[1.21.1-93,)"
+ordering="BEFORE"
 side="BOTH"

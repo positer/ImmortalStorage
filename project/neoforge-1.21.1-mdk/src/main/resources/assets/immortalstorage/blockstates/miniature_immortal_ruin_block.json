@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "reversed=false": { "model": "immortalstorage:block/miniature_immortal_ruin_block" },
+    "reversed=true": { "model": "immortalstorage:block/miniature_immortal_ruin_block" }
+  }
+}

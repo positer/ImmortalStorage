@@ -24,6 +24,16 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(ImmortalFurnaceBlockEntity::new,
                             ModBlocks.IMMORTAL_FURNACE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<MiniatureImmortalRuinBlockEntity>> MINIATURE_IMMORTAL_RUIN =
+            BLOCK_ENTITIES.register("miniature_immortal_ruin", () ->
+                    BlockEntityType.Builder.of(MiniatureImmortalRuinBlockEntity::new,
+                            ModBlocks.MINIATURE_IMMORTAL_RUIN.get()).build(null));
+
+    public static final Supplier<BlockEntityType<StabilizedMiniatureImmortalRuinBlockEntity>> STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            BLOCK_ENTITIES.register("stabilized_miniature_immortal_ruin", () ->
+                    BlockEntityType.Builder.of(StabilizedMiniatureImmortalRuinBlockEntity::new,
+                            ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get()).build(null));
+
     public static final Supplier<BlockEntityType<SourceVeinBlockEntity>> SOURCE_VEIN =
             BLOCK_ENTITIES.register("source_vein", () ->
                     BlockEntityType.Builder.of(
@@ -95,6 +105,8 @@ public final class ModBlockEntities {
                 (be, side) -> be.getCacheHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TREASURE_BASIN.get(),
                 (be, side) -> be.getCacheHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
+                (be, side) -> be.itemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SOURCE_VEIN.get(),
                 (be, side) -> be.getItemHandler(side));
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, SOURCE_VEIN.get(),

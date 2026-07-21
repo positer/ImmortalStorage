@@ -57,6 +57,7 @@ out/
 # Extracted/generated development data and visual references inside the MDK.
 /project/neoforge-1.21.1-mdk/data/
 /project/neoforge-1.21.1-mdk/references/
+/project/neoforge-1.21.1-mdk/src/main/resources/assets/immortalstorage/textures/reference/
 /project/neoforge-1.21.1-mdk/README.txt
 /project/neoforge-1.21.1-mdk/changelog.txt
 /project/neoforge-1.21.1-mdk/CREDITS.txt

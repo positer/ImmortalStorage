@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.client;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.immortalstorage.immortalstorage.block.ModBlocks;
 import com.immortalstorage.immortalstorage.client.keybind.ImmortalStorageKeybinds;
 import com.immortalstorage.immortalstorage.client.render.SourceVeinRenderer;
 import com.immortalstorage.immortalstorage.client.render.SourceVeinManagerRenderer;
@@ -8,6 +9,11 @@ import com.immortalstorage.immortalstorage.client.render.SpiritStaffBuildPreview
 import com.immortalstorage.immortalstorage.client.render.XianqiaoManagerRenderer;
 import com.immortalstorage.immortalstorage.client.render.WorldShardMinerRenderer;
 import com.immortalstorage.immortalstorage.client.render.YuanLightRenderer;
+import com.immortalstorage.immortalstorage.client.render.MiniatureImmortalRuinRenderer;
+import com.immortalstorage.immortalstorage.client.render.RuinCoreItemDecorator;
+import com.immortalstorage.immortalstorage.client.render.SourceVeinOutputDecorator;
+import com.immortalstorage.immortalstorage.client.render.StabilizedMiniatureImmortalRuinRenderer;
+import com.immortalstorage.immortalstorage.client.render.XianqiaoManagerItemDecorator;
 import com.immortalstorage.immortalstorage.client.screen.ImmortalFurnaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.KongqiaoScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinScreen;
@@ -15,6 +21,8 @@ import com.immortalstorage.immortalstorage.client.screen.XianqiaoStorageScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.TreasureBasinScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinManagerScreen;
+import com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen;
+import com.immortalstorage.immortalstorage.client.screen.MiniatureImmortalRuinScreen;
 import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem;
@@ -26,6 +34,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -38,6 +47,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::registerScreens);
         modBus.addListener(ClientSetup::registerRenderers);
         modBus.addListener(ClientSetup::registerAdditionalModels);
+        modBus.addListener(ClientSetup::registerItemDecorations);
         ImmortalStorageKeybinds.init(modBus, forgeBus);
         forgeBus.addListener(ClientItemTooltips::onTooltip);
         SpiritStaffBuildPreview.init(forgeBus);
@@ -61,6 +71,8 @@ public final class ClientSetup {
         e.register(ModMenus.SOURCE_VEIN.get(), SourceVeinScreen::new);
         e.register(ModMenus.TREASURE_BASIN.get(), TreasureBasinScreen::new);
         e.register(ModMenus.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerScreen::new);
+        e.register(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), StabilizedMiniatureImmortalRuinScreen::new);
+        e.register(ModMenus.MINIATURE_IMMORTAL_RUIN.get(), MiniatureImmortalRuinScreen::new);
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -69,6 +81,8 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WORLD_SHARD_MINER.get(), WorldShardMinerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.YUAN_LIGHT.get(), YuanLightRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(), MiniatureImmortalRuinRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), StabilizedMiniatureImmortalRuinRenderer::new);
     }
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
@@ -79,6 +93,18 @@ public final class ClientSetup {
                     ResourceLocation.fromNamespaceAndPath(
                             id.getNamespace(), "item/" + id.getPath() + "_base")));
         }
+    }
+
+    private static void registerItemDecorations(RegisterItemDecorationsEvent event) {
+        for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (item instanceof com.immortalstorage.immortalstorage.item.SourceVeinBlockItem) {
+                event.register(item, SourceVeinOutputDecorator.INSTANCE);
+            }
+        }
+        event.register(ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem(),
+                RuinCoreItemDecorator.INSTANCE);
+        event.register(ModBlocks.XIANQIAO_MANAGER.get().asItem(),
+                XianqiaoManagerItemDecorator.INSTANCE);
     }
 
     private ClientSetup() {}

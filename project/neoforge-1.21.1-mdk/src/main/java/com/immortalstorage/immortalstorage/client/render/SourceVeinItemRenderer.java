@@ -21,7 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 
-/** Draws the 0.0.1 source model and a compact output identity in one item-render call. */
+/** Draws the source base model and output identity outside slot-based GUI viewers. */
 public final class SourceVeinItemRenderer extends BlockEntityWithoutLevelRenderer {
     public static final SourceVeinItemRenderer INSTANCE = new SourceVeinItemRenderer();
 
@@ -47,16 +47,10 @@ public final class SourceVeinItemRenderer extends BlockEntityWithoutLevelRendere
 
         ItemStack output = outputStack(definition(source));
         if (output.isEmpty()) return;
+        if (context == ItemDisplayContext.GUI) return;
         poseStack.pushPose();
-        if (context == ItemDisplayContext.GUI) {
-            // BEWLR item space is centered on the slot. Keep the whole badge
-            // inside the lower-right quadrant instead of translating past it.
-            poseStack.translate(0.27F, 0.27F, 1.25F);
-            poseStack.scale(0.34F, 0.34F, 0.34F);
-        } else {
-            poseStack.translate(0.58F, 0.58F, 0.58F);
-            poseStack.scale(0.32F, 0.32F, 0.32F);
-        }
+        poseStack.translate(0.58F, 0.58F, 0.58F);
+        poseStack.scale(0.32F, 0.32F, 0.32F);
         BakedModel outputModel = minecraft.getItemRenderer().getModel(
                 output, minecraft.level, null, 0);
         minecraft.getItemRenderer().render(

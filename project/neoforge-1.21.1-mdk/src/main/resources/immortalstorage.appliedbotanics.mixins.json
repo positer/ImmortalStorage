@@ -1,0 +1,9 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.immortalstorage.immortalstorage.mixin.appliedbotanics",
+  "plugin": "com.immortalstorage.immortalstorage.mixin.appliedbotanics.AppliedBotanicsMixinConfigPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["BotaniaForgeCapabilitiesMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

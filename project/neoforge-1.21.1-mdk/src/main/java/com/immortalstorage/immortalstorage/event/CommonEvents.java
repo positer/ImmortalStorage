@@ -16,6 +16,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
@@ -231,9 +232,57 @@ public class CommonEvents {
                 restoreStageEffects(p);
                 p.displayClientMessage(net.minecraft.network.chat.Component.literal(
                         "Tribulation failed. Immortal Yuan was cleared."), true);
+                return;
+            }
+            SubstitutePuppetLocation puppetLocation = findOwnedSubstitutePuppet(p, data);
+            ItemStack puppet = puppetLocation.stack();
+            if (!puppet.isEmpty()
+                    && com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.consumeUse(puppet)) {
+                puppetLocation.commit().run();
+                e.setCanceled(true);
+                p.setHealth(1.0F);
+                p.removeAllEffects();
+                p.clearFire();
+                p.fallDistance = 0.0F;
+                p.invulnerableTime = 40;
+                p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 900, 1));
+                p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 100, 1));
+                p.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 800, 0));
+                com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.teleportToAnchor(p, puppet);
+                net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(p,
+                        new com.immortalstorage.immortalstorage.network.ModPayloads.ShowSubstitutePuppetActivation(
+                                puppet.copyWithCount(1)));
+                restoreStageEffects(p);
             }
         }
     }
+
+    private static SubstitutePuppetLocation findOwnedSubstitutePuppet(ServerPlayer player, ImmortalStoragePlayerData data) {
+        for (ItemStack stack : player.getInventory().items) {
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+        }
+        for (ItemStack stack : player.getInventory().offhand) {
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+        }
+        for (ItemStack stack : data.getKongqiaoItems()) {
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+        }
+        java.util.List<ItemStack> xianqiao = data.getXianqiaoStorageItems();
+        for (int slot = 0; slot < xianqiao.size(); slot++) {
+            ItemStack stack = xianqiao.get(slot);
+            if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
+                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) {
+                int storageSlot = slot;
+                return new SubstitutePuppetLocation(stack, () -> data.setXianqiaoSlot(storageSlot, stack));
+            }
+        }
+        return new SubstitutePuppetLocation(ItemStack.EMPTY, () -> {});
+    }
+
+    private record SubstitutePuppetLocation(ItemStack stack, Runnable commit) {}
 
     @SubscribeEvent
     public void onLivingHurt(LivingIncomingDamageEvent e) {

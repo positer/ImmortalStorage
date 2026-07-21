@@ -8,13 +8,13 @@ ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dim
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.2 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.3 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.2](https://github.com/positer/ImmortalStorage/releases/tag/0.0.2)
+**Download:** [ImmortalStorage 0.0.3](https://github.com/positer/ImmortalStorage/releases/tag/0.0.3)
 
-**Release JAR SHA256:** `AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
+**Release JAR SHA256:** `621B39F385DBCF648988AAAA9EF0D2DA863A007EEA9E1D8C6AB330A7457FC3F6`
 
 ## Highlights
 
@@ -23,7 +23,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 - Smooth, searchable storage terminal with real crafting, furnace, armor, fluid, and magnet management.
 - A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
 - Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
-- Detailed Ancient Jade guide designed for play without JEI or EMI.
+- Bundled Patchouli Ancient Jade handbook with bilingual progression, recipes, and 0.0.3 mechanics; no separate Patchouli install is required.
 - Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
 - Complete Simplified Chinese and English localization for gameplay and configuration.
 
@@ -52,7 +52,7 @@ Back up important worlds before adding or updating any content mod.
 
 ## Starting the Journey
 
-The Ancient Jade is the player's main guide. By default, a new character receives one on first joining a world. It can also be crafted shapelessly from a book, emerald, Spirit Crystal, and ImmortalPower.
+The Ancient Jade is the player's main guide. By default, a new character receives one on first joining a world. It can also be crafted shapelessly from a book, emerald, Spirit Crystal, and ImmortalPower. Right-clicking it opens the bundled Patchouli handbook; the former standalone guide screen is no longer maintained.
 
 Open the Jade to see:
 

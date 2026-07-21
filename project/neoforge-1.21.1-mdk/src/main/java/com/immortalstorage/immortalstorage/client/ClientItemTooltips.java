@@ -10,7 +10,7 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 final class ClientItemTooltips {
     static void onTooltip(ItemTooltipEvent event) {
-        if (!event.getItemStack().is(ModItems.SPIRIT_SWORD.get())) return;
+        if (!(event.getItemStack().getItem() instanceof com.immortalstorage.immortalstorage.item.custom.SpiritSwordItem)) return;
         int stage = event.getEntity() == null ? 0 : ImmortalStoragePlayerData.get(event.getEntity()).getStage();
         SpiritSwordCombatModel.Profile profile = SpiritSwordCombatModel.forStage(stage);
         long tempering = SpiritSwordTempering.points(event.getItemStack());

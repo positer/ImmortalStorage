@@ -441,18 +441,20 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
 
     private void pullItems(IItemHandler source, Direction side) {
         for (int sourceSlot = 0; sourceSlot < source.getSlots(); sourceSlot++) {
-            ItemStack simulated = source.extractItem(sourceSlot, Integer.MAX_VALUE, true);
-            if (simulated.isEmpty()) continue;
-            long accepted = inventory.insertBulk(simulated, simulated.getCount(), true);
-            int amount = (int) Math.min(simulated.getCount(), accepted);
-            if (amount <= 0) continue;
-            ItemStack extracted = source.extractItem(sourceSlot, amount, false);
-            if (extracted.isEmpty()) continue;
-            long committed = inventory.insertBulk(extracted, extracted.getCount(), false);
-            if (committed < extracted.getCount()) {
-                ItemStack remainder = extracted.copyWithCount((int) (extracted.getCount() - committed));
-                ItemHandlerHelper.insertItemStacked(source, remainder, false);
-            }
+            com.immortalstorage.immortalstorage.network.storage.ItemHandlerTransferTransaction.moveSlot(
+                    source, sourceSlot, Integer.MAX_VALUE,
+                    (stack, simulate) -> {
+                        long accepted = inventory.insertBulk(stack, stack.getCount(), simulate);
+                        int remainder = stack.getCount() - (int) Math.min(stack.getCount(), accepted);
+                        return remainder <= 0 ? ItemStack.EMPTY : stack.copyWithCount(remainder);
+                    },
+                    overflow -> {
+                        if (level instanceof ServerLevel serverLevel && !overflow.isEmpty()) {
+                            net.minecraft.world.Containers.dropItemStack(serverLevel,
+                                    worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
+                                    worldPosition.getZ() + 0.5D, overflow);
+                        }
+                    });
         }
     }
 

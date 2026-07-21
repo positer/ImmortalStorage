@@ -124,19 +124,21 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                         "container.immortalstorage.terminal.hand_refill_hint")))
                 .build());
         int inventoryActionsY = this.topPos + this.imageHeight - 106;
-        int inventoryActionsX = this.leftPos + this.imageWidth - 58;
+        int inventoryActionsX = this.leftPos + this.imageWidth - 30;
         this.sortInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
                 inventoryActionsX, inventoryActionsY, TerminalInventoryActionButton.Icon.WRENCH,
                 Component.translatable("container.immortalstorage.terminal.inventory_sort"),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.inventory_sort_hint")),
                 button -> requestMenuButton(XianqiaoStorageMenu.SORT_PLAYER_INVENTORY_BUTTON)));
         this.depositInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
-                inventoryActionsX + 18, inventoryActionsY, TerminalInventoryActionButton.Icon.DEPOSIT,
+                inventoryActionsX + TerminalInventoryActionButton.SPACING, inventoryActionsY,
+                TerminalInventoryActionButton.Icon.DEPOSIT,
                 Component.translatable("container.immortalstorage.terminal.inventory_deposit"),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.inventory_deposit_hint")),
                 button -> requestMenuButton(XianqiaoStorageMenu.DEPOSIT_PLAYER_INVENTORY_BUTTON)));
         this.withdrawInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
-                inventoryActionsX + 36, inventoryActionsY, TerminalInventoryActionButton.Icon.WITHDRAW,
+                inventoryActionsX + TerminalInventoryActionButton.SPACING * 2, inventoryActionsY,
+                TerminalInventoryActionButton.Icon.WITHDRAW,
                 Component.translatable("container.immortalstorage.terminal.inventory_withdraw"),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.inventory_withdraw_hint")),
                 button -> requestMenuButton(XianqiaoStorageMenu.WITHDRAW_FILTERED_BUTTON)));

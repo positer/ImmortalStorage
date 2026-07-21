@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/large_amethyst_bud",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "cross": "immortalstorage:block/large_nurturing_crystal_bud"
+  }
+}

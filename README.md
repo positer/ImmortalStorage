@@ -2,7 +2,7 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前稳定发行版为 0.0.2。AE2 联动由仙藏（ImmortalStorage）内置电力、化学品、魔源、魔力与灵魂资源键适配，不要求安装额外 AEKey 中介模组；安装兼容的中介附属时会优先退让并桥接其标准资源键。
+> 当前开发版本为 0.0.3。AE2 联动由仙藏（ImmortalStorage）内置电力、化学品、魔源、魔力与灵魂资源键适配，不要求安装额外 AEKey 中介模组；安装兼容的中介附属时会优先退让并桥接其标准资源键。
 
 **简体中文** | [English](README_en.md)
 
@@ -10,13 +10,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.2 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
+> 0.0.3 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**下载：**[仙藏 ImmortalStorage 0.0.2](https://github.com/positer/ImmortalStorage/releases/tag/0.0.2)
+**下载：**[仙藏 ImmortalStorage 0.0.3](https://github.com/positer/ImmortalStorage/releases/tag/0.0.3)
 
-**发行 JAR SHA256：**`AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
+**发行 JAR SHA256：**`621B39F385DBCF648988AAAA9EF0D2DA863A007EEA9E1D8C6AB330A7457FC3F6`
 
 ## 模组特色
 
@@ -26,7 +26,7 @@
 - 每位玩家独有的仙窍维度，空间边界和时间流速会随阶段成长。
 - 源方块、源方块管理器、仙窍管理器和仙窍接口组成的大宗资源自动化系统。
 - 探索、扳手、镐子、建筑四模式灵器，以及可淬火成长的灵剑。
-- 无需 JEI/EMI 也能游玩的古玉指导书，内含阶段任务、功能说明和真实配方图。
+- 内置帕秋莉运行时的古玉手册，内含阶段流程、功能说明和真实配方图，无需另装手册模组。
 - 可选兼容 JEI、EMI、AE2、RS、通用机械、植物魔法、通量网络与工业先锋灵魂等模组；Iron's Spells 玩家魔力不接入仙窍存储。
 - 完整的简体中文与英文游戏文本、Tooltip 和模组配置说明。
 
@@ -37,7 +37,7 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.2 |
+| 仙藏 ImmortalStorage | 0.0.3-dev |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
@@ -45,7 +45,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar`。
+3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -68,7 +68,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-Patchouli 是可选依赖。未安装时，古玉继续打开 ImmortalStorage 原有的独立指导界面；安装受支持的 Patchouli 后，同一个古玉会优先打开更详细的双语 Patchouli 手册，提供六类分级目录、真实配方页面和完整功能说明。不会生成第二本书，也不会把 Patchouli API 打包进 ImmortalStorage JAR。
+古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面以及 0.0.3 的蕴灵晶、替死傀儡、迷你仙墟、稳定化仙墟和仙墟锻灵剑说明。
 
 ## 修行阶段
 
@@ -253,6 +253,8 @@ Patchouli 是可选依赖。未安装时，古玉继续打开 ImmortalStorage �
 - 每一点淬火使伤害提高 1%；每次命中后淬火点减半并向下取整。
 - 当前淬火点与伤害加成会直接显示在 Tooltip 中。
 
+仙墟锻灵剑右键传送目标后会立即清除目标速度，并施加 20 tick（1 秒）的最高等级缓慢作为禁锢。`immortalstorage-common.toml` 与原生模组配置页提供“传送影响其他玩家”开关：默认开启以保持原行为；关闭后范围传送与禁锢只影响非玩家生物。
+
 ## 世界碎片开采器与聚宝盆
 
 世界碎片开采器使用与信标相同的完整同种方块底座结构。完整钻石块、下界残骸或紫颂砖底座分别激活主世界、下界和末地模式，底座等级一至四控制工作速度。
@@ -320,6 +322,7 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 ImmortalStorage 
 - 源方块认领、破坏与爆炸权限；
 - 仙窍接口物品/流体缓存上限；
 - 灵器建筑模式单次方块上限。
+- 仙墟锻灵剑的传送与一秒禁锢是否影响其他玩家。
 - 安装通用机械/通量网络、植物魔法或新生魔艺后，配置页会分别显示仙元转化 FE、Mana、魔源的允许开关、比例和每刻上限；同一设置也写入 `immortalstorage-common.toml`，默认开启。
 
 调整阶段、资源或兼容配置前，建议关闭服务器并备份世界。
@@ -363,7 +366,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.2.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar
 ```
 
 完整验证命令：
@@ -372,7 +375,9 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.2 当前通过完整 Gradle 测试、构建、生产类边界、版本组合、无 AE2 运行边界与 Ars Source 适配器校验。真实联动矩阵采用实际第三方 JAR 隔离启动：Mekanism 10.7.19.85 的 FE 推出已通过真实方块数值验证；Industrial Foregoing Souls 1.10.7 已按其官方仅抽出 `SLBSoulCap` 完成真实镭射底座到仙窍接口的主动抽入。Ars Nouveau 5.12.1 当前通过真实 `SourceManager` Provider 识别，Botania 通过正式 ManaReceiver/SparkAttachable 注册与真实池读取；二者的数量增减闭环、FE 新主动回退路径及其余组合矩阵仍待验收，不能误报为完整支持。Iron's Spells 仅作为普通共存模组参与启动测试，不接入仙窍存储。
+0.0.3 使用实际 PCL2 客户端和第三方 JAR 完成隔离启动矩阵。针对 Applied Botanics 1.6.0-alpha.3 在 Botania capability 映射未初始化时向 AE2 注册空 capability 的问题，ImmortalStorage 仅在 AppBot 与 Botania 同时存在时提前建立 Botania 官方 lookup，并使 Botania 后续对同一 lookup 的注册幂等；未复制或替换第三方实现。修复后 AppBot + Ars Nouveau、AppBot + Ars Energistique、单独 Botania/Ars/AppBot 以及包含全部联动的组合均完成加载。Iron's Spells 仅作为普通共存模组参与启动，不接入仙窍存储。
+
+2026-07-20 已将 PCL2 `1.21.1-NeoForge_21.1.235` 实例配置为 30 个外置 JAR 的完整联动与 Numen 调试环境，并使用 Java 21 可见窗口启动到主菜单。当前运行日志确认 AE2、RS、Mekanism、Flux Networks、Botania、Ars Nouveau、Industrial Foregoing Souls 与 Beyond Dimensions 同时识别，AE2/RS/Mekanism/Botania/Ars/IF Souls 注册全部完成。环境清单、原 mods 备份、最终日志和启动状态位于 `archive/2026-07-20-pcl2-full-mod-environment-20260720-224502/`。
 
 2026-07-19 的最新 1.21.1 候选制品通过 JDK 21 的 643 项测试，SHA256 为 `72C86FE604BB8A1EB2C535A75658BDB2F4058E5CD0D2626942855E4AF862B978`。包含 26 个外置 JAR 的 PCL2 组合实例已重新启动且进程正常响应，未生成新的崩溃报告；ImmortalStorage 日志确认 AE2、RS、Mekanism、Botania、Ars Nouveau、Industrial Foregoing Souls、Flux Networks、Beyond Dimensions 与 Patchouli 联动同时被识别，Iron's Spells 仅作为不接入存储的普通共存模组加载，Create、Building Gadgets 2 与 Nemo's Inventory Sorting 也完成同进程加载。该结果只证明组合启动与注册；源方块最终视觉、三个小图标按钮、统一额外资源目录和 FE 双向数值闭环仍由用户在已启动客户端内验收，也不把其余 14 条计划版本线标记为已发布。
 
@@ -403,6 +408,16 @@ Botania 魔力资源图标现与 Applied Botanics 的真实 AE2 渲染保持一�
 额外资源新建缓存通过空手资源选择器时默认请求 `1000`，通过化学品容器或滴管右键时保留容器当前内容量。服务端按资源族统一钳制单槽上限：FE `100,000,000`、Botania Mana `1,000,000`、Ars Source `10,000`、IF Souls `1,350`、Mekanism 化学品 `1,000,000`。已有缓存超出新上限时不删除内容，调度会把超额安全返回仙窍账本。
 
 仙窍接口、源方块和缓存槽面掩码改用统一 `3×2` MEK 风格六面预览：相邻空气显示 `U/D/E/W/N/S`，相邻完整或不完整方块显示其物品预览。仙窍接口边框绿抽/红推/灰关，源方块红推/紫越限推/灰关；主动总开关与缓存槽面开放使用明暗表达。悬浮始终显示完整面方位与状态。该 debug 候选以 JDK 21 通过 658 项测试，SHA256 为 `6ABDC35F63F01237DB2387E41EF49F0DD8027E87C102AAD0E6E1AE761AEFEDA8`，不写入 Goal.md。
+
+2026-07-21 完成 0.0.3 仙墟与源方块集中回归修复：源方块物品角标改走受槽位裁剪的标准物品装饰层，固定显示右下角物品/桶装资源且低于数量、耐久和 tooltip 图层；迷你仙墟使用分离的不透明全亮核心与半透明外圈，反转仅由空手右键切换，灵器扳手由方块交互层直接路由右键配置与 Shift 拆卸；稳定化迷你仙墟改为缩小的哭泣黑曜石 12 棱框架并露出同款核心，空手右键打开、空手 Shift 右键反转，扳手 Shift 拆卸保留 NBT。蕴灵晶簇四阶段模型显式使用 cutout，透明区不再黑底。两个配置 UI 的开关使用明暗表示，稳定化数值输入框与 +/- 服务端值同步，红石模式已移除。稳定化仙墟与仙窍管理器的动态核心也注册为槽位内逐帧预览；该通用原版物品装饰链可由普通背包、创造栏、JEI 和 EMI 共同调用。替死傀儡仍以 UUID 判定所有者但 tooltip 显示并刷新用户名；仙墟锻灵剑材质旋转 180 度并提高原像素对比度，补齐灵剑/特殊功能 tooltip，拉取范围精确为 13×13×13。古玉指导书沉重核心引用改为 `minecraft:heavy_core`。最终全量测试、0.0.3 生产制品边界和静态资源审计全部通过；JAR SHA256 为 `013B80C02DD999C232949CF67589EB63A8616606A4DBB8403D23DEB2C3F8A04F`。30 外置 JAR 的 PCL2 全联动实例已重新部署并启动，客户端资源/声音加载完成，ImmortalStorage/Patchouli 相关加载错误为 0。
+
+仙墟核心渲染随后按实际游戏截图再次收敛：所有顶点统一使用 `OverlayTexture.NO_OVERLAY`，消除 overlay 通道造成的红色偏染；普通模式为纯黑不透明核心加加厚纯白全亮实体轮廓，反转模式为纯白核心加加厚纯黑轮廓。轮廓使用保留深度测试的实体 cutout 层模拟光灵箭式高亮，不进入原版穿墙 outline framebuffer，因此会被不透明方块正确遮挡；稳定化仙墟世界核心和物品栏动态核心均复用同一黑白反转逻辑。最终 648 项测试通过，JAR SHA256 为 `2602E788E4795CE1374E35C06305DB7265C1303095FCAAE6A3A6CE4933F012A5`，全联动 PCL2 客户端 PID `125792` 已完成声音加载且 ImmortalStorage 加载错误为 0。
+
+2026-07-21 修复了普通背包、创造栏、JEI、EMI 与仙藏终端底部玩家物品栏之间的动态物品渲染分歧：源方块输出角标、稳定化迷你仙墟动态核心和仙窍管理器动态核心统一注册到 NeoForge 标准物品装饰链，不再依赖只覆盖部分 `GuiGraphics.renderItem` 重载的全局 Mixin。非 GUI 场景仍由各自 BEWLR 绘制完整动态模型，GUI 槽位则在基础模型之后、原版数量与耐久装饰的同一阶段绘制动态内容，因此各查看器和终端槽位共享一致的层级与裁剪规则。终端背包整理、全部存入、筛选取出三个按钮从 16x16 缩为 8x8，采用 10 像素间距并重绘对应像素图标。全量 649 项测试与生产构建通过。
+
+同日实机复查确认上一段的“共享一致裁剪规则”判断并不成立：三个 `IItemDecorator` 都把传入的槽位局部 `x/y` 直接交给 `GuiGraphics.enableScissor`，但 1.21.1 的 scissor 字节码不应用 PoseStack。容器绘制已有 `leftPos/topPos` 平移，仙藏终端还会叠加逻辑槽到视觉槽的额外平移；动态内容跟随 PoseStack 到达实际槽位，scissor 却停留在未平移坐标，因而在背包/创造栏/终端中被自身裁掉。HUD 热栏使用近似屏幕坐标且没有容器原点平移，所以同一装饰器在那里可见。该问题也揭示现有 `DynamicPreviewBlockItemRenderer` 未被任何物品注册使用、JAR 内仍含未启用的旧 Overlay/Mixin class，以及既有测试仅检查源码字符串和注册存在、没有验证真实矩阵/scissor/像素输出。此处仅记录诊断，尚未宣称修复。
+
+上述坐标系问题现已修复：源方块输出、稳定化迷你仙墟核心和仙窍管理器核心装饰器不再创建或弹出自己的槽位 scissor，而是继承背包、创造栏、JEI/EMI、HUD 或仙藏滚动终端调用方已经建立的最终屏幕裁剪。动态几何与基础物品模型因此共享同一 PoseStack，仙藏存储目录仍由外层滚动视口裁剪，不会溢出面板。回归测试明确禁止三个装饰器再次调用 `enableScissor/disableScissor`；全量 649 项测试和生产构建通过。新候选 JAR SHA256 为 `E835B135A97B28D418A9ED10C71D589DDD7486A7E821FE1D7E714ABFA6AFE60C`。
 
 ## 仓库结构
 

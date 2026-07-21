@@ -1,0 +1,14 @@
+{
+  "name": "蕴灵晶材料链",
+  "icon": "immortalstorage:nurturing_crystal",
+  "category": "immortalstorage:recipes",
+  "sortnum": 20,
+  "pages": [
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_nugget","recipe2":"immortalstorage:spirit_iron_from_nuggets","text":"灵铁可分解为九枚淡紫色灵铁粒，并可逆合成。灵铁粒用于替死傀儡与迷你仙墟。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:inactive_nurturing_crystal_bedrock","title":"仙炉配方","text":"灵晶块只能在仙炉中烧成失活的蕴灵晶母岩，普通熔炉与高炉不接受该配方。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:nurturing_crystal_bedrock","text":"中心放失活母岩，外圈八枚仙元可激活为蕴灵晶母岩。它在任意维度随机生长四阶段蕴灵晶簇，仙窍时间倍率会随维度刻一并加速生长。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:nurturing_crystal","title":"成熟晶簇","text":"只有最大阶段晶簇会掉落蕴灵晶，需要下界合金等级采掘，默认一枚并受时运影响。母岩登记为通用母岩标签，供兼容的晶体催生设备识别。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:premixed_heavy_compound","text":"蕴灵晶、下界合金块与灵核无序合成预拌沉重混合物。"},
+    {"type":"patchouli:spotlight","item":"minecraft:heavy_core","title":"沉重核心","text":"预拌沉重混合物只能由仙炉烧炼为沉重核心。"}
+  ]
+}
