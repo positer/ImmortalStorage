@@ -379,51 +379,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.3 使用实际 PCL2 客户端和第三方 JAR 完成隔离启动矩阵。针对 Applied Botanics 1.6.0-alpha.3 在 Botania capability 映射未初始化时向 AE2 注册空 capability 的问题，ImmortalStorage 仅在 AppBot 与 Botania 同时存在时提前建立 Botania 官方 lookup，并使 Botania 后续对同一 lookup 的注册幂等；未复制或替换第三方实现。修复后 AppBot + Ars Nouveau、AppBot + Ars Energistique、单独 Botania/Ars/AppBot 以及包含全部联动的组合均完成加载。Iron's Spells 仅作为普通共存模组参与启动，不接入仙窍存储。
-
-2026-07-20 已将 PCL2 `1.21.1-NeoForge_21.1.235` 实例配置为 30 个外置 JAR 的完整联动与 Numen 调试环境，并使用 Java 21 可见窗口启动到主菜单。当前运行日志确认 AE2、RS、Mekanism、Flux Networks、Botania、Ars Nouveau、Industrial Foregoing Souls 与 Beyond Dimensions 同时识别，AE2/RS/Mekanism/Botania/Ars/IF Souls 注册全部完成。环境清单、原 mods 备份、最终日志和启动状态位于 `archive/2026-07-20-pcl2-full-mod-environment-20260720-224502/`。
-
-2026-07-19 的最新 1.21.1 候选制品通过 JDK 21 的 643 项测试，SHA256 为 `72C86FE604BB8A1EB2C535A75658BDB2F4058E5CD0D2626942855E4AF862B978`。包含 26 个外置 JAR 的 PCL2 组合实例已重新启动且进程正常响应，未生成新的崩溃报告；ImmortalStorage 日志确认 AE2、RS、Mekanism、Botania、Ars Nouveau、Industrial Foregoing Souls、Flux Networks、Beyond Dimensions 与 Patchouli 联动同时被识别，Iron's Spells 仅作为不接入存储的普通共存模组加载，Create、Building Gadgets 2 与 Nemo's Inventory Sorting 也完成同进程加载。该结果只证明组合启动与注册；源方块最终视觉、三个小图标按钮、统一额外资源目录和 FE 双向数值闭环仍由用户在已启动客户端内验收，也不把其余 14 条计划版本线标记为已发布。
-
-接口输入回归修复后，PULL 面的 FE 与 Mekanism 化学品不再停留在接口目标缓存，而是直接提交到玩家仙窍权威账本；PUSH 面继续从配置缓存输出。Botania 火花和 Ars Source 属于无方向位置能力，直接解析权威账本，因此火花放置不再要求先配置一个 Mana 接口缓存槽。该候选新增一项输入路径回归测试，当前共 644 项。
-
-后续实测确认 PULL 输入仍被“必须预配对应资源目标槽”错误拦截，这会让 FE 与 Mekanism 化学管道成功连接却始终写入 0。现已将 PULL 改为依据实际传入资源键直接写入所有者仙窍权威账本，不再要求幽灵目标槽或输出面掩码；PUSH 仍只暴露明确配置的方向缓存。最新候选以 JDK 21 通过 644 项测试，SHA256 为 `8BF0EB7D2FA51CAC70EC80A04C48BF1D0C4A7D72D272CFD15F8E438731C37ABB`。背包三个操作图标同时缩小一档，按钮热区维持 16x16。
-
-Botania 魔力资源图标现与 Applied Botanics 的真实 AE2 渲染保持一致：使用 Botania `block/mana_water` 的 16x512 动画图集和每帧 2 tick 元数据，不再误用 `mana_cell_1k` 物品材质。
-
-仙窍接口配置槽现区分鼠标键：左键始终将手持流体/化学品容器的完整物品组件作为精确物品目标，右键则读取其中的流体或 Mekanism 化学品并配置对应资源。Mekanism 化学品在仙窍界面中使用其注册颜色填充格子，并使用化学品注册的正式本地化名称；其他额外资源也使用明确的正式名称，不再把内部资源 ID 当作玩家可见名称。该候选以 JDK 21 通过 645 项测试，SHA256 为 `3E582C3436530E614BD2EC38CD7570E16187157516190FBC4D30F0BCA5F975F9`。
-
-缓存槽的六面输出配置支持在同一对话框内连续多选；每个 18x18 正方形按钮只保留一个方向字，开启/关闭改由明暗表示。Mekanism 化学品不出现在空手右键额外资源列表，只能由装有内容物的化学容器或滴管右键识别；每种化学品仍按独立注册键、正式名称、注册颜色和实际容器数量配置。PCL2 候选启动默认移除旧世界 quick-play 参数并记录新的时间戳世界名，要求为每轮验收创建独立新世界；旧世界仅用于显式迁移测试。
-
-上述多面选择、化学容器专用配置和新世界启动策略候选以 JDK 21 通过 646 项测试，SHA256 为 `D308AB447F3902B54B45F65737F174E55A2965FC1E01E12F2A204E87580383E1`。
-
-新世界 `cultivation_qa_20260719_192252` 的实测进一步修复了额外资源显示：仙窍接口配置/缓存槽悬停由界面直接显示实际资源正式名称、数量与单位，不再显示用于同步身份的“仙窍接口”载体物品 Tooltip；Mekanism 化学品定义改为在具体资源键首次显示时查询已完成加载的注册表，因此每种化学品均获得自己的注册颜色与正式本地化名，空缓存代理槽也使用同一渲染路径。最新候选以 JDK 21 通过 648 项测试，SHA256 为 `BF4ED4A701DB04C0E6E537283E3794C32CB3D1EBE9DF154E8C11BC75CF5BE602`。
-
-最新联动调试候选将 Botania/Ars 的无方向接口调整为“输入直达仙窍账本、读取与抽取仅限接口已配置缓存”：未配置缓存时对外显示为空池，配置后只暴露对应缓存。Botania 火花能力在玩家重登期间保持稳定，避免能力短暂消失导致火花掉落。Ars Nouveau 使用官方 `mana_still` 动画，并允许 Dominion Wand 将仙窍接口记录为中继起点或终点；手持该杖点击接口优先执行位置交互，不打开仙窍界面。Mekanism 化学品适配器显式实现按类型及任意类型的管线抽取入口。该候选以 JDK 21 通过 650 项测试，SHA256 为 `4122AE4C20D178F138C1C5A988CE2BAA83604DE5D116B4808DCA6AAFFCE6415A`。这些均为调试修复与待实机验收项，不新增 Goal.md 目标。
-
-随后修复了 Ars Relay Mixin 的继承方法 `@Shadow` 运行时失效，并把源方块物品图标的内容物缩放至 34%、移动到 BEWLR 中心坐标的右下象限，避免角标被推到槽位外。AE2 在检测到 Applied Flux、Applied Mekanistics、Ars Énergistique 或 Applied Botanics 时，会在注册完成后的 IMC 阶段才加载其标准键桥；附属键以高优先级作为目录输出，ImmortalStorage 内置键保留为兼容读取后备，从而共享同一账本而不生成重复目录行或双写。最新候选以 JDK 21 通过 651 项测试，SHA256 为 `8C6E41E00125D30EE22BA0F6191AF29FCED62AABA9D234BC80877A344C6F2F8C`。实机三附属组合 Applied Flux 2.1.5 + Applied Mekanistics 1.6.3 + Ars Énergistique 2.1.1 已进入新调试世界且无 ImmortalStorage/Mixin/键桥错误；Applied Botanics 1.6.0-alpha.3 与 AE2 19.2.17 在其自身 Part Capability 注册中崩溃，当前作为上游组合阻断隔离，不计入通过项。
-
-中继与化学管道实测回归后，Ars Relay 不再允许同一仙窍接口同时保留为 `fromPos` 与 `toPos`：新绑定会清除冲突端点，旧存档中的同点循环会在首个中继 tick 自动修复，避免源在中继器与接口间反复回传。Mekanism 化学适配器同时显式覆盖管道使用的整栈 `insertChemical` 入口，按传入化学品的稳定注册键直接执行模拟/提交，不再依赖默认空罐遍历。该 debug 候选以 JDK 21 通过 653 项测试，SHA256 为 `1B5CA66CEB7ABDFB6C6F78BC185731633D4B7C17668F8E4B4A00B5F92FC856C9`，已部署并通过 PCL2 重启；这两项不写入 Goal.md。
-
-化学品推出进一步按 Mekanism 10.7.19 的真实管网行为修复：加压管道只有自身接口端设为 `PULL` 时才主动调用源端抽取，普通连接只接受源设备发射。仙窍接口现在以 `PUSH` 面和缓存槽输出面掩码作为完整授权，主动向普通相邻管网注入化学品，不再额外要求全局“推开”开关；管道端设为 `PULL` 的标准能力抽取仍然保留。该 debug 候选以 JDK 21 通过 653 项测试，SHA256 为 `78389CA9FCD89B16F61AF3D92EE2E39EB7F065742E89C4558BB70B8D52B5D5CA`，不写入 Goal.md。
-
-接口自动化语义现已统一拆分：方块级主动抽/推总开关只启停接口自身的每 tick 行为，六面抽入/推出/关闭只选择主动行为方向，不再阻断管道能力。管道可从任意面向已配置缓存插入匹配资源；管道抽取仍必须通过该缓存槽自己的六面掩码。该规则覆盖物品、流体、FE、Mekanism 化学品和 IF Souls；源方块的灰色关闭面同样继续允许管道读取缓存，只禁止源方块主动推出。
-
-额外资源新建缓存通过空手资源选择器时默认请求 `1000`，通过化学品容器或滴管右键时保留容器当前内容量。服务端按资源族统一钳制单槽上限：FE `100,000,000`、Botania Mana `1,000,000`、Ars Source `10,000`、IF Souls `1,350`、Mekanism 化学品 `1,000,000`。已有缓存超出新上限时不删除内容，调度会把超额安全返回仙窍账本。
-
-仙窍接口、源方块和缓存槽面掩码改用统一 `3×2` MEK 风格六面预览：相邻空气显示 `U/D/E/W/N/S`，相邻完整或不完整方块显示其物品预览。仙窍接口边框绿抽/红推/灰关，源方块红推/紫越限推/灰关；主动总开关与缓存槽面开放使用明暗表达。悬浮始终显示完整面方位与状态。该 debug 候选以 JDK 21 通过 658 项测试，SHA256 为 `6ABDC35F63F01237DB2387E41EF49F0DD8027E87C102AAD0E6E1AE761AEFEDA8`，不写入 Goal.md。
-
-2026-07-21 完成 0.0.3 仙墟与源方块集中回归修复：源方块物品角标改走受槽位裁剪的标准物品装饰层，固定显示右下角物品/桶装资源且低于数量、耐久和 tooltip 图层；迷你仙墟使用分离的不透明全亮核心与半透明外圈，反转仅由空手右键切换，灵器扳手由方块交互层直接路由右键配置与 Shift 拆卸；稳定化迷你仙墟改为缩小的哭泣黑曜石 12 棱框架并露出同款核心，空手右键打开、空手 Shift 右键反转，扳手 Shift 拆卸保留 NBT。蕴灵晶簇四阶段模型显式使用 cutout，透明区不再黑底。两个配置 UI 的开关使用明暗表示，稳定化数值输入框与 +/- 服务端值同步，红石模式已移除。稳定化仙墟与仙窍管理器的动态核心也注册为槽位内逐帧预览；该通用原版物品装饰链可由普通背包、创造栏、JEI 和 EMI 共同调用。替死傀儡仍以 UUID 判定所有者但 tooltip 显示并刷新用户名；仙墟锻灵剑材质旋转 180 度并提高原像素对比度，补齐灵剑/特殊功能 tooltip，拉取范围精确为 13×13×13。古玉指导书沉重核心引用改为 `minecraft:heavy_core`。最终全量测试、0.0.3 生产制品边界和静态资源审计全部通过；JAR SHA256 为 `013B80C02DD999C232949CF67589EB63A8616606A4DBB8403D23DEB2C3F8A04F`。30 外置 JAR 的 PCL2 全联动实例已重新部署并启动，客户端资源/声音加载完成，ImmortalStorage/Patchouli 相关加载错误为 0。
-
-仙墟核心渲染随后按实际游戏截图再次收敛：所有顶点统一使用 `OverlayTexture.NO_OVERLAY`，消除 overlay 通道造成的红色偏染；普通模式为纯黑不透明核心加加厚纯白全亮实体轮廓，反转模式为纯白核心加加厚纯黑轮廓。轮廓使用保留深度测试的实体 cutout 层模拟光灵箭式高亮，不进入原版穿墙 outline framebuffer，因此会被不透明方块正确遮挡；稳定化仙墟世界核心和物品栏动态核心均复用同一黑白反转逻辑。最终 648 项测试通过，JAR SHA256 为 `2602E788E4795CE1374E35C06305DB7265C1303095FCAAE6A3A6CE4933F012A5`，全联动 PCL2 客户端 PID `125792` 已完成声音加载且 ImmortalStorage 加载错误为 0。
-
-2026-07-21 修复了普通背包、创造栏、JEI、EMI 与仙藏终端底部玩家物品栏之间的动态物品渲染分歧：源方块输出角标、稳定化迷你仙墟动态核心和仙窍管理器动态核心统一注册到 NeoForge 标准物品装饰链，不再依赖只覆盖部分 `GuiGraphics.renderItem` 重载的全局 Mixin。非 GUI 场景仍由各自 BEWLR 绘制完整动态模型，GUI 槽位则在基础模型之后、原版数量与耐久装饰的同一阶段绘制动态内容，因此各查看器和终端槽位共享一致的层级与裁剪规则。终端背包整理、全部存入、筛选取出三个按钮从 16x16 缩为 8x8，采用 10 像素间距并重绘对应像素图标。全量 649 项测试与生产构建通过。
-
-同日实机复查确认上一段的“共享一致裁剪规则”判断并不成立：三个 `IItemDecorator` 都把传入的槽位局部 `x/y` 直接交给 `GuiGraphics.enableScissor`，但 1.21.1 的 scissor 字节码不应用 PoseStack。容器绘制已有 `leftPos/topPos` 平移，仙藏终端还会叠加逻辑槽到视觉槽的额外平移；动态内容跟随 PoseStack 到达实际槽位，scissor 却停留在未平移坐标，因而在背包/创造栏/终端中被自身裁掉。HUD 热栏使用近似屏幕坐标且没有容器原点平移，所以同一装饰器在那里可见。该问题也揭示现有 `DynamicPreviewBlockItemRenderer` 未被任何物品注册使用、JAR 内仍含未启用的旧 Overlay/Mixin class，以及既有测试仅检查源码字符串和注册存在、没有验证真实矩阵/scissor/像素输出。此处仅记录诊断，尚未宣称修复。
-
-上述坐标系问题现已修复：源方块输出、稳定化迷你仙墟核心和仙窍管理器核心装饰器不再创建或弹出自己的槽位 scissor，而是继承背包、创造栏、JEI/EMI、HUD 或仙藏滚动终端调用方已经建立的最终屏幕裁剪。动态几何与基础物品模型因此共享同一 PoseStack，仙藏存储目录仍由外层滚动视口裁剪，不会溢出面板。回归测试明确禁止三个装饰器再次调用 `enableScissor/disableScissor`；全量 649 项测试和生产构建通过。新候选 JAR SHA256 为 `E835B135A97B28D418A9ED10C71D589DDD7486A7E821FE1D7E714ABFA6AFE60C`。
-
-2026-07-21 的 0.0.3 正式发行补齐个人仙窍床与重生语义：维度中的床不再爆炸，可记录该玩家动态个人维度内的重生点，登录时会提前恢复保存的重生维度。替死傀儡绑定的重生锚被挖掘或爆炸破坏后会解除绑定，背包、空窍与仙窍内的失效绑定也会在登录、物品 tick 和触发前复核。所有物品与方块物品按材料稀有度、配方复杂度、流程阶段和功能强度统一分配原版四级稀有度。最终 653 项测试、JDK 21 clean build、生产边界、版本组成与制品检查通过；发行 JAR SHA256 为 `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`。
+0.0.3 正式发行已通过 JDK 21 全量测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
 
 ## 仓库结构
 
