@@ -27,4 +27,13 @@ final class SpiritSwordCombatModelTest {
         assertEquals(0L, tenth.costAmount());
         assertEquals(1024.0F, tenth.bonusDamage());
     }
+
+    @Test
+    void paidStageAndTemperingBecomeOneReadableWeaponDamage() {
+        var ninth = SpiritSwordCombatModel.forStage(9);
+
+        assertEquals(517.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, true, 0L, 0.01D));
+        assertEquals(1034.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, true, 100L, 0.01D));
+        assertEquals(10.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, false, 100L, 0.01D));
+    }
 }

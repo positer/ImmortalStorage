@@ -14,7 +14,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 **Download:** [ImmortalStorage 0.0.3](https://github.com/positer/ImmortalStorage/releases/tag/0.0.3)
 
-**Release JAR SHA256:** `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`
+**Release JAR SHA256:** `DC0D9FD79CD557E9A8F69C795EDE62AD92524F9F051995683BB25527058215B6`
 
 ## Highlights
 
@@ -23,6 +23,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 - Smooth, searchable storage terminal with real crafting, furnace, armor, fluid, and magnet management.
 - A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
 - Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
+- Shared weapon attack projection writes paid resource and tempering growth into standard main-hand attributes so systems such as Apotheosis can read and multiply the real weapon damage.
 - Bundled Patchouli Ancient Jade handbook with bilingual progression, recipes, and 0.0.3 mechanics; no separate Patchouli install is required.
 - Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
 - Complete Simplified Chinese and English localization for gameplay and configuration.
@@ -348,7 +349,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The 0.0.3 release gate passes 653 tests on JDK 21, plus production-class, version-composition, and exact-artifact checks. Release JAR SHA256: `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`.
+The 0.0.3 release gate passes 662 tests on JDK 21, plus production-class, version-composition, and exact-artifact checks. Release JAR SHA256: `DC0D9FD79CD557E9A8F69C795EDE62AD92524F9F051995683BB25527058215B6`.
 
 ## Project Layout
 

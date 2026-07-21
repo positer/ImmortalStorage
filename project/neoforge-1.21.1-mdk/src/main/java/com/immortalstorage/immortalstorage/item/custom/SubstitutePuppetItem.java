@@ -121,6 +121,7 @@ public final class SubstitutePuppetItem extends Item {
 
     public static boolean consumeUse(ItemStack stack) {
         if (stack.getDamageValue() >= MAX_DURABILITY) return false;
+        if (stack.has(DataComponents.UNBREAKABLE)) return true;
         stack.setDamageValue(stack.getDamageValue() + 1);
         return true;
     }

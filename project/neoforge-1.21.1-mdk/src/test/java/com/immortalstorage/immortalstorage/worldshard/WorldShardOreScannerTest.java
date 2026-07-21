@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.IntSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,6 +84,21 @@ final class WorldShardOreScannerTest {
                 weights.values().stream().mapToLong(Long::longValue).sum());
     }
 
+    @Test
+    void structurallyCompatibleDynamicOreConfigUsesItsLiveVeinSize() {
+        DynamicOreConfiguration configuration = new DynamicOreConfiguration(List.of(
+                OreConfiguration.target(new BlockMatchTest(Blocks.STONE),
+                        Blocks.DIAMOND_ORE.defaultBlockState()),
+                OreConfiguration.target(new BlockMatchTest(Blocks.DEEPSLATE),
+                        Blocks.DEEPSLATE_DIAMOND_ORE.defaultBlockState())), () -> 12);
+
+        WorldShardOreScanner.OreDescriptor descriptor =
+                WorldShardOreScanner.describeOreConfiguration(configuration);
+
+        assertEquals(12, descriptor.size());
+        assertEquals(Set.of(Items.DIAMOND_ORE, Items.DEEPSLATE_DIAMOND_ORE), descriptor.outputs());
+    }
+
 
     @Test
     void configuredWeightsModifyTheDetectedWorldPoolWithoutDiscardingUnmentionedOres() {
@@ -125,5 +142,10 @@ final class WorldShardOreScannerTest {
         ConfiguredFeature<OreConfiguration, Feature<OreConfiguration>> configured =
                 new ConfiguredFeature<>(feature, configuration);
         return new PlacedFeature(Holder.direct(configured), placement);
+    }
+
+    public record DynamicOreConfiguration(List<OreConfiguration.TargetBlockState> targetStates,
+                                          IntSupplier size)
+            implements net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration {
     }
 }

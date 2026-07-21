@@ -22,7 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguration;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 
 public final class WorldShardOreScanner {
     static final long WEIGHT_SCALE = 1_000_000L;
@@ -61,6 +62,11 @@ public final class WorldShardOreScanner {
         try {
             CandidateFeatures candidates = candidatePlacedFeatures(registryAccess, server, mode);
             Map<Item, Long> detected = scanWeights(candidates.placedFeatures(), candidates.biomeCount());
+            ImmortalStorageMod.LOG.info("World shard miner mode {} detected {} generated ore outputs: {}",
+                    mode.id(), detected.size(), detected.keySet().stream()
+                            .map(BuiltInRegistries.ITEM::getKey)
+                            .sorted(java.util.Comparator.comparing(ResourceLocation::toString))
+                            .toList());
             return WorldShardOrePool.of(applyConfiguredWeights(
                     detected, mode.explicitOreWeights(), mode.replaceOreWeights()));
         } catch (RuntimeException error) {
@@ -99,27 +105,18 @@ public final class WorldShardOreScanner {
                 Set<ConfiguredFeature<?, ?>> visitedConfigured =
                         Collections.newSetFromMap(new IdentityHashMap<>());
                 placed.getFeatures().forEach(configured -> {
-                    if (!visitedConfigured.add(configured)
-                            || (configured.feature() != Feature.ORE && configured.feature() != Feature.SCATTERED_ORE)
-                            || !(configured.config() instanceof OreConfiguration ore)
-                            || ore.size <= 0) {
-                        return;
-                    }
-                    Set<Item> outputs = new LinkedHashSet<>();
-                    for (OreConfiguration.TargetBlockState target : ore.targetStates) {
-                        Item output = target.state.getBlock().asItem();
-                        if (output != Items.AIR) outputs.add(output);
-                    }
-                    if (outputs.isEmpty()) return;
+                    if (!visitedConfigured.add(configured)) return;
+                    OreDescriptor ore = describeOreConfiguration(configured.config());
+                    if (ore == null) return;
                     // The public worldgen API does not expose the fraction of
                     // terrain matching each RuleTest. Split one configured
                     // feature's expected yield across its distinct outputs so
                     // stone/deepslate targets do not double its total weight.
-                    double contribution = expectedAttempts * ore.size * WEIGHT_SCALE
-                            / candidateBiomeCount / outputs.size();
+                    double contribution = expectedAttempts * ore.size() * WEIGHT_SCALE
+                            / candidateBiomeCount / ore.outputs().size();
                     long perTargetWeight = scaledWeight(contribution);
                     if (perTargetWeight <= 0L) return;
-                    for (Item output : outputs) {
+                    for (Item output : ore.outputs()) {
                         weights.merge(output, perTargetWeight, WorldShardOreScanner::saturatingAdd);
                     }
                 });
@@ -129,6 +126,45 @@ public final class WorldShardOreScanner {
             }
         }
         return Map.copyOf(weights);
+    }
+
+    static OreDescriptor describeOreConfiguration(FeatureConfiguration configuration) {
+        if (configuration instanceof OreConfiguration ore) {
+            return descriptor(ore.targetStates, ore.size);
+        }
+
+        // Some mods keep vanilla TargetBlockState entries but resolve vein size
+        // from their live server config. Read that public structural contract so
+        // the scanner follows the final worldgen object instead of a mod-id list.
+        try {
+            Object targets = configuration.getClass().getMethod("targetStates").invoke(configuration);
+            Object size = configuration.getClass().getMethod("size").invoke(configuration);
+            if (!(targets instanceof Iterable<?> iterable)) return null;
+            int resolvedSize = switch (size) {
+                case Number number -> number.intValue();
+                case IntSupplier supplier -> supplier.getAsInt();
+                case IntProvider provider -> (provider.getMinValue() + provider.getMaxValue()) / 2;
+                default -> 0;
+            };
+            List<OreConfiguration.TargetBlockState> targetStates = new ArrayList<>();
+            for (Object target : iterable) {
+                if (!(target instanceof OreConfiguration.TargetBlockState state)) return null;
+                targetStates.add(state);
+            }
+            return descriptor(targetStates, resolvedSize);
+        } catch (ReflectiveOperationException | RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static OreDescriptor descriptor(Iterable<OreConfiguration.TargetBlockState> targets, int size) {
+        if (size <= 0) return null;
+        Set<Item> outputs = new LinkedHashSet<>();
+        for (OreConfiguration.TargetBlockState target : targets) {
+            Item output = target.state.getBlock().asItem();
+            if (output != Items.AIR) outputs.add(output);
+        }
+        return outputs.isEmpty() ? null : new OreDescriptor(Set.copyOf(outputs), size);
     }
 
     private static double expectedAttempts(List<PlacementModifier> modifiers) {
@@ -274,5 +310,8 @@ public final class WorldShardOreScanner {
     }
 
     private record CandidateFeatures(List<PlacedFeature> placedFeatures, int biomeCount) {
+    }
+
+    record OreDescriptor(Set<Item> outputs, int size) {
     }
 }

@@ -2,7 +2,9 @@ package com.immortalstorage.immortalstorage.item.custom;
 
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.enchantment.ModEnchantments;
+import com.immortalstorage.immortalstorage.item.weapon.ModWeaponAttackProjection;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -20,7 +22,8 @@ import net.minecraft.world.item.component.CustomData;
 
 public class SpiritSwordItem extends SwordItem {
     public SpiritSwordItem(Item.Properties props) {
-        super(ModItemsTierAccess.SPIRIT_MATERIAL, props.fireResistant().durability(2500));
+        super(ModItemsTierAccess.SPIRIT_MATERIAL, props.fireResistant().durability(2500)
+                .attributes(SwordItem.createAttributes(ModItemsTierAccess.SPIRIT_MATERIAL, 0.0F, -2.4F)));
     }
 
     @Override
@@ -49,23 +52,40 @@ public class SpiritSwordItem extends SwordItem {
     @Override
     public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
         markUsed(stack, attacker.level().getGameTime());
-        float ordinaryDamage = SpiritSwordCombatModel.BASE_DAMAGE;
         if (attacker instanceof Player p && !p.level().isClientSide) {
             ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
             SpiritSwordCombatModel.Profile profile = SpiritSwordCombatModel.forStage(d.getStage());
-            boolean paid = switch (profile.cost()) {
-                case NONE -> profile.stage() >= 10;
+            switch (profile.cost()) {
+                case NONE -> { }
                 case TRUE -> d.consumeTrueYuan(profile.costAmount());
                 case IMMORTAL -> d.consumeImmortalYuan(profile.costAmount());
-            };
-            float stageBonus = paid ? profile.bonusDamage() : 0.0F;
-            ordinaryDamage += stageBonus;
-            long tempering = SpiritSwordTempering.consumeHalf(stack);
-            float temperingBonus = SpiritSwordTempering.bonusDamage(stack, ordinaryDamage, tempering);
-            float combinedBonus = stageBonus + temperingBonus;
-            if (combinedBonus > 0.0F) target.hurt(p.damageSources().playerAttack(p), combinedBonus);
+            }
+            SpiritSwordTempering.consumeHalf(stack);
+            refreshAttackAttributes(stack, p);
         }
         return super.hurtEnemy(stack, target, attacker);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
+        super.inventoryTick(stack, level, entity, slot, selected);
+        if (!level.isClientSide && entity instanceof Player player) refreshAttackAttributes(stack, player);
+    }
+
+    public static void refreshAttackAttributes(ItemStack stack, Player player) {
+        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
+        SpiritSwordCombatModel.Profile profile = SpiritSwordCombatModel.forStage(data.getStage());
+        boolean canPay = switch (profile.cost()) {
+            case NONE -> profile.stage() >= 10;
+            case TRUE -> data.getTrueYuan() >= profile.costAmount();
+            case IMMORTAL -> data.getImmortalYuan() >= profile.costAmount();
+        };
+        double temperingRate = stack.getItem() instanceof ImmortalRuinForgedSpiritSwordItem
+                ? ImmortalRuinForgedSpiritSwordItem.temperingMultiplier() : 0.01D;
+        float attackDamage = SpiritSwordCombatModel.projectedAttackDamage(
+                profile, canPay, SpiritSwordTempering.points(stack), temperingRate);
+        ModWeaponAttackProjection.applySword(
+                stack, ModItemsTierAccess.SPIRIT_MATERIAL, attackDamage, -2.4F);
     }
 
     public static void markUsed(ItemStack stack, long gameTime) {

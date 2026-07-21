@@ -1,5 +1,7 @@
 package com.immortalstorage.immortalstorage.item.custom;
 
+import com.immortalstorage.immortalstorage.item.weapon.ModWeaponAttackProjection;
+
 /** Shared server-combat and tooltip projection for the Spirit Sword. */
 public final class SpiritSwordCombatModel {
     public static final float BASE_DAMAGE = 5.0F;
@@ -15,6 +17,12 @@ public final class SpiritSwordCombatModel {
             return new Profile(boundedStage, YuanCost.IMMORTAL, boundedStage, bonus);
         }
         return new Profile(10, YuanCost.NONE, 0L, bonus);
+    }
+
+    public static float projectedAttackDamage(Profile profile, boolean canPay, long temperingPoints,
+                                               double temperingRate) {
+        return ModWeaponAttackProjection.calculate(
+                BASE_DAMAGE, profile.bonusDamage(), canPay, temperingPoints, temperingRate);
     }
 
     public record Profile(int stage, YuanCost cost, long costAmount, float bonusDamage) {

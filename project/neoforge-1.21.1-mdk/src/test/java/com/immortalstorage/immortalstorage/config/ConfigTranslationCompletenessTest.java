@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class ConfigTranslationCompletenessTest {
+    private static final List<String> CLIENT_KEYS = List.of("terminalRows", "syncRecipeViewerSearch");
     private static final List<String> KEYS = List.of(
             "loot", "loot.startWithJadeGuide", "loot.jadeGuideInVillageChests",
             "loot.jadeGuideChestChance", "loot.villageRefinedPillChance",
@@ -73,6 +74,25 @@ final class ConfigTranslationCompletenessTest {
         assertTrue(source.contains("translation(key(\"resource_conversion.\" + name + \".maximumConversionPerTick\"))"));
     }
 
+    @Test
+    void everyClientConfigValueHasTranslationAndTooltipInBothLocales() throws IOException {
+        Path lang = locateLang();
+        for (String locale : List.of("zh_cn.json", "en_us.json")) {
+            JsonObject json = JsonParser.parseString(Files.readString(lang.resolve(locale))).getAsJsonObject();
+            for (String key : CLIENT_KEYS) {
+                String full = "immortalstorage.configuration." + key;
+                assertTrue(json.has(full), () -> locale + " missing " + full);
+                assertTrue(json.has(full + ".tooltip"), () -> locale + " missing " + full + ".tooltip");
+            }
+        }
+
+        String source = Files.readString(locateClientSource());
+        for (String key : CLIENT_KEYS) {
+            assertTrue(source.contains("translation(key(\"" + key + "\"))"),
+                    () -> "missing explicit client config translation binding for " + key);
+        }
+    }
+
     private static Path locateLang() {
         Path current = Path.of("").toAbsolutePath();
         while (current != null) {
@@ -91,5 +111,15 @@ final class ConfigTranslationCompletenessTest {
             current = current.getParent();
         }
         throw new IllegalStateException("Cannot locate ImmortalStorageConfig.java");
+    }
+
+    private static Path locateClientSource() {
+        Path current = Path.of("").toAbsolutePath();
+        while (current != null) {
+            Path candidate = current.resolve("src/main/java/com/immortalstorage/immortalstorage/config/ImmortalStorageClientConfig.java");
+            if (Files.isRegularFile(candidate)) return candidate;
+            current = current.getParent();
+        }
+        throw new IllegalStateException("Cannot locate ImmortalStorageClientConfig.java");
     }
 }

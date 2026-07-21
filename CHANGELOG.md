@@ -30,6 +30,7 @@ This section describes user-visible changes from the published `0.0.2` tag to `0
 - Miniature Immortal Ruin interaction rules are separated by held item: empty-hand use changes its reversed state, the Spirit Instrument wrench opens configuration, and Shift-wrench dismantling preserves the stabilized ruin's data.
 - Stabilized ruin configuration uses synchronized numeric fields and +/- controls for size, offset, and interval. Boolean states use lit/unlit presentation, and the obsolete redstone-mode control was removed from the finalized interface.
 - Spirit Sword and special-function tooltips now expose their real combat, tempering, teleport, and restraint behavior. Substitute Puppet owner display refreshes to the current player name while ownership remains UUID-based.
+- Spirit Sword and Immortal-Ruin-Forged Spirit Sword now share one extensible weapon attack projection. Payable Yuan damage and tempering growth are written into the standard main-hand attack attribute before external attribute multipliers instead of being dealt as a separate damage instance.
 - Item and block presentation was redrawn for the new progression content, including Nurturing Crystal growth, the black/white reversible ruin core, the crying-obsidian stabilized frame, the forged sword, and corrected transparent crystal render layers.
 
 ### Fixed
@@ -47,14 +48,18 @@ This section describes user-visible changes from the published `0.0.2` tag to `0
 - Fixed Nurturing Crystal buds and clusters rendering transparent pixels as black by explicitly using the cutout render type.
 - Fixed Stabilized Miniature Immortal Ruin collection/ejection persistence, server/client setting synchronization, blocked-target handling, and NBT preservation when dismantled with the wrench.
 - Fixed the Ancient Jade Heavy Core page to reference the vanilla `minecraft:heavy_core` item and corrected stale range descriptions to the implemented 13-block limits.
+- Fixed the World Shard Miner excluding generated ores whose mods use a custom ore feature configuration. The scanner now reads structurally compatible target states and live supplier-backed vein sizes from final server worldgen; Mekanism osmium, fluorite, lead, tin, and uranium ores are discovered without hardcoded mod or ore IDs.
+- Fixed client configuration rows displaying raw translation identifiers by explicitly binding and localizing terminal row count and recipe-viewer search synchronization in Chinese and English.
+- Fixed debug Substitute Puppets with the vanilla unbreakable component consuming durability on activation while retaining the puppet item in the vanilla center-screen activation animation.
+- Fixed Spirit Sword and Immortal-Ruin-Forged Spirit Sword being classified as `apotheosis:none`. Both now expose standard sword attack attributes, are recognized as `apotheosis:melee_weapon`, and accept Apotheosis reforging and affixes.
 
 ### Verification
 
 - Supported target: Minecraft 1.21.1, NeoForge 21.1.235, Java 21.
-- 653 automated tests passed with 0 failures, 0 errors, and 0 skipped tests.
+- 662 automated tests passed with 0 failures, 0 errors, and 0 skipped tests.
 - Clean JDK 21 build, production-boundary audit, version-composition audit, exact-artifact audit, Ars Source adapter check, and no-AE2-runtime check passed.
 - Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar`.
-- SHA256: `789565B8BCE085F2889FAAF02DDD33DD5F5186A2804EC0C59E6A8C8820E4B811`.
+- SHA256: `DC0D9FD79CD557E9A8F69C795EDE62AD92524F9F051995683BB25527058215B6`.
 
 All notable user-facing changes are documented here.
 
