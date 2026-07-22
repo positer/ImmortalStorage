@@ -2,26 +2,74 @@
 
 ## [0.0.4] - 2026-07-22
 
-- Added the Stage-4 embedded smithing table to Kongqiao and Xianqiao terminals, including storage autofill and JEI/EMI recipe transfer.
-- Added an explicit 13x13x13 personal-storage magnet toggle, Shift exact-count tooltips, and search-field handling that ignores the inventory key while typing.
-- Added configurable archaeology acquisition for Ancient Jade.
-- Added reusable and disposable Qi Collecting Bottles plus Primordial Qi entity conversion, registry-wide modded spawn-egg discovery, configurable entity exclusions, Ender Dragon fight completion, and tribulation lockout.
-- Added the Spirit Staff teleport mode with configurable scroll distance, and expanded the Immortal-Ruin-Forged Spirit Sword to a 27x27x27 pull with two-second absolute restraint.
-- Added stabilized ruin 5x4 filters, component matching, whitelist/blacklist semantics, linked shared storage, safe unlink behavior, and JEI/EMI ghost placement.
-- Added opposite-state miniature ruin linking, visible wrench link lines, an explicit Warp toggle, and one-way per-tick living/item teleportation.
-- Added audited deterministic textures derived from vanilla sources and the user-supplied Soul Surge icon.
-- Changed Primordial Qi conversion to complete its shrink and non-kill removal in 10 ticks (0.5 seconds).
-- Fixed Primordial Qi egg resolution for Iron Golems and modded entities by matching every runtime-registered `SpawnEggItem` subclass against its actual default-stack entity type.
-- Fixed Miniature Immortal Ruin Warp to use the same center-contact volume as damage and to honor the affect-players switch.
-- Fixed Spirit Staff teleportation to ignore both intervening walls and destination collision, including suffocating destinations.
-- Fixed the Xianqiao magnet control's live on/off label synchronization, enlarged its management panel, and reordered module tabs by unlock progression.
+This section contains the complete user-visible change set from the published `0.0.3` tag to `0.0.4`.
+
+### Added
+
+- Added a Stage-4 embedded smithing-table module to both Kongqiao and Xianqiao storage terminals. Its template, base, addition, and result slots use the real smithing recipe manager and preserve normal recipe behavior.
+- Added terminal smithing autofill from personal storage and player inventory, plus JEI and EMI smithing-recipe transfer support.
+- Added an explicit Stage-4 personal-storage magnet switch. When enabled, dropped item entities inside the exact 13x13x13 area centered on the player are inserted directly into personal storage; disabling it stops automatic collection.
+- Added exact stored-count tooltips while Shift is held over terminal entries.
+- Added Ancient Jade to every vanilla suspicious-sand and suspicious-gravel archaeology loot table with a configurable chance, defaulting to 5%.
+- Added the reusable Qi Collecting Bottle: unordered Nurturing Crystal, Glass Bottle, and Immortal Yuan recipe; 1,024 durability; non-stackable; Rare rarity.
+- Added the Disposable Qi Collecting Bottle: unordered Spirit Crystal, Glass Bottle, and True Yuan recipe; stacks to 16; Uncommon rarity.
+- Added Primordial Qi with a stack limit of 64 and Rare rarity.
+- Added air collection in every dimension below the minimum build height or at/above the maximum build height. Reusable bottles lose one durability, disposable bottles consume one item, and output enters the player inventory before falling back to personal storage.
+- Added Primordial Qi entity conversion. A successful use consumes one item, shrinks the target continuously to zero over 10 ticks (0.5 seconds), removes it without counting as a kill, and drops its matching spawn egg when one exists.
+- Added runtime-global spawn-egg discovery across every registered `SpawnEggItem` subclass, including modded spawn eggs and component-defined egg types; the implementation does not depend on creative-tab contents or hardcoded entity lists.
+- Added a configurable entity-type blacklist for Primordial Qi. Players remain protected, and Primordial Qi cannot be used while the player is undergoing tribulation.
+- Added explicit Ender Dragon fight completion before a converted dragon is discarded, preventing the End from becoming stuck.
+- Added a fifth Spirit Staff mode: teleportation. Each use spends one Immortal Yuan and moves the player in the exact facing direction.
+- Added a configurable Spirit Staff teleport distance from 1 to 20 blocks, defaulting to 20. Hold the configurable special-operation key (grave accent by default) and scroll the mouse wheel to adjust it.
+- Added a 5x4 filter grid to the Stabilized Miniature Immortal Ruin configuration screen, opened from a new button beside the existing settings.
+- Added filter assignment by clicking with an item or dragging a JEI/EMI ingredient into a filter slot; empty-hand left click clears the slot.
+- Added filter component/NBT matching and whitelist/blacklist switches. Normal mode either collects only whitelisted drops or excludes blacklisted drops; reversed mode either ejects only whitelisted contents or excludes blacklisted contents, and blocked entries are skipped during traversal.
+- Added opposite-state Stabilized Miniature Immortal Ruin linking with the Spirit Staff wrench. Linked ruins share one authoritative container without stacking capacity; overflow produced during the initial merge drops into the world.
+- Added same-dimension and opposite-state validation, wrench selection replacement/clearing behavior, white held-wrench link lines, survivor-retained contents when one stabilized ruin is broken, and correct drops when both ends are destroyed.
+- Added opposite-state Miniature Immortal Ruin linking with the same wrench selection, validation, clearing, replacement, and white link-line workflow.
+- Added a Warp switch to linked Miniature Immortal Ruins. Every tick, the normal-state side sends eligible living entities and dropped items touching its center to the reversed side in one direction.
+- Added explicit Warp player control through the existing affect-players switch; dropped items and non-player living entities remain eligible.
+- Added dedicated bilingual translations, Patchouli pages, item models, recipes, loot modifiers, configuration labels, and regression coverage for the 0.0.4 systems.
+
+### Changed
+
+- Reordered the Xianqiao module rail by progression: embedded crafting, embedded smithing, Immortal Furnace, then realm management.
+- Enlarged the Xianqiao realm-management side panel and its JEI/EMI exclusion rectangle so hand-refill and magnet controls remain fully inside the frame.
+- Terminal search fields now consume the inventory key while focused, so pressing E during text entry no longer closes the screen.
+- Spirit Staff teleportation ignores intervening blocks and destination collision. It always applies the configured displacement and intentionally permits wall traversal and suffocating destinations.
+- Expanded the Immortal-Ruin-Forged Spirit Sword pull volume from 13x13x13 to 27x27x27.
+- Replaced the forged sword's previous slowdown with 40 ticks (2 seconds) of absolute restraint: velocity is cleared, position is pinned, and collision, pushing, and squeezing cannot move the target.
+- Reversed Miniature Immortal Ruins now force the old teleport-strength setting to None instead of Strong.
+- Miniature Immortal Ruin operation now matches the stabilized variant: direct right click opens configuration, empty-hand Shift-right-click toggles state, and wrench Shift-right-click dismantles it. A dismantled ordinary ruin does not retain configuration NBT.
+- Breaking either end of an ordinary ruin link clears both link records; breaking either end of a stabilized link unlinks both ends while preserving the shared contents according to the survivor/simultaneous-break rules.
+- Raised the ImmortalStorage network protocol and release metadata to 0.0.4.
+
+### Fixed
+
+- Fixed Primordial Qi failing to drop an Iron Golem spawn egg by resolving each globally registered egg from its actual default stack. Registry-backed tests cover both Iron Golems and Ender Dragons, while the same generic path supports modded entities.
+- Fixed the Xianqiao magnet switch appearing unable to turn off. The server state was changing, but the client omitted the magnet from its per-tick visibility, active-state, and label refresh; the label now updates immediately in both directions.
+- Fixed Miniature Immortal Ruin Warp affecting the whole attraction field. Warp and damage now share the same exact center-block bounding-box contact test.
+- Fixed Warp transporting players while player effects were disabled; player transport now follows the affect-players switch.
+- Fixed Spirit Staff teleportation being stopped by walls or safe-destination searching.
+- Fixed reusable bottle delivery when vanilla inventory insertion partially or fully accepted the produced Primordial Qi, preserving the inventory-first then storage-fallback contract.
+- Fixed the explicit magnet volume to the required exact 13x13x13 cube.
+
+### Assets
+
+- Recolored the vanilla Experience Bottle into the cyan-white reusable bottle without adding unrequested details.
+- Built the disposable bottle from the recolored reusable bottle and then added only the requested crack details.
+- Recolored the vanilla Ender Pearl into the cyan-white Spirit Staff teleport-mode texture without adding extra details.
+- Built Primordial Qi from the vanilla Wind Charge palette and added only the requested extra surrounding cloud wisps.
+- Added the user-supplied Soul Surge image as the actual local Soul Surge terminal resource texture.
+- Recorded deterministic texture-source and output provenance locally during development.
 
 ### Verification
 
 - Supported target: Minecraft 1.21.1, NeoForge 21.1.235, Java 21.
-- 671 automated tests passed with 0 failures and 504 resource JSON files parsed successfully.
+- Clean JDK 21 release build completed successfully.
+- 671 automated tests passed with 0 failures, 0 errors, and 504 resource JSON files parsed successfully.
 - Production-boundary, version-composition, exact-artifact, Ars Source adapter, and no-AE2-runtime checks passed.
-- Numen real-client QA verified the Xianqiao module order, unclipped magnet control, and immediate `off -> on -> off` toggle synchronization.
+- Numen real-client QA verified Stage-4 embedded smithing, search-field E-key retention, Xianqiao module order, the unclipped magnet panel, and immediate `off -> on -> off` magnet synchronization.
 - Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`.
 - SHA256: `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`.
 
