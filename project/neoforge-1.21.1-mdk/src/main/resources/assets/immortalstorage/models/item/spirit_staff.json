@@ -15,6 +15,10 @@
     {
       "predicate": {"immortalstorage:staff_mode": 3.0},
       "model": "immortalstorage:item/spirit_staff_build"
+    },
+    {
+      "predicate": {"immortalstorage:staff_mode": 4.0},
+      "model": "immortalstorage:item/spirit_staff_teleport"
     }
   ]
 }

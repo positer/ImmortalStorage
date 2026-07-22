@@ -17,10 +17,13 @@ import java.util.List;
 
 public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     private boolean furnaceVisible;
+    private boolean smithingVisible;
     private TerminalTabButton craftModuleButton;
+    private TerminalTabButton smithingModuleButton;
     private TerminalTabButton furnaceModuleButton;
     private Button autoFurnaceFillButton;
     private Button autoFurnaceFuelButton;
+    private Button magnetButton;
 
     public KongqiaoScreen(KongqiaoMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -36,17 +39,26 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         Component furnaceLabel = Component.translatable(this.menu.isFurnaceUnlocked()
                 ? "container.immortalstorage.terminal.furnace"
                 : "container.immortalstorage.terminal.furnace_locked");
+        Component smithingLabel = Component.translatable(this.menu.isSmithingUnlocked()
+                ? "container.immortalstorage.terminal.smithing"
+                : "container.immortalstorage.terminal.smithing_locked");
         this.craftModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(0),
-                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(0, 2),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(0, 3),
                 new ItemStack(Items.CRAFTING_TABLE), craftLabel, Tooltip.create(craftLabel),
                 () -> this.craftingVisible, button -> selectModule(0)));
-        this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
+        this.smithingModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(1),
-                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 2),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 3),
+                new ItemStack(Items.SMITHING_TABLE), smithingLabel, Tooltip.create(smithingLabel),
+                () -> this.smithingVisible, button -> selectModule(1)));
+        this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
+                railX, this.topPos + TerminalLayout.moduleTabY(2),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(2, 3),
                 new ItemStack(ModBlocks.IMMORTAL_FURNACE.get()), furnaceLabel, Tooltip.create(furnaceLabel),
-                () -> this.furnaceVisible, button -> selectModule(1)));
+                () -> this.furnaceVisible, button -> selectModule(2)));
         this.craftModuleButton.active = this.menu.isCraftingUnlocked();
+        this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
         this.furnaceModuleButton.active = this.menu.isFurnaceUnlocked();
         this.autoFurnaceFillButton = this.addRenderableWidget(Button.builder(
                         autoFurnaceFillLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FILL_BUTTON))
@@ -60,8 +72,22 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.auto_fuel_hint")))
                 .build());
+        this.magnetButton = this.addRenderableWidget(Button.builder(magnetLabel(),
+                        button -> requestMenuButton(KongqiaoMenu.MAGNET_BUTTON))
+                .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 152, 16)
+                .tooltip(Tooltip.create(Component.translatable(
+                        "container.immortalstorage.terminal.magnet_hint"))).build());
         updateFurnaceButtons();
+        if (this.magnetButton != null) {
+            this.magnetButton.visible = this.menu.getData().getStage() >= 4 && !this.furnaceVisible;
+            this.magnetButton.active = this.magnetButton.visible;
+            this.magnetButton.setMessage(magnetLabel());
+        }
     }
+
+    private Component magnetLabel() { return Component.translatable(this.menu.getData().isMagnetEnabled()
+            ? "container.immortalstorage.terminal.magnet_on"
+            : "container.immortalstorage.terminal.magnet_off"); }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
@@ -75,12 +101,14 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
                             this.menu.getFurnaceBurnProgress(2)
                     }, this.menu.isFurnaceLit());
         }
+        if (this.smithingVisible) VanillaGuiPainter.terminalSmithingModule(
+                graphics, this.leftPos, this.topPos, this.imageHeight);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        this.renderTooltip(graphics, mouseX, mouseY);
+        if (!renderExactStorageTooltip(graphics, mouseX, mouseY)) this.renderTooltip(graphics, mouseX, mouseY);
     }
 
     private void updateFurnaceButtons() {
@@ -180,6 +208,9 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
 
     @Override
     protected int visualSlotY(int menuIndex, Slot slot) {
+        if (KongqiaoMenu.isSmithingSlotIndex(menuIndex)) {
+            return TerminalLayout.craftGridY(this.imageHeight) + 18;
+        }
         if (menuIndex >= KongqiaoMenu.ARMOR_START && menuIndex < KongqiaoMenu.ARMOR_END) {
             return TerminalLayout.inventoryY(this.imageHeight)
                     + (menuIndex - KongqiaoMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
@@ -197,6 +228,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
 
     @Override
     protected boolean shouldRenderMenuSlot(int menuIndex) {
+        if (KongqiaoMenu.isSmithingSlotIndex(menuIndex)) return this.smithingVisible;
         if (KongqiaoMenu.isFurnaceSlotIndex(menuIndex)) return this.furnaceVisible;
         return super.shouldRenderMenuSlot(menuIndex);
     }
@@ -215,7 +247,8 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     protected void containerTick() {
         super.containerTick();
         int module = this.menu.getActiveModule();
-        if ((module == 0) != this.craftingVisible || (module == 1) != this.furnaceVisible) {
+        if ((module == 0) != this.craftingVisible || (module == 1) != this.smithingVisible
+                || (module == 2) != this.furnaceVisible) {
             applyModuleState(module);
         }
         updateFurnaceButtons();
@@ -223,12 +256,12 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
 
     @Override
     protected int railControlOffset() {
-        return TerminalLayout.railControlOffset(2);
+        return TerminalLayout.railControlOffset(3);
     }
 
     @Override
     public List<Rect2i> immortalstorage$getExtraAreas() {
-        int railHeight = TerminalLayout.railHeight(2);
+        int railHeight = TerminalLayout.railHeight(3);
         return List.of(new Rect2i(this.leftPos + TerminalLayout.MODULE_RAIL_X, this.topPos,
                 TerminalLayout.TAB_WIDTH, railHeight));
     }
@@ -246,8 +279,9 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     }
 
     private void applyModuleState(int module) {
-        this.furnaceVisible = module == 1;
-        setWorkspaceState(module == 0, module == 0 || module == 1);
+        this.smithingVisible = module == 1;
+        this.furnaceVisible = module == 2;
+        setWorkspaceState(module == 0, module >= 0 && module <= 2);
     }
 
 }

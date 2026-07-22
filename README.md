@@ -2,7 +2,7 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前开发版本为 0.0.3。AE2 联动由仙藏（ImmortalStorage）内置电力、化学品、魔源、魔力与灵魂资源键适配，不要求安装额外 AEKey 中介模组；安装兼容的中介附属时会优先退让并桥接其标准资源键。
+> 当前正式版本为 0.0.4。新增四阶段内置锻造台、混元一气与采气瓶、显式磁铁开关、稳定化仙墟过滤/共享存储、迷你仙墟 Warp 链接以及灵器传送模式。
 
 **简体中文** | [English](README_en.md)
 
@@ -10,13 +10,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.3 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
+> 0.0.4 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**下载：**[仙藏 ImmortalStorage 0.0.3](https://github.com/positer/ImmortalStorage/releases/tag/0.0.3)
+**下载：**[仙藏 ImmortalStorage 0.0.4](https://github.com/positer/ImmortalStorage/releases/tag/0.0.4)
 
-**发行 JAR SHA256：**`DC0D9FD79CD557E9A8F69C795EDE62AD92524F9F051995683BB25527058215B6`
+**发行 JAR SHA256：**`2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`
 
 ## 模组特色
 
@@ -25,7 +25,7 @@
 - 原版风格连续滚动终端，支持搜索、排序、合成、仙炉、装备、流体与磁铁管理。
 - 每位玩家独有的仙窍维度，空间边界和时间流速会随阶段成长。
 - 源方块、源方块管理器、仙窍管理器和仙窍接口组成的大宗资源自动化系统。
-- 探索、扳手、镐子、建筑四模式灵器，以及可淬火成长的灵剑。
+- 探索、扳手、镐子、建筑、传送五模式灵器，以及可淬火成长的灵剑。
 - 模组武器通过统一攻击投影将资源支付与成长增伤写入标准主手攻击属性，便于神化等属性系统读取并参与乘算。
 - 内置帕秋莉运行时的古玉手册，内含阶段流程、功能说明和真实配方图，无需另装手册模组。
 - 可选兼容 JEI、EMI、AE2、RS、通用机械、植物魔法、通量网络与工业先锋灵魂等模组；Iron's Spells 玩家魔力不接入仙窍存储。
@@ -38,15 +38,24 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.3 |
+| 仙藏 ImmortalStorage | 0.0.4 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
+
+### 0.0.4 发行验证
+
+- 混元一气从运行时全局物品注册表解析所有 `SpawnEggItem` 子类；铁傀儡与末影龙刷怪蛋均有真实注册表回归测试，模组生物注册蛋使用同一通用路径。
+- 迷你仙墟 Warp 与伤害共用中心方块碰撞箱判定；掉落物始终参与，玩家是否参与由“对玩家生效”开关决定。
+- 灵器传送模式严格按设定距离位移，不检测沿途方块或落点碰撞，允许穿墙并进入窒息位置。
+- 混元一气的完整缩小过程为 10 tick（0.5 秒）。
+- 仙窍管理侧栏已加长；磁铁开关可实时在开启/关闭间切换，模块依解锁顺序排列为“内置合成 → 锻造台 → 内置仙炉 → 仙窍”，并通过 Numen 外部实机验证。
+- 2026-07-22 全量 671 项测试、生产 JAR 边界、版本组成和版本产物校验通过；发行包 SHA256 为 `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`。
 
 ## 安装方法
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar`。
+3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -69,7 +78,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面以及 0.0.3 的蕴灵晶、替死傀儡、迷你仙墟、稳定化仙墟和仙墟锻灵剑说明。
+古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面以及 0.0.3、0.0.4 的新增机制说明。
 
 ## 修行阶段
 
@@ -258,7 +267,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 每一点淬火使伤害提高 1%；每次命中后淬火点减半并向下取整。
 - 当前淬火点与伤害加成会直接显示在 Tooltip 中。
 
-仙墟锻灵剑右键传送目标后会立即清除目标速度，并施加 20 tick（1 秒）的最高等级缓慢作为禁锢。`immortalstorage-common.toml` 与原生模组配置页提供“传送影响其他玩家”开关：默认开启以保持原行为；关闭后范围传送与禁锢只影响非玩家生物。
+仙墟锻灵剑右键传送目标后会立即清除目标速度，并施加 40 tick（2 秒）的绝对禁锢；期间忽略实体碰撞、挤压和外力，目标被固定在原位。`immortalstorage-common.toml` 与原生模组配置页提供“传送影响其他玩家”开关：默认开启以保持原行为；关闭后范围传送与禁锢只影响非玩家生物。
 
 ## 世界碎片开采器与聚宝盆
 
@@ -327,7 +336,7 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 ImmortalStorage 
 - 源方块认领、破坏与爆炸权限；
 - 仙窍接口物品/流体缓存上限；
 - 灵器建筑模式单次方块上限。
-- 仙墟锻灵剑的传送与一秒禁锢是否影响其他玩家。
+- 仙墟锻灵剑的传送与两秒绝对禁锢是否影响其他玩家。
 - 安装通用机械/通量网络、植物魔法或新生魔艺后，配置页会分别显示仙元转化 FE、Mana、魔源的允许开关、比例和每刻上限；同一设置也写入 `immortalstorage-common.toml`，默认开启。
 
 调整阶段、资源或兼容配置前，建议关闭服务器并备份世界。
@@ -371,7 +380,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.3.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar
 ```
 
 完整验证命令：
@@ -380,7 +389,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.3 正式发行已通过 JDK 21 全量测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
+0.0.4 正式发行已通过全量测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
 
 ## 仓库结构
 

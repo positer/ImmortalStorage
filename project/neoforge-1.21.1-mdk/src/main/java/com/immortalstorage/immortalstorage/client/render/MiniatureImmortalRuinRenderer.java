@@ -35,6 +35,7 @@ public final class MiniatureImmortalRuinRenderer implements BlockEntityRenderer<
         poses.mulPose(camera.rotation());
         drawDisc(poses, buffers, scale, reversed);
         poses.popPose();
+        RuinLinkRenderer.render(poses, buffers, entity.getBlockPos(), entity.linkedPos());
     }
 
     static void drawDisc(PoseStack poses, MultiBufferSource buffers, float radius, boolean reversed) {

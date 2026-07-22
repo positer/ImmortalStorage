@@ -14,8 +14,9 @@ final class ImmortalRuinForgedSpiritSwordContractTest {
         String sword = read("item/custom/ImmortalRuinForgedSpiritSwordItem.java");
         String config = read("config/ImmortalStorageConfig.java");
 
-        assertTrue(sword.contains("TELEPORT_RESTRAINT_TICKS = 20"));
-        assertTrue(sword.contains("entity.setDeltaMovement(Vec3.ZERO)"));
+        assertTrue(sword.contains("TELEPORT_RESTRAINT_TICKS = 40"));
+        assertTrue(sword.contains("inflate(13.0D)"));
+        assertTrue(sword.contains("AbsoluteRestraint.apply("));
         assertTrue(sword.contains("MobEffects.MOVEMENT_SLOWDOWN"));
         assertTrue(sword.contains("TELEPORT_RESTRAINT_TICKS, 255"));
         assertTrue(sword.contains("entity -> canTeleport(serverPlayer, entity)"));

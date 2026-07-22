@@ -27,6 +27,7 @@ public final class StabilizedMiniatureImmortalRuinRenderer implements BlockEntit
         poses.mulPose(camera.rotation());
         MiniatureImmortalRuinRenderer.drawDisc(poses, buffers, scale, entity.reversed());
         poses.popPose();
+        RuinLinkRenderer.render(poses, buffers, entity.getBlockPos(), entity.linkedPos());
 
         if (!entity.previewEnabled()) return;
         AABB area = new AABB(entity.offsetX(), entity.offsetY(), entity.offsetZ(),

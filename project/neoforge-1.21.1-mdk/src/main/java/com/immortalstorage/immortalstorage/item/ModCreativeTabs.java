@@ -43,6 +43,9 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PREMIXED_HEAVY_COMPOUND.get());
                         output.accept(ModItems.SUBSTITUTE_PUPPET.get());
                         output.accept(ModItems.MINIATURE_IMMORTAL_RUIN.get());
+                        output.accept(ModItems.QI_COLLECTING_BOTTLE.get());
+                        output.accept(ModItems.DISPOSABLE_QI_COLLECTING_BOTTLE.get());
+                        output.accept(ModItems.PRIMORDIAL_QI.get());
                         output.accept(ModItems.SPIRIT_SWORD.get());
                         output.accept(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get());
                         output.accept(ModItems.SPIRIT_STAFF.get());

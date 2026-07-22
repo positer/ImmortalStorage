@@ -209,6 +209,15 @@ final class VanillaGuiPainter {
         furnaceFlame(g, x + 28, y + fuelY - 12, flameProgress, lit);
     }
 
+    static void terminalSmithingModule(GuiGraphics g, int x, int y, int h) {
+        int slotY = TerminalLayout.craftGridY(h) + 18;
+        slot(g, x + 30, y + slotY, true);
+        slot(g, x + 48, y + slotY, true);
+        slot(g, x + 66, y + slotY, true);
+        craftingArrow(g, x + 86, y + slotY + 1);
+        craftingResultSlot(g, x + 118, y + slotY - 2);
+    }
+
     static void functionTabs(GuiGraphics g, int x, int y, boolean xianqiao, int selected, boolean expanded) {
         functionTabs(g, x, y, xianqiao, selected, expanded, 4);
     }

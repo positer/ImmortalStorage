@@ -30,11 +30,18 @@ import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.EventPriority;
 
 public class CommonEvents {
     public CommonEvents() {}
+
+    @SubscribeEvent
+    public void onEntityTick(EntityTickEvent.Post event) {
+        com.immortalstorage.immortalstorage.entity.PrimordialQiConversion.tick(event.getEntity());
+        com.immortalstorage.immortalstorage.entity.AbsoluteRestraint.tick(event.getEntity());
+    }
 
     @SubscribeEvent
     public void onMobSpawnPosition(MobSpawnEvent.PositionCheck event) {
@@ -211,6 +218,21 @@ public class CommonEvents {
         }
     }
 
+    private static void tickPersonalStorageMagnet(ServerPlayer player, ImmortalStoragePlayerData data) {
+        if (data.getStage() < 4 || !data.isMagnetEnabled()) return;
+        var endpoint = com.immortalstorage.immortalstorage.api.storage.PersonalStorageApi.resolve(
+                player.server, player.getUUID());
+        if (endpoint == null) return;
+        for (ItemEntity entity : player.serverLevel().getEntitiesOfClass(ItemEntity.class,
+                new net.minecraft.world.phys.AABB(player.blockPosition()).inflate(6.0D), ItemEntity::isAlive)) {
+            ItemStack original = entity.getItem();
+            if (original.isEmpty()) continue;
+            ItemStack remainder = endpoint.insert(original.copy(), false);
+            entity.setItem(remainder);
+            if (remainder.isEmpty()) entity.discard();
+        }
+    }
+
     private static boolean hasJadeGuide(Player p) {
         for (ItemStack s : p.getInventory().items) if (s.is(ModItems.JADE_GUIDE.get())) return true;
         for (ItemStack s : p.getInventory().offhand) if (s.is(ModItems.JADE_GUIDE.get())) return true;
@@ -243,19 +265,7 @@ public class CommonEvents {
             }
             return;
         }
-        // Magnet pickup: stages 4+ have a 5x5x5 vacuum around the player
-        Player p = e.getPlayer();
-        if (p instanceof ServerPlayer sp) {
-            ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(sp);
-            if (d.getStage() >= 4) {
-                if (ent.isAlive() && ent.getItem().getItem() != ModItems.JADE_GUIDE.get()
-                        && !(ent.getItem().getItem() instanceof com.immortalstorage.immortalstorage.item.custom.TrueYuanItem)
-                        && !(ent.getItem().getItem() instanceof com.immortalstorage.immortalstorage.item.custom.ImmortalYuanItem)) {
-                    Vec3 v = sp.position().add(0, 0.5, 0).subtract(ent.position());
-                    ent.setDeltaMovement(v.scale(0.4));
-                }
-            }
-        }
+        // The explicit stage-four magnet performs direct, transactional storage insertion on player tick.
     }
 
     @SubscribeEvent
@@ -367,6 +377,7 @@ public class CommonEvents {
         if (e.getEntity().level().isClientSide) return;
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
+        tickPersonalStorageMagnet(p, d);
         com.immortalstorage.immortalstorage.player.HeldItemAutoRefill.tick(p, d);
         if (d.tickJadeInitiation(hasJadeGuide(p))) {
             com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers.STAGE_1.trigger(p);

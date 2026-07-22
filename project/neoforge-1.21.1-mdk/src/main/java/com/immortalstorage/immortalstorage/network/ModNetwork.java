@@ -29,7 +29,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.List;
 
 public final class ModNetwork {
-    public static final String PROTOCOL = "6";
+    public static final String PROTOCOL = "7";
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL).optional();
@@ -46,6 +46,8 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.TransferTerminalRecipe.TYPE, ModPayloads.TransferTerminalRecipe.STREAM_CODEC, ModNetwork::handleTransferTerminalRecipe);
         registrar.playToServer(ModPayloads.ToggleRealm.TYPE, ModPayloads.ToggleRealm.STREAM_CODEC, ModNetwork::handleToggleRealm);
         registrar.playToServer(ModPayloads.CycleStaffMode.TYPE, ModPayloads.CycleStaffMode.STREAM_CODEC, ModNetwork::handleCycleStaffMode);
+        registrar.playToServer(ModPayloads.AdjustStaffTeleportDistance.TYPE,
+                ModPayloads.AdjustStaffTeleportDistance.STREAM_CODEC, ModNetwork::handleAdjustStaffTeleportDistance);
         registrar.playToServer(ModPayloads.RequestSpiritStaffBuildPreview.TYPE,
                 ModPayloads.RequestSpiritStaffBuildPreview.STREAM_CODEC,
                 ModNetwork::handleSpiritStaffBuildPreview);
@@ -67,6 +69,10 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceExternalTarget.TYPE, ModPayloads.SetXianqiaoInterfaceExternalTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceExternalTarget);
         registrar.playToServer(ModPayloads.SetStabilizedRuinValue.TYPE,
                 ModPayloads.SetStabilizedRuinValue.STREAM_CODEC, ModNetwork::handleSetStabilizedRuinValue);
+        registrar.playToServer(ModPayloads.SetStabilizedRuinFilter.TYPE,
+                ModPayloads.SetStabilizedRuinFilter.STREAM_CODEC, ModNetwork::handleSetStabilizedRuinFilter);
+        registrar.playToServer(ModPayloads.ToggleStabilizedRuinFilterMode.TYPE,
+                ModPayloads.ToggleStabilizedRuinFilterMode.STREAM_CODEC, ModNetwork::handleToggleStabilizedRuinFilterMode);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.immortalstorage.immortalstorage.client.ClientNetworkHandlers.register(registrar);
         }
@@ -83,6 +89,24 @@ public final class ModNetwork {
             if (player == null || player.containerMenu.containerId != payload.containerId()
                     || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu)) return;
             menu.setAuthoritativeValue(payload.index(), payload.value());
+        });
+    }
+
+    private static void handleSetStabilizedRuinFilter(ModPayloads.SetStabilizedRuinFilter payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player != null && player.containerMenu.containerId == payload.containerId()
+                    && player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu
+                    && menu.stillValid(player)) menu.setFilter(payload.slot(), payload.stack());
+        });
+    }
+
+    private static void handleToggleStabilizedRuinFilterMode(ModPayloads.ToggleStabilizedRuinFilterMode payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player != null && player.containerMenu.containerId == payload.containerId()
+                    && player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu
+                    && menu.stillValid(player)) menu.toggleFilterMode(payload.mode());
         });
     }
 
@@ -279,15 +303,24 @@ public final class ModNetwork {
                     && !hasLiveXianqiaoMenu(player, menu);
             if (player == null || player.containerMenu.containerId != payload.containerId()
                     || staleXianqiao
-                    || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget target)
                     || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.api.storage.terminal.StorageTerminalView terminal)
-                    || terminal.viewport().revision() != payload.revision()
-                    || !terminal.isCraftingUnlocked() || !terminal.isCraftingVisible()) {
+                    || terminal.viewport().revision() != payload.revision()) {
                 if (player != null && player.containerMenu instanceof XianqiaoStorageMenu menu) sendTerminalSnapshot(player, menu);
                 return;
             }
             var holder = player.server.getRecipeManager().byKey(payload.recipeId());
-            if (holder.isEmpty() || !(holder.get().value() instanceof net.minecraft.world.item.crafting.CraftingRecipe recipe)) return;
+            if (holder.isEmpty()) return;
+            if (holder.get().value() instanceof net.minecraft.world.item.crafting.SmithingRecipe smithingRecipe
+                    && player.containerMenu instanceof com.immortalstorage.immortalstorage.api.storage.terminal.SmithingTransferTarget smithingTarget
+                    && smithingTarget.isSmithingUnlocked() && smithingTarget.isSmithingVisible()) {
+                @SuppressWarnings("unchecked")
+                var smithingHolder = (net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.SmithingRecipe>) (Object) holder.get();
+                smithingTarget.transferSmithingRecipe(smithingHolder, payload.revision());
+                return;
+            }
+            if (!(holder.get().value() instanceof net.minecraft.world.item.crafting.CraftingRecipe recipe)
+                    || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget target)
+                    || !terminal.isCraftingUnlocked() || !terminal.isCraftingVisible()) return;
             @SuppressWarnings("unchecked")
             var craftingHolder = (net.minecraft.world.item.crafting.RecipeHolder<net.minecraft.world.item.crafting.CraftingRecipe>) (Object) holder.get();
             List<com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget.TransferIngredient> storage =
@@ -436,6 +469,15 @@ public final class ModNetwork {
             if (source == null) return;
             source.adjustFluxLimit(payload.direction());
             player.containerMenu.broadcastChanges();
+        });
+    }
+
+    private static void handleAdjustStaffTeleportDistance(ModPayloads.AdjustStaffTeleportDistance m,
+                                                           IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer sp = serverPlayer(ctx);
+            if (sp != null) com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem
+                    .adjustTeleportDistance(sp, m.delta());
         });
     }
 

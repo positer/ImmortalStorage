@@ -28,20 +28,24 @@ import java.util.Optional;
 public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorageMenu>
         implements TerminalFluidScreenAccess {
     private static final int REALM_WIDTH = 104;
+    private static final int REALM_HEIGHT = 136;
     /** Small vanilla panel seam; the removed channel rail no longer reserves 32 px. */
     private static final int REALM_GAP = 4;
 
     private boolean realmVisible;
     private boolean furnaceVisible;
+    private boolean smithingVisible;
     private TerminalTabButton craftModuleButton;
     private TerminalTabButton furnaceModuleButton;
     private TerminalTabButton realmModuleButton;
+    private TerminalTabButton smithingModuleButton;
     private Button tribulateButton;
     private Button slowerTimeButton;
     private Button fasterTimeButton;
     private Button autoFurnaceFuelButton;
     private Button autoFurnaceFillButton;
     private Button handAutoRefillButton;
+    private Button magnetButton;
     private Button sortInventoryButton;
     private Button depositInventoryButton;
     private Button withdrawInventoryButton;
@@ -63,25 +67,32 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         Component craftLabel = Component.translatable("container.immortalstorage.terminal.craft");
         Component furnaceLabel = Component.translatable("container.immortalstorage.terminal.furnace");
         Component realmLabel = Component.translatable("container.immortalstorage.terminal.realm");
+        Component smithingLabel = Component.translatable("container.immortalstorage.terminal.smithing");
         this.craftModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(0),
-                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(0, 3),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(0, 4),
                 new ItemStack(Items.CRAFTING_TABLE), craftLabel, Tooltip.create(craftLabel),
                 () -> this.craftingVisible, button -> selectModule(0)));
-        this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
+        this.smithingModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(1),
-                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 3),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 4),
+                new ItemStack(Items.SMITHING_TABLE), smithingLabel, Tooltip.create(smithingLabel),
+                () -> this.smithingVisible, button -> selectModule(3)));
+        this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
+                railX, this.topPos + TerminalLayout.moduleTabY(2),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(2, 4),
                 new ItemStack(ModBlocks.IMMORTAL_FURNACE.get()), furnaceLabel, Tooltip.create(furnaceLabel),
                 () -> this.furnaceVisible, button -> selectModule(2)));
         this.realmModuleButton = this.addRenderableWidget(new TerminalTabButton(
-                railX, this.topPos + TerminalLayout.moduleTabY(2),
-                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(2, 3),
+                railX, this.topPos + TerminalLayout.moduleTabY(3),
+                TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(3, 4),
                 new ItemStack(Items.ENDER_EYE), realmLabel, Tooltip.create(realmLabel),
                 () -> this.realmVisible, button -> selectModule(1)));
 
         boolean terminalUnlocked = this.menu.isCraftingUnlocked();
         this.craftModuleButton.active = terminalUnlocked;
         this.furnaceModuleButton.active = terminalUnlocked;
+        this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
         this.tribulateButton = this.addRenderableWidget(Button.builder(
                         Component.translatable("container.immortalstorage.terminal.tribulate"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)))
@@ -123,6 +134,11 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.hand_refill_hint")))
                 .build());
+        this.magnetButton = this.addRenderableWidget(Button.builder(magnetLabel(),
+                        button -> requestMenuButton(XianqiaoStorageMenu.MAGNET_BUTTON))
+                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 118, 88, 16)
+                .tooltip(Tooltip.create(Component.translatable(
+                        "container.immortalstorage.terminal.magnet_hint"))).build());
         int inventoryActionsY = this.topPos + this.imageHeight - 106;
         int inventoryActionsX = this.leftPos + this.imageWidth - 30;
         this.sortInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
@@ -145,6 +161,10 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         updateRealmWidgets();
     }
 
+    private Component magnetLabel() { return Component.translatable(this.menu.getData().isMagnetEnabled()
+            ? "container.immortalstorage.terminal.magnet_on"
+            : "container.immortalstorage.terminal.magnet_off"); }
+
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         renderTerminalChrome(graphics, true);
@@ -159,9 +179,11 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                             this.menu.getFurnaceBurnProgress(2)
                     }, this.menu.isFurnaceLit());
         }
+        if (this.smithingVisible) VanillaGuiPainter.terminalSmithingModule(
+                graphics, this.leftPos, this.topPos, this.imageHeight);
         if (this.realmVisible) {
             int panelX = this.leftPos + this.imageWidth + REALM_GAP;
-            VanillaGuiPainter.panel(graphics, panelX, this.topPos + 18, REALM_WIDTH, 116);
+            VanillaGuiPainter.panel(graphics, panelX, this.topPos + 18, REALM_WIDTH, REALM_HEIGHT);
             VanillaGuiPainter.moduleTitle(graphics, this.font,
                     Component.translatable("container.immortalstorage.terminal.management").getString(),
                     panelX + 8, this.topPos + 26);
@@ -196,7 +218,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                         Optional.empty(), mouseX, mouseY);
                 return;
             }
-            this.renderTooltip(graphics, mouseX, mouseY);
+            if (!renderExactStorageTooltip(graphics, mouseX, mouseY)) this.renderTooltip(graphics, mouseX, mouseY);
         }
     }
 
@@ -290,6 +312,9 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
 
     @Override
     protected int visualSlotY(int menuIndex, Slot slot) {
+        if (XianqiaoStorageMenu.isSmithingSlotIndex(menuIndex)) {
+            return TerminalLayout.craftGridY(this.imageHeight) + 18;
+        }
         if (menuIndex >= XianqiaoStorageMenu.ARMOR_START && menuIndex < XianqiaoStorageMenu.ARMOR_END) {
             return TerminalLayout.inventoryY(this.imageHeight)
                     + (menuIndex - XianqiaoStorageMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
@@ -307,6 +332,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
 
     @Override
     protected boolean shouldRenderMenuSlot(int menuIndex) {
+        if (XianqiaoStorageMenu.isSmithingSlotIndex(menuIndex)) return this.smithingVisible;
         if (XianqiaoStorageMenu.isFurnaceSlotIndex(menuIndex)) {
             return this.furnaceVisible;
         }
@@ -375,11 +401,12 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     @Override
     public List<Rect2i> immortalstorage$getExtraAreas() {
         List<Rect2i> areas = new ArrayList<>();
-        int railHeight = TerminalLayout.railHeight(3);
+        int railHeight = TerminalLayout.railHeight(4);
         areas.add(new Rect2i(this.leftPos + TerminalLayout.MODULE_RAIL_X, this.topPos,
                 TerminalLayout.TAB_WIDTH, railHeight));
         if (this.realmVisible) {
-            areas.add(new Rect2i(this.leftPos + this.imageWidth + REALM_GAP, this.topPos + 18, REALM_WIDTH, 116));
+            areas.add(new Rect2i(this.leftPos + this.imageWidth + REALM_GAP, this.topPos + 18,
+                    REALM_WIDTH, REALM_HEIGHT));
         }
         return List.copyOf(areas);
     }
@@ -597,6 +624,11 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
             this.handAutoRefillButton.active = this.realmVisible;
             this.handAutoRefillButton.setMessage(handAutoRefillLabel());
         }
+        if (this.magnetButton != null) {
+            this.magnetButton.visible = this.realmVisible;
+            this.magnetButton.active = this.realmVisible;
+            this.magnetButton.setMessage(magnetLabel());
+        }
     }
 
     private Component autoFurnaceFuelLabel() {
@@ -623,13 +655,13 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         reconcileServerViewport(this.menu.getVisibleRows(), this.menu.getBaseRow());
         int module = this.menu.getActiveModule();
         if ((module == 0) != this.craftingVisible || (module == 1) != this.realmVisible
-                || (module == 2) != this.furnaceVisible) applyModuleState(module);
+                || (module == 2) != this.furnaceVisible || (module == 3) != this.smithingVisible) applyModuleState(module);
         updateRealmWidgets();
     }
 
     @Override
     protected int railControlOffset() {
-        return TerminalLayout.railControlOffset(3);
+        return TerminalLayout.railControlOffset(4);
     }
 
     @Override
@@ -650,7 +682,8 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         boolean realmChanged = this.realmVisible != (module == 1);
         this.realmVisible = module == 1;
         this.furnaceVisible = module == 2;
-        boolean rebuilt = setWorkspaceState(module == 0, module == 0 || module == 2);
+        this.smithingVisible = module == 3;
+        boolean rebuilt = setWorkspaceState(module == 0, module == 0 || module == 2 || module == 3);
         if (realmChanged && !rebuilt && this.minecraft != null) {
             this.rebuildWidgets();
         }

@@ -328,6 +328,29 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends A
         return 18.0F;
     }
 
+    /** Replaces the vanilla item tooltip only while Shift is held with an exact authoritative count line. */
+    protected final boolean renderExactStorageTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (!hasShiftDown() || this.hoveredSlot == null || this.hoveredSlot.getItem().isEmpty()) return false;
+        int menuIndex = this.menu.slots.indexOf(this.hoveredSlot);
+        int relative = menuIndex - storageSlotStart();
+        if (relative < 0 || relative >= storageSlotCount()) return false;
+        List<Component> tooltip = new ArrayList<>(getTooltipFromContainerItem(this.hoveredSlot.getItem()));
+        tooltip.add(Component.translatable("container.immortalstorage.terminal.exact_count",
+                storageAmountAt(relative, this.hoveredSlot)));
+        graphics.renderTooltip(this.font, tooltip, java.util.Optional.empty(), mouseX, mouseY);
+        return true;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.searchBox != null && this.searchBox.isFocused() && this.minecraft != null
+                && this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+            this.searchBox.keyPressed(keyCode, scanCode, modifiers);
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
     protected final TerminalViewport.BufferedRowWindow visibleBufferedRows() {
         int bufferBase = baseRow();
         int bufferedRows = Math.min(TerminalViewport.MAX_ROWS, this.visibleRows + 1);

@@ -43,6 +43,7 @@ public final class StabilizedMiniatureImmortalRuinBlock extends BaseEntityBlock 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity ruin) {
             if (player.isShiftKeyDown()) {
+                ruin.preparePortableRemoval();
                 ItemStack dropped = new ItemStack(com.immortalstorage.immortalstorage.block.ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                 CompoundTag blockData = ruin.saveWithFullMetadata(player.registryAccess());
                 dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(blockData));
@@ -51,7 +52,7 @@ public final class StabilizedMiniatureImmortalRuinBlock extends BaseEntityBlock 
                 Block.popResource(level, pos, dropped);
                 stack.hurtAndBreak(1, player, net.minecraft.world.entity.LivingEntity.getSlotForHand(hand));
             } else {
-                serverPlayer.openMenu(ruin, pos);
+                com.immortalstorage.immortalstorage.item.custom.RuinLinkingService.interact(serverPlayer, stack, ruin);
             }
         }
         return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -67,6 +68,15 @@ public final class StabilizedMiniatureImmortalRuinBlock extends BaseEntityBlock 
         return level.isClientSide ? null : createTickerHelper(type,
                 com.immortalstorage.immortalstorage.block.entity.ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (tickLevel, pos, tickState, ruin) -> ruin.serverTick());
+    }
+
+    @Override
+    protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState nextState, boolean movedByPiston) {
+        if (!state.is(nextState.getBlock())
+                && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity ruin) {
+            ruin.handleBlockRemoval();
+        }
+        super.onRemove(state, level, pos, nextState, movedByPiston);
     }
 
     @Override

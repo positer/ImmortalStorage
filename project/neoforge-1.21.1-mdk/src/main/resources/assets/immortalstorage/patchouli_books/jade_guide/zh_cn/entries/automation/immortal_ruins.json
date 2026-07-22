@@ -5,10 +5,10 @@
   "sortnum": 30,
   "pages": [
     {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"迷你仙墟最大堆叠一。右键放置为不可破坏、无碰撞的不完整方块；空手右键反转吸引/排斥视觉与状态。"},
-    {"type":"patchouli:text","text":"默认在同一水平13×13×1范围吸引非玩家生物，并在中心格造成每刻五点魔法伤害。反转后排斥。灵器扳手右键打开设置，可控制玩家作用、实体/玩家伤害及无、轻、中、强、传送力度。反转不支持传送，会自动降为强。"},
+    {"type":"patchouli:text","text":"默认在13×13×13范围吸引非玩家生物。直接右键打开设置，空手Shift右键反转；反转不支持传送力度，会自动改为无。灵器扳手Shift右键拆卸。"},
     {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"蕴灵晶与哭泣的黑曜石包围迷你仙墟可合成稳定化版本。它拥有并排大箱子的54格内存。"},
-    {"type":"patchouli:text","text":"稳定化版本的设置页可输入x/y/z区域尺寸和+x/+y/+z相对偏移，范围均受13限制；还可切换白色线框预览、功能启用、执行频率与红石开/关/忽略三档。"},
+    {"type":"patchouli:text","text":"稳定化版本可设置区域、预览、启用和频率。过滤面板提供5×4设定格、NBT/数据组件匹配及白名单/黑名单；JEI/EMI可拖入幽灵物品。"},
     {"type":"patchouli:text","text":"正常模式按频率收集选区内全部掉落物。Shift空手右键进入反转：尺寸固定1×1×1，向目标空气格投出首个非空槽，或直接输入目标NeoForge物品存储。目标被实体方块阻断时不输出。"},
-    {"type":"patchouli:text","text":"普通镐挖掘掉落迷你仙墟；精准采集掉落无设置的稳定化仙墟；灵器扳手Shift右键拆卸会保留完整设置。将带设置的稳定化仙墟单独合成一次可清除设置。"}
+    {"type":"patchouli:text","text":"扳手依次右键两个相反状态的同类仙墟即可链接，手持扳手显示白线。稳定化链接共享54格且合并溢出会掉落；普通链接可在吸引端开启Warp，将范围内生物与掉落物每刻单向传到反转端。"}
   ]
 }

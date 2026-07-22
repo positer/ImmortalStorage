@@ -18,6 +18,7 @@ import java.util.List;
 public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContainerScreen<StabilizedMiniatureImmortalRuinMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
     private boolean settings;
+    private boolean filtersOpen;
     private boolean syncingValues;
     private final List<EditBox> valueBoxes = new ArrayList<>();
     private Button previewButton;
@@ -34,7 +35,13 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
         super.init();
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
+                    filtersOpen = !filtersOpen; settings = false; refreshWidgets();
+                }).bounds(leftPos + 26, topPos - 20, 20, 20)
+                .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
+                        "container.immortalstorage.stabilized_ruin.filter"))).build());
         if (settings) addSettingsButtons();
+        if (filtersOpen) addFilterButtons();
     }
 
     private void refreshWidgets() { clearWidgets(); init(); }
@@ -75,6 +82,40 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
         addRenderableWidget(frequency);
     }
 
+    private void addFilterButtons() {
+        int panelX = leftPos + imageWidth + 6;
+        var ruin = filterEntity();
+        Component nbt = Component.translatable(ruin != null && ruin.filterMatchComponents()
+                ? "container.immortalstorage.stabilized_ruin.nbt_on"
+                : "container.immortalstorage.stabilized_ruin.nbt_off");
+        Component list = Component.translatable(ruin == null || ruin.filterWhitelist()
+                ? "container.immortalstorage.stabilized_ruin.whitelist"
+                : "container.immortalstorage.stabilized_ruin.blacklist");
+        addRenderableWidget(Button.builder(nbt, button -> PacketDistributor.sendToServer(
+                        new ModPayloads.ToggleStabilizedRuinFilterMode(menu.containerId, 0)))
+                .bounds(panelX, topPos + 92, 88, 18).build());
+        addRenderableWidget(Button.builder(list, button -> PacketDistributor.sendToServer(
+                        new ModPayloads.ToggleStabilizedRuinFilterMode(menu.containerId, 1)))
+                .bounds(panelX, topPos + 112, 88, 18).build());
+    }
+
+    public com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity filterEntity() {
+        if (minecraft == null || minecraft.level == null) return null;
+        return minecraft.level.getBlockEntity(menu.blockPos()) instanceof
+                com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin : null;
+    }
+
+    public net.minecraft.client.renderer.Rect2i filterSlotBounds(int slot) {
+        return new net.minecraft.client.renderer.Rect2i(leftPos + imageWidth + 6 + (slot % 5) * 18,
+                topPos + 16 + (slot / 5) * 18, 18, 18);
+    }
+    public boolean filtersOpen() { return filtersOpen; }
+
+    public void setGhostFilter(int slot, net.minecraft.world.item.ItemStack stack) {
+        PacketDistributor.sendToServer(new ModPayloads.SetStabilizedRuinFilter(
+                menu.containerId, slot, stack.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : stack.copyWithCount(1)));
+    }
+
     private Button addActionButton(int x, int y, int width, int height, String label, int id) {
         Button button = Button.builder(Component.literal(label), clicked -> {
             if (id >= 0 && id < 12 && id / 2 < valueBoxes.size()) {
@@ -106,6 +147,15 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        if (filtersOpen) {
+            var ruin = filterEntity();
+            for (int slot = 0; slot < 20; slot++) {
+                var bounds = filterSlotBounds(slot);
+                VanillaGuiPainter.slot(graphics, bounds.getX(), bounds.getY(), true);
+                if (ruin != null && !ruin.filter(slot).isEmpty()) graphics.renderItem(
+                        ruin.filter(slot), bounds.getX() + 1, bounds.getY() + 1);
+            }
+        }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
@@ -115,5 +165,20 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (filtersOpen && button == 0) {
+            for (int slot = 0; slot < 20; slot++) {
+                var bounds = filterSlotBounds(slot);
+                if (mouseX >= bounds.getX() && mouseX < bounds.getX() + bounds.getWidth()
+                        && mouseY >= bounds.getY() && mouseY < bounds.getY() + bounds.getHeight()) {
+                    setGhostFilter(slot, menu.getCarried());
+                    return true;
+                }
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 }

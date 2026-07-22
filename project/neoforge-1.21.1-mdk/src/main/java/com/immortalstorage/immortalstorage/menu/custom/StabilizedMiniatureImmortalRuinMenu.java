@@ -18,22 +18,27 @@ public final class StabilizedMiniatureImmortalRuinMenu extends AbstractContainer
     private final Container container;
     private final ContainerData data;
     private final StabilizedMiniatureImmortalRuinBlockEntity blockEntity;
+    private final net.minecraft.core.BlockPos blockPos;
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, clientContainer(), new SimpleContainerData(10), null);
+        this(id, inventory, clientContainer(), new SimpleContainerData(10), null,
+                buffer == null ? net.minecraft.core.BlockPos.ZERO : buffer.readBlockPos());
     }
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, Container container, ContainerData data) {
         this(id, inventory, container, data,
-                container instanceof StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin : null);
+                container instanceof StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin : null,
+                container instanceof StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin.getBlockPos() : net.minecraft.core.BlockPos.ZERO);
     }
 
     private StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, Container container, ContainerData data,
-                                                StabilizedMiniatureImmortalRuinBlockEntity blockEntity) {
+                                                StabilizedMiniatureImmortalRuinBlockEntity blockEntity,
+                                                net.minecraft.core.BlockPos blockPos) {
         super(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id);
         this.container = container;
         this.data = data;
         this.blockEntity = blockEntity;
+        this.blockPos = blockPos;
         checkContainerSize(container, 54);
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
@@ -49,6 +54,10 @@ public final class StabilizedMiniatureImmortalRuinMenu extends AbstractContainer
     public void setAuthoritativeValue(int index, int value) {
         if (blockEntity != null && index >= 0 && index < data.getCount()) blockEntity.setMenuValue(index, value);
     }
+    public net.minecraft.core.BlockPos blockPos() { return blockPos; }
+    public StabilizedMiniatureImmortalRuinBlockEntity blockEntity() { return blockEntity; }
+    public void setFilter(int slot, ItemStack stack) { if (blockEntity != null) blockEntity.setFilter(slot, stack); }
+    public void toggleFilterMode(int mode) { if (blockEntity != null) { if (mode == 0) blockEntity.toggleFilterMatchComponents(); else blockEntity.toggleFilterWhitelist(); } }
 
     @Override
     public boolean clickMenuButton(Player player, int id) {

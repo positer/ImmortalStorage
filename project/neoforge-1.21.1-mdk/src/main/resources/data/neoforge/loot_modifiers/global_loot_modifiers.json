@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "entries": [
+    "immortalstorage:jade_guide_in_village",
+    "immortalstorage:refined_pill_in_village",
+    "immortalstorage:breakthrough_pill_in_nether",
+    "immortalstorage:breakthrough_pill_in_end",
+    "immortalstorage:immortal_pill_in_end",
+    "immortalstorage:ascension_dan_in_end",
+    "immortalstorage:jade_guide_from_archaeology"
+  ]
+}

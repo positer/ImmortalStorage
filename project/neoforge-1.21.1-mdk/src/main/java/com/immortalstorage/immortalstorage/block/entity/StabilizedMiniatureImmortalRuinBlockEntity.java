@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -33,12 +34,17 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
     private boolean preview;
     private boolean enabled;
     private boolean reversed;
+    private final NonNullList<ItemStack> filters = NonNullList.withSize(20, ItemStack.EMPTY);
+    private boolean filterMatchComponents;
+    private boolean filterWhitelist = true;
+    private BlockPos linkedPos;
+    private boolean portableRemoval;
 
     public StabilizedMiniatureImmortalRuinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), pos, state);
     }
 
-    public ItemStackHandler itemHandler() { return inventory; }
+    public ItemStackHandler itemHandler() { return activeInventory(); }
     public boolean previewEnabled() { return preview; }
     public boolean reversed() { return reversed; }
     public int sizeX() { return sizeX; }
@@ -49,6 +55,13 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
     public int offsetZ() { return offsetZ; }
     public int frequency() { return frequency; }
     public boolean enabled() { return enabled; }
+    public ItemStack filter(int slot) { return slot >= 0 && slot < filters.size() ? filters.get(slot) : ItemStack.EMPTY; }
+    public void setFilter(int slot, ItemStack stack) { if (slot >= 0 && slot < filters.size()) { filters.set(slot, stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1)); setChangedAndSync(); } }
+    public boolean filterMatchComponents() { return filterMatchComponents; }
+    public boolean filterWhitelist() { return filterWhitelist; }
+    public void toggleFilterMatchComponents() { filterMatchComponents = !filterMatchComponents; setChangedAndSync(); }
+    public void toggleFilterWhitelist() { filterWhitelist = !filterWhitelist; setChangedAndSync(); }
+    public BlockPos linkedPos() { return linkedPos; }
 
     public void setMenuValue(int index, int value) { menuData().set(index, value); }
 
@@ -94,9 +107,11 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
 
     private void collect(ServerLevel level) {
         for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, selectedArea(), ItemEntity::isAlive)) {
+            if (!allows(entity.getItem())) continue;
             ItemStack remaining = entity.getItem().copy();
+            ItemStackHandler targetInventory = activeInventory();
             for (int slot = 0; slot < SLOT_COUNT && !remaining.isEmpty(); slot++) {
-                remaining = inventory.insertItem(slot, remaining, false);
+                remaining = targetInventory.insertItem(slot, remaining, false);
             }
             entity.setItem(remaining);
             if (remaining.isEmpty()) entity.discard();
@@ -107,9 +122,10 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         BlockPos target = worldPosition.offset(offsetX, offsetY, offsetZ);
         var handler = level.getCapability(Capabilities.ItemHandler.BLOCK, target, null);
         for (int slot = 0; slot < SLOT_COUNT; slot++) {
-            ItemStack stored = inventory.getStackInSlot(slot);
-            if (stored.isEmpty()) continue;
-            ItemStack removed = inventory.extractItem(slot, stored.getCount(), false);
+            ItemStackHandler sourceInventory = activeInventory();
+            ItemStack stored = sourceInventory.getStackInSlot(slot);
+            if (stored.isEmpty() || !allows(stored)) continue;
+            ItemStack removed = sourceInventory.extractItem(slot, stored.getCount(), false);
             if (handler != null) {
                 for (int targetSlot = 0; targetSlot < handler.getSlots() && !removed.isEmpty(); targetSlot++) {
                     removed = handler.insertItem(targetSlot, removed, false);
@@ -119,8 +135,76 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
                         target.getZ() + 0.5D, removed));
                 removed = ItemStack.EMPTY;
             }
-            if (!removed.isEmpty()) inventory.insertItem(slot, removed, false);
+            if (!removed.isEmpty()) sourceInventory.insertItem(slot, removed, false);
             break;
+        }
+    }
+
+    private boolean allows(ItemStack stack) {
+        boolean matched = false;
+        boolean configured = false;
+        for (ItemStack filter : filters) {
+            if (filter.isEmpty()) continue;
+            configured = true;
+            if (filterMatchComponents ? ItemStack.isSameItemSameComponents(filter, stack)
+                    : ItemStack.isSameItem(filter, stack)) { matched = true; break; }
+        }
+        if (!configured) return true;
+        return filterWhitelist ? matched : !matched;
+    }
+
+    private ItemStackHandler activeInventory() {
+        if (linkedPos != null && level != null && level.getBlockEntity(linkedPos) instanceof StabilizedMiniatureImmortalRuinBlockEntity peer
+                && peer.linkedPos != null && peer.linkedPos.equals(worldPosition)
+                && peer.worldPosition.asLong() < worldPosition.asLong()) return peer.inventory;
+        return inventory;
+    }
+
+    public void linkWith(StabilizedMiniatureImmortalRuinBlockEntity peer, ServerLevel level) {
+        if (peer == null || peer == this) return;
+        linkedPos = peer.worldPosition.immutable();
+        peer.linkedPos = worldPosition.immutable();
+        StabilizedMiniatureImmortalRuinBlockEntity primary = worldPosition.asLong() <= peer.worldPosition.asLong() ? this : peer;
+        StabilizedMiniatureImmortalRuinBlockEntity secondary = primary == this ? peer : this;
+        for (int slot = 0; slot < SLOT_COUNT; slot++) {
+            ItemStack remaining = secondary.inventory.getStackInSlot(slot).copy();
+            secondary.inventory.setStackInSlot(slot, ItemStack.EMPTY);
+            for (int target = 0; target < SLOT_COUNT && !remaining.isEmpty(); target++) {
+                remaining = primary.inventory.insertItem(target, remaining, false);
+            }
+            if (!remaining.isEmpty()) level.addFreshEntity(new ItemEntity(level,
+                    primary.worldPosition.getX() + 0.5D, primary.worldPosition.getY() + 1.0D,
+                    primary.worldPosition.getZ() + 0.5D, remaining));
+        }
+        setChangedAndSync(); peer.setChangedAndSync();
+    }
+
+    public boolean unlinkForBreak() {
+        if (linkedPos == null || level == null) return false;
+        boolean peerFound = false;
+        if (level.getBlockEntity(linkedPos) instanceof StabilizedMiniatureImmortalRuinBlockEntity peer) {
+            peerFound = true;
+            ItemStackHandler authoritative = activeInventory();
+            if (authoritative == inventory) {
+                for (int slot = 0; slot < SLOT_COUNT; slot++) {
+                    peer.inventory.setStackInSlot(slot, inventory.getStackInSlot(slot).copy());
+                    inventory.setStackInSlot(slot, ItemStack.EMPTY);
+                }
+            }
+            peer.linkedPos = null;
+            peer.setChangedAndSync();
+        }
+        linkedPos = null;
+        setChangedAndSync();
+        return peerFound;
+    }
+
+    public void preparePortableRemoval() { unlinkForBreak(); portableRemoval = true; }
+
+    public void handleBlockRemoval() {
+        boolean transferred = unlinkForBreak();
+        if (!portableRemoval && !transferred && level != null) {
+            net.minecraft.world.Containers.dropContents(level, worldPosition, this);
         }
     }
 
@@ -130,13 +214,13 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
                 id, playerInventory, this, menuData());
     }
     @Override public int getContainerSize() { return SLOT_COUNT; }
-    @Override public boolean isEmpty() { for (int i = 0; i < SLOT_COUNT; i++) if (!inventory.getStackInSlot(i).isEmpty()) return false; return true; }
-    @Override public ItemStack getItem(int slot) { return inventory.getStackInSlot(slot); }
-    @Override public ItemStack removeItem(int slot, int amount) { return inventory.extractItem(slot, amount, false); }
-    @Override public ItemStack removeItemNoUpdate(int slot) { ItemStack stack = inventory.getStackInSlot(slot); inventory.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
-    @Override public void setItem(int slot, ItemStack stack) { inventory.setStackInSlot(slot, stack); }
+    @Override public boolean isEmpty() { for (int i = 0; i < SLOT_COUNT; i++) if (!activeInventory().getStackInSlot(i).isEmpty()) return false; return true; }
+    @Override public ItemStack getItem(int slot) { return activeInventory().getStackInSlot(slot); }
+    @Override public ItemStack removeItem(int slot, int amount) { return activeInventory().extractItem(slot, amount, false); }
+    @Override public ItemStack removeItemNoUpdate(int slot) { ItemStackHandler active = activeInventory(); ItemStack stack = active.getStackInSlot(slot); active.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
+    @Override public void setItem(int slot, ItemStack stack) { activeInventory().setStackInSlot(slot, stack); }
     @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) inventory.setStackInSlot(i, ItemStack.EMPTY); }
+    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) activeInventory().setStackInSlot(i, ItemStack.EMPTY); }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -146,6 +230,14 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         tag.putInt("OffsetX", offsetX); tag.putInt("OffsetY", offsetY); tag.putInt("OffsetZ", offsetZ);
         tag.putInt("Frequency", frequency); tag.putBoolean("Preview", preview); tag.putBoolean("Enabled", enabled);
         tag.putBoolean("Reversed", reversed);
+        net.minecraft.nbt.ListTag filterList = new net.minecraft.nbt.ListTag();
+        for (int slot = 0; slot < filters.size(); slot++) if (!filters.get(slot).isEmpty()) {
+            CompoundTag row = new CompoundTag(); row.putInt("Slot", slot);
+            row.put("Item", filters.get(slot).save(registries)); filterList.add(row);
+        }
+        tag.put("Filters", filterList); tag.putBoolean("FilterMatchComponents", filterMatchComponents);
+        tag.putBoolean("FilterWhitelist", filterWhitelist);
+        if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong());
     }
 
     @Override
@@ -157,6 +249,15 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         frequency = clamp(tag.getInt("Frequency"), 1, 72_000); preview = tag.getBoolean("Preview"); enabled = tag.getBoolean("Enabled");
         reversed = tag.getBoolean("Reversed");
         if (reversed) sizeX = sizeY = sizeZ = 1;
+        filters.replaceAll(ignored -> ItemStack.EMPTY);
+        net.minecraft.nbt.ListTag filterList = tag.getList("Filters", net.minecraft.nbt.Tag.TAG_COMPOUND);
+        for (int index = 0; index < filterList.size(); index++) {
+            CompoundTag row = filterList.getCompound(index); int slot = row.getInt("Slot");
+            if (slot >= 0 && slot < filters.size()) filters.set(slot, ItemStack.parseOptional(registries, row.getCompound("Item")));
+        }
+        filterMatchComponents = tag.getBoolean("FilterMatchComponents");
+        filterWhitelist = !tag.contains("FilterWhitelist") || tag.getBoolean("FilterWhitelist");
+        linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null;
     }
 
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }

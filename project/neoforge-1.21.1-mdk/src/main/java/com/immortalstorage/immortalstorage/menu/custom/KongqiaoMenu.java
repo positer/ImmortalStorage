@@ -2,6 +2,7 @@ package com.immortalstorage.immortalstorage.menu.custom;
 
 import com.immortalstorage.immortalstorage.menu.ModMenus;
 import com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget;
+import com.immortalstorage.immortalstorage.api.storage.terminal.SmithingTransferTarget;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalCraftingLayout;
 import com.immortalstorage.immortalstorage.api.storage.terminal.StorageTerminalView;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalEntry;
@@ -28,6 +29,7 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 
 import java.util.Optional;
 import java.util.ArrayList;
@@ -42,10 +44,11 @@ import java.util.Map;
  * rebuilding the menu. The active viewport is still capped to the finite
  * stage's physical row count (with the shared two-row UI minimum).
  */
-public class KongqiaoMenu extends AbstractContainerMenu implements StorageTerminalView, CraftingTransferTarget {
+public class KongqiaoMenu extends AbstractContainerMenu implements StorageTerminalView, CraftingTransferTarget, SmithingTransferTarget {
     public static final int CRAFT_MATCH_COMPONENTS_BUTTON = 12;
     public static final int AUTO_FURNACE_FUEL_BUTTON = 11;
     public static final int AUTO_FURNACE_FILL_BUTTON = 13;
+    public static final int MAGNET_BUTTON = 14;
     public static final int VISIBLE_ROWS = TerminalViewport.DEFAULT_ROWS;
     public static final int VISIBLE_COLS = 9;
     public static final int MAX_VISIBLE_ROWS = TerminalViewport.MAX_ROWS;
@@ -53,7 +56,13 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     public static final int CRAFT_START = VISIBLE_STORAGE_SLOTS;
     public static final int CRAFT_END = CRAFT_START + 9;
     public static final int CRAFT_RESULT_SLOT = CRAFT_END;
-    public static final int FURNACE_START = CRAFT_RESULT_SLOT + 1;
+    public static final int SMITHING_START = CRAFT_RESULT_SLOT + 1;
+    public static final int SMITHING_TEMPLATE_SLOT = SMITHING_START;
+    public static final int SMITHING_BASE_SLOT = SMITHING_START + 1;
+    public static final int SMITHING_ADDITION_SLOT = SMITHING_START + 2;
+    public static final int SMITHING_RESULT_SLOT = SMITHING_START + 3;
+    public static final int SMITHING_END = SMITHING_START + 4;
+    public static final int FURNACE_START = SMITHING_END;
     public static final int FURNACE_INPUT_SLOT = FURNACE_START;
     public static final int FURNACE_FUEL_SLOT = FURNACE_INPUT_SLOT + 1;
     public static final int FURNACE_RESULT_SLOT = FURNACE_FUEL_SLOT + 1;
@@ -77,6 +86,7 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     private final ImmortalStoragePlayerData data;
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
     private final ResultContainer resultSlots = new ResultContainer();
+    private final EmbeddedSmithingBackend smithing;
     private final EmbeddedImmortalFurnaceBackend furnace;
     private final Player player;
     private int activeModule = -1;
@@ -101,6 +111,8 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         this.furnace = data.getEmbeddedImmortalFurnace();
         this.kongqiao = new KongqiaoStorageContainer(data);
         this.player = player;
+        this.smithing = new EmbeddedSmithingBackend(this, player, data, false,
+                SMITHING_RESULT_SLOT, this::extractCraftingIngredient);
         this.visibleRows = clampViewportRows(VISIBLE_ROWS, getTotalRows());
         this.addDataSlot(new DataSlot() {
             @Override
@@ -135,6 +147,10 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         this.addSlot(new CraftModuleResultSlot(player, craftSlots, resultSlots, 0,
                 TerminalCraftingLayout.RESULT_X,
                 TerminalCraftingLayout.resultY(TerminalCraftingLayout.MENU_BASELINE_IMAGE_HEIGHT)));
+        this.addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.TEMPLATE, 30, 129));
+        this.addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.BASE, 48, 129));
+        this.addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.ADDITION, 66, 129));
+        this.addSlot(new SmithingModuleResultSlot(smithing.result, 0, 120, 129));
         this.addSlot(new FurnaceModuleInputSlot(furnace, EmbeddedImmortalFurnaceBackend.INPUT,
                 FURNACE_INPUT_X, FURNACE_INPUT_Y));
         this.addSlot(new FurnaceModuleFuelSlot(furnace, EmbeddedImmortalFurnaceBackend.FUEL,
@@ -175,7 +191,9 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     }
 
     @Override public void broadcastChanges() {
-        if ((activeModule == 0 && !isCraftingUnlocked()) || (activeModule == 1 && !isFurnaceUnlocked())) {
+        if ((activeModule == 0 && !isCraftingUnlocked())
+                || (activeModule == 1 && !isSmithingUnlocked())
+                || (activeModule == 2 && !isFurnaceUnlocked())) {
             activeModule = -1;
         }
         super.broadcastChanges();
@@ -226,13 +244,19 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
                 if (!this.moveItemStackTo(in, playerStart, playerEnd, true)) {
                     return ItemStack.EMPTY;
                 }
+            } else if (isSmithingSlotIndex(slot)) {
+                if (!isSmithingVisible() || !this.moveItemStackTo(in, playerStart, playerEnd, true)) {
+                    return ItemStack.EMPTY;
+                }
             } else if (isFurnaceSlotIndex(slot)) {
                 if (!isFurnaceVisible() || !this.moveItemStackTo(in, playerStart, playerEnd, true)) {
                     return ItemStack.EMPTY;
                 }
                 if (isFurnaceResultSlotIndex(slot)) s.onQuickCraft(in, ret);
             } else if (slot >= playerStart && slot < playerEnd) {
-                if (isFurnaceVisible() && furnace.isFuel(in)) {
+                if (isSmithingVisible() && moveItemStackToSmithingInput(in)) {
+                    // The active smithing recipe determines the first compatible empty input.
+                } else if (isFurnaceVisible() && furnace.isFuel(in)) {
                     if (!this.moveItemStackTo(in, FURNACE_FUEL_SLOT, FURNACE_FUEL_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
@@ -274,6 +298,20 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
             moveItemStackTo(stack, input, input + 1, false);
         }
         return stack.getCount() < before;
+    }
+
+    private boolean moveItemStackToSmithingInput(ItemStack stack) {
+        for (int menuSlot = SMITHING_TEMPLATE_SLOT; menuSlot <= SMITHING_ADDITION_SLOT; menuSlot++) {
+            int input = menuSlot - SMITHING_START;
+            if (!this.slots.get(menuSlot).hasItem() && smithing.accepts(input, stack)) {
+                return this.moveItemStackTo(stack, menuSlot, menuSlot + 1, false);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSmithingSlotIndex(int slotIndex) {
+        return slotIndex >= SMITHING_START && slotIndex < SMITHING_END;
     }
 
     public static boolean isFurnaceSlotIndex(int slotIndex) {
@@ -370,7 +408,8 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     public void setActiveModule(int activeModule) {
         this.activeModule = switch (activeModule) {
             case 0 -> isCraftingUnlocked() ? 0 : -1;
-            case 1 -> isFurnaceUnlocked() ? 1 : -1;
+            case 1 -> isSmithingUnlocked() ? 1 : -1;
+            case 2 -> isFurnaceUnlocked() ? 2 : -1;
             default -> -1;
         };
         this.broadcastChanges();
@@ -381,8 +420,10 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     }
 
     public static boolean isFurnaceUnlockedAtStage(int stage) { return stage >= 5 && stage < 6; }
+    public boolean isSmithingUnlocked() { return data.getStage() >= 4; }
+    public boolean isSmithingVisible() { return activeModule == 1 && isSmithingUnlocked(); }
     public boolean isFurnaceUnlocked() { return isFurnaceUnlockedAtStage(data.getStage()); }
-    public boolean isFurnaceVisible() { return activeModule == 1 && isFurnaceUnlocked(); }
+    public boolean isFurnaceVisible() { return activeModule == 2 && isFurnaceUnlocked(); }
     public boolean isFurnaceLit() { return furnace.isLit(); }
     public boolean isFurnaceAutoConsume() { return furnace.isAutoConsume(); }
     public boolean isFurnaceAutoFill() { return furnace.isAutoFill(); }
@@ -393,7 +434,8 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         if (player.level().isClientSide()) {
             activeModule = switch (module) {
                 case 0 -> isCraftingUnlocked() ? 0 : -1;
-                case 1 -> isFurnaceUnlocked() ? 1 : -1;
+                case 1 -> isSmithingUnlocked() ? 1 : -1;
+                case 2 -> isFurnaceUnlocked() ? 2 : -1;
                 default -> -1;
             };
         }
@@ -425,9 +467,16 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
             broadcastChanges();
             return true;
         }
-        if (buttonId < 0 || buttonId > 1) return false;
+        if (buttonId == MAGNET_BUTTON) {
+            if (data.getStage() < 4) return false;
+            data.setMagnetEnabled(!data.isMagnetEnabled());
+            broadcastChanges();
+            return true;
+        }
+        if (buttonId < 0 || buttonId > 2) return false;
         if (buttonId == 0 && !isCraftingUnlocked()) return false;
-        if (buttonId == 1 && !isFurnaceUnlocked()) return false;
+        if (buttonId == 1 && !isSmithingUnlocked()) return false;
+        if (buttonId == 2 && !isFurnaceUnlocked()) return false;
         setActiveModule(activeModule == buttonId ? -1 : buttonId);
         return true;
     }
@@ -475,6 +524,7 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     public void removed(Player player) {
         super.removed(player);
         TerminalMenuSupport.returnCraftingItems(this, player, craftSlots, data, false);
+        smithing.returnInputs();
     }
 
     private void refreshCraftingResult(RecipeHolder<CraftingRecipe> lastRecipe) {
@@ -686,6 +736,15 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         return TerminalRecipeTransfer.place(this, player, data, craftSlots, recipe, requestedSets,
                 expectedRevision, revision, false);
     }
+    @Override public List<Slot> smithingInputSlots() { return List.copyOf(slots.subList(SMITHING_START, SMITHING_RESULT_SLOT)); }
+    @Override public Slot smithingResultSlotView() { return slots.get(SMITHING_RESULT_SLOT); }
+    @Override public List<Slot> smithingSourceSlots() { return craftingSourceSlots(); }
+    @Override public List<TransferIngredient> smithingStorageIngredients() { return craftingStorageIngredients(); }
+    @Override public boolean transferSmithingRecipe(RecipeHolder<SmithingRecipe> recipe, long expectedRevision) {
+        return player instanceof ServerPlayer serverPlayer && isSmithingVisible()
+                && TerminalSmithingTransfer.place(serverPlayer, smithing, recipe, expectedRevision, revision,
+                serverCraftingStorageIngredients(), this::extractCraftingIngredient);
+    }
 
     private static final class MutableAmount {
         private final long id;
@@ -747,6 +806,24 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
                             .findFirst().orElse(ItemStack.EMPTY));
         }
         return selected.isEmpty() ? ItemStack.EMPTY : data.extractStack(selected, amount);
+    }
+
+    private class SmithingModuleSlot extends Slot {
+        SmithingModuleSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isSmithingVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return isActive() && smithing.accepts(index, stack); }
+        @Override public boolean mayPickup(Player actor) { return isActive() && super.mayPickup(actor); }
+    }
+
+    private final class SmithingModuleResultSlot extends Slot {
+        SmithingModuleResultSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isSmithingVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return false; }
+        @Override public boolean mayPickup(Player actor) { return isActive() && smithing.mayTake(); }
+        @Override public void onTake(Player actor, ItemStack stack) {
+            smithing.onTake(actor, stack);
+            super.onTake(actor, stack);
+        }
     }
 
     private class FurnaceModuleSlot extends Slot {

@@ -134,6 +134,32 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<SetStabilizedRuinValue> type() { return TYPE; }
     }
 
+    public record SetStabilizedRuinFilter(int containerId, int slot, ItemStack stack) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SetStabilizedRuinFilter> STREAM_CODEC = new StreamCodec<>() {
+            @Override public SetStabilizedRuinFilter decode(RegistryFriendlyByteBuf buffer) {
+                return new SetStabilizedRuinFilter(buffer.readVarInt(), buffer.readVarInt(),
+                        ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer));
+            }
+            @Override public void encode(RegistryFriendlyByteBuf buffer, SetStabilizedRuinFilter value) {
+                buffer.writeVarInt(value.containerId); buffer.writeVarInt(value.slot);
+                ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, value.stack);
+            }
+        };
+        public static final CustomPacketPayload.Type<SetStabilizedRuinFilter> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "set_stabilized_ruin_filter"));
+        @Override public CustomPacketPayload.Type<SetStabilizedRuinFilter> type() { return TYPE; }
+    }
+
+    public record ToggleStabilizedRuinFilterMode(int containerId, int mode) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ToggleStabilizedRuinFilterMode> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, ToggleStabilizedRuinFilterMode::containerId,
+                ByteBufCodecs.VAR_INT, ToggleStabilizedRuinFilterMode::mode,
+                ToggleStabilizedRuinFilterMode::new);
+        public static final CustomPacketPayload.Type<ToggleStabilizedRuinFilterMode> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "toggle_stabilized_ruin_filter_mode"));
+        @Override public CustomPacketPayload.Type<ToggleStabilizedRuinFilterMode> type() { return TYPE; }
+    }
+
     /** Selects the item or typed-fluid directory within the same Xianqiao menu. */
     public record SetTerminalChannel(int containerId, boolean fluid) implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, SetTerminalChannel> STREAM_CODEC =
@@ -429,6 +455,16 @@ public enum ModPayloads {
         public static final CustomPacketPayload.Type<CycleStaffMode> TYPE =
                 new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "cycle_staff_mode"));
         @Override public CustomPacketPayload.Type<CycleStaffMode> type() { return TYPE; }
+    }
+
+    public record AdjustStaffTeleportDistance(int delta) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, AdjustStaffTeleportDistance> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.VAR_INT, AdjustStaffTeleportDistance::delta,
+                        AdjustStaffTeleportDistance::new);
+        public static final CustomPacketPayload.Type<AdjustStaffTeleportDistance> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "adjust_staff_teleport_distance"));
+        @Override public CustomPacketPayload.Type<AdjustStaffTeleportDistance> type() { return TYPE; }
     }
 
     /** Request one non-mutating, server-authoritative Spirit Staff build job. */

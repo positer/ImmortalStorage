@@ -121,17 +121,8 @@ public final class CompatManager {
                 builtinAddonTexture("ae2_ars_source"),
                 "Source", 0xFF8D5BE8, "resource.immortalstorage.external.name.ars_source");
         registerResource(ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL,
-                optionalTexture(INDUSTRIAL_FOREGOING_SOULS_LOADED, "industrialforegoingsouls",
-                        "textures/gui/soul_tank.png", "soul_surge"),
+                builtinAddonTexture("soul_surge"),
                 "Soul", 0xFF6FD6E8, "resource.immortalstorage.external.name.soul");
-    }
-
-    private static ResourceLocation optionalTexture(
-            boolean loaded, String namespace, String path, String fallback) {
-        return loaded
-                ? ResourceLocation.fromNamespaceAndPath(namespace, path)
-                : ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID,
-                        "textures/gui/external_resource/" + fallback + ".png");
     }
 
     private static ResourceLocation builtinAddonTexture(String name) {

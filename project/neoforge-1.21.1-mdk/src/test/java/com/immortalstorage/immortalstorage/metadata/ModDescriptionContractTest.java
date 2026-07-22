@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 
 class ModDescriptionContractTest {
     @Test
-    void descriptionRepresentsTheCompleteZeroPointZeroPointThreeFeatureSet() throws Exception {
+    void descriptionRepresentsTheCompleteZeroPointZeroPointFourFeatureSet() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("UUID-bound realm"));
-        assertTrue(properties.contains("Ancient Jade handbook"));
+        assertTrue(properties.contains("Primordial Qi"));
         assertTrue(properties.contains("Miniature Immortal Ruins"));
-        assertTrue(properties.contains("Immortal-Ruin-Forged Spirit Sword"));
-        assertTrue(properties.contains("Version 0.0.3 bundles Patchouli"));
+        assertTrue(properties.contains("linked and filtered Miniature Immortal Ruins"));
+        assertTrue(properties.contains("Version 0.0.4"));
     }
 
     private static Path locateProject() {

@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.0.4] - 2026-07-22
+
+- Added the Stage-4 embedded smithing table to Kongqiao and Xianqiao terminals, including storage autofill and JEI/EMI recipe transfer.
+- Added an explicit 13x13x13 personal-storage magnet toggle, Shift exact-count tooltips, and search-field handling that ignores the inventory key while typing.
+- Added configurable archaeology acquisition for Ancient Jade.
+- Added reusable and disposable Qi Collecting Bottles plus Primordial Qi entity conversion, registry-wide modded spawn-egg discovery, configurable entity exclusions, Ender Dragon fight completion, and tribulation lockout.
+- Added the Spirit Staff teleport mode with configurable scroll distance, and expanded the Immortal-Ruin-Forged Spirit Sword to a 27x27x27 pull with two-second absolute restraint.
+- Added stabilized ruin 5x4 filters, component matching, whitelist/blacklist semantics, linked shared storage, safe unlink behavior, and JEI/EMI ghost placement.
+- Added opposite-state miniature ruin linking, visible wrench link lines, an explicit Warp toggle, and one-way per-tick living/item teleportation.
+- Added audited deterministic textures derived from vanilla sources and the user-supplied Soul Surge icon.
+- Changed Primordial Qi conversion to complete its shrink and non-kill removal in 10 ticks (0.5 seconds).
+- Fixed Primordial Qi egg resolution for Iron Golems and modded entities by matching every runtime-registered `SpawnEggItem` subclass against its actual default-stack entity type.
+- Fixed Miniature Immortal Ruin Warp to use the same center-contact volume as damage and to honor the affect-players switch.
+- Fixed Spirit Staff teleportation to ignore both intervening walls and destination collision, including suffocating destinations.
+- Fixed the Xianqiao magnet control's live on/off label synchronization, enlarged its management panel, and reordered module tabs by unlock progression.
+
+### Verification
+
+- Supported target: Minecraft 1.21.1, NeoForge 21.1.235, Java 21.
+- 671 automated tests passed with 0 failures and 504 resource JSON files parsed successfully.
+- Production-boundary, version-composition, exact-artifact, Ars Source adapter, and no-AE2-runtime checks passed.
+- Numen real-client QA verified the Xianqiao module order, unclipped magnet control, and immediate `off -> on -> off` toggle synchronization.
+- Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`.
+- SHA256: `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`.
+
 ## [0.0.3] - 2026-07-21
 
 This section describes user-visible changes from the published `0.0.2` tag to `0.0.3`.

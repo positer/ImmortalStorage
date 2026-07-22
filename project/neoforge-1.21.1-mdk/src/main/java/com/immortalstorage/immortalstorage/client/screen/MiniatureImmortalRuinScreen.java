@@ -12,8 +12,8 @@ import java.util.List;
 
 public final class MiniatureImmortalRuinScreen extends AbstractContainerScreen<MiniatureImmortalRuinMenu> {
     private final List<Button> optionButtons = new ArrayList<>();
-    public MiniatureImmortalRuinScreen(MiniatureImmortalRuinMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = 110; }
-    @Override protected void init() { super.init(); optionButtons.clear(); button(0, 22); button(1, 44); button(2, 66); button(3, 88); }
+    public MiniatureImmortalRuinScreen(MiniatureImmortalRuinMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = 132; }
+    @Override protected void init() { super.init(); optionButtons.clear(); button(0, 22); button(1, 44); button(2, 66); button(3, 88); button(4, 110); }
     private void button(int id, int y) {
         Button button = Button.builder(label(id), b -> {
             if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -21,7 +21,7 @@ public final class MiniatureImmortalRuinScreen extends AbstractContainerScreen<M
         optionButtons.add(button);
         addRenderableWidget(button);
     }
-    private Component label(int id) { return switch (id) { case 0 -> Component.literal("Players: " + on(menu.value(0))); case 1 -> Component.literal("Entity damage: " + on(menu.value(1))); case 2 -> Component.literal("Player damage: " + on(menu.value(2))); default -> Component.literal("Force: " + new String[]{"None","Light","Medium","Strong","Teleport"}[menu.value(3)]); }; }
+    private Component label(int id) { return switch (id) { case 0 -> Component.literal("Players: " + on(menu.value(0))); case 1 -> Component.literal("Entity damage: " + on(menu.value(1))); case 2 -> Component.literal("Player damage: " + on(menu.value(2))); case 3 -> Component.literal("Force: " + new String[]{"None","Light","Medium","Strong","Teleport"}[menu.value(3)]); default -> Component.translatable("container.immortalstorage.miniature_ruin.warp", on(menu.value(4))); }; }
     private static String on(int value) { return value == 0 ? "Off" : "On"; }
     @Override protected void containerTick() {
         super.containerTick();

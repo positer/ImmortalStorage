@@ -14,6 +14,9 @@ public final class ModLootModifiers {
 
     public static final Supplier<MapCodec<com.immortalstorage.immortalstorage.loot.custom.AddItemModifier>> ADD_ITEM =
             LOOT_MODIFIERS.register("add_item", () -> com.immortalstorage.immortalstorage.loot.custom.AddItemModifier.CODEC);
+    public static final Supplier<MapCodec<com.immortalstorage.immortalstorage.loot.custom.ArchaeologyJadeModifier>> ARCHAEOLOGY_JADE =
+            LOOT_MODIFIERS.register("archaeology_jade", () ->
+                    com.immortalstorage.immortalstorage.loot.custom.ArchaeologyJadeModifier.CODEC);
 
     private ModLootModifiers() {}
 }

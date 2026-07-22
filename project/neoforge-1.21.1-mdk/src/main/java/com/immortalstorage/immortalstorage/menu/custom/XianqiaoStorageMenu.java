@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.menu.custom;
 
 import com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget;
+import com.immortalstorage.immortalstorage.api.storage.terminal.SmithingTransferTarget;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalCraftingLayout;
 import com.immortalstorage.immortalstorage.api.storage.terminal.StorageTerminalView;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalAction;
@@ -41,6 +42,7 @@ import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.items.wrapper.PlayerInvWrapper;
@@ -51,7 +53,7 @@ import java.util.Optional;
 import java.util.Comparator;
 
 /** Server-authoritative aggregated Xianqiao storage terminal. */
-public class XianqiaoStorageMenu extends AbstractContainerMenu implements StorageTerminalView, CraftingTransferTarget {
+public class XianqiaoStorageMenu extends AbstractContainerMenu implements StorageTerminalView, CraftingTransferTarget, SmithingTransferTarget {
     public static final int VISIBLE_ROWS = TerminalViewport.DEFAULT_ROWS;
     public static final int VISIBLE_COLS = TerminalViewport.COLUMNS;
     public static final int MAX_VISIBLE_ROWS = TerminalViewport.MAX_ROWS;
@@ -66,10 +68,17 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public static final int SORT_PLAYER_INVENTORY_BUTTON = 15;
     public static final int DEPOSIT_PLAYER_INVENTORY_BUTTON = 16;
     public static final int WITHDRAW_FILTERED_BUTTON = 17;
+    public static final int MAGNET_BUTTON = 18;
     public static final int CRAFT_START = VISIBLE_STORAGE_SLOTS;
     public static final int CRAFT_END = CRAFT_START + 9;
     public static final int CRAFT_RESULT_SLOT = CRAFT_END;
-    public static final int FURNACE_START = CRAFT_RESULT_SLOT + 1;
+    public static final int SMITHING_START = CRAFT_RESULT_SLOT + 1;
+    public static final int SMITHING_TEMPLATE_SLOT = SMITHING_START;
+    public static final int SMITHING_BASE_SLOT = SMITHING_START + 1;
+    public static final int SMITHING_ADDITION_SLOT = SMITHING_START + 2;
+    public static final int SMITHING_RESULT_SLOT = SMITHING_START + 3;
+    public static final int SMITHING_END = SMITHING_START + 4;
+    public static final int FURNACE_START = SMITHING_END;
     public static final int FURNACE_INPUT_SLOT = FURNACE_START;
     public static final int FURNACE_FUEL_SLOT = FURNACE_INPUT_SLOT + 1;
     public static final int FURNACE_RESULT_SLOT = FURNACE_FUEL_SLOT + 1;
@@ -98,6 +107,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private final PersonalStorageFluidHandler fluidStorage;
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
     private final ResultContainer resultSlots = new ResultContainer();
+    private final EmbeddedSmithingBackend smithing;
     private final EmbeddedImmortalFurnaceBackend furnace;
     private final Player player;
     private TerminalQuery terminalQuery = TerminalQuery.DEFAULT;
@@ -144,6 +154,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         this.data = ImmortalStoragePlayerData.get(player);
         this.furnace = data.getEmbeddedImmortalFurnace();
         this.player = player;
+        this.smithing = new EmbeddedSmithingBackend(this, player, data, true,
+                SMITHING_RESULT_SLOT, this::extractCraftingIngredient);
         this.storage = new AggregatedContainer(this);
         net.minecraft.server.MinecraftServer server = player instanceof ServerPlayer serverPlayer
                 ? serverPlayer.server : null;
@@ -194,6 +206,10 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         addSlot(new CraftModuleResultSlot(player, craftSlots, resultSlots, 0,
                 TerminalCraftingLayout.RESULT_X,
                 TerminalCraftingLayout.resultY(TerminalCraftingLayout.MENU_BASELINE_IMAGE_HEIGHT)));
+        addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.TEMPLATE, 30, 129));
+        addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.BASE, 48, 129));
+        addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.ADDITION, 66, 129));
+        addSlot(new SmithingModuleResultSlot(smithing.result, 0, 120, 129));
         addSlot(new FurnaceModuleInputSlot(furnace, EmbeddedImmortalFurnaceBackend.INPUT,
                 FURNACE_INPUT_X, FURNACE_INPUT_Y));
         addSlot(new FurnaceModuleFuelSlot(furnace, EmbeddedImmortalFurnaceBackend.FUEL,
@@ -273,12 +289,16 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             slot.onQuickCraft(source, original);
         } else if (slotIndex >= CRAFT_START && slotIndex <= CRAFT_RESULT_SLOT) {
             if (!moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (isSmithingSlotIndex(slotIndex)) {
+            if (!isSmithingVisible() || !moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
         } else if (isFurnaceSlotIndex(slotIndex)) {
             if (!isFurnaceVisible()) return ItemStack.EMPTY;
             if (!moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
             if (isFurnaceResultSlotIndex(slotIndex)) slot.onQuickCraft(source, original);
         } else if (slotIndex >= PLAYER_START) {
-            if (isFurnaceVisible() && furnace.isFuel(source)) {
+            if (isSmithingVisible() && moveItemStackToSmithingInput(source)) {
+                // Inserted into the first compatible empty smithing slot.
+            } else if (isFurnaceVisible() && furnace.isFuel(source)) {
                 if (!moveItemStackTo(source, FURNACE_FUEL_SLOT, FURNACE_FUEL_SLOT + 1, false)) {
                     return ItemStack.EMPTY;
                 }
@@ -312,6 +332,20 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             moveItemStackTo(stack, input, input + 1, false);
         }
         return stack.getCount() < before;
+    }
+
+    private boolean moveItemStackToSmithingInput(ItemStack stack) {
+        for (int menuSlot = SMITHING_TEMPLATE_SLOT; menuSlot <= SMITHING_ADDITION_SLOT; menuSlot++) {
+            int input = menuSlot - SMITHING_START;
+            if (!slots.get(menuSlot).hasItem() && smithing.accepts(input, stack)) {
+                return moveItemStackTo(stack, menuSlot, menuSlot + 1, false);
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSmithingSlotIndex(int slotIndex) {
+        return slotIndex >= SMITHING_START && slotIndex < SMITHING_END;
     }
 
     public static boolean isFurnaceSlotIndex(int slotIndex) {
@@ -348,6 +382,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         if (isFurnaceSlotIndex(slotId) && !isFurnaceVisible()) {
             return;
         }
+        if (isSmithingSlotIndex(slotId) && !isSmithingVisible()) return;
         super.clicked(slotId, button, clickType, actor);
     }
 
@@ -539,7 +574,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public ImmortalStoragePlayerData getData() { return data; }
     public Container getStorageContainer() { return storage; }
     public void setActiveModule(int module) {
-        activeModule = module >= 0 && module <= 2 ? module : -1;
+        activeModule = module >= 0 && module <= 3 ? module : -1;
         broadcastChanges();
     }
     public int getActiveModule() { return activeModule; }
@@ -579,6 +614,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         return index >= 0L && index < Math.max(0, externalEntries) ? (int) index : -1;
     }
     public boolean isFurnaceVisible() { return activeModule == 2; }
+    public boolean isSmithingUnlocked() { return data.getStage() >= 4; }
+    public boolean isSmithingVisible() { return activeModule == 3 && isSmithingUnlocked(); }
     public boolean isFurnaceLit() { return furnace.isLit(); }
     public boolean isFurnaceAutoConsume() { return furnace.isAutoConsume(); }
     public boolean isFurnaceAutoFill() { return furnace.isAutoFill(); }
@@ -591,7 +628,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
 
     public void applyClientActiveModule(int module) {
         if (player.level().isClientSide()) {
-            activeModule = module >= 0 && module <= 2 ? module : -1;
+            activeModule = module >= 0 && module <= 3 ? module : -1;
         }
     }
 
@@ -652,7 +689,14 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             withdrawFilteredEntries();
             return true;
         }
-        if (buttonId < 0 || buttonId > 2) return false;
+        if (buttonId == MAGNET_BUTTON) {
+            if (activeModule != 1) return false;
+            data.setMagnetEnabled(!data.isMagnetEnabled());
+            broadcastChanges();
+            return true;
+        }
+        if (buttonId < 0 || buttonId > 3) return false;
+        if (buttonId == 3 && !isSmithingUnlocked()) return false;
         setActiveModule(activeModule == buttonId ? -1 : buttonId);
         return true;
     }
@@ -791,6 +835,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         super.removed(actor);
         data.batchXianqiaoMutations(() -> {
             TerminalMenuSupport.returnCraftingItems(this, actor, craftSlots, data, true);
+            smithing.returnInputs();
         });
         if (!actor.level().isClientSide()) rebuildCatalog();
     }
@@ -1152,6 +1197,17 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         if (transferred) rebuildCatalog();
         return transferred;
     }
+    @Override public List<Slot> smithingInputSlots() { return List.copyOf(slots.subList(SMITHING_START, SMITHING_RESULT_SLOT)); }
+    @Override public Slot smithingResultSlotView() { return slots.get(SMITHING_RESULT_SLOT); }
+    @Override public List<Slot> smithingSourceSlots() { return craftingSourceSlots(); }
+    @Override public List<TransferIngredient> smithingStorageIngredients() { return craftingStorageIngredients(); }
+    @Override public boolean transferSmithingRecipe(RecipeHolder<SmithingRecipe> recipe, long expectedRevision) {
+        if (!(player instanceof ServerPlayer serverPlayer) || !hasLiveTerminalAccess(player) || !isSmithingVisible()) return false;
+        boolean transferred = TerminalSmithingTransfer.place(serverPlayer, smithing, recipe,
+                expectedRevision, catalog.revision(), serverCraftingStorageIngredients(), this::extractCraftingIngredient);
+        if (transferred) rebuildCatalog();
+        return transferred;
+    }
 
     private final class AggregatedContainer implements Container {
         private final XianqiaoStorageMenu menu;
@@ -1219,6 +1275,24 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             slotsChanged(craftSlots);
             rebuildCatalog();
             broadcastChanges();
+        }
+    }
+
+    private class SmithingModuleSlot extends Slot {
+        private SmithingModuleSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isSmithingVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return isActive() && smithing.accepts(index, stack); }
+    }
+
+    private final class SmithingModuleResultSlot extends Slot {
+        private SmithingModuleResultSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isSmithingVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return false; }
+        @Override public boolean mayPickup(Player actor) { return isActive() && smithing.mayTake(); }
+        @Override public void onTake(Player actor, ItemStack stack) {
+            smithing.onTake(actor, stack);
+            rebuildCatalog();
+            super.onTake(actor, stack);
         }
     }
 

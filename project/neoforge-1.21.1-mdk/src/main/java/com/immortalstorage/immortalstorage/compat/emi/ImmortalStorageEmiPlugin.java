@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.compat.emi;
 
 import com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget;
+import com.immortalstorage.immortalstorage.api.storage.terminal.SmithingTransferTarget;
 import com.immortalstorage.immortalstorage.api.storage.terminal.StorageTerminalView;
 import com.immortalstorage.immortalstorage.client.screen.KongqiaoScreen;
 import com.immortalstorage.immortalstorage.client.screen.TerminalScreenAccess;
@@ -27,6 +28,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
@@ -46,6 +48,9 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
         registerScreen(registry, XianqiaoStorageScreen.class);
         registry.addDragDropHandler(XianqiaoInterfaceScreen.class,
                 new XianqiaoInterfaceEmiGhostHandler());
+        registry.addDragDropHandler(
+                com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen.class,
+                new StabilizedRuinEmiGhostHandler());
         registry.addStackProvider(XianqiaoInterfaceScreen.class, (screen, mouseX, mouseY) -> {
             if (screen.isAmountDialogOpen()) return EmiStackInteraction.EMPTY;
             var fluid = screen.immortalstorage$getFluidAt(mouseX, mouseY);
@@ -103,7 +108,7 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
         });
     }
 
-    private static final class TerminalRecipeHandler<M extends AbstractContainerMenu & StorageTerminalView & CraftingTransferTarget>
+    private static final class TerminalRecipeHandler<M extends AbstractContainerMenu & StorageTerminalView & CraftingTransferTarget & SmithingTransferTarget>
             implements StandardRecipeHandler<M> {
         @Override
         public EmiPlayerInventory getInventory(AbstractContainerScreen<M> screen) {
@@ -121,30 +126,37 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
         public List<Slot> getInputSources(M menu) {
             List<Slot> sources = new java.util.ArrayList<>(menu.craftingSourceSlots());
             sources.addAll(menu.craftingInputSlots());
+            sources.addAll(menu.smithingInputSlots());
             return List.copyOf(sources);
         }
 
         @Override
         public List<Slot> getCraftingSlots(M menu) {
+            if (menu.isSmithingUnlocked() && menu.isSmithingVisible()) return menu.smithingInputSlots();
             return menu.isCraftingUnlocked() && menu.isCraftingVisible() ? menu.craftingInputSlots() : List.of();
         }
 
         @Override
         public Slot getOutputSlot(M menu) {
-            return menu.craftingResultSlotView();
+            return menu.isSmithingVisible() ? menu.smithingResultSlotView() : menu.craftingResultSlotView();
         }
 
         @Override
         public boolean supportsRecipe(EmiRecipe recipe) {
-            return recipe.getCategory() == VanillaEmiRecipeCategories.CRAFTING
-                    && recipe.getBackingRecipe() instanceof RecipeHolder<?> holder
-                    && holder.value() instanceof CraftingRecipe;
+            if (!(recipe.getBackingRecipe() instanceof RecipeHolder<?> holder)) return false;
+            return (recipe.getCategory() == VanillaEmiRecipeCategories.CRAFTING
+                    && holder.value() instanceof CraftingRecipe)
+                    || (recipe.getCategory() == VanillaEmiRecipeCategories.SMITHING
+                    && holder.value() instanceof SmithingRecipe);
         }
 
         @Override
         public boolean canCraft(EmiRecipe recipe, EmiCraftContext<M> context) {
-            return context.getScreenHandler().isCraftingUnlocked()
-                    && context.getScreenHandler().isCraftingVisible()
+            boolean visible = recipe.getBackingRecipe() instanceof RecipeHolder<?> holder
+                    && holder.value() instanceof SmithingRecipe
+                    ? context.getScreenHandler().isSmithingUnlocked() && context.getScreenHandler().isSmithingVisible()
+                    : context.getScreenHandler().isCraftingUnlocked() && context.getScreenHandler().isCraftingVisible();
+            return visible
                     && context.getInventory().canCraft(recipe, Math.max(1, context.getAmount()));
         }
 
@@ -152,10 +164,11 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
         @SuppressWarnings("unchecked")
         public boolean craft(EmiRecipe recipe, EmiCraftContext<M> context) {
             if (!supportsRecipe(recipe) || !canCraft(recipe, context)) return false;
-            RecipeHolder<CraftingRecipe> holder = (RecipeHolder<CraftingRecipe>) recipe.getBackingRecipe();
+            RecipeHolder<?> holder = (RecipeHolder<?>) recipe.getBackingRecipe();
             M menu = context.getScreenHandler();
             PacketDistributor.sendToServer(new com.immortalstorage.immortalstorage.network.ModPayloads.TransferTerminalRecipe(
-                    menu.containerId, menu.viewport().revision(), holder.id(), Math.max(1, context.getAmount())));
+                    menu.containerId, menu.viewport().revision(), holder.id(),
+                    holder.value() instanceof SmithingRecipe ? 1 : Math.max(1, context.getAmount())));
             return true;
         }
     }

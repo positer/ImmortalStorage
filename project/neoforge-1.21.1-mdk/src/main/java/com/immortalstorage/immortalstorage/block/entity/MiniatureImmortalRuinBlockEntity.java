@@ -4,10 +4,13 @@ import com.immortalstorage.immortalstorage.block.custom.MiniatureImmortalRuinBlo
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,6 +26,8 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
     private boolean entityDamage = true;
     private boolean playerDamage;
     private int forceMode = 2;
+    private BlockPos linkedPos;
+    private boolean warpEnabled;
     public MiniatureImmortalRuinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(), pos, state);
     }
@@ -31,8 +36,9 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
         if (!(level instanceof ServerLevel serverLevel)) return;
         boolean reversed = getBlockState().getValue(MiniatureImmortalRuinBlock.REVERSED);
         Vec3 center = Vec3.atCenterOf(worldPosition);
-        AABB area = new AABB(worldPosition).inflate(6.0D, 0.0D, 6.0D);
-        if (reversed && forceMode == 4) forceMode = 3;
+        AABB area = new AABB(worldPosition).inflate(6.0D);
+        AABB centerArea = new AABB(worldPosition);
+        if (reversed && forceMode == 4) forceMode = 0;
         for (LivingEntity entity : serverLevel.getEntitiesOfClass(LivingEntity.class, area,
                 entity -> entity.isAlive() && (affectPlayers || !(entity instanceof Player)))) {
             Vec3 horizontal = center.subtract(entity.position()).multiply(1.0D, 0.0D, 1.0D);
@@ -47,21 +53,58 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
                 }
             }
             boolean mayDamage = entity instanceof Player ? playerDamage : entityDamage;
-            if (mayDamage && entity.blockPosition().equals(worldPosition)) {
+            if (mayDamage && entity.getBoundingBox().intersects(centerArea)) {
                 entity.hurt(serverLevel.damageSources().magic(), 5.0F);
             }
         }
+        if (!reversed && warpEnabled) warpLinkedEntities(serverLevel, centerArea);
     }
+
+    private void warpLinkedEntities(ServerLevel serverLevel, AABB area) {
+        if (linkedPos == null || !(serverLevel.getBlockEntity(linkedPos) instanceof MiniatureImmortalRuinBlockEntity peer)
+                || !peer.isReversed()) return;
+        Vec3 target = Vec3.atCenterOf(linkedPos);
+        for (Entity entity : serverLevel.getEntities((Entity) null, area, entity -> entity.isAlive()
+                && (entity instanceof ItemEntity
+                || entity instanceof LivingEntity && (affectPlayers || !(entity instanceof Player))))) {
+            entity.teleportTo(target.x, target.y + 0.5D, target.z);
+            entity.setDeltaMovement(Vec3.ZERO);
+        }
+    }
+
+    public boolean isReversed() { return getBlockState().getValue(MiniatureImmortalRuinBlock.REVERSED); }
+    public BlockPos linkedPos() { return linkedPos; }
+    public void unlinkForBreak() {
+        if (linkedPos == null || level == null) return;
+        if (level.getBlockEntity(linkedPos) instanceof MiniatureImmortalRuinBlockEntity peer
+                && worldPosition.equals(peer.linkedPos)) {
+            peer.linkedPos = null;
+            peer.setChanged();
+            level.sendBlockUpdated(peer.worldPosition, peer.getBlockState(), peer.getBlockState(), 3);
+        }
+        linkedPos = null;
+        setChanged();
+    }
+    public void setLinkedPos(BlockPos pos) {
+        linkedPos = pos == null ? null : pos.immutable();
+        setChanged();
+        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+    public void clearLink() { setLinkedPos(null); }
 
     public ContainerData menuData() {
         return new ContainerData() {
-            @Override public int get(int index) { return switch (index) { case 0 -> affectPlayers ? 1 : 0; case 1 -> entityDamage ? 1 : 0; case 2 -> playerDamage ? 1 : 0; case 3 -> forceMode; default -> 0; }; }
-            @Override public void set(int index, int value) { switch (index) { case 0 -> affectPlayers = value != 0; case 1 -> entityDamage = value != 0; case 2 -> playerDamage = value != 0; case 3 -> forceMode = Math.max(0, Math.min(4, value)); default -> { } } setChanged(); }
-            @Override public int getCount() { return 4; }
+            @Override public int get(int index) { return switch (index) { case 0 -> affectPlayers ? 1 : 0; case 1 -> entityDamage ? 1 : 0; case 2 -> playerDamage ? 1 : 0; case 3 -> forceMode; case 4 -> warpEnabled ? 1 : 0; default -> 0; }; }
+            @Override public void set(int index, int value) { switch (index) { case 0 -> affectPlayers = value != 0; case 1 -> entityDamage = value != 0; case 2 -> playerDamage = value != 0; case 3 -> forceMode = Math.max(0, Math.min(4, value)); case 4 -> warpEnabled = value != 0; default -> { } } setChanged(); }
+            @Override public int getCount() { return 5; }
         };
     }
     @Override public Component getDisplayName() { return Component.translatable("item.immortalstorage.miniature_immortal_ruin"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu(id, inventory, menuData()); }
-    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putBoolean("AffectPlayers", affectPlayers); tag.putBoolean("EntityDamage", entityDamage); tag.putBoolean("PlayerDamage", playerDamage); tag.putInt("ForceMode", forceMode); }
-    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); affectPlayers = tag.getBoolean("AffectPlayers"); entityDamage = !tag.contains("EntityDamage") || tag.getBoolean("EntityDamage"); playerDamage = tag.getBoolean("PlayerDamage"); forceMode = Math.max(0, Math.min(4, tag.getInt("ForceMode"))); }
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putBoolean("AffectPlayers", affectPlayers); tag.putBoolean("EntityDamage", entityDamage); tag.putBoolean("PlayerDamage", playerDamage); tag.putInt("ForceMode", forceMode); tag.putBoolean("WarpEnabled", warpEnabled); if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong()); }
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); affectPlayers = tag.getBoolean("AffectPlayers"); entityDamage = !tag.contains("EntityDamage") || tag.getBoolean("EntityDamage"); playerDamage = tag.getBoolean("PlayerDamage"); forceMode = Math.max(0, Math.min(4, tag.getInt("ForceMode"))); warpEnabled = tag.getBoolean("WarpEnabled"); linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null; }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag(); saveAdditional(tag, registries); return tag;
+    }
 }

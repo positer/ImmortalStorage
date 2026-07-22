@@ -2,6 +2,7 @@ package com.immortalstorage.immortalstorage.compat.jei;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.api.storage.terminal.CraftingTransferTarget;
+import com.immortalstorage.immortalstorage.api.storage.terminal.SmithingTransferTarget;
 import com.immortalstorage.immortalstorage.api.storage.terminal.StorageTerminalView;
 import com.immortalstorage.immortalstorage.client.screen.KongqiaoScreen;
 import com.immortalstorage.immortalstorage.client.screen.TerminalScreenAccess;
@@ -37,6 +38,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.List;
@@ -84,6 +86,9 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
                 new XianqiaoInterfaceJeiGuiHandler());
         registration.addGhostIngredientHandler(XianqiaoInterfaceScreen.class,
                 new XianqiaoInterfaceJeiGhostHandler());
+        registration.addGhostIngredientHandler(
+                com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen.class,
+                new StabilizedRuinJeiGhostHandler());
     }
 
     @Override
@@ -113,6 +118,10 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
                 KongqiaoMenu.class, ModMenus.KONGQIAO.get(), helper), RecipeTypes.CRAFTING);
         registration.addRecipeTransferHandler(new TerminalTransferHandler<>(
                 XianqiaoStorageMenu.class, ModMenus.XIANQIAO_STORAGE.get(), helper), RecipeTypes.CRAFTING);
+        registration.addRecipeTransferHandler(new TerminalSmithingHandler<>(
+                KongqiaoMenu.class, ModMenus.KONGQIAO.get(), helper), RecipeTypes.SMITHING);
+        registration.addRecipeTransferHandler(new TerminalSmithingHandler<>(
+                XianqiaoStorageMenu.class, ModMenus.XIANQIAO_STORAGE.get(), helper), RecipeTypes.SMITHING);
     }
 
     private static final class TerminalGuiHandler<S extends net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>>
@@ -221,6 +230,47 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
                 this.amount = amount;
             }
             private AvailableStack copy() { return new AvailableStack(stack, amount); }
+        }
+    }
+
+    private static final class TerminalSmithingHandler<M extends AbstractContainerMenu & StorageTerminalView & SmithingTransferTarget>
+            implements IRecipeTransferHandler<M, RecipeHolder<SmithingRecipe>> {
+        private final Class<M> menuClass;
+        private final MenuType<M> menuType;
+        private final IRecipeTransferHandlerHelper helper;
+        private TerminalSmithingHandler(Class<M> menuClass, MenuType<M> menuType, IRecipeTransferHandlerHelper helper) {
+            this.menuClass = menuClass; this.menuType = menuType; this.helper = helper;
+        }
+        @Override public Class<? extends M> getContainerClass() { return menuClass; }
+        @Override public Optional<MenuType<M>> getMenuType() { return Optional.of(menuType); }
+        @Override public mezz.jei.api.recipe.RecipeType<RecipeHolder<SmithingRecipe>> getRecipeType() { return RecipeTypes.SMITHING; }
+        @Override public IRecipeTransferError transferRecipe(M menu, RecipeHolder<SmithingRecipe> recipe,
+                IRecipeSlotsView recipeSlots, net.minecraft.world.entity.player.Player player,
+                boolean maxTransfer, boolean doTransfer) {
+            if (!menu.isSmithingUnlocked() || !menu.isSmithingVisible()) return helper.createUserErrorWithTooltip(
+                    Component.translatable("container.immortalstorage.terminal.recipe_transfer_locked"));
+            if (!hasSmithingIngredients(menu, recipe.value())) return helper.createUserErrorForMissingSlots(
+                    Component.translatable("container.immortalstorage.terminal.recipe_transfer_missing"),
+                    recipeSlots.getSlotViews(RecipeIngredientRole.INPUT));
+            if (doTransfer) PacketDistributor.sendToServer(new com.immortalstorage.immortalstorage.network.ModPayloads.TransferTerminalRecipe(
+                    menu.containerId, menu.viewport().revision(), recipe.id(), 1));
+            return null;
+        }
+        private boolean hasSmithingIngredients(M menu, SmithingRecipe recipe) {
+            List<AvailableStack> available = new java.util.ArrayList<>();
+            for (Slot slot : menu.smithingSourceSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
+            for (Slot slot : menu.smithingInputSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
+            for (CraftingTransferTarget.TransferIngredient entry : menu.smithingStorageIngredients()) available.add(new AvailableStack(entry.stack(), entry.amount()));
+            return reserve(available, recipe::isTemplateIngredient) && reserve(available, recipe::isBaseIngredient)
+                    && reserve(available, recipe::isAdditionIngredient);
+        }
+        private boolean reserve(List<AvailableStack> available, java.util.function.Predicate<ItemStack> test) {
+            for (AvailableStack entry : available) if (entry.amount > 0 && test.test(entry.stack)) { entry.amount--; return true; }
+            return false;
+        }
+        private static final class AvailableStack {
+            final ItemStack stack; long amount;
+            AvailableStack(ItemStack stack, long amount) { this.stack = stack.copyWithCount(1); this.amount = amount; }
         }
     }
 }

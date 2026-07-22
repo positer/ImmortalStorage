@@ -161,6 +161,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     /** Terminal crafting refill uses full Data Components unless the player opts out. */
     private boolean craftAutofillMatchComponents = true;
     private boolean handAutoRefill = true;
+    /** Stage-four personal-storage magnet; true preserves pre-0.0.4 behavior for existing worlds. */
+    private boolean magnetEnabled = true;
     /** Client-only projection because personal storage itself is not attachment-synced. */
     private long syncedTrueYuan;
     private long syncedImmortalYuan;
@@ -226,6 +228,14 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public void setHandAutoRefill(boolean value) {
         if (handAutoRefill == value) return;
         handAutoRefill = value;
+        syncOwner();
+    }
+
+    public boolean isMagnetEnabled() { return magnetEnabled; }
+
+    public void setMagnetEnabled(boolean value) {
+        if (magnetEnabled == value) return;
+        magnetEnabled = value;
         syncOwner();
     }
 
@@ -1515,6 +1525,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
                 com.immortalstorage.immortalstorage.config.ImmortalStorageConfig.STAGE_TEN_INFINITE_IMMORTAL_YUAN.get());
         lastPublishedTrueYuan = visibleTrueYuan;
         lastPublishedImmortalYuan = visibleImmortalYuan;
+        tag.putBoolean("magnetEnabled", magnetEnabled);
         tag.put("yuanAccount", yuanAccount.save());
         buffer.writeNbt(tag);
     }
@@ -1551,6 +1562,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         syncedTrueYuan = Math.max(0L, tag.getLong("visibleTrueYuan"));
         syncedImmortalYuan = Math.max(0L, tag.getLong("visibleImmortalYuan"));
         syncedStageTenInfiniteImmortalYuan = tag.getBoolean("stageTenInfiniteImmortalYuan");
+        magnetEnabled = !tag.contains("magnetEnabled", Tag.TAG_BYTE) || tag.getBoolean("magnetEnabled");
         hasSyncedYuanProjection = true;
         YuanProfile profile = YuanProfile.forStage(stage, false);
         if (tag.contains("yuanAccount", Tag.TAG_COMPOUND)) {
@@ -1705,6 +1717,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.put("embeddedImmortalFurnace", embeddedImmortalFurnace.save(registryAccess));
         tag.putBoolean("craftAutofillMatchComponents", craftAutofillMatchComponents);
         tag.putBoolean("handAutoRefill", handAutoRefill);
+        tag.putBoolean("magnetEnabled", magnetEnabled);
         return tag;
     }
 
@@ -1841,6 +1854,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
                 || tag.getBoolean("craftAutofillMatchComponents");
         handAutoRefill = !tag.contains("handAutoRefill", Tag.TAG_BYTE)
                 || tag.getBoolean("handAutoRefill");
+        magnetEnabled = !tag.contains("magnetEnabled", Tag.TAG_BYTE) || tag.getBoolean("magnetEnabled");
         // Deserialization is a cache boundary even when the persisted revision
         // happens to equal the previously loaded value.
         xianqiaoStorageGeneration = nextGeneration(xianqiaoStorageGeneration);

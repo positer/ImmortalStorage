@@ -31,11 +31,13 @@ public final class ModItems {
                     "dragon_egg_vein" -> Rarity.EPIC;
             case "immortal_yuan", "breakthrough_pill_embryo", "breakthrough_pill",
                     "immortal_pill", "nurturing_crystal", "nurturing_crystal_bedrock",
+                    "qi_collecting_bottle", "primordial_qi",
                     "premixed_heavy_compound", "substitute_puppet", "miniature_immortal_ruin",
                     "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
                     "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
                     "diamond_vein", "emerald_vein" -> Rarity.RARE;
             case "jade_guide", "true_yuan", "refined_pill_embryo", "refined_pill",
+                    "disposable_qi_collecting_bottle",
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",
                     "spirit_crystal_block", "spirit_core", "spirit_sword", "spirit_staff",
                     "spirit_drive", "immortal_furnace", "treasure_basin",
@@ -79,6 +81,13 @@ public final class ModItems {
     public static final Supplier<Item> CRUDE_SPIRIT_IRON = registerItem("crude_spirit_iron", Item::new);
     public static final Supplier<Item> SPIRIT_CRYSTAL = registerItem("spirit_crystal", Item::new);
     public static final Supplier<Item> NURTURING_CRYSTAL = registerItem("nurturing_crystal", Item::new);
+    public static final Supplier<Item> QI_COLLECTING_BOTTLE = registerItem("qi_collecting_bottle",
+            p -> new QiCollectingBottleItem(p, true), new Item.Properties().stacksTo(1).durability(1024));
+    public static final Supplier<Item> DISPOSABLE_QI_COLLECTING_BOTTLE = registerItem(
+            "disposable_qi_collecting_bottle", p -> new QiCollectingBottleItem(p, false),
+            new Item.Properties().stacksTo(16));
+    public static final Supplier<Item> PRIMORDIAL_QI = registerItem("primordial_qi", PrimordialQiItem::new,
+            new Item.Properties().stacksTo(64));
     public static final Supplier<Item> SPIRIT_CORE = registerItem("spirit_core", p -> new SpiritCoreItem(p.stacksTo(16)));
     public static final Supplier<Item> PREMIXED_HEAVY_COMPOUND = registerItem("premixed_heavy_compound", Item::new);
     public static final Supplier<Item> SUBSTITUTE_PUPPET = registerItem("substitute_puppet", SubstitutePuppetItem::new,

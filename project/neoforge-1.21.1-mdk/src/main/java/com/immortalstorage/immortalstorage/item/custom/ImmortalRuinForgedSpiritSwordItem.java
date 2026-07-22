@@ -24,7 +24,7 @@ import java.util.List;
 
 /** Upgraded Spirit Sword retaining the base sword contract with stronger tempering and field control. */
 public final class ImmortalRuinForgedSpiritSwordItem extends SpiritSwordItem {
-    private static final int TELEPORT_RESTRAINT_TICKS = 20;
+    private static final int TELEPORT_RESTRAINT_TICKS = 40;
 
     public ImmortalRuinForgedSpiritSwordItem(Item.Properties properties) { super(properties); }
 
@@ -38,9 +38,7 @@ public final class ImmortalRuinForgedSpiritSwordItem extends SpiritSwordItem {
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(serverPlayer);
         if (!data.consumeImmortalYuan(5L)) return InteractionResultHolder.fail(stack);
         Vec3 target = serverPlayer.position().add(serverPlayer.getLookAngle().multiply(1.0D, 0.0D, 1.0D).normalize());
-        AABB area = new AABB(
-                serverPlayer.getX() - 6.5D, serverPlayer.getY() - 6.5D, serverPlayer.getZ() - 6.5D,
-                serverPlayer.getX() + 6.5D, serverPlayer.getY() + 6.5D, serverPlayer.getZ() + 6.5D);
+        AABB area = new AABB(serverPlayer.blockPosition()).inflate(13.0D);
         for (LivingEntity entity : serverLevel.getEntitiesOfClass(LivingEntity.class, area,
                 entity -> canTeleport(serverPlayer, entity))) {
             serverLevel.sendParticles(ParticleTypes.PORTAL, entity.getX(), entity.getY() + 0.5D, entity.getZ(),
@@ -49,6 +47,8 @@ public final class ImmortalRuinForgedSpiritSwordItem extends SpiritSwordItem {
             entity.setDeltaMovement(Vec3.ZERO);
             entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN,
                     TELEPORT_RESTRAINT_TICKS, 255, false, false, true));
+            com.immortalstorage.immortalstorage.entity.AbsoluteRestraint.apply(
+                    entity, TELEPORT_RESTRAINT_TICKS);
             serverLevel.sendParticles(ParticleTypes.PORTAL, target.x, target.y + 0.5D, target.z,
                     24, 0.25D, 0.5D, 0.25D, 0.2D);
         }

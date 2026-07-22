@@ -117,11 +117,15 @@ public final class ImmortalStorageKeybinds {
     @SubscribeEvent
     public static void onMouseScroll(net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent e) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null || !hasShiftDown()) return;
+        if (mc.player == null || mc.screen != null) return;
         ItemStack main = mc.player.getMainHandItem();
         if (!(main.getItem() instanceof SpiritStaffItem)) return;
         int delta = e.getScrollDeltaY() > 0 ? 1 : -1;
-        PacketDistributor.sendToServer(new ModPayloads.CycleStaffMode(delta));
+        if (SPECIAL_OPERATION.isDown() && SpiritStaffItem.getMode(main) == SpiritStaffItem.MODE_TELEPORT) {
+            PacketDistributor.sendToServer(new ModPayloads.AdjustStaffTeleportDistance(delta));
+        } else if (hasShiftDown()) {
+            PacketDistributor.sendToServer(new ModPayloads.CycleStaffMode(delta));
+        } else return;
         e.setCanceled(true);
     }
 

@@ -17,7 +17,7 @@ final class ConfigTranslationCompletenessTest {
     private static final List<String> CLIENT_KEYS = List.of("terminalRows", "syncRecipeViewerSearch");
     private static final List<String> KEYS = List.of(
             "loot", "loot.startWithJadeGuide", "loot.jadeGuideInVillageChests",
-            "loot.jadeGuideChestChance", "loot.villageRefinedPillChance",
+            "loot.jadeGuideChestChance", "loot.jadeGuideArchaeologyChance", "loot.villageRefinedPillChance",
             "loot.villageRefinedPillMin", "loot.villageRefinedPillMax",
             "loot.netherBreakthroughChance", "loot.netherBreakthroughMin",
             "loot.netherBreakthroughMax", "loot.endCityAscensionChance",
@@ -27,7 +27,8 @@ final class ConfigTranslationCompletenessTest {
             "xianqiao_interface", "xianqiao_interface.xianqiaoInterfaceItemSlotLimit",
             "xianqiao_interface.xianqiaoInterfaceFluidSlotLimitMb",
             "spirit_staff", "spirit_staff.buildLimit",
-            "immortal_ruin_sword", "immortal_ruin_sword.affectsOtherPlayers", "progression",
+            "immortal_ruin_sword", "immortal_ruin_sword.affectsOtherPlayers",
+            "primordial_qi", "primordial_qi.entityBlacklist", "progression",
             "progression.maximumStage", "progression.stageTenInfiniteImmortalYuan",
             "progression.tribulation_targets", "progression.tribulation_targets.stage6To7",
             "progression.tribulation_targets.stage7To8", "progression.tribulation_targets.stage8To9",

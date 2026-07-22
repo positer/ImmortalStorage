@@ -35,6 +35,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -43,13 +44,15 @@ import net.minecraft.world.inventory.Slot;
 
 import java.util.List;
 
-/** Four-mode server-authoritative Spirit Staff. */
+/** Five-mode server-authoritative Spirit Staff. */
 public class SpiritStaffItem extends Item {
     public static final int MODE_EXPLORE = 0;
     public static final int MODE_WRENCH = 1;
     public static final int MODE_PICK = 2;
     public static final int MODE_BUILD = 3;
-    public static final int MODE_COUNT = 4;
+    public static final int MODE_TELEPORT = 4;
+    public static final int MODE_COUNT = 5;
+    public static final int DEFAULT_TELEPORT_DISTANCE = 20;
 
     public SpiritStaffItem(Item.Properties props) {
         super(props.durability(3000));
@@ -108,6 +111,7 @@ public class SpiritStaffItem extends Item {
             case MODE_WRENCH -> Component.translatable("item.immortalstorage.spirit_staff.mode.wrench");
             case MODE_PICK -> Component.translatable("item.immortalstorage.spirit_staff.mode.pick");
             case MODE_BUILD -> Component.translatable("item.immortalstorage.spirit_staff.mode.build");
+            case MODE_TELEPORT -> Component.translatable("item.immortalstorage.spirit_staff.mode.teleport");
             default -> Component.literal("?");
         };
     }
@@ -115,6 +119,13 @@ public class SpiritStaffItem extends Item {
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if (getMode(stack) == MODE_WRENCH && player.isShiftKeyDown()
+                && player.pick(player.blockInteractionRange(), 0.0F, false).getType() == HitResult.Type.MISS) {
+            if (!level.isClientSide && RuinLinkingService.clear(stack)) player.displayClientMessage(
+                    Component.translatable("message.immortalstorage.ruin_link.cleared"), true);
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        }
+        if (getMode(stack) == MODE_TELEPORT) return teleport(level, player, hand, stack);
         if (getMode(stack) != MODE_EXPLORE) return InteractionResultHolder.pass(stack);
         if (player.pick(player.blockInteractionRange(), 0.0F, false).getType() != HitResult.Type.MISS) {
             return InteractionResultHolder.pass(stack);
@@ -146,6 +157,7 @@ public class SpiritStaffItem extends Item {
             case MODE_WRENCH -> wrench(context, serverPlayer);
             case MODE_PICK -> preciseHarvest(context, serverPlayer);
             case MODE_BUILD -> build(context, serverPlayer);
+            case MODE_TELEPORT -> InteractionResult.PASS;
             default -> InteractionResult.PASS;
         };
     }
@@ -334,6 +346,7 @@ public class SpiritStaffItem extends Item {
             return InteractionResult.CONSUME;
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity ruin) {
+            ruin.preparePortableRemoval();
             ItemStack dropped = new ItemStack(com.immortalstorage.immortalstorage.block.ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
             CompoundTag blockData = ruin.saveWithFullMetadata(player.registryAccess());
             dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(blockData));
@@ -430,6 +443,8 @@ public class SpiritStaffItem extends Item {
                     ? "item.immortalstorage.spirit_staff.explore_on"
                     : "item.immortalstorage.spirit_staff.explore_off"));
         }
+        if (getMode(stack) == MODE_TELEPORT) tooltip.add(Component.translatable(
+                "item.immortalstorage.spirit_staff.teleport_distance", getTeleportDistance(stack)));
     }
 
     @Override
@@ -448,6 +463,44 @@ public class SpiritStaffItem extends Item {
         setMode(stack, getMode(stack) + (delta >= 0 ? 1 : -1));
         player.displayClientMessage(Component.translatable(
                 "item.immortalstorage.spirit_staff.mode_switch", modeName(getMode(stack))), true);
+    }
+
+    public static int getTeleportDistance(ItemStack stack) {
+        int stored = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag().getInt("teleportDistance");
+        return stored <= 0 ? DEFAULT_TELEPORT_DISTANCE : Math.max(1, Math.min(20, stored));
+    }
+
+    public static void adjustTeleportDistance(Player player, int delta) {
+        ItemStack stack = player.getMainHandItem();
+        if (!(stack.getItem() instanceof SpiritStaffItem) || getMode(stack) != MODE_TELEPORT) return;
+        int next = Math.max(1, Math.min(20, getTeleportDistance(stack) + (delta >= 0 ? 1 : -1)));
+        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+        tag.putInt("teleportDistance", next);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        player.displayClientMessage(Component.translatable(
+                "item.immortalstorage.spirit_staff.teleport_distance", next), true);
+    }
+
+    private static InteractionResultHolder<ItemStack> teleport(Level level, Player player,
+                                                                InteractionHand hand, ItemStack stack) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
+        }
+        int requested = getTeleportDistance(stack);
+        Vec3 look = serverPlayer.getLookAngle().normalize();
+        Vec3 start = serverPlayer.position();
+        // Teleport mode is an exact displacement: intervening blocks and the destination's
+        // collision volume are deliberately ignored, including suffocating destinations.
+        Vec3 destination = start.add(look.scale(requested));
+        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(serverPlayer);
+        if (!data.consumeImmortalYuan(1L)) {
+            return InteractionResultHolder.fail(stack);
+        }
+        serverPlayer.teleportTo(destination.x, destination.y, destination.z);
+        serverPlayer.setDeltaMovement(Vec3.ZERO);
+        serverPlayer.fallDistance = 0.0F;
+        return InteractionResultHolder.consume(stack);
     }
 
     public static void cycleMode(Player player) {

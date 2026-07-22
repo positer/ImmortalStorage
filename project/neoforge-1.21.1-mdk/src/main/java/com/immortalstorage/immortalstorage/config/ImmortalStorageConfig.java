@@ -14,6 +14,7 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.BooleanValue START_WITH_JADE_GUIDE;
     public static final ModConfigSpec.BooleanValue JADE_GUIDE_IN_VILLAGE_CHESTS;
     public static final ModConfigSpec.DoubleValue JADE_GUIDE_CHEST_CHANCE;
+    public static final ModConfigSpec.DoubleValue JADE_GUIDE_ARCHAEOLOGY_CHANCE;
     public static final ModConfigSpec.DoubleValue VILLAGE_REFINED_PILL_CHANCE;
     public static final ModConfigSpec.IntValue VILLAGE_REFINED_PILL_MIN;
     public static final ModConfigSpec.IntValue VILLAGE_REFINED_PILL_MAX;
@@ -30,6 +31,7 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.IntValue XIANQIAO_INTERFACE_FLUID_SLOT_LIMIT_MB;
     public static final ModConfigSpec.IntValue SPIRIT_STAFF_BUILD_LIMIT;
     public static final ModConfigSpec.BooleanValue IMMORTAL_RUIN_SWORD_AFFECTS_OTHER_PLAYERS;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> PRIMORDIAL_QI_ENTITY_BLACKLIST;
     public static final ModConfigSpec.IntValue NORMAL_PROGRESSION_MAX_STAGE;
     public static final ModConfigSpec.BooleanValue STAGE_TEN_INFINITE_IMMORTAL_YUAN;
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_6;
@@ -45,6 +47,9 @@ public final class ImmortalStorageConfig {
         START_WITH_JADE_GUIDE = BUILDER.translation(key("loot.startWithJadeGuide")).define("startWithJadeGuide", true);
         JADE_GUIDE_IN_VILLAGE_CHESTS = BUILDER.translation(key("loot.jadeGuideInVillageChests")).define("jadeGuideInVillageChests", true);
         JADE_GUIDE_CHEST_CHANCE = BUILDER.translation(key("loot.jadeGuideChestChance")).defineInRange("jadeGuideChestChance", 1.0, 0.0, 1.0);
+        JADE_GUIDE_ARCHAEOLOGY_CHANCE = BUILDER.translation(key("loot.jadeGuideArchaeologyChance"))
+                .comment("Chance for any suspicious sand or suspicious gravel archaeology loot to include Ancient Jade.")
+                .defineInRange("jadeGuideArchaeologyChance", 0.05, 0.0, 1.0);
         VILLAGE_REFINED_PILL_CHANCE = BUILDER.translation(key("loot.villageRefinedPillChance")).defineInRange("villageRefinedPillChance", 0.20, 0.0, 1.0);
         VILLAGE_REFINED_PILL_MIN = BUILDER.translation(key("loot.villageRefinedPillMin")).defineInRange("villageRefinedPillMin", 3, 0, 64);
         VILLAGE_REFINED_PILL_MAX = BUILDER.translation(key("loot.villageRefinedPillMax")).defineInRange("villageRefinedPillMax", 5, 0, 64);
@@ -90,6 +95,14 @@ public final class ImmortalStorageConfig {
                 .translation(key("immortal_ruin_sword.affectsOtherPlayers"))
                 .comment("Allow the Immortal-Ruin-Forged Spirit Sword teleport and one-second restraint to affect other players.")
                 .define("affectsOtherPlayers", true);
+        BUILDER.pop();
+        BUILDER.translation(key("primordial_qi")).push("primordial_qi");
+        PRIMORDIAL_QI_ENTITY_BLACKLIST = BUILDER
+                .translation(key("primordial_qi.entityBlacklist"))
+                .comment("Entity type ids that Primordial Qi cannot shrink or remove. Players are always protected.")
+                .defineListAllowEmpty("entityBlacklist", java.util.List.of(
+                        "minecraft:wither", "minecraft:warden"),
+                        value -> value instanceof String id && net.minecraft.resources.ResourceLocation.tryParse(id) != null);
         BUILDER.pop();
         BUILDER.translation(key("progression")).push("progression");
         NORMAL_PROGRESSION_MAX_STAGE = BUILDER
