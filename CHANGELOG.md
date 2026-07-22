@@ -2,9 +2,69 @@
 
 ## [0.0.4] - 2026-07-22
 
+本节列出相对已发布 `0.0.3` 的完整用户可见变更。
+
+### 简体中文
+
+#### 新增
+
+- 空窍与仙窍存储终端新增第四阶段解锁的内置锻造台，使用真实锻造配方管理器，并支持从个人存储、玩家背包以及 JEI/EMI 配方自动填充。
+- 仙窍终端新增显式磁铁开关；开启后自动收取玩家周围精确 13×13×13 范围内的掉落物，关闭后停止自动吸取。
+- 终端物品支持按住 Shift 显示精确存储数量；搜索框输入时会消费 E 键，不再关闭界面。
+- 古玉加入全部原版可疑的沙子与可疑的沙砾考古战利品表，默认获取概率为 5%，可通过配置调整。
+- 新增采气瓶：蕴灵晶、玻璃瓶、仙元无序合成，耐久 1024，不可堆叠，稀有度 Rare。
+- 新增一次性采气瓶：灵晶、玻璃瓶、真元无序合成，最大堆叠 16，稀有度 Uncommon。
+- 新增混元一气，最大堆叠 64，稀有度 Rare。在任意维度最低建筑高度以下或最高建筑高度上限处可采集，产物优先进入背包，再进入个人存储。
+- 混元一气可令目标在 10 tick（0.5 秒）内连续缩小至零并以非击杀方式消失，同时掉落对应刷怪蛋。
+- 刷怪蛋从运行时全局物品注册表中的全部 `SpawnEggItem` 子类解析，兼容模组生物与组件定义刷怪蛋，不依赖创造模式物品栏或硬编码名单。
+- 新增混元一气实体黑名单配置；玩家始终不受作用，渡劫期间禁止使用；末影龙会先正确完成末地龙战流程再移除。
+- 灵器新增第五种传送模式：每次使用消耗 1 仙元，沿面向方向传送 1–20 格，默认 20 格；按住可配置的特殊功能键（默认反引号）并滚动滚轮调节距离。
+- 稳定化迷你仙墟新增可展开的 5×4 物品过滤格，支持手持物品点击、JEI/EMI 原料拖入、空手左键清除、组件/NBT 匹配以及白名单/黑名单模式。
+- 稳定化迷你仙墟可通过灵器扳手链接同维度、相反状态的两个实例并共享同一容器；容量不叠加，首次合并溢出内容会掉落。
+- 普通迷你仙墟可通过相同的扳手记录、清空、校验和白色连线流程建立链接。
+- 已链接普通迷你仙墟新增 Warp 开关，每 tick 将接触正常状态端中心方块的合格生物与掉落物单向传送至反转状态端；玩家是否参与由“对玩家生效”开关决定。
+- 新增完整中英文语言、配置说明、Patchouli 页面、物品模型、配方、战利品修改器与回归测试。
+
+#### 行为调整
+
+- 仙窍模块按解锁顺序排列为“内置合成 → 锻造台 → 内置仙炉 → 仙窍管理”。
+- 加长仙窍管理侧栏及 JEI/EMI 避让区域，手持补充和磁铁按钮完整位于面板内。
+- 灵器传送不检查沿途墙体或落点碰撞，严格执行设定距离，允许穿墙并进入会窒息的位置。
+- 仙墟锻灵剑传送范围由 13×13×13 扩大为 27×27×27。
+- 仙墟锻灵剑目标获得 40 tick（2 秒）绝对禁锢：速度清零、位置锁定，实体碰撞、挤压和外力均无法令其移动。
+- 反转迷你仙墟现在把旧传送力度强制设为“无”，不再设为“强”。
+- 普通迷你仙墟操作与稳定化版本同步：直接右键打开 UI，空手 Shift 右键切换状态，灵器扳手 Shift 右键拆下；拆下后不携带配置 NBT。
+- 普通仙墟任意一端破坏时清除双方链接；稳定化仙墟按幸存端或同时破坏规则保存或掉落共享内容。
+- 模组版本、网络协议与发布元数据更新至 0.0.4。
+
+#### 修复
+
+- 修复铁傀儡无法掉落刷怪蛋；现在按全局注册刷怪蛋的真实默认堆栈解析实体类型，铁傀儡、末影龙及模组生物共用同一通用路径。
+- 修复磁铁开关看似无法关闭；客户端现在逐 tick 同步按钮可见性、可点击状态和文字，开启与关闭均立即刷新。
+- 修复 Warp 错误传送整个吸引区域内实体；Warp 与伤害现在共用精确的中心方块碰撞箱接触判定。
+- 修复 Warp 在“对玩家生效”关闭时仍传送玩家的问题。
+- 修复灵器传送被墙体或安全落点搜索阻挡的问题。
+- 修复采气产物被背包部分或完整接收时的后续交付判断，保持“背包优先、个人存储其次”。
+- 修复磁铁扫描范围，使其严格为 13×13×13。
+
+#### 材质与手册
+
+- 新增采气瓶、一次性采气瓶、灵器传送模式、混元一气与灵魂涌动的正式材质资源。
+
+#### 验证
+
+- 支持 Minecraft 1.21.1、NeoForge 21.1.235、Java 21。
+- JDK 21 干净发布构建成功；671 项自动化测试通过，0 failures、0 errors；504 个资源 JSON 文件全部解析成功。
+- 生产 JAR 边界、版本组成、精确产物、Ars Source 适配器与无 AE2 运行时校验全部通过。
+- Numen 外部实机验证通过：第四阶段内置锻造、搜索框 E 键保留、模块顺序、磁铁面板完整布局，以及磁铁“关闭 → 开启 → 关闭”即时同步。
+- 发布产物：`immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`。
+- SHA256：`2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`。
+
+### English
+
 This section contains the complete user-visible change set from the published `0.0.3` tag to `0.0.4`.
 
-### Added
+#### Added
 
 - Added a Stage-4 embedded smithing-table module to both Kongqiao and Xianqiao storage terminals. Its template, base, addition, and result slots use the real smithing recipe manager and preserve normal recipe behavior.
 - Added terminal smithing autofill from personal storage and player inventory, plus JEI and EMI smithing-recipe transfer support.
@@ -31,7 +91,7 @@ This section contains the complete user-visible change set from the published `0
 - Added explicit Warp player control through the existing affect-players switch; dropped items and non-player living entities remain eligible.
 - Added dedicated bilingual translations, Patchouli pages, item models, recipes, loot modifiers, configuration labels, and regression coverage for the 0.0.4 systems.
 
-### Changed
+#### Changed
 
 - Reordered the Xianqiao module rail by progression: embedded crafting, embedded smithing, Immortal Furnace, then realm management.
 - Enlarged the Xianqiao realm-management side panel and its JEI/EMI exclusion rectangle so hand-refill and magnet controls remain fully inside the frame.
@@ -44,7 +104,7 @@ This section contains the complete user-visible change set from the published `0
 - Breaking either end of an ordinary ruin link clears both link records; breaking either end of a stabilized link unlinks both ends while preserving the shared contents according to the survivor/simultaneous-break rules.
 - Raised the ImmortalStorage network protocol and release metadata to 0.0.4.
 
-### Fixed
+#### Fixed
 
 - Fixed Primordial Qi failing to drop an Iron Golem spawn egg by resolving each globally registered egg from its actual default stack. Registry-backed tests cover both Iron Golems and Ender Dragons, while the same generic path supports modded entities.
 - Fixed the Xianqiao magnet switch appearing unable to turn off. The server state was changing, but the client omitted the magnet from its per-tick visibility, active-state, and label refresh; the label now updates immediately in both directions.
@@ -54,16 +114,11 @@ This section contains the complete user-visible change set from the published `0
 - Fixed reusable bottle delivery when vanilla inventory insertion partially or fully accepted the produced Primordial Qi, preserving the inventory-first then storage-fallback contract.
 - Fixed the explicit magnet volume to the required exact 13x13x13 cube.
 
-### Assets
+#### Assets
 
-- Recolored the vanilla Experience Bottle into the cyan-white reusable bottle without adding unrequested details.
-- Built the disposable bottle from the recolored reusable bottle and then added only the requested crack details.
-- Recolored the vanilla Ender Pearl into the cyan-white Spirit Staff teleport-mode texture without adding extra details.
-- Built Primordial Qi from the vanilla Wind Charge palette and added only the requested extra surrounding cloud wisps.
-- Added the user-supplied Soul Surge image as the actual local Soul Surge terminal resource texture.
-- Recorded deterministic texture-source and output provenance locally during development.
+- Added the final texture resources for the Qi Collecting Bottle, Disposable Qi Collecting Bottle, Spirit Staff teleport mode, Primordial Qi, and Soul Surge.
 
-### Verification
+#### Verification
 
 - Supported target: Minecraft 1.21.1, NeoForge 21.1.235, Java 21.
 - Clean JDK 21 release build completed successfully.

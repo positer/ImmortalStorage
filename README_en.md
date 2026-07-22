@@ -41,7 +41,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
-`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, asset, and verification delta from 0.0.3 to 0.0.4.
+`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, asset, and verification delta from 0.0.3 to 0.0.4 in both Simplified Chinese and English.
 
 ## Installation
 
