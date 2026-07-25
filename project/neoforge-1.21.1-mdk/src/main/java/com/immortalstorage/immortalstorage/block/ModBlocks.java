@@ -51,6 +51,10 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_CYAN).strength(4.0f)
                             .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
+    public static final Supplier<Block> SIMULATED_REINCARNATION_FURNACE = reg("simulated_reincarnation_furnace",
+            () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.TRIAL_SPAWNER).strength(5.0F)
+                            .requiresCorrectToolForDrops().lightLevel(state -> 6))));
     public static final Supplier<Block> SOURCE_VEIN_MANAGER = reg("source_vein_manager",
             () -> new SourceVeinManagerBlock(setBlockId("source_vein_manager",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)

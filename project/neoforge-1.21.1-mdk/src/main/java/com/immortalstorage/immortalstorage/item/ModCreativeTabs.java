@@ -48,6 +48,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PRIMORDIAL_QI.get());
                         output.accept(ModItems.SPIRIT_SWORD.get());
                         output.accept(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get());
+                        output.accept(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get());
+                        output.accept(ModItems.SOUL_CATCHER.get());
                         output.accept(ModItems.SPIRIT_STAFF.get());
                         params.holders().lookupOrThrow(Registries.ENCHANTMENT)
                                 .get(com.immortalstorage.immortalstorage.enchantment.ModEnchantments.SPIRIT_REPAIR)
@@ -66,6 +68,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.DEEPSLATE_SPIRIT_IRON_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_SPIRIT_CRYSTAL_ORE.get());
                         output.accept(ModBlocks.IMMORTAL_FURNACE.get());
+                        output.accept(ModBlocks.SIMULATED_REINCARNATION_FURNACE.get());
                         output.accept(ModBlocks.XIANQIAO_MANAGER.get());
                         output.accept(ModBlocks.XIANQIAO_INTERFACE.get());
                         output.accept(ModBlocks.SOURCE_VEIN_MANAGER.get());

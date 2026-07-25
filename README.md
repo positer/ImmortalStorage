@@ -2,7 +2,7 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前正式版本为 0.0.4。新增四阶段内置锻造台、混元一气与采气瓶、显式磁铁开关、稳定化仙墟过滤/共享存储、迷你仙墟 Warp 链接以及灵器传送模式。
+> 当前正式版本为 0.0.5。新增完整原版成就树、一气归元剑、拘灵器和模拟轮回炼化炉，并完善渡劫流速锁定、仙窍接口分面语义与 5,000 点淬火上限。
 
 **简体中文** | [English](README_en.md)
 
@@ -10,13 +10,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.4 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
+> 0.0.5 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**下载：**[仙藏 ImmortalStorage 0.0.4](https://github.com/positer/ImmortalStorage/releases/tag/0.0.4)
+**下载：**[仙藏 ImmortalStorage 0.0.5](https://github.com/positer/ImmortalStorage/releases/tag/0.0.5)
 
-**发行 JAR SHA256：**`2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`
+**发行 JAR SHA256：**`679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`
 
 ## 模组特色
 
@@ -38,25 +38,25 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.4 |
+| 仙藏 ImmortalStorage | 0.0.5 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
-### 0.0.4 发行验证
+### 0.0.5 发行验证
 
 - 混元一气从运行时全局物品注册表解析所有 `SpawnEggItem` 子类；铁傀儡与末影龙刷怪蛋均有真实注册表回归测试，模组生物注册蛋使用同一通用路径。
 - 迷你仙墟 Warp 与伤害共用中心方块碰撞箱判定；掉落物始终参与，玩家是否参与由“对玩家生效”开关决定。
 - 灵器传送模式严格按设定距离位移，不检测沿途方块或落点碰撞，允许穿墙并进入窒息位置。
 - 混元一气的完整缩小过程为 10 tick（0.5 秒）。
 - 仙窍管理侧栏已加长；磁铁开关可实时在开启/关闭间切换，模块依解锁顺序排列为“内置合成 → 锻造台 → 内置仙炉 → 仙窍”，并通过 Numen 外部实机验证。
-- 2026-07-22 全量 671 项测试、生产 JAR 边界、版本组成和版本产物校验通过；发行包 SHA256 为 `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`。
+- 2026-07-25 全量 682 项测试、生产 JAR 边界、版本组成、版本产物、Ars Source API 与无 AE2 运行时校验通过；发行包 SHA256 为 `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`。
 - `CHANGELOG.md` 与 GitHub Release 正文现已用中英文逐项列出相对 0.0.3 的完整新增、行为调整、修复、材质和验证记录。
 
 ## 安装方法
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`。
+3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -381,7 +381,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar
 ```
 
 完整验证命令：
@@ -390,7 +390,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.4 正式发行已通过全量测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
+0.0.5 正式发行已通过全量测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
 
 ## 仓库结构
 

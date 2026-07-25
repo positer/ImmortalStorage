@@ -50,6 +50,7 @@ public final class TribulationHelper {
         UUID attemptId = UUID.randomUUID();
         UUID targetId = target.getUUID();
         if (!data.beginTribulation(attemptId, targetId, stage + 1)) return false;
+        com.immortalstorage.immortalstorage.dimension.RealmHelper.refreshRealmTickRate(player);
 
         BlockPos center = player.blockPosition();
         target.setPos(center.getX() + 4.5D, center.getY() + 1.0D, center.getZ() + 0.5D);

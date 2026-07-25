@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": { "item": "immortalstorage:spirit_core" },
+  "base": { "item": "immortalstorage:spirit_sword" },
+  "addition": { "item": "immortalstorage:primordial_qi" },
+  "result": { "id": "immortalstorage:one_qi_returning_origin_sword" }
+}

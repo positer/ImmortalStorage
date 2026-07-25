@@ -94,6 +94,7 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         registration.addRecipeCategories(new ImmortalFurnaceJeiCategory(
+                registration.getJeiHelpers().getGuiHelper()), new SimulatedReincarnationJeiCategory(
                 registration.getJeiHelpers().getGuiHelper()));
     }
 
@@ -103,12 +104,18 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
         if (level != null) registration.addRecipes(ImmortalFurnaceJeiCategory.TYPE,
                 level.getRecipeManager().getAllRecipesFor(
                         com.immortalstorage.immortalstorage.recipe.ModRecipes.IMMORTAL_FURNACE_TYPE.get()));
+        registration.addRecipes(SimulatedReincarnationJeiCategory.TYPE,
+                net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
+                        .filter(net.minecraft.world.item.SpawnEggItem.class::isInstance)
+                        .map(item -> new SimulatedReincarnationJeiCategory.Entry(new ItemStack(item))).toList());
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
         registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.block.ModBlocks.IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceJeiCategory.TYPE);
+        registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.block.ModBlocks.SIMULATED_REINCARNATION_FURNACE.get(),
+                SimulatedReincarnationJeiCategory.TYPE);
     }
 
     @Override

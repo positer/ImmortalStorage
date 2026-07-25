@@ -376,6 +376,7 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
 
     private void pushToSide(ServerLevel serverLevel, Direction side) {
         BlockPos targetPos = worldPosition.relative(side);
+        // Query the neighbor through the contacted face so its sided input rules remain authoritative.
         IItemHandler itemTarget = serverLevel.getCapability(
                 Capabilities.ItemHandler.BLOCK, targetPos, side.getOpposite());
         IFluidHandler fluidTarget = serverLevel.getCapability(
@@ -424,6 +425,7 @@ public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements M
 
     private void pullFromSide(ServerLevel serverLevel, Direction side) {
         BlockPos targetPos = worldPosition.relative(side);
+        // The same contacted-face capability exposes only slots the neighbor permits as outputs.
         IItemHandler itemSource = serverLevel.getCapability(
                 Capabilities.ItemHandler.BLOCK, targetPos, side.getOpposite());
         IFluidHandler fluidSource = serverLevel.getCapability(

@@ -23,6 +23,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("immortal_furnace", () ->
                     BlockEntityType.Builder.of(ImmortalFurnaceBlockEntity::new,
                             ModBlocks.IMMORTAL_FURNACE.get()).build(null));
+    public static final Supplier<BlockEntityType<SimulatedReincarnationFurnaceBlockEntity>> SIMULATED_REINCARNATION_FURNACE =
+            BLOCK_ENTITIES.register("simulated_reincarnation_furnace", () ->
+                    BlockEntityType.Builder.of(SimulatedReincarnationFurnaceBlockEntity::new,
+                            ModBlocks.SIMULATED_REINCARNATION_FURNACE.get()).build(null));
 
     public static final Supplier<BlockEntityType<MiniatureImmortalRuinBlockEntity>> MINIATURE_IMMORTAL_RUIN =
             BLOCK_ENTITIES.register("miniature_immortal_ruin", () ->
@@ -91,6 +95,11 @@ public final class ModBlockEntities {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceBlockEntity::getItemHandler);
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_REINCARNATION_FURNACE.get(),
+                (be, side) -> side == null || !be.outputFace(side) ? null
+                        : new net.neoforged.neoforge.items.wrapper.RangedWrapper(
+                                be.itemHandler(), SimulatedReincarnationFurnaceBlockEntity.OUTPUT_START,
+                                SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> be.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_INTERFACE.get(),

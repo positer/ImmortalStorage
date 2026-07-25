@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": { "layer0": "immortalstorage:item/one_qi_returning_origin_sword" }
+}

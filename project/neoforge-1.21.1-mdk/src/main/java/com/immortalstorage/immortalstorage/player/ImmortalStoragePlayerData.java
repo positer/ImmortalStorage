@@ -110,12 +110,14 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     private long jadeCarriedTicks = 0;
     private boolean jadeSleepTriggered = false;
     private boolean startingJadeGranted = false;
+    private boolean consumedSpiritPill = false;
 
     private boolean hasKongqiao = false;
     private boolean hasXianqiao = false;
     private boolean hasXianqiaoRealm = false;
     private int realmRadiusChunks = 1;
     private int realmTimeRatePermille = 1000;
+    private int preTribulationRealmTimeRatePermille = 1000;
     private final Set<Long> modifiedRealmChunks = new HashSet<>();
 
     private final NonNullList<ItemStack> kongqiao = NonNullList.withSize(KONGQIAO_MAX_SLOTS_CEILING, ItemStack.EMPTY);
@@ -297,6 +299,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public boolean isCarryingJade() { return carryingJade; }
     public boolean isStartingJadeGranted() { return startingJadeGranted; }
     public void markStartingJadeGranted() { startingJadeGranted = true; }
+    public boolean hasConsumedSpiritPill() { return consumedSpiritPill; }
+    public void markConsumedSpiritPill() { consumedSpiritPill = true; syncOwner(); }
     public long getCarryingStartTime() { return carryingStartTime; }
     public long getJadeCarriedTicks() { return jadeCarriedTicks; }
 
@@ -306,7 +310,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public int getRealmRadiusChunks() { return realmRadiusChunks; }
     public int getRealmTimeRatePermille() { return realmTimeRatePermille; }
     public void setRealmTimeRatePermille(int v) {
-        int next = RealmTimeScalePolicy.clampPermille(stage, v);
+        int next = tribulationActive ? RealmTimeScalePolicy.NORMAL_PERMILLE
+                : RealmTimeScalePolicy.clampPermille(stage, v);
         if (realmTimeRatePermille == next) return;
         this.realmTimeRatePermille = next;
         syncOwner();
@@ -698,6 +703,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public boolean beginTribulation(java.util.UUID attemptId, java.util.UUID targetId, int nextStage) {
         if (tribulationActive || attemptId == null || targetId == null || nextStage <= stage) return false;
         this.tribulationActive = true;
+        this.preTribulationRealmTimeRatePermille = this.realmTimeRatePermille;
+        this.realmTimeRatePermille = RealmTimeScalePolicy.NORMAL_PERMILLE;
         this.tribulationAttemptId = attemptId;
         this.tribulationTargetId = targetId;
         this.nextStageOnSuccess = nextStage;
@@ -716,6 +723,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
             return false;
         }
         clearTribulationState();
+        this.realmTimeRatePermille = RealmTimeScalePolicy.clampPermille(
+                newStage, preTribulationRealmTimeRatePermille);
         if (newStage > stage) {
             setStage(newStage);
             if (player != null) {
@@ -731,6 +740,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public long failTribulation() {
         if (!tribulationActive) return 0L;
         clearTribulationState();
+        this.realmTimeRatePermille = RealmTimeScalePolicy.clampPermille(
+                stage, preTribulationRealmTimeRatePermille);
         long removed = removeAllPhysicalYuan(YuanKind.IMMORTAL);
         removed = saturatingAdd(removed, yuanAccount.drainLegacyBalance(YuanKind.IMMORTAL));
         removed = saturatingAdd(removed, drainDeferredMaterialization(YuanKind.IMMORTAL));
@@ -742,6 +753,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public void abortTribulation() {
         if (!tribulationActive) return;
         clearTribulationState();
+        this.realmTimeRatePermille = RealmTimeScalePolicy.clampPermille(
+                stage, preTribulationRealmTimeRatePermille);
         syncOwner();
     }
 
@@ -1508,6 +1521,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
         tag.putInt("realmRadiusChunks", realmRadiusChunks);
         tag.putInt("realmTimeRatePermille", realmTimeRatePermille);
+        tag.putInt("preTribulationRealmTimeRatePermille", preTribulationRealmTimeRatePermille);
         tag.putInt("kongqiaoMaxSlots", kongqiaoMaxSlots);
         tag.putInt("kongqiaoStackMultiplier", kongqiaoStackMultiplier);
         tag.putBoolean("hasSpiritCore", false);
@@ -1633,6 +1647,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putLong("jadeCarriedTicks", jadeCarriedTicks);
         tag.putBoolean("jadeSleepTriggered", jadeSleepTriggered);
         tag.putBoolean("startingJadeGranted", startingJadeGranted);
+        tag.putBoolean("consumedSpiritPill", consumedSpiritPill);
         tag.putBoolean("hasKongqiao", hasKongqiao);
         tag.putBoolean("hasXianqiao", hasXianqiao);
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
@@ -1736,12 +1751,15 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
                 tag.getLong("jadeCarriedTicks")));
         jadeSleepTriggered = tag.getBoolean("jadeSleepTriggered");
         startingJadeGranted = tag.getBoolean("startingJadeGranted");
+        consumedSpiritPill = tag.getBoolean("consumedSpiritPill");
         hasKongqiao = tag.getBoolean("hasKongqiao");
         hasXianqiao = tag.getBoolean("hasXianqiao");
         hasXianqiaoRealm = tag.getBoolean("hasXianqiaoRealm");
         realmRadiusChunks = tag.getInt("realmRadiusChunks");
         realmTimeRatePermille = tag.contains("realmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("realmTimeRatePermille") : RealmTimeScalePolicy.NORMAL_PERMILLE;
+        preTribulationRealmTimeRatePermille = tag.contains("preTribulationRealmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
+                ? tag.getInt("preTribulationRealmTimeRatePermille") : realmTimeRatePermille;
         modifiedRealmChunks.clear();
         if (tag.contains("modifiedRealmChunks", Tag.TAG_LONG_ARRAY)) {
             for (long packed : tag.getLongArray("modifiedRealmChunks")) {

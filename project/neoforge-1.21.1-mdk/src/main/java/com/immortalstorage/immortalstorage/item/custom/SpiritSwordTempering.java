@@ -7,18 +7,19 @@ import net.minecraft.world.item.component.CustomData;
 
 /** Shared component-preserving tempering state for every furnace implementation. */
 public final class SpiritSwordTempering {
+    public static final long MAX_POINTS = 5_000L;
     private static final String POINTS_TAG = "temperingPoints";
 
     public static long points(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof SpiritSwordItem)) return 0L;
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        return Math.max(0L, tag.getLong(POINTS_TAG));
+        return Math.min(MAX_POINTS, Math.max(0L, tag.getLong(POINTS_TAG)));
     }
 
     public static ItemStack temper(ItemStack stack) {
         if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof SpiritSwordItem)) return ItemStack.EMPTY;
         ItemStack result = stack.copyWithCount(1);
-        setPoints(result, points(stack) == Long.MAX_VALUE ? Long.MAX_VALUE : points(stack) + 1L);
+        setPoints(result, Math.min(MAX_POINTS, points(stack) + 1L));
         return result;
     }
 
@@ -45,7 +46,7 @@ public final class SpiritSwordTempering {
     public static void setPoints(ItemStack stack, long points) {
         if (stack == null || stack.isEmpty()) return;
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        tag.putLong(POINTS_TAG, Math.max(0L, points));
+        tag.putLong(POINTS_TAG, Math.min(MAX_POINTS, Math.max(0L, points)));
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 

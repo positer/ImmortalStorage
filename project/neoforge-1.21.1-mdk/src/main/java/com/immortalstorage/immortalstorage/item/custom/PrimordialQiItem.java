@@ -27,6 +27,12 @@ public final class PrimordialQiItem extends Item {
             return InteractionResult.FAIL;
         }
         if (!player.level().isClientSide && player instanceof ServerPlayer) {
+            com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers.PRIMORDIAL_QI_USED
+                    .trigger((ServerPlayer) player);
+            if (target instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+                com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers
+                        .PRIMORDIAL_QI_ENDER_DRAGON.trigger((ServerPlayer) player);
+            }
             PrimordialQiConversion.begin(target);
             if (!player.getAbilities().instabuild) stack.shrink(1);
         }

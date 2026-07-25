@@ -239,7 +239,8 @@ public final class RealmHelper {
             return false;
         }
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
-        int clampedPermille = RealmTimeScalePolicy.clampPermille(
+        int clampedPermille = data.isTribulationActive() ? RealmTimeScalePolicy.NORMAL_PERMILLE
+                : RealmTimeScalePolicy.clampPermille(
                 data.getStage(), data.getRealmTimeRatePermille());
         if (clampedPermille != data.getRealmTimeRatePermille()) {
             // Persist the safety clamp so old 16x+/invalid saves cannot keep

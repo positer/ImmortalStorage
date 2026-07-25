@@ -26,13 +26,15 @@ public final class ModItems {
     public static Rarity rarityFor(String name) {
         return switch (name) {
             case "ascension_dan", "white_day_thunder",
-                    "immortal_ruin_forged_spirit_sword", "stabilized_miniature_immortal_ruin",
+                    "immortal_ruin_forged_spirit_sword", "one_qi_returning_origin_sword",
+                    "stabilized_miniature_immortal_ruin",
                     "world_shard_miner", "nether_star_vein", "enchanted_golden_apple_vein",
                     "dragon_egg_vein" -> Rarity.EPIC;
             case "immortal_yuan", "breakthrough_pill_embryo", "breakthrough_pill",
                     "immortal_pill", "nurturing_crystal", "nurturing_crystal_bedrock",
                     "qi_collecting_bottle", "primordial_qi",
                     "premixed_heavy_compound", "substitute_puppet", "miniature_immortal_ruin",
+                    "soul_catcher",
                     "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
                     "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
                     "diamond_vein", "emerald_vein" -> Rarity.RARE;
@@ -40,7 +42,7 @@ public final class ModItems {
                     "disposable_qi_collecting_bottle",
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",
                     "spirit_crystal_block", "spirit_core", "spirit_sword", "spirit_staff",
-                    "spirit_drive", "immortal_furnace", "treasure_basin",
+                    "spirit_drive", "immortal_furnace", "simulated_reincarnation_furnace", "treasure_basin",
                     "inactive_nurturing_crystal_bedrock", "small_nurturing_crystal_bud",
                     "medium_nurturing_crystal_bud", "large_nurturing_crystal_bud",
                     "nurturing_crystal_cluster", "crude_spirit_iron_vein", "spirit_crystal_vein",
@@ -98,6 +100,10 @@ public final class ModItems {
     public static final Supplier<Item> SPIRIT_SWORD = registerItem("spirit_sword", SpiritSwordItem::new);
     public static final Supplier<Item> IMMORTAL_RUIN_FORGED_SPIRIT_SWORD = registerItem(
             "immortal_ruin_forged_spirit_sword", ImmortalRuinForgedSpiritSwordItem::new);
+    public static final Supplier<Item> ONE_QI_RETURNING_ORIGIN_SWORD = registerItem(
+            "one_qi_returning_origin_sword", OneQiReturningOriginSwordItem::new);
+    public static final Supplier<Item> SOUL_CATCHER = registerItem(
+            "soul_catcher", SoulCatcherItem::new, new Item.Properties().stacksTo(1));
     public static final Supplier<Item> SPIRIT_STAFF = registerItem("spirit_staff", SpiritStaffItem::new,
             new Item.Properties().attributes(DiggerItem.createAttributes(Tiers.NETHERITE, 4.0F, -2.4F)));
     public static final Supplier<Item> SPIRIT_DRIVE = registerItem("spirit_drive", SpiritDriveItem::new);

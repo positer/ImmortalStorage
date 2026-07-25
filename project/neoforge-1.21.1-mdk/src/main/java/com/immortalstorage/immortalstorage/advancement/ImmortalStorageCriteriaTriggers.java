@@ -27,6 +27,13 @@ public final class ImmortalStorageCriteriaTriggers {
     public static SimpleStageTrigger STAGE_10;
     public static SimpleStageTrigger TRIBULATION_WON;
     public static SimpleStageTrigger WHITE_DAY_THUNDER_USED;
+    public static SimpleStageTrigger BREAKTHROUGH_PILL_USED;
+    public static SimpleStageTrigger STAGE_6_WITHOUT_SPIRIT_PILLS;
+    public static SimpleStageTrigger PRIMORDIAL_QI_USED;
+    public static SimpleStageTrigger PRIMORDIAL_QI_ENDER_DRAGON;
+    public static SimpleStageTrigger SPAWNER_CONVERTED;
+    public static SimpleStageTrigger SIMULATED_KILL;
+    public static SimpleStageTrigger SIMULATED_KILL_TEN;
 
     /**
      * Register the {@code minecraft:cultivation_*} triggers in the
@@ -50,6 +57,13 @@ public final class ImmortalStorageCriteriaTriggers {
             STAGE_10 = registerTrigger("immortalstorage_stage_10");
             TRIBULATION_WON = registerTrigger("immortalstorage_tribulation_won");
             WHITE_DAY_THUNDER_USED = registerTrigger("immortalstorage_white_day_thunder_used");
+            BREAKTHROUGH_PILL_USED = registerTrigger("immortalstorage_breakthrough_pill_used");
+            STAGE_6_WITHOUT_SPIRIT_PILLS = registerTrigger("immortalstorage_stage_6_without_spirit_pills");
+            PRIMORDIAL_QI_USED = registerTrigger("immortalstorage_primordial_qi_used");
+            PRIMORDIAL_QI_ENDER_DRAGON = registerTrigger("immortalstorage_primordial_qi_ender_dragon");
+            SPAWNER_CONVERTED = registerTrigger("immortalstorage_spawner_converted");
+            SIMULATED_KILL = registerTrigger("immortalstorage_simulated_kill");
+            SIMULATED_KILL_TEN = registerTrigger("immortalstorage_simulated_kill_ten");
         });
     }
 
@@ -73,6 +87,10 @@ public final class ImmortalStorageCriteriaTriggers {
             default -> null;
         };
         if (trig != null) trig.trigger(player);
+        if (stage == 6 && !com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData
+                .get(player).hasConsumedSpiritPill()) {
+            STAGE_6_WITHOUT_SPIRIT_PILLS.trigger(player);
+        }
     }
 
     private ImmortalStorageCriteriaTriggers() {}

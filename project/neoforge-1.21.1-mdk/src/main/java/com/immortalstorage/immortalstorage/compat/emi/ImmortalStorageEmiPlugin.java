@@ -38,12 +38,18 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
         registry.addCategory(ImmortalFurnaceEmiRecipe.CATEGORY);
+        registry.addCategory(SimulatedReincarnationEmiRecipe.CATEGORY);
         registry.addWorkstation(ImmortalFurnaceEmiRecipe.CATEGORY,
                 EmiStack.of(com.immortalstorage.immortalstorage.block.ModBlocks.IMMORTAL_FURNACE.get()));
+        registry.addWorkstation(SimulatedReincarnationEmiRecipe.CATEGORY,
+                EmiStack.of(com.immortalstorage.immortalstorage.block.ModBlocks.SIMULATED_REINCARNATION_FURNACE.get()));
         for (var holder : registry.getRecipeManager().getAllRecipesFor(
                 com.immortalstorage.immortalstorage.recipe.ModRecipes.IMMORTAL_FURNACE_TYPE.get())) {
             registry.addRecipe(new ImmortalFurnaceEmiRecipe(holder));
         }
+        net.minecraft.core.registries.BuiltInRegistries.ITEM.stream()
+                .filter(net.minecraft.world.item.SpawnEggItem.class::isInstance)
+                .forEach(item -> registry.addRecipe(new SimulatedReincarnationEmiRecipe(item)));
         registerScreen(registry, KongqiaoScreen.class);
         registerScreen(registry, XianqiaoStorageScreen.class);
         registry.addDragDropHandler(XianqiaoInterfaceScreen.class,

@@ -22,6 +22,10 @@ public class BreakthroughPillItem extends Item {
         ItemStack r = super.finishUsingItem(stack, level, ent);
         if (!level.isClientSide && ent instanceof Player p && p.level() instanceof ServerLevel sl) {
             ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
+            if (p instanceof net.minecraft.server.level.ServerPlayer sp) {
+                com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers
+                        .BREAKTHROUGH_PILL_USED.trigger(sp);
+            }
             int st = d.getStage();
             int layers = d.getLingqiSaturatedLayers();
             if (layers > 0) {

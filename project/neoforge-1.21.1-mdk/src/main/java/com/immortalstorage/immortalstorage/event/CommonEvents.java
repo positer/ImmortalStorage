@@ -29,6 +29,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerContainerEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -41,6 +42,30 @@ public class CommonEvents {
     public void onEntityTick(EntityTickEvent.Post event) {
         com.immortalstorage.immortalstorage.entity.PrimordialQiConversion.tick(event.getEntity());
         com.immortalstorage.immortalstorage.entity.AbsoluteRestraint.tick(event.getEntity());
+    }
+
+    @SubscribeEvent
+    public void onSpawnerConversion(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)
+                || !(event.getLevel().getBlockState(event.getPos()).is(net.minecraft.world.level.block.Blocks.SPAWNER)
+                || event.getLevel().getBlockState(event.getPos()).is(net.minecraft.world.level.block.Blocks.TRIAL_SPAWNER))) return;
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        boolean valid = main.is(ModItems.PRIMORDIAL_QI.get()) && off.is(ModItems.SPIRIT_CORE.get());
+        if (!valid) return;
+        event.getLevel().setBlockAndUpdate(event.getPos(),
+                com.immortalstorage.immortalstorage.block.ModBlocks.SIMULATED_REINCARNATION_FURNACE.get()
+                        .defaultBlockState());
+        if (event.getLevel().getBlockEntity(event.getPos()) instanceof
+                com.immortalstorage.immortalstorage.block.entity.SimulatedReincarnationFurnaceBlockEntity furnace) {
+            furnace.setOwner(player.getUUID());
+        }
+        if (!player.getAbilities().instabuild) {
+            main.shrink(1);
+        }
+        com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers
+                .SPAWNER_CONVERTED.trigger(player);
+        event.setCanceled(true);
     }
 
     @SubscribeEvent

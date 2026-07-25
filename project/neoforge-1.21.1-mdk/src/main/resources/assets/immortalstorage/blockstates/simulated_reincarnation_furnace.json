@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,lit=false": { "model": "immortalstorage:block/simulated_reincarnation_furnace" },
+    "facing=east,lit=false": { "model": "immortalstorage:block/simulated_reincarnation_furnace", "y": 90 },
+    "facing=south,lit=false": { "model": "immortalstorage:block/simulated_reincarnation_furnace", "y": 180 },
+    "facing=west,lit=false": { "model": "immortalstorage:block/simulated_reincarnation_furnace", "y": 270 },
+    "facing=north,lit=true": { "model": "immortalstorage:block/simulated_reincarnation_furnace_on" },
+    "facing=east,lit=true": { "model": "immortalstorage:block/simulated_reincarnation_furnace_on", "y": 90 },
+    "facing=south,lit=true": { "model": "immortalstorage:block/simulated_reincarnation_furnace_on", "y": 180 },
+    "facing=west,lit=true": { "model": "immortalstorage:block/simulated_reincarnation_furnace_on", "y": 270 }
+  }
+}

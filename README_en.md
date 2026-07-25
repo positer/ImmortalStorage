@@ -6,17 +6,17 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current release is 0.0.4, adding Stage-4 embedded smithing, Qi Collecting Bottles and Primordial Qi, an explicit storage magnet, linked/filtered ruins, Warp transport, and Spirit Staff teleportation.
+> The current release is 0.0.5, adding a complete vanilla advancement tree, the One Qi Returning Origin Sword, Soul Catcher, Simulated Reincarnation Furnace, tribulation time locking, corrected sided interface semantics, and a 5,000-point tempering cap.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.4 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.5 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.4](https://github.com/positer/ImmortalStorage/releases/tag/0.0.4)
+**Download:** [ImmortalStorage 0.0.5](https://github.com/positer/ImmortalStorage/releases/tag/0.0.5)
 
-**Release JAR SHA256:** `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`
+**Release JAR SHA256:** `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`
 
 ## Highlights
 
@@ -37,17 +37,17 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| ImmortalStorage | 0.0.4 |
+| ImmortalStorage | 0.0.5 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
-`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, asset, and verification delta from 0.0.3 to 0.0.4 in both Simplified Chinese and English.
+`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, asset, and verification delta from 0.0.4 to 0.0.5 in both Simplified Chinese and English.
 
 ## Installation
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar` from GitHub Releases.
+3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -344,7 +344,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar
 ```
 
 Useful verification tasks:
@@ -353,7 +353,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The 0.0.4 release gate passes 671 tests on JDK 21, plus production-class, version-composition, and exact-artifact checks. Release JAR SHA256: `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`.
+The 0.0.5 release gate passes 682 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, and no-AE2-runtime checks. Release JAR SHA256: `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`.
 
 ## Project Layout
 

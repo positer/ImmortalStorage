@@ -1,0 +1,10 @@
+{
+  "parent": "minecraft:block/template_vault",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "bottom": "immortalstorage:block/simulated_reincarnation_furnace_bottom",
+    "front": "immortalstorage:block/simulated_reincarnation_furnace_front_off",
+    "side": "immortalstorage:block/simulated_reincarnation_furnace_side_off",
+    "top": "immortalstorage:block/simulated_reincarnation_furnace_top"
+  }
+}

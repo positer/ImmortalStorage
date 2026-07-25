@@ -1,5 +1,101 @@
 # Changelog
 
+## [0.0.5] - 2026-07-25
+
+本节列出相对已发布 `0.0.4` 的完整用户可见变更。
+
+### 简体中文
+
+#### 新增
+
+- 新增 16 节点原版成就树，覆盖启灵、升仙、丹药选择、迷你仙墟与稳定化仙墟、仙窍驱动器与接口、古玉、仙墟锻灵剑、混元一气、刷怪笼转化、十次模拟炼化及末影龙特殊目标；全部标题和说明均提供简体中文与英文翻译。
+- 新增一气归元剑。使用灵核模板、仙墟锻灵剑与混元一气在锻造台合成，继承灵剑的境界基础伤害、煅烧和淬火体系，并加入普通熔炉、高炉及仙炉的连续淬火流程。
+- 一气归元剑长按右键 5 tick 后发射贯穿实体的连续世界光束：5–25 tick 每 10 tick 造成 20% 攻击力伤害；25–50 tick 每 5 tick 造成 20%；50 tick 后每 5 tick 造成 50% 并消耗 10 淬火点。三个阶段分别消耗 1/2 仙元进入，第三阶段维持至松手或资源不足。
+- 光束在所有可见玩家的世界视角中渲染；第一人称枪口逐帧读取原版实际手持物品模型中心，光线从相机近裁面外穿过剑身并沿十字准星视线延伸至视距外。第三阶段使用蓝色核心与白色外层，最粗状态仍显著细于信标光束。
+- 新增拘灵器。使用灵核模板和混元一气强化栓绳获得，可收纳任意生物并在空地释放，完整保存生物数据，创造模式同样会正确写回手持物品；Tooltip 显示收纳对象，装有生物时显示附魔光效，渡劫期间禁止使用。
+- 新增模拟轮回炼化炉方块、方块实体、菜单、屏幕、工作状态与独立 JEI/EMI 分类。手持混元一气、在副手持灵核对刷怪笼使用可完成转化。
+- 炼化炉接受任意原版或模组刷怪蛋及装有生物的拘灵器作为不消耗原料，另有不消耗耐久的武器判定槽；每 50 tick 依照该武器生成一次真实实体战利品和经验。
+- 炼化炉燃料槽接受真元、仙元和仙灵驱动器：每个真元提供 50 tick，每个仙元提供 500 tick，并支持从已绑定仙灵驱动器支付真元或仙元。
+- 炼化炉新增 4x3、共 12 格只读输出缓存、经验缓存/直取按钮、自动输出开关，以及六个面的相邻方块预览和输出行为配置。
+- 炼化炉原料槽放入刷怪蛋或拘灵器后即在方块内部持续旋转显示缩小的目标模型；青白火焰粒子和 Vault 发光面严格表示实际工作状态。
+
+#### 行为调整
+
+- 所有使用淬火点的武器统一获得 5,000 点上限；一气归元剑左键命中同样支付仙元并消耗当前 50% 淬火点，但淬火点不提供近战增伤。
+- 一气归元剑持续蓄力期间，仙元/淬火点/同步组件变化不再触发重复放下和拿起动画；真实切换槽位或物品仍保留正常重装备动画。
+- 模拟炼化不把临时生物加入世界，因此和平难度可用，并避免 AI、寻路、碰撞、实体 tick、追踪同步和经验球实体开销。
+- 自动输出开启时，位于仙窍内的炼化炉将物品直接送入仙窍所有者的个人存储；世界中的炼化炉使用已绑定仙灵驱动器所属人作为目标。经验始终直接给予目标在线玩家；路由失败时内容保留在本地缓存。
+- 渡劫期间仙窍时间流速强制锁定为 1x，不能调整；渡劫结束后恢复此前设置。
+- 仙窍接口推出时只访问相邻方块对应面的输入能力，抽取时只访问对应面的输出能力，避免向熔炉输出槽塞入原料或从输入槽错误抽取。
+- 仙墟锻灵剑的锻造配方交换为“灵核作模板、迷你仙墟作材料”。
+- 蕴灵晶母岩被任何形式挖掘后固定掉落失活的蕴灵晶母岩。
+- 为一气归元剑、拘灵器和模拟轮回炼化炉配置与其阶段定位相符的稀有度和创造模式目录入口。
+
+#### 修复与美术
+
+- 模拟轮回炼化炉改用原版宝库 `Vault` 六面模型和独立待机/工作模型；顶面、底面、正面、侧面及工作面分别从原材质换色，保留源透明蒙版和镂空结构。
+- 重制炼化炉 230 像素原版风格 UI：使用熔炉底图、青白仙炉火焰、真实 50 tick 箭头进度、12 格输出区和项目统一的外置设置栏，移除槽位规模等调试说明文字。
+- 拘灵器保留原版栓绳轮廓并换为青白色，增加两条更长、更宽、连续成片的授权云雾装饰。
+- 一气归元剑采用用户提供的 32x32 像素底稿，仅进行确定性调色与最近邻中心缩放；成品占 26x26（0.8125 倍），外圈和原透明像素保持完全透明，整图不含半透明像素。
+- 修复一气归元剑光束仅渲染在玩家脸部、起点镜像到左手、枪口与剑身错位、只显示粒子或短线、组件更新打断持续使用等问题。
+- 修复模拟轮回炼化炉缺少创造目录入口、单面材质、工作状态不明确、输出区不是 4x3、进度条不同步和设置面板缺少六面预览等问题。
+
+#### 验证
+
+- 支持 Minecraft 1.21.1、NeoForge 21.1.235、Java 21。
+- JDK 21 自动化测试、生产构建、版本组成和精确产物校验通过。
+- 187 个测试套件、682 项自动化测试通过，0 failures、0 errors、0 skipped；生产 JAR 边界、Ars Source 发布 API 适配器及无 AE2 运行时边界校验通过。
+- 全模组 PCL 实例以 `zh_cn` 启动，加载 30 个 JAR；ImmortalStorage 0.0.5 与 AE2、Refined Storage、Mekanism、Flux Networks、Botania、Ars Nouveau、Industrial Foregoing Souls 和 Beyond Dimensions 联动完成注册。
+- 实机通过资源重载、OpenAL、声音引擎和纹理图集创建边界；未发现 `MixinApplyError`、`InvalidInjection`、`ModLoadingException` 或致命加载错误。
+- 发布产物：`immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar`，4,882,189 字节，SHA256 `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`。
+
+### English
+
+This section contains the complete user-visible change set from the published `0.0.4` tag to `0.0.5`.
+
+#### Added
+
+- Added a 16-node vanilla advancement tree covering Awakening, Ascension, pill choices, ruin progression, Xianqiao technology, Primordial Qi, spawner conversion, ten simulated refinements, and the Ender Dragon special objective. Every title and description is localized in Simplified Chinese and English.
+- Added the One Qi Returning Origin Sword, forged from a Spirit Core template, Immortal-Ruin-Forged Spirit Sword, and Primordial Qi. It inherits stage-scaled base damage and the heating/quenching loop and participates in continuous tempering in vanilla furnaces, blast furnaces, and the Immortal Furnace.
+- Added a three-phase piercing continuous beam after five ticks of right-click charge. Phase one deals 20% attack damage every ten ticks, phase two deals 20% every five ticks, and phase three deals 50% every five ticks while consuming ten tempering points. Entering phases one and two costs one and two Immortal Yuan respectively.
+- The beam is rendered in the world for every visible player. First-person rendering captures the live center of the actual vanilla held-item model every frame, enters from beyond the camera near plane, passes through the sword, and follows the crosshair sight axis beyond render distance. Phase three has a blue core and white shell while remaining much thinner than a beacon beam.
+- Added the Soul Catcher, forged by upgrading a Lead with a Spirit Core template and Primordial Qi. It captures and releases arbitrary entities with full saved data, updates the held stack correctly in Creative mode, displays the contained entity in its tooltip, glints while occupied, and cannot be used during tribulation.
+- Added the Simulated Reincarnation Refining Furnace block, block entity, menu, screen, working state, and dedicated JEI/EMI category. A spawner converts when used while Primordial Qi is held in the main hand and a Spirit Core in the off hand.
+- The furnace accepts any vanilla or modded spawn egg or occupied Soul Catcher without consuming it, plus a non-damaging weapon slot used for loot evaluation. Every 50 ticks it produces one real entity-loot-table result and its experience.
+- Added True Yuan, Immortal Yuan, and Spirit Drive fuel support: one True Yuan burns for 50 ticks, one Immortal Yuan for 500 ticks, and a bound Spirit Drive may pay either resource.
+- Added a 4x3 twelve-slot output cache, stored-experience release, automatic-output toggle, and six adjacent-block preview/output controls.
+- In-world rendering rotates a reduced specimen model as soon as the source slot is occupied. Cyan-white flame particles and active Vault faces independently and strictly represent actual processing.
+
+#### Changed
+
+- All tempering-point weapons now cap at 5,000 points. One Qi melee hits pay Immortal Yuan and consume 50% of current points, but tempering points provide no melee damage bonus for this sword.
+- Resource/component updates during continuous One Qi charging no longer restart the equip animation; actual slot or item changes still animate normally.
+- Simulated refinement never inserts the temporary entity into the world, so it works in Peaceful and avoids AI, pathfinding, collision, entity ticking, tracking packets, and experience-orb entities.
+- With automatic output enabled, a furnace inside Xianqiao sends items to the realm owner's personal storage. Outside Xianqiao, a bound Spirit Drive selects its owner. Experience is granted directly to the online target player; failed routing retains items and experience in local caches.
+- Xianqiao time flow is locked to 1x for the entire tribulation and the previous setting is restored afterward.
+- Xianqiao Interface pushes now target only input capabilities on the adjacent face, and pulls target only output capabilities, preventing furnace ingredients from entering output slots or being extracted from input slots.
+- Swapped the Immortal-Ruin-Forged Spirit Sword smithing order so the Spirit Core is the template and Miniature Immortal Ruin is the addition.
+- Nurturing Crystal Bedrock now always drops Inactive Nurturing Crystal Bedrock when mined by any method.
+- Assigned progression-appropriate rarities and creative-tab entries to the new sword, catcher, and furnace.
+
+#### Fixed and Art
+
+- Rebuilt the Simulated Reincarnation Refining Furnace from the vanilla Vault six-face model with separate idle/working models. Top, bottom, front, side, and active faces are palette recolors that preserve the source alpha mask and cutout geometry.
+- Rebuilt the 230-pixel furnace screen around the vanilla furnace background, cyan-white Immortal Furnace fire, the real synchronized 50-tick progress arrow, twelve output slots, and the project's external settings rail. Removed prototype scale/debug labels.
+- Preserved the vanilla Lead silhouette for the Soul Catcher recolor and added two authorized long, broad, continuous cloud bands.
+- Refined the user-provided 32x32 One Qi sprite only through deterministic palette cleanup and nearest-neighbor center scaling. The final 26x26 footprint is 0.8125 scale; padding and source-transparent pixels remain fully transparent with no partial alpha.
+- Fixed the beam rendering only near the player's face, mirrored left-hand origin, sword/muzzle misalignment, particle/short-line presentation, and component updates interrupting continuous use.
+- Fixed missing furnace creative registration, single-face textures, ambiguous working visuals, incorrect output dimensions, unsynchronized progress, and missing six-face settings previews.
+
+#### Verification
+
+- Supported target: Minecraft 1.21.1, NeoForge 21.1.235, Java 21.
+- JDK 21 automated tests, production build, version-composition audit, and exact-artifact audit passed.
+- 187 test suites and 682 automated tests passed with 0 failures, 0 errors, and 0 skipped tests. Production-JAR boundary, published Ars Source API adapter, and no-AE2-runtime checks passed.
+- A full-mod PCL instance launched in `zh_cn` with 30 JARs. ImmortalStorage 0.0.5 registered integrations for AE2, Refined Storage, Mekanism, Flux Networks, Botania, Ars Nouveau, Industrial Foregoing Souls, and Beyond Dimensions.
+- The real client completed resource reload, OpenAL, sound-engine, and texture-atlas startup with no `MixinApplyError`, `InvalidInjection`, `ModLoadingException`, or fatal loading error.
+- Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar`, 4,882,189 bytes, SHA256 `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`.
+
 ## [0.0.4] - 2026-07-22
 
 本节列出相对已发布 `0.0.3` 的完整用户可见变更。

@@ -1,7 +1,7 @@
 {
   "type": "minecraft:smithing_transform",
-  "template": { "item": "immortalstorage:miniature_immortal_ruin" },
+  "template": { "item": "immortalstorage:spirit_core" },
   "base": { "item": "immortalstorage:spirit_sword" },
-  "addition": { "item": "immortalstorage:spirit_core" },
+  "addition": { "item": "immortalstorage:miniature_immortal_ruin" },
   "result": { "id": "immortalstorage:immortal_ruin_forged_spirit_sword" }
 }

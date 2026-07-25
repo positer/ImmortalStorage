@@ -23,6 +23,7 @@ import com.immortalstorage.immortalstorage.client.screen.TreasureBasinScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinManagerScreen;
 import com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen;
 import com.immortalstorage.immortalstorage.client.screen.MiniatureImmortalRuinScreen;
+import com.immortalstorage.immortalstorage.client.screen.SimulatedReincarnationFurnaceScreen;
 import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem;
@@ -51,6 +52,7 @@ public final class ClientSetup {
         ImmortalStorageKeybinds.init(modBus, forgeBus);
         forgeBus.addListener(ClientItemTooltips::onTooltip);
         SpiritStaffBuildPreview.init(forgeBus);
+        forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.OneQiBeamRenderer::render);
     }
 
     private static void clientSetup(final FMLClientSetupEvent e) {
@@ -68,6 +70,7 @@ public final class ClientSetup {
         e.register(ModMenus.XIANQIAO_STORAGE.get(), XianqiaoStorageScreen::new);
         e.register(ModMenus.XIANQIAO_INTERFACE.get(), XianqiaoInterfaceScreen::new);
         e.register(ModMenus.IMMORTAL_FURNACE.get(), ImmortalFurnaceScreen::new);
+        e.register(ModMenus.SIMULATED_REINCARNATION_FURNACE.get(), SimulatedReincarnationFurnaceScreen::new);
         e.register(ModMenus.SOURCE_VEIN.get(), SourceVeinScreen::new);
         e.register(ModMenus.TREASURE_BASIN.get(), TreasureBasinScreen::new);
         e.register(ModMenus.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerScreen::new);
@@ -83,6 +86,8 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.YUAN_LIGHT.get(), YuanLightRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(), MiniatureImmortalRuinRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), StabilizedMiniatureImmortalRuinRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.SIMULATED_REINCARNATION_FURNACE.get(),
+                com.immortalstorage.immortalstorage.client.render.SimulatedReincarnationFurnaceRenderer::new);
     }
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {

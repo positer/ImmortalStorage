@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "immortalstorage:nurturing_crystal_bedrock"
+          "name": "immortalstorage:inactive_nurturing_crystal_bedrock"
         }
       ],
       "conditions": [

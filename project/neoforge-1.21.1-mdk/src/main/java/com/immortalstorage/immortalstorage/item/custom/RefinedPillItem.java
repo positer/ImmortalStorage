@@ -20,6 +20,7 @@ public class RefinedPillItem extends Item {
         ItemStack r = super.finishUsingItem(stack, level, ent);
         if (!level.isClientSide && ent instanceof Player p && p.level() instanceof ServerLevel sl) {
             ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
+            d.markConsumedSpiritPill();
             int cap = d.getLingqiCap();
             if (cap > 0) d.addLingqiProgress(120);
             d.addLingqiSaturated(1, 10 * 20);
