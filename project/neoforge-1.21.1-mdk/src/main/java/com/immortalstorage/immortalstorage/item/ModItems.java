@@ -43,6 +43,7 @@ public final class ModItems {
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",
                     "spirit_crystal_block", "spirit_core", "spirit_sword", "spirit_staff",
                     "spirit_drive", "immortal_furnace", "simulated_reincarnation_furnace", "treasure_basin",
+                    "simulated_spirit_field",
                     "inactive_nurturing_crystal_bedrock", "small_nurturing_crystal_bud",
                     "medium_nurturing_crystal_bud", "large_nurturing_crystal_bud",
                     "nurturing_crystal_cluster", "crude_spirit_iron_vein", "spirit_crystal_vein",

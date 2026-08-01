@@ -113,6 +113,19 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<TerminalEntryAction> type() { return TYPE; }
     }
 
+    /** Toggle locked day/night (action 0) or cycle locked weather (action 1). */
+    public record RealmEnvironment(int containerId, int action) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, RealmEnvironment> STREAM_CODEC =
+                StreamCodec.composite(
+                        ByteBufCodecs.VAR_INT, RealmEnvironment::containerId,
+                        ByteBufCodecs.VAR_INT, RealmEnvironment::action,
+                        RealmEnvironment::new);
+        public static final CustomPacketPayload.Type<RealmEnvironment> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "realm_environment"));
+        @Override public CustomPacketPayload.Type<RealmEnvironment> type() { return TYPE; }
+    }
+
     public record ShowSubstitutePuppetActivation(ItemStack stack) implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, ShowSubstitutePuppetActivation> STREAM_CODEC =
                 StreamCodec.composite(ItemStack.STREAM_CODEC, ShowSubstitutePuppetActivation::stack,

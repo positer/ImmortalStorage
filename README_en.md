@@ -6,17 +6,17 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current release is 0.0.5, adding a complete vanilla advancement tree, the One Qi Returning Origin Sword, Soul Catcher, Simulated Reincarnation Furnace, tribulation time locking, corrected sided interface semantics, and a 5,000-point tempering cap.
+> The current release is 0.0.6. It adds the Simulated Spirit Field, direct personal-storage Immortal Yuan payment for work blocks inside their owner's realm, and persistent day/night and weather controls.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.5 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.6 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.5](https://github.com/positer/ImmortalStorage/releases/tag/0.0.5)
+**Download:** [ImmortalStorage 0.0.6](https://github.com/positer/ImmortalStorage/releases/tag/0.0.6)
 
-**Release JAR SHA256:** `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`
+**Release JAR SHA256:** `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`
 
 ## Highlights
 
@@ -37,17 +37,17 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| ImmortalStorage | 0.0.5 |
+| ImmortalStorage | 0.0.6 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
-`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, asset, and verification delta from 0.0.4 to 0.0.5 in both Simplified Chinese and English.
+`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.5 to 0.0.6 in both Simplified Chinese and English. The release gate passed 691 tests plus production-boundary, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, dedicated-server startup, and Numen single-player checks.
 
 ## Installation
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar` from GitHub Releases.
+3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -143,6 +143,8 @@ Stages 6-8 use a visible vanilla world border. Crossing the legal space returns 
 
 Time flow is dimension-local. Slowing or freezing the Xianqiao does not freeze the overworld and never removes the ability to leave the realm.
 
+The Xianqiao Management page has side-by-side time and weather controls. The first toggles locked noon/midnight, while the second cycles clear, rain, thunder, and snow. The sky follows the selected time, both selections remain locked regardless of vanilla cycles or the realm time multiplier, and realm precipitation never changes Overworld weather.
+
 Vanilla beds work inside a personal Xianqiao realm. Using a bed sleeps normally and records that exact personal dimension as the player's respawn point instead of causing a dimension explosion; the server restores the dynamic realm when the saved respawn target must be resolved.
 
 Item-name colors use one progression-aware rarity policy: basic materials remain Common, mid-game crystals, spirit equipment, and machines are Uncommon, expensive Xianqiao, survival, and advanced resource devices are Rare, and dragon-egg/nether-star-class infinite sources or endgame ruin equipment are Epic.
@@ -177,6 +179,21 @@ The Immortal Furnace is a three-lane cultivation furnace available both as a pla
 - Embedded auto-fill restores a full previous input stack and sends completed output directly to personal storage.
 - The Immortal Spirit Drive binds to a player and can pay a placed furnace from that player's storage, checking only when a real payment is required.
 - JEI and EMI receive a dedicated Immortal Furnace recipe category and catalysts.
+
+## Simulated Spirit Field (0.0.6)
+
+The Simulated Spirit Field uses the unmodified vanilla Smooth Stone texture on a twelve-edge open frame whose geometry alone follows the Stabilized Miniature Immortal Ruin. Its internal substrate renders as the actual block state; ordinary soil becomes hydrated farmland, and the crop model advances through real age states over each 50-tick cycle.
+
+- Its panel size, source/fuel/extra-tool positions, twelve output slots, and player-inventory layout match the Simulated Reincarnation Furnace.
+- Only the top accepts seeds and the four horizontal sides accept True Yuan, Immortal Yuan, or a bound Spirit Drive; output extraction can be enabled independently on all six faces. The tool slot is manual-only.
+- The seed is a permanent specimen and is never consumed. Every cycle evaluates the mature crop's real loot table with the shared tool and atomically inserts all drops into the twelve-slot output cache.
+- Chorus fruit is accepted as a permanent seed only on end-stone-like substrate. A centered chorus flower grows continuously from 0.15x to 0.70x and each cycle yields exactly one chorus flower and two chorus fruit.
+- True Yuan and Immortal Yuan use the Immortal Furnace's 150/500-tick burn durations. With an empty fuel slot inside Xianqiao, the field pays one Immortal Yuan directly from the realm owner.
+- The upper-right gear opens the same six-face adjacent preview, per-face output, automatic-output, and experience-release settings as the Simulated Reincarnation Furnace. Automatic routing resolves the current realm owner first, the Spirit Drive owner second, then the twelve local output slots.
+- Dirt/farmland, common soil tags, End Stone, and Soul Sand substrates can be replaced by right-clicking; the former substrate returns to the player's inventory. Chorus-like crops require End Stone and Nether Wart requires Soul Sand.
+- Data packs can extend modded crops through the `immortalstorage:simulated_spirit_field_seeds` and `immortalstorage:simulated_spirit_field_substrates` tags plus seed-to-crop-to-substrate JSON files under `data/*/simulated_spirit_field_crops/`.
+- The recipe yields four fields from Spirit Crystals, Primordial Qi, Spirit Iron Nuggets, Grass Block, and Nurturing Crystal. Its rarity is Uncommon.
+- On 2026-08-01, the 0.0.6 release artifact was deployed to the 30-JAR full-mod PCL2 profile and passed Numen single-player QA under JDK 21 and `zh_cn`.
 
 ## Source Veins and Resource Automation
 
@@ -344,7 +361,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar
 ```
 
 Useful verification tasks:
@@ -353,7 +370,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The 0.0.5 release gate passes 682 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, and no-AE2-runtime checks. Release JAR SHA256: `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`.
+The 0.0.6 release gate passes 691 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, dedicated-server startup, and Numen single-player checks. Release JAR SHA256: `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`.
 
 ## Project Layout
 

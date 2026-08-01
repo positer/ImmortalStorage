@@ -94,6 +94,7 @@ public class ImmortalStorageMod {
                 event.getRegistryAccess()));
         event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener());
         event.addListener(new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
+        event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
     }
 
     @SubscribeEvent

@@ -69,6 +69,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.DEEPSLATE_SPIRIT_CRYSTAL_ORE.get());
                         output.accept(ModBlocks.IMMORTAL_FURNACE.get());
                         output.accept(ModBlocks.SIMULATED_REINCARNATION_FURNACE.get());
+                        output.accept(ModBlocks.SIMULATED_SPIRIT_FIELD.get());
                         output.accept(ModBlocks.XIANQIAO_MANAGER.get());
                         output.accept(ModBlocks.XIANQIAO_INTERFACE.get());
                         output.accept(ModBlocks.SOURCE_VEIN_MANAGER.get());

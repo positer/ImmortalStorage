@@ -20,6 +20,8 @@ class PersonalRealmBedRespawnContractTest {
 
         assertTrue(dimensionType.contains("\"bed_works\": true"));
         assertFalse(dimensionType.contains("\"bed_works\": false"));
+        assertFalse(dimensionType.contains("\"fixed_time\""),
+                "The client sky must follow the realm's locked day/night time");
         assertTrue(helper.contains("ensureRespawnRealmRegistered(ServerPlayer player)"));
         assertTrue(helper.contains("player.getRespawnDimension()"));
         assertTrue(helper.contains("PersonalRealmLevelFactory.getOrCreate"));

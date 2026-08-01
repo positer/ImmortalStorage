@@ -66,7 +66,7 @@ public class ImmortalFurnaceBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState s, BlockEntityType<T> t) {
         return level.isClientSide ? null : (lvl, pos, st, be) -> {
             if (be instanceof ImmortalFurnaceBlockEntity f && lvl instanceof net.minecraft.server.level.ServerLevel sl) {
-                if (f.isAutoConsume()) {
+                if (f.isAutoConsume() || ImmortalStorageDimensions.isXianqiaoRealm(lvl.dimension())) {
                     f.tryAutoRefuelFromRealmOwner(sl);
                 }
                 ImmortalFurnaceBlockEntity.serverTick(sl, pos, st, f);

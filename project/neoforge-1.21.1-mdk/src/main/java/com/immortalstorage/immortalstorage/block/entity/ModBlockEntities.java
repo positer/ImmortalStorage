@@ -27,6 +27,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("simulated_reincarnation_furnace", () ->
                     BlockEntityType.Builder.of(SimulatedReincarnationFurnaceBlockEntity::new,
                             ModBlocks.SIMULATED_REINCARNATION_FURNACE.get()).build(null));
+    public static final Supplier<BlockEntityType<SimulatedSpiritFieldBlockEntity>> SIMULATED_SPIRIT_FIELD =
+            BLOCK_ENTITIES.register("simulated_spirit_field", () ->
+                    BlockEntityType.Builder.of(SimulatedSpiritFieldBlockEntity::new,
+                            ModBlocks.SIMULATED_SPIRIT_FIELD.get()).build(null));
 
     public static final Supplier<BlockEntityType<MiniatureImmortalRuinBlockEntity>> MINIATURE_IMMORTAL_RUIN =
             BLOCK_ENTITIES.register("miniature_immortal_ruin", () ->
@@ -100,6 +104,8 @@ public final class ModBlockEntities {
                         : new net.neoforged.neoforge.items.wrapper.RangedWrapper(
                                 be.itemHandler(), SimulatedReincarnationFurnaceBlockEntity.OUTPUT_START,
                                 SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_SPIRIT_FIELD.get(),
+                SimulatedSpiritFieldBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> be.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_INTERFACE.get(),

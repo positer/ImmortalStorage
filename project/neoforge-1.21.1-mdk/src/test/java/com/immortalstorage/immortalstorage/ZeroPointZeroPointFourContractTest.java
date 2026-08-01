@@ -78,11 +78,14 @@ final class ZeroPointZeroPointFourContractTest {
         assertFalse(staff.contains("level.noCollision(serverPlayer"));
     }
 
-    @Test void realmManagementPanelContainsTheMagnetToggle() throws Exception {
+    @Test void realmManagementPanelContainsMagnetAndEnvironmentControls() throws Exception {
         String screen = source("client/screen/XianqiaoStorageScreen.java");
-        assertTrue(screen.contains("REALM_HEIGHT = 136"));
+        assertTrue(screen.contains("REALM_HEIGHT = 160"));
         assertTrue(screen.contains("REALM_WIDTH, REALM_HEIGHT"));
         assertTrue(screen.contains("this.magnetButton.setMessage(magnetLabel())"));
+        assertTrue(screen.contains("this.dayNightButton") && screen.contains("this.weatherButton"));
+        assertTrue(screen.contains("new ModPayloads.RealmEnvironment(this.menu.containerId, 0)"));
+        assertTrue(screen.contains("new ModPayloads.RealmEnvironment(this.menu.containerId, 1)"));
         int craft = screen.indexOf("new ItemStack(Items.CRAFTING_TABLE)");
         int smithing = screen.indexOf("new ItemStack(Items.SMITHING_TABLE)");
         int furnace = screen.indexOf("new ItemStack(ModBlocks.IMMORTAL_FURNACE.get())");

@@ -1,0 +1,7 @@
+{
+  "parent": "immortalstorage:block/arcane_machine_frame",
+  "textures": {
+    "frame": "minecraft:block/smooth_stone",
+    "particle": "minecraft:block/smooth_stone"
+  }
+}

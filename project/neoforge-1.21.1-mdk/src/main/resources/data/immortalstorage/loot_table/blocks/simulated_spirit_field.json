@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {"type": "minecraft:item", "name": "immortalstorage:simulated_spirit_field"}
+      ],
+      "conditions": [{"condition": "minecraft:survives_explosion"}]
+    }
+  ],
+  "random_sequence": "immortalstorage:blocks/simulated_spirit_field"
+}

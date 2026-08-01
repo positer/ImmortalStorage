@@ -29,7 +29,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.List;
 
 public final class ModNetwork {
-    public static final String PROTOCOL = "7";
+    public static final String PROTOCOL = "8";
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL).optional();
@@ -37,6 +37,8 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.OpenXianqiaoStorage.TYPE, ModPayloads.OpenXianqiaoStorage.STREAM_CODEC, ModNetwork::handleOpenXianqiao);
         registrar.playToServer(ModPayloads.TriggerTribulation.TYPE, ModPayloads.TriggerTribulation.STREAM_CODEC, ModNetwork::handleTriggerTribulation);
         registrar.playToServer(ModPayloads.TimeFlow.TYPE, ModPayloads.TimeFlow.STREAM_CODEC, ModNetwork::handleTimeFlow);
+        registrar.playToServer(ModPayloads.RealmEnvironment.TYPE, ModPayloads.RealmEnvironment.STREAM_CODEC,
+                ModNetwork::handleRealmEnvironment);
         registrar.playToServer(ModPayloads.SetStorageModule.TYPE, ModPayloads.SetStorageModule.STREAM_CODEC, ModNetwork::handleSetStorageModule);
         registrar.playToServer(ModPayloads.SetTerminalViewport.TYPE, ModPayloads.SetTerminalViewport.STREAM_CODEC, ModNetwork::handleSetTerminalViewport);
         registrar.playToServer(ModPayloads.SetTerminalQuery.TYPE, ModPayloads.SetTerminalQuery.STREAM_CODEC, ModNetwork::handleSetTerminalQuery);
@@ -263,6 +265,21 @@ public final class ModNetwork {
             if (!menu.handleEntryAction(player, payload.revision(), payload.entryId(), action)) {
                 sendTerminalSnapshot(player, menu);
             }
+        });
+    }
+
+    private static void handleRealmEnvironment(ModPayloads.RealmEnvironment payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || player.containerMenu.containerId != payload.containerId()
+                    || !(player.containerMenu instanceof XianqiaoStorageMenu menu)
+                    || !hasLiveXianqiaoMenu(player, menu) || menu.getActiveModule() != 1) return;
+            ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
+            if (data.getStage() < 6) return;
+            if (payload.action() == 0) data.toggleRealmDaytime();
+            else if (payload.action() == 1) data.cycleRealmWeather();
+            else return;
+            com.immortalstorage.immortalstorage.dimension.RealmHelper.refreshRealmEnvironment(player);
         });
     }
 

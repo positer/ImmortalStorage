@@ -1,0 +1,5 @@
+{
+  "seed": "minecraft:chorus_flower",
+  "crop": "minecraft:chorus_flower",
+  "substrates": ["#c:end_stones", "minecraft:end_stone"]
+}

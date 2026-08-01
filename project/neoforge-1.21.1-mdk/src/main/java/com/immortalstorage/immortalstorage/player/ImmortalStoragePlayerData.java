@@ -118,6 +118,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     private int realmRadiusChunks = 1;
     private int realmTimeRatePermille = 1000;
     private int preTribulationRealmTimeRatePermille = 1000;
+    private boolean realmDaytime = true;
+    private int realmWeatherMode = com.immortalstorage.immortalstorage.dimension.RealmEnvironmentPolicy.CLEAR;
     private final Set<Long> modifiedRealmChunks = new HashSet<>();
 
     private final NonNullList<ItemStack> kongqiao = NonNullList.withSize(KONGQIAO_MAX_SLOTS_CEILING, ItemStack.EMPTY);
@@ -314,6 +316,17 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
                 : RealmTimeScalePolicy.clampPermille(stage, v);
         if (realmTimeRatePermille == next) return;
         this.realmTimeRatePermille = next;
+        syncOwner();
+    }
+    public boolean isRealmDaytime() { return realmDaytime; }
+    public int getRealmWeatherMode() { return realmWeatherMode; }
+    public void toggleRealmDaytime() {
+        realmDaytime = !realmDaytime;
+        syncOwner();
+    }
+    public void cycleRealmWeather() {
+        realmWeatherMode = com.immortalstorage.immortalstorage.dimension.RealmEnvironmentPolicy
+                .nextWeatherMode(realmWeatherMode);
         syncOwner();
     }
     public Set<Long> getModifiedRealmChunks() { return Collections.unmodifiableSet(modifiedRealmChunks); }
@@ -1522,6 +1535,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putInt("realmRadiusChunks", realmRadiusChunks);
         tag.putInt("realmTimeRatePermille", realmTimeRatePermille);
         tag.putInt("preTribulationRealmTimeRatePermille", preTribulationRealmTimeRatePermille);
+        tag.putBoolean("realmDaytime", realmDaytime);
+        tag.putInt("realmWeatherMode", realmWeatherMode);
         tag.putInt("kongqiaoMaxSlots", kongqiaoMaxSlots);
         tag.putInt("kongqiaoStackMultiplier", kongqiaoStackMultiplier);
         tag.putBoolean("hasSpiritCore", false);
@@ -1560,6 +1575,9 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         int syncedRate = tag.contains("realmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("realmTimeRatePermille") : RealmTimeScalePolicy.NORMAL_PERMILLE;
         realmTimeRatePermille = RealmTimeScalePolicy.clampPermille(stage, syncedRate);
+        realmDaytime = !tag.contains("realmDaytime", Tag.TAG_BYTE) || tag.getBoolean("realmDaytime");
+        realmWeatherMode = com.immortalstorage.immortalstorage.dimension.RealmEnvironmentPolicy
+                .sanitizeWeatherMode(tag.getInt("realmWeatherMode"));
         kongqiaoMaxSlots = Math.max(0, Math.min(KONGQIAO_MAX_SLOTS_CEILING, tag.getInt("kongqiaoMaxSlots")));
         kongqiaoStackMultiplier = Math.max(1, tag.getInt("kongqiaoStackMultiplier"));
         hasSpiritCore = false;
@@ -1653,6 +1671,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
         tag.putInt("realmRadiusChunks", realmRadiusChunks);
         tag.putInt("realmTimeRatePermille", realmTimeRatePermille);
+        tag.putBoolean("realmDaytime", realmDaytime);
+        tag.putInt("realmWeatherMode", realmWeatherMode);
         long[] dirtyChunks = new long[modifiedRealmChunks.size()];
         int dirtyIndex = 0;
         for (Long packed : modifiedRealmChunks) {
@@ -1758,6 +1778,9 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         realmRadiusChunks = tag.getInt("realmRadiusChunks");
         realmTimeRatePermille = tag.contains("realmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("realmTimeRatePermille") : RealmTimeScalePolicy.NORMAL_PERMILLE;
+        realmDaytime = !tag.contains("realmDaytime", Tag.TAG_BYTE) || tag.getBoolean("realmDaytime");
+        realmWeatherMode = com.immortalstorage.immortalstorage.dimension.RealmEnvironmentPolicy
+                .sanitizeWeatherMode(tag.getInt("realmWeatherMode"));
         preTribulationRealmTimeRatePermille = tag.contains("preTribulationRealmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("preTribulationRealmTimeRatePermille") : realmTimeRatePermille;
         modifiedRealmChunks.clear();

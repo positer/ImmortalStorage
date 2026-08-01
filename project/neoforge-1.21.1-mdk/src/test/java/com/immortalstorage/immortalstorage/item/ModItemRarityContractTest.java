@@ -11,6 +11,7 @@ class ModItemRarityContractTest {
         assertEquals(Rarity.COMMON, ModItems.rarityFor("spirit_iron"));
         assertEquals(Rarity.UNCOMMON, ModItems.rarityFor("spirit_crystal"));
         assertEquals(Rarity.UNCOMMON, ModItems.rarityFor("spirit_core"));
+        assertEquals(Rarity.UNCOMMON, ModItems.rarityFor("simulated_spirit_field"));
         assertEquals(Rarity.RARE, ModItems.rarityFor("substitute_puppet"));
         assertEquals(Rarity.RARE, ModItems.rarityFor("xianqiao_manager"));
         assertEquals(Rarity.RARE, ModItems.rarityFor("ancient_debris_vein"));

@@ -55,6 +55,10 @@ public final class ModBlocks {
             () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.TRIAL_SPAWNER).strength(5.0F)
                             .requiresCorrectToolForDrops().lightLevel(state -> 6))));
+    public static final Supplier<Block> SIMULATED_SPIRIT_FIELD = reg("simulated_spirit_field",
+            () -> new SimulatedSpiritFieldBlock(setBlockId("simulated_spirit_field",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.SMOOTH_STONE)
+                            .strength(3.5F).requiresCorrectToolForDrops().noOcclusion())));
     public static final Supplier<Block> SOURCE_VEIN_MANAGER = reg("source_vein_manager",
             () -> new SourceVeinManagerBlock(setBlockId("source_vein_manager",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)

@@ -1,0 +1,5 @@
+{
+  "seed": "minecraft:nether_wart",
+  "crop": "minecraft:nether_wart",
+  "substrates": ["minecraft:soul_sand"]
+}

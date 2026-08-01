@@ -1,5 +1,85 @@
 # Changelog
 
+## [0.0.6] - 2026-08-01
+
+本节完整列出相对正式版 `0.0.5` 的用户可见变化。
+
+### 简体中文
+
+#### 新增
+
+- 新增罕见稀有度的模拟灵田；工作台按“灵晶/混元一气/灵晶，灵铁粒/草方块/灵铁粒，灵晶/蕴灵晶/灵晶”合成 4 个。
+- 模拟灵田外壳只复用稳定化迷你仙墟的 12 棱镂空几何，外壳纹理严格直接引用未经修改的原版平滑石；没有采集哭泣黑曜石颜色，也没有添加私有纹理细节。
+- 新增与模拟轮回炼化炉完全同尺寸的 230×187 界面、相同的种源/燃料/额外工具槽位置、4×3 产物区与玩家背包布局。
+- 新增数据包可扩展作物目录：`simulated_spirit_field_seeds` 种子标签、`simulated_spirit_field_substrates` 基底标签，以及 `data/*/simulated_spirit_field_crops/*.json` 种子—作物—基底清单。
+- 新增可替换生长基底。玩家可用普通土壤、模组土壤/耕地、末地石类或灵魂沙类方块右键替换，旧基底优先返回背包；内部底层按对应湿润耕地或特殊基底渲染。
+- 新增按处理进度绘制的作物生长动画，并为末地石紫颂和灵魂沙地狱疣提供专用基底与动画规则。
+- 新增紫颂果特例：紫颂果作为不消耗种源，仅接受末地石类基底，内部持续放大紫颂花且最大为 0.70 倍，每轮固定产出 1 个紫颂花和 2 个紫颂果。
+- 仙窍管理页新增并排的日夜与天气控制。时间在正午/午夜间切换；天气按无天气、下雨、雷雨、下雪循环，并为下雪提供仙窍内客户端雪花效果。
+
+#### 变更
+
+- 模拟灵田中的种子是永久种源，处理时永不消耗。每 50 tick 无视自然生长条件，使用成熟作物的真实战利品表和额外工具槽物品生成一次收获。
+- 12 格产物区使用原子输出：只有完整产物清单均可容纳时才写入，避免部分插入或溢出丢失。
+- 自动化分面固定为顶部仅输入种子、四个水平侧面仅输入真元/仙元/仙灵驱动器；六个面可分别启用产物抽取，额外工具槽只允许玩家手动交互。
+- 真元与仙元分别提供与仙炉一致的 150/500 tick 燃烧时间；仙灵驱动器仍从绑定对象支付资源。
+- 模拟灵田补齐模拟轮回炼化炉同款六面邻接预览、逐面输出、自动输出以及经验存储/提取设置。
+- 模拟灵田自动输出对象顺序固定为“当前仙窍主人 → 仙灵驱动器绑定人 → 本地 12 格产物槽”。
+- 放置在所有者仙窍内的仙炉、模拟轮回炼化炉和模拟灵田，在需要燃料时可直接从仙窍所有者的个人存储支付仙元，不要求燃料槽中预先放入物品。
+- 日夜时刻和天气模式由服务器持久化并持续锁定，仙窍时间倍率、原版昼夜推进和天气倒计时均不会改变所选状态；旧存档缺少字段时默认白天、无天气。
+- 雨、雷雨和雪只作用于对应个人仙窍，不会修改主世界天气。网络协议由 7 升级为 8，联机时客户端与服务端必须同时使用 0.0.6。
+
+#### 修复
+
+- 修复模拟灵田无法把紫颂果识别为合法种源、紫颂产物及生长动画不符合指定规则的问题。
+- 修复仙窍维度类型中的 `fixed_time: 6000` 强制客户端持续渲染正午天空，导致按钮显示“黑夜”但天空盒不变化的问题；黑夜现锁定在 18000 的午夜星空。
+- 修复个人仙窍天气状态委托主世界数据而无法独立持锁的问题；个人维度现在拥有独立的晴雨、雷雨计时与状态。
+
+#### 兼容与验证
+
+- 正式支持范围保持为 Minecraft 1.21.1、NeoForge 21.1.235 与 Java 21；模组 ID、配置路径和既有 0.0.5 世界格式不变。
+- 691 项自动化测试全部通过，失败、错误与跳过均为 0；生产 JAR 边界、版本组成、精确版本产物、Ars Source API、无 AE2 运行时与专用服务端启动校验通过。
+- 0.0.6 在 30-JAR 全模组 PCL2 配置中使用 JDK 21、`zh_cn` 完成启动与 Numen 单人实机验证；日夜控制完成“黑夜 → 白天 → 黑夜”往返并确认午夜天空盒。
+
+### English
+
+This section is the complete user-visible delta from release `0.0.5`.
+
+#### Added
+
+- Added the Uncommon Simulated Spirit Field. Its specified crafting-table recipe yields four blocks from Spirit Crystals, Primordial Qi, Spirit Iron Nuggets, Grass Block, and Nurturing Crystal.
+- Reused only the Stabilized Miniature Immortal Ruin's twelve-edge open geometry. The frame directly references the unmodified vanilla Smooth Stone texture and takes neither color nor added private detail from Crying Obsidian.
+- Added a 230×187 interface matching the Simulated Reincarnation Furnace, including identical source/fuel/extra-tool positions, a 4×3 output cache, and the same player-inventory layout.
+- Added data-pack crop extension through the `simulated_spirit_field_seeds` seed tag, `simulated_spirit_field_substrates` substrate tag, and seed-to-crop-to-substrate files under `data/*/simulated_spirit_field_crops/*.json`.
+- Added replaceable normal/modded soil and farmland, End Stone-like, and Soul Sand-like substrates. The former substrate returns to the inventory when possible, and the internal floor renders the matching hydrated farmland or special substrate.
+- Added crop growth animation driven by processing progress, with dedicated End Stone Chorus and Soul Sand Nether Wart substrate/render rules.
+- Added the Chorus Fruit special case: it is a permanent End Stone-only seed, renders a continuously scaling Chorus Flower capped at 0.70×, and yields exactly one Chorus Flower plus two Chorus Fruit per cycle.
+- Added side-by-side environment controls to Xianqiao Management. Time toggles locked noon/midnight; weather cycles clear, rain, thunder, and snow, with a personal-realm snowflake effect for snow.
+
+#### Changed
+
+- Seeds in the Simulated Spirit Field are permanent specimens and are never consumed. Every 50 ticks, the field ignores natural growth conditions and evaluates the mature crop's real loot table using the extra-slot tool.
+- The twelve output slots use atomic insertion: no drops are written unless the complete result list fits, preventing partial insertion and overflow loss.
+- Sided automation is fixed to top-only seed input and four-horizontal-side True Yuan, Immortal Yuan, or Spirit Drive fuel input. Output extraction is configurable on all six faces, while the extra tool remains manual-only.
+- True Yuan and Immortal Yuan retain the Immortal Furnace's 150/500-tick burn durations, and Spirit Drives continue paying from their bound player.
+- Added the Simulated Reincarnation Furnace's six-face adjacent preview, per-face output, automatic-output, and stored-experience controls to the Simulated Spirit Field.
+- Automatic output resolves targets in the fixed order: current realm owner, Spirit Drive owner, then the twelve local output slots.
+- The Immortal Furnace, Simulated Reincarnation Furnace, and Simulated Spirit Field can pay Immortal Yuan directly from the personal storage of their realm owner when they need fuel inside that owner's realm.
+- Day/night and weather are persisted and continuously locked server-side. Realm time multipliers, vanilla day progression, and weather timers cannot change the selection; older saves default to day and clear weather.
+- Rain, thunder, and snow are local to the personal realm and never change Overworld weather. The network protocol advances from 7 to 8, so multiplayer clients and servers must both use 0.0.6.
+
+#### Fixed
+
+- Fixed Chorus Fruit not being accepted as a valid field seed and corrected its dedicated drops and growth animation.
+- Removed `fixed_time: 6000` from the personal-realm dimension type, which previously forced a noon sky while the button displayed Night. Night now locks to a clear midnight sky at time 18000.
+- Fixed personal-realm weather delegating to Overworld level data instead of retaining an independent locked rain/thunder state.
+
+#### Compatibility and verification
+
+- Supported versions remain Minecraft 1.21.1, NeoForge 21.1.235, and Java 21. The mod ID, configuration paths, and existing 0.0.5 world format are unchanged.
+- All 691 automated tests passed with zero failures, errors, or skips. Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, no-AE2-runtime, and dedicated-server startup checks passed.
+- Version 0.0.6 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile and passed Numen single-player QA, including a Night → Day → Night round trip with the midnight sky confirmed.
+
 ## [0.0.5] - 2026-07-25
 
 本节列出相对已发布 `0.0.4` 的完整用户可见变更。

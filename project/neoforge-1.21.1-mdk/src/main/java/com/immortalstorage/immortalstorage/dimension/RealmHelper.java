@@ -233,6 +233,18 @@ public final class RealmHelper {
         return activateRealmTickRate(player, realm);
     }
 
+    /** Apply the owner's persisted day/weather selection immediately when its realm is loaded. */
+    public static boolean refreshRealmEnvironment(ServerPlayer player) {
+        if (player == null || player.server == null) return false;
+        ServerLevel realm = player.server.getLevel(ImmortalStorageDimensions.personalRealmKey(player.getUUID()));
+        if (!(realm instanceof PersonalRealmServerLevel personal) || !personal.isBoundTo(player.getUUID())) {
+            return false;
+        }
+        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
+        personal.refreshEnvironmentLock(player.getUUID(), data.isRealmDaytime(), data.getRealmWeatherMode());
+        return true;
+    }
+
     private static boolean activateRealmTickRate(ServerPlayer player, ServerLevel realm) {
         if (!(realm instanceof PersonalRealmServerLevel personal)
                 || !personal.isBoundTo(player.getUUID())) {

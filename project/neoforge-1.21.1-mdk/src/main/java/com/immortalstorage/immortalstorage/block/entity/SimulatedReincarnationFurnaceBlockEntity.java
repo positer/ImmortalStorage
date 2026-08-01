@@ -127,6 +127,13 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
                 if (data.consumeTrueYuan(1L)) { burnTicks = 50; return true; }
             }
         }
+        UUID realmOwner = ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
+        ServerPlayer ownerPlayer = realmOwner == null ? null
+                : level.getServer().getPlayerList().getPlayer(realmOwner);
+        if (ownerPlayer != null) {
+            var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(ownerPlayer);
+            if (data.consumeImmortalYuan(1L)) { burnTicks = 500; return true; }
+        }
         return false;
     }
 

@@ -28,7 +28,7 @@ import java.util.Optional;
 public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorageMenu>
         implements TerminalFluidScreenAccess {
     private static final int REALM_WIDTH = 104;
-    private static final int REALM_HEIGHT = 136;
+    private static final int REALM_HEIGHT = 160;
     /** Small vanilla panel seam; the removed channel rail no longer reserves 32 px. */
     private static final int REALM_GAP = 4;
 
@@ -42,6 +42,8 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     private Button tribulateButton;
     private Button slowerTimeButton;
     private Button fasterTimeButton;
+    private Button dayNightButton;
+    private Button weatherButton;
     private Button autoFurnaceFuelButton;
     private Button autoFurnaceFillButton;
     private Button handAutoRefillButton;
@@ -97,10 +99,23 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                         Component.translatable("container.immortalstorage.terminal.tribulate"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)))
                 .bounds(this.leftPos + this.imageWidth + REALM_GAP + 20,
-                        this.topPos + 78, 68, 20)
+                        this.topPos + 99, 68, 20)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(
                         Component.translatable("container.immortalstorage.terminal.tribulate_hint")))
                 .build());
+        int environmentX = this.leftPos + this.imageWidth + REALM_GAP + 8;
+        this.dayNightButton = this.addRenderableWidget(Button.builder(dayNightLabel(),
+                        button -> PacketDistributor.sendToServer(
+                                new ModPayloads.RealmEnvironment(this.menu.containerId, 0)))
+                .bounds(environmentX, this.topPos + 78, 42, 18)
+                .tooltip(Tooltip.create(Component.translatable(
+                        "container.immortalstorage.terminal.day_night_hint"))).build());
+        this.weatherButton = this.addRenderableWidget(Button.builder(weatherLabel(),
+                        button -> PacketDistributor.sendToServer(
+                                new ModPayloads.RealmEnvironment(this.menu.containerId, 1)))
+                .bounds(environmentX + 46, this.topPos + 78, 42, 18)
+                .tooltip(Tooltip.create(Component.translatable(
+                        "container.immortalstorage.terminal.weather_hint"))).build());
         this.slowerTimeButton = this.addRenderableWidget(Button.builder(Component.literal("-"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, -1)))
                 .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 57, 20, 20)
@@ -130,13 +145,13 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         this.handAutoRefillButton = this.addRenderableWidget(Button.builder(
                         handAutoRefillLabel(), button -> requestMenuButton(
                                 XianqiaoStorageMenu.HAND_AUTO_REFILL_BUTTON))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 99, 88, 16)
+                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 120, 88, 16)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.hand_refill_hint")))
                 .build());
         this.magnetButton = this.addRenderableWidget(Button.builder(magnetLabel(),
                         button -> requestMenuButton(XianqiaoStorageMenu.MAGNET_BUTTON))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 118, 88, 16)
+                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 139, 88, 16)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.magnet_hint"))).build());
         int inventoryActionsY = this.topPos + this.imageHeight - 106;
@@ -609,6 +624,16 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
             this.fasterTimeButton.visible = timeVisible;
             this.fasterTimeButton.active = timeVisible;
         }
+        if (this.dayNightButton != null) {
+            this.dayNightButton.visible = this.realmVisible;
+            this.dayNightButton.active = this.realmVisible;
+            this.dayNightButton.setMessage(dayNightLabel());
+        }
+        if (this.weatherButton != null) {
+            this.weatherButton.visible = this.realmVisible;
+            this.weatherButton.active = this.realmVisible;
+            this.weatherButton.setMessage(weatherLabel());
+        }
         if (this.autoFurnaceFuelButton != null) {
             this.autoFurnaceFuelButton.visible = this.furnaceVisible;
             this.autoFurnaceFuelButton.active = this.furnaceVisible;
@@ -647,6 +672,17 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         return Component.translatable(this.menu.isHandAutoRefill()
                 ? "container.immortalstorage.terminal.hand_refill_on"
                 : "container.immortalstorage.terminal.hand_refill_off");
+    }
+
+    private Component dayNightLabel() {
+        return Component.translatable(this.menu.getData().isRealmDaytime()
+                ? "container.immortalstorage.terminal.day"
+                : "container.immortalstorage.terminal.night");
+    }
+
+    private Component weatherLabel() {
+        return Component.translatable("container.immortalstorage.terminal.weather."
+                + this.menu.getData().getRealmWeatherMode());
     }
 
     @Override

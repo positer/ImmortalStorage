@@ -32,6 +32,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
     static final float BASE_TICKS_PER_SECOND = 20.0F;
 
     private final UUID ownerId;
+    private final PersonalRealmLevelData realmLevelData;
     private final TickBudget tickBudget = new TickBudget();
     private boolean tickingRealm;
 
@@ -55,6 +56,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
             throw new IllegalArgumentException("Personal realm level key is not bound to its owner");
         }
         this.ownerId = ownerId;
+        this.realmLevelData = levelData;
         levelData.bindPersistence(getDataStorage());
     }
 
@@ -78,6 +80,14 @@ final class PersonalRealmServerLevel extends ServerLevel {
         this.tickBudget.restore();
     }
 
+    void refreshEnvironmentLock(UUID playerId, boolean daytime, int weatherMode) {
+        if (!isBoundTo(playerId)) {
+            throw new IllegalArgumentException("Only the bound owner may configure a personal realm");
+        }
+        realmLevelData.setEnvironmentLock(daytime, weatherMode);
+        applyEnvironmentLock();
+    }
+
     boolean isTickScaleActive() {
         return this.tickBudget.active;
     }
@@ -99,15 +109,43 @@ final class PersonalRealmServerLevel extends ServerLevel {
         if (owner == null || owner.level() != this) {
             this.tickBudget.restore();
         }
+        if (owner != null) {
+            var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(owner);
+            realmLevelData.setEnvironmentLock(data.isRealmDaytime(), data.getRealmWeatherMode());
+        }
+        applyEnvironmentLock();
         int passes = this.tickBudget.consumePasses();
         this.tickingRealm = true;
         try {
             for (int pass = 0; pass < passes; pass++) {
                 if (pass > 0 && !this.tickBudget.active) break;
                 super.tick(hasTime);
+                applyEnvironmentLock();
             }
         } finally {
             this.tickingRealm = false;
+        }
+    }
+
+    private void applyEnvironmentLock() {
+        setDayTime(RealmEnvironmentPolicy.lockedDayTime(realmLevelData.lockedDaytime()));
+        int weather = realmLevelData.lockedWeatherMode();
+        boolean raining = weather == RealmEnvironmentPolicy.RAIN
+                || weather == RealmEnvironmentPolicy.THUNDER;
+        boolean thundering = weather == RealmEnvironmentPolicy.THUNDER;
+        if (realmLevelData.isRaining() != raining) realmLevelData.setRaining(raining);
+        if (realmLevelData.isThundering() != thundering) realmLevelData.setThundering(thundering);
+        if (raining) {
+            if (realmLevelData.getRainTime() < 200) realmLevelData.setRainTime(12_000);
+            if (realmLevelData.getClearWeatherTime() != 0) realmLevelData.setClearWeatherTime(0);
+        } else {
+            if (realmLevelData.getClearWeatherTime() < 200) realmLevelData.setClearWeatherTime(12_000);
+            if (realmLevelData.getRainTime() != 0) realmLevelData.setRainTime(0);
+        }
+        if (thundering) {
+            if (realmLevelData.getThunderTime() < 200) realmLevelData.setThunderTime(12_000);
+        } else if (realmLevelData.getThunderTime() != 0) {
+            realmLevelData.setThunderTime(0);
         }
     }
 

@@ -13,6 +13,7 @@ import com.immortalstorage.immortalstorage.menu.custom.SourceVeinManagerMenu;
 import com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SimulatedReincarnationFurnaceMenu;
+import com.immortalstorage.immortalstorage.menu.custom.SimulatedSpiritFieldMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -37,6 +38,9 @@ public final class ModMenus {
     public static final Supplier<MenuType<SimulatedReincarnationFurnaceMenu>> SIMULATED_REINCARNATION_FURNACE =
             MENUS.register("simulated_reincarnation_furnace",
                     () -> IMenuTypeExtension.create(SimulatedReincarnationFurnaceMenu::new));
+    public static final Supplier<MenuType<SimulatedSpiritFieldMenu>> SIMULATED_SPIRIT_FIELD =
+            MENUS.register("simulated_spirit_field",
+                    () -> IMenuTypeExtension.create(SimulatedSpiritFieldMenu::new));
 
     public static final Supplier<MenuType<SourceVeinMenu>> SOURCE_VEIN =
             MENUS.register("source_vein", () -> IMenuTypeExtension.create(SourceVeinMenu::new));
