@@ -2,33 +2,51 @@
 
 ## [0.0.7] - 2026-08-06
 
-本节完整列出相对正式版 `0.0.6` 的用户可见变化。
+本节完整列出相对正式版 `0.0.6` 的全部用户可见变化。
 
 ### 简体中文
 
 #### 新增
 
-- 新增回响碎片源方块：不可堆叠的回响碎片矿脉源方块，接入源方块管理器聚合与六面推出；附带成就、战利品表、合成配方，并可被镐子采集。
-- 新增纠缠、高级与高级纠缠的稳定化迷你仙墟三个变体；纠缠侧支持正常/反向双向 54 格缓冲，各侧拥有独立的频率、范围与 20 格过滤器。
-- 四个容器交互面变体统一改为 2×3 六格交互面掩码网格（上行 UP/NORTH/DOWN，下行 WEST/SOUTH/EAST），逐面启用并渲染半透明白色预览高亮；六格全关 = 该侧完全不与容器交互。
-- 水仙墟/岩浆仙墟现在可作为机械动力鼓风机触媒：通过 `create:fan_processing_catalysts/splashing` 与 `blasting` 标签充当洗炼与鼓风烧炼触媒，并提供 `create:fan_transparent` 使鼓风机风可以穿过源方块。
-- 安装 Applied Flux、Applied Mekanistics、Ars Énergistique、Applied Botanics 等 AE 附属模组时，自动把其现有资源键映射到同一仙窍账本，无需额外中介模组。
+- 新增回响碎片源方块：稀有稀有度的不可堆叠源方块，1 回响碎片 : 16 仙元的批量兑换，八阶解锁；接入源方块管理器聚合与六面推出。附带成就（`immortalstorage_stage_8` 条件）、战利品表、合成配方、方块/物品模型、确定性的色相旋转框架纹理，并加入 `source_veins` 标签与镐类挖掘标签。
+- 新增纠缠稳定化迷你仙墟：正常/反向两套相互独立、每 tick 并行运行的配置组，共享一个 54 格暂存缓冲——正常侧把范围内掉落的物品实体收集进缓冲，反向侧按各自频率/范围/过滤器把缓冲投出到目标容器；两套配置各自拥有独立的 20 格过滤器与独立的范围、频率、预览与启用开关，界面可切换。
+- 新增高级稳定化迷你仙墟：以稳定化迷你仙墟为基础、蓝色哭泣黑曜石配色框架，拥有可调范围；作为独立容器（自带 54 格物品栏），对范围内每一个物品处理器按独立容器调度——正常模式从每个容器逐格提取一个允许堆叠进入仙墟自身物品栏，反向模式把仙墟自身物品栏均分投出到各容器。循环行为可配置：访问策略（轮询跳过 / 强制轮询）、均分方式（逐件 / 逐组）与访问顺序（远先 / 近先，按曼哈顿距离并以位置决定平局）。不产生世界掉落，无法容纳的物品停留在仙墟自身物品栏。
+- 新增高级纠缠稳定化迷你仙墟：两套相互独立的高级调度配置（正常/反向）各自拥有暂存缓冲，共享一个 54 格缓冲与两套可切换菜单。
+- 新增 `AdvancedRuinScheduler` 共享纯逻辑扫描/均分器，供两个高级变体复用。
+- 三个新变体的渲染器复用既有的 `MiniatureImmortalRuinRenderer.drawDisc` 与共享 `arcane_machine_frame` JSON 框架；物品预览新增三个动态装饰：高级稳定化复用 `RuinCoreItemDecorator`，纠缠/高级纠缠使用 `EntangledRuinCoreItemDecorator`（两个反向旋转的黑白球体），模拟灵田使用 `SimulatedSpiritFieldItemDecorator`（湿润基底带 + 脉动作物符号）。
+- 纠缠与高级纠缠的预览框现在正确渲染（相对方块坐标、外扩 0.01 避免与方块面深度冲突）；新增 `RuinFaceHighlightRenderer`，按已启用面在预览框上逐面绘制半透明白色高亮面。
+- 全部四个容器交互面变体新增 2×3 交互面掩码网格（上行 UP/NORTH/DOWN，下行 WEST/SOUTH/EAST）：`RuinFaceGrid` 提供 28×18 的六个开关按钮，`RuinFaceText` 用 U/D/N/E/W/S 单字母标注；逐面启用并渲染预览高亮，六格全关 = 该侧完全不与容器交互。
+- 水仙墟/岩浆仙墟现在可作为机械动力（Create）鼓风机触媒：`create:fan_processing_catalysts/splashing`（水仙墟）与 `blasting`（岩浆仙墟）标签使两者充当洗炼与鼓风烧炼触媒，并新增 `create:fan_transparent` 白名单使鼓风机风可以穿过源方块（与 Create 自身把烈焰人燃烧器同时标记为透明和触媒的模式一致）。
+- 新增纠缠侧感知的联网负载：`SetEntangledRuinFilter`、`ToggleEntangledRuinFilterMode` 与 `SetEntangledRuinValue`（侧感知），两个纠缠菜单暴露 `setAuthoritativeValue(side, index, value)`。
+- 新增合成配方：纠缠变体为无序合成；高级变体为 2×2 有序合成；高级纠缠可从高级变体进行 2×2 有序合成或无序转换。
+- 验证了 AE 附属自动适配：安装 Applied Flux、Applied Mekanistics、Ars Énergistique、Applied Botanics 等附属时，其现有资源键自动优先映射到同一仙窍账本；未安装对应附属时回退到 ImmortalStorage 自有键，无需额外中介模组。
 
 #### 变更
 
-- 调度器改为严格的区内枚举：只与操作区域（预览盒）内的容器交互，不再越出预览盒一格、与区域外相邻容器交互。
-- 每个区内方块位置 × 每个已启用面 = 一个独立目标，统一通过 `Capabilities.ItemHandler.BLOCK, pos, face` 的面参数访问容器能力。
-- 旧存档的“任意面”(-1) 配置在加载时迁移为全关掩码。
+- 稳定化/高级稳定化仙墟界面：⚙ 设置与 ▦ 过滤面板改为互斥（打开一个自动关闭另一个）；高级稳定化的三个调度按钮（访问/均分/顺序）移入设置子菜单。
+- 纠缠与高级纠缠仙墟按用户要求重建为“每侧独立配置、共享 54 格缓冲”结构：行为/过滤器各侧独立，界面采用稳定化风格的 ⚙ 设置 / ▦ 过滤两按钮结构，面板内用 ◀/▶ 切换正常/反向侧；移除了旧的四页签布局。
+- 高级稳定化与高级纠缠稳定化仙墟解耦自仙窍：移除全部 `PersonalStorageEndpoint`/`PersonalStorageApi` 引用、所有者 UUID 绑定流程与 `Owner` NBT；两个高级变体作为完全独立的容器运行。
+- `AdvancedRuinScheduler.collect` 改为每个容器逐格提取一个允许堆叠直接进入仙墟自身 54 格物品栏；`eject` 为纯 `distribute` 分发；移除 `pullMemory`/`bufferInsert`/`reinsert` 辅助方法。
+- 移除了迷你仙墟上被错误绑定的“力/伤害/扭曲”配置。
+- 调度器改为严格的区内枚举：只与操作区域（预览盒）内的容器交互，不再越出预览盒一格与区域外相邻容器交互。
+- 每个区内方块位置 × 每个已启用面 = 一个独立目标，统一通过 NeoForge 官方 `Capabilities.ItemHandler.BLOCK, pos, face` 的面参数访问容器能力。
+- 旧存档的“任意面”(-1) 配置在加载时迁移为全关掩码；NBT 由单面 `Face` 迁移到 `FaceMask`（`-1` 或越界 → 全关，合法 ordinal → 对应位）。
+- 稳定化的菜单、界面与方块实体改为可扩展（非 final/泛型化），供新变体继承，行为不变。
+- 网络协议保持 8，联机要求不变。
 
 #### 修复
 
 - 修复源方块为完整方块、导致机械动力鼓风机风无法穿过的问题；源方块现已加入鼓风机透明白名单。
+- 修复反向稳定化仙墟 `eject()` 发送循环中遗留的 `break` 只处理首格的问题，现在 54 格全部轮询且未被接受的多余物品回到原槽；纠缠方块实体的 `eject()` 应用同一修复。
+- 修复调度器扫描循环包含排他上界（`dx <= sizeX`）、可能越出预览盒一格与区域外相邻容器交互的问题；`enumerate` 改为严格上界（`dx < sizeX`）并排除原点，与预览轮廓完全一致。
+- （开发过程）修复 Gradle 增量编译曾下发陈旧类、导致部分新界面“未渲染/未实现”的问题；强制 `clean` 重建后新类与界面已确认存在于 0.0.7 制品。
 
 #### 兼容与验证
 
 - 正式支持范围保持 Minecraft 1.21.1、NeoForge 21.1.235 与 Java 21；模组 ID、配置路径与网络协议（8）不变。
-- 700 项自动化测试全部通过，失败、错误与跳过均为 0；生产 JAR 边界、版本组成、精确版本产物、Ars Source API 与无 AE2 运行时校验通过。
-- 0.0.7 在 30-JAR 全模组 PCL2 配置（含 Create 6.0.10）中使用 JDK 21、`zh_cn` 完成启动与单人实机验证，进入个人仙窍维度无 ImmortalStorage 致命错误。
+- 700 项自动化测试全部通过，失败、错误与跳过均为 0；新增 `AdvancedRuinSchedulerContractTest`（9 项：排序、逐容器收集、轮询阻塞/跳过、均分投出、逐组投出、掩码解码、区内独占枚举）以及自检/资源审计/模型计数/成就计数/描述契约的同步更新。
+- 生产 JAR 边界、版本组成、精确版本产物、Ars Source API 与无 AE2 运行时校验通过。
+- 0.0.7 在 30-JAR 全模组 PCL2 配置（含 Create 6.0.10 及其 ponder/flywheel）中使用 JDK 21、`zh_cn` 完成启动与单人实机验证，进入个人仙窍维度无 ImmortalStorage 致命错误；部署后实例恢复既有 `Test` 存档并确认 Create 6.0.10 正常加载。
 
 ### English
 
@@ -36,27 +54,45 @@ This section is the complete user-visible delta from release `0.0.6`.
 
 #### Added
 
-- Added the Echo Shard Source Vein: a non-stacking source block feeding Source Vein Manager aggregation and per-face export, with an advancement, loot table, crafting recipe, and pickaxe mining.
-- Added the Entangled, Advanced, and Advanced-Entangled Stabilized Miniature Immortal Ruins. Entangled sides offer normal/reversed 54-slot buffering with independent frequency, range, and 20-slot filters per side.
-- All four container-facing variants now use a unified 2×3 interaction face-mask grid (top row UP/NORTH/DOWN, bottom row WEST/SOUTH/EAST) with per-face toggles and translucent white preview highlights; six-off disables interaction on that side entirely.
-- Water and Lava Source Veins now work as Create blower-fan catalysts: the `create:fan_processing_catalysts/splashing` and `blasting` tags mark them as fan-washing and fan-smelting catalysts, and the `create:fan_transparent` tag lets fan wind pass through the vein blocks.
-- When AE add-ons such as Applied Flux, Applied Mekanistics, Ars Énergistique, or Applied Botanics are installed, their existing resource keys are mapped onto the same Xianqiao ledger automatically, with no extra intermediary mod required.
+- Added the Echo Shard Source Vein: a RARE, non-stacking source block exchanging 1 echo shard for 16 Immortal Yuan per batch, gated at stage 8, feeding Source Vein Manager aggregation and per-face export. It ships with an advancement (criterion `immortalstorage_stage_8`), loot table, crafting recipe, block/item models, a deterministic hue-rotated frame texture, the `source_veins` tag, and the pickaxe mineable tag.
+- Added the Entangled Stabilized Miniature Immortal Ruin: two independent per-tick config groups (normal and reversed) sharing one 54-slot staging buffer. The normal side collects dropped item entities inside its range into the buffer; the reversed side ejects the buffer to its target block by its own frequency, range, and filter. Each side keeps an independent 20-slot filter, range, frequency, preview, and enabled switch, with a switchable interface.
+- Added the Advanced Stabilized Miniature Immortal Ruin: a stabilized-ruin base with a blue Crying Obsidian frame recolor and an adjustable range. It runs as an independent container (own 54-slot inventory) and schedules every item handler in its range as an independent container: normal mode pulls one allowed stack per container into the ruin's own inventory; reversed mode distributes the ruin's own inventory across the containers. Looping is configurable: access (poll-skip / force-poll), split (item-by-item / group-by-group), and order (far-first / near-first by Manhattan distance with position tie-break). No world drops; unaccepted leftovers stay staged in the ruin's own inventory.
+- Added the Advanced Entangled Stabilized Miniature Immortal Ruin: two independent advanced scheduling configs (normal and reversed) with their own staging buffers, sharing one 54-slot buffer and two switchable menus.
+- Added the shared `AdvancedRuinScheduler` pure-logic scanner/splitter reused by both advanced variants.
+- The three new variants' renderers reuse the existing `MiniatureImmortalRuinRenderer.drawDisc` and the shared `arcane_machine_frame` JSON frame. Item previews gained three dynamic decorators: the advanced stabilized reuses `RuinCoreItemDecorator`, the entangled/advanced entangled use `EntangledRuinCoreItemDecorator` (two counter-rotating black/white spheres), and the Simulated Spirit Field uses `SimulatedSpiritFieldItemDecorator` (hydrated-substrate band plus a pulsing crop glyph).
+- The entangled and advanced entangled preview boxes now render correctly (relative to the block, inflated 0.01 to avoid z-fighting). A new `RuinFaceHighlightRenderer` draws a translucent white quad on the preview box per enabled face.
+- All four container-facing variants gained a 2×3 interaction face-mask grid (top row UP/NORTH/DOWN, bottom row WEST/SOUTH/EAST): `RuinFaceGrid` provides six 28×18 toggle buttons and `RuinFaceText` labels them with single letters U/D/N/E/W/S. Faces toggle individually with preview highlights, and six-off disables interaction on that side entirely.
+- Water and Lava Source Veins now work as Create blower-fan catalysts: the `create:fan_processing_catalysts/splashing` (water vein) and `blasting` (lava vein) tags mark them as fan-washing and fan-smelting catalysts, and a new `create:fan_transparent` whitelist lets fan wind pass through the vein blocks (mirroring Create's own pattern where the Blaze Burner is both transparent and a catalyst).
+- Added side-aware network payloads: `SetEntangledRuinFilter`, `ToggleEntangledRuinFilterMode`, and `SetEntangledRuinValue`; both entangled menus expose `setAuthoritativeValue(side, index, value)`.
+- Added recipes: the Entangled variant is shapeless, the Advanced variant is a 2×2 shaped recipe, and the Advanced Entangled is a 2×2 shaped or shapeless conversion from the Advanced variant.
+- Verified automatic AE add-on adaptation: when add-ons such as Applied Flux, Applied Mekanistics, Ars Énergistique, or Applied Botanics are installed, their existing resource keys map preferentially onto the same Xianqiao ledger; without the matching add-on the mod falls back to its own keys, so no intermediary mod is required.
 
 #### Changed
 
+- The Stabilized/Advanced Stabilized ruin screens now make the ⚙ settings and ▦ filter panels mutually exclusive; the Advanced Stabilized ruin's three scheduling buttons moved inside the settings sub-menu.
+- The Entangled and Advanced Entangled ruins were rebuilt so each side keeps its own behavior and filter configuration over a shared 54-slot buffer, using the stabilized ⚙ settings / ▦ filter two-button structure with a ◀/▶ side selector; the earlier four-tab layout was removed.
+- The Advanced Stabilized and Advanced Entangled Stabilized ruins are decoupled from Xianqiao: all `PersonalStorageEndpoint`/`PersonalStorageApi` references, the owner UUID binding flow, and the `Owner` NBT were removed. Both advanced variants run as fully independent containers.
+- `AdvancedRuinScheduler.collect` now inserts one allowed stack per container directly into the ruin's own 54-slot inventory; `eject` is a pure `distribute`; the `pullMemory`/`bufferInsert`/`reinsert` helpers were removed.
+- Removed the wrongly bound "force/damage/warp" configuration from the mini ruins.
 - The scheduler now enumerates strictly in-area positions, interacting only with containers inside the operation area (preview box); it no longer reaches one layer outside.
-- Each in-area position times each enabled face is an independent target resolved through `Capabilities.ItemHandler.BLOCK, pos, face`.
-- Legacy "any face" (-1) saves migrate to the all-off mask on load.
+- Each in-area position times each enabled face is an independent target resolved through the official NeoForge `Capabilities.ItemHandler.BLOCK, pos, face`.
+- Legacy "any face" (-1) saves migrate to the all-off mask on load; NBT migrated from the single-face `Face` key to `FaceMask` (-1/out-of-range maps to all-off, valid ordinals to their bit).
+- The stabilized menu, screen, and block entity became extensible (non-final / generic) so new variants can subclass them, with no behavior change.
+- The network protocol stays at 8; multiplayer requirements are unchanged.
 
 #### Fixed
 
 - Fixed the Source Vein blocks being full solid blocks that blocked Create blower-fan wind; the veins are now whitelisted as fan-transparent.
+- Fixed a stray `break` in the reversed stabilized ruin `eject()` send loop that processed only the first slot; all 54 slots are now cycled and unaccepted remainders return to their originating slot. The same fix was applied to the entangled block entity's `eject()`.
+- Fixed the scheduler scan loop including the exclusive upper bound (`dx <= sizeX`), which could reach one extra layer of containers outside the preview box; `enumerate` is now strict (`dx < sizeX`, origin excluded), matching the preview outline exactly.
+- (Development) Fixed Gradle incremental compilation shipping stale classes, which made some new screens appear "not rendered/not implemented"; a forced `clean` rebuild confirmed the fresh classes are present in the 0.0.7 artifact.
 
 #### Compatibility and verification
 
 - Supported versions remain Minecraft 1.21.1, NeoForge 21.1.235, and Java 21. Mod ID, configuration paths, and network protocol (8) are unchanged.
-- All 700 automated tests passed with zero failures, errors, or skips. Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, and no-AE2-runtime checks passed.
-- Version 0.0.7 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile (including Create 6.0.10) and passed single-player QA, entering the personal realm with no ImmortalStorage fatal errors.
+- All 700 automated tests passed with zero failures, errors, or skips, including the new 9-case `AdvancedRuinSchedulerContractTest` (sort ordering, per-container collect, poll-block/poll-skip, equal-split and group-by-group eject, mask decoding, and in-area-exclusive enumeration) plus updated self-test, asset audit, model count, advancement count, and description contracts.
+- Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, and no-AE2-runtime checks passed.
+- Version 0.0.7 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile (including Create 6.0.10 with ponder/flywheel) and passed single-player QA, entering the personal realm with no ImmortalStorage fatal errors; the instance later resumed the existing `Test` save with Create 6.0.10 confirmed loading.
 
 ## [0.0.6] - 2026-08-01
 
