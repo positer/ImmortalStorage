@@ -197,6 +197,8 @@ public final class ImmortalStorageSelfTest {
         String[] blockIds = {
                 "spirit_iron_ore", "spirit_crystal_ore", "immortal_furnace", "xianqiao_manager",
                 "spirit_iron_block", "spirit_crystal_block", "crude_spirit_iron_block",
+                "advanced_stabilized_miniature_immortal_ruin",
+                "advanced_entangled_stabilized_miniature_immortal_ruin",
                 "water_vein", "milk_vein", "lava_vein", "cobblestone_vein", "stone_vein", "smooth_stone_vein",
                 "white_concrete_vein", "orange_concrete_vein", "magenta_concrete_vein",
                 "light_blue_concrete_vein", "yellow_concrete_vein", "lime_concrete_vein",
@@ -206,7 +208,8 @@ public final class ImmortalStorageSelfTest {
                 "black_concrete_vein",
                 "dirt_vein", "oak_log_vein", "coal_vein", "raw_copper_vein", "raw_iron_vein",
                 "raw_gold_vein", "lapis_vein", "redstone_vein", "crude_spirit_iron_vein",
-                "spirit_crystal_vein", "diamond_vein", "emerald_vein", "ancient_debris_vein",
+                "spirit_crystal_vein", "diamond_vein", "emerald_vein", "echo_shard_vein",
+                "ancient_debris_vein",
                 "nether_star_vein", "enchanted_golden_apple_vein", "dragon_egg_vein"
         };
         expect(failures, resourceExists("assets/immortalstorage/lang/en_us.json"), "client lang en_us");
@@ -296,7 +299,7 @@ public final class ImmortalStorageSelfTest {
     }
 
     private static void verifySourceVeinRegistrations(List<String> failures) {
-        expect(failures, VeinKind.values().length == 38, "source vein kind count");
+        expect(failures, VeinKind.values().length == 39, "source vein kind count");
         expect(failures, VeinKind.WATER.fluid && VeinKind.MILK.fluid && VeinKind.LAVA.fluid, "fluid source vein kinds registered as fluids");
         expect(failures, !VeinKind.COBBLE.fluid && !VeinKind.DRAGON_EGG.fluid, "item source vein kinds registered as items");
         expect(failures, VeinKind.WATER.yuanCostPerBatch == 0 && VeinKind.LAVA.yuanCostPerBatch == 0, "fluid source veins are free");
@@ -305,6 +308,9 @@ public final class ImmortalStorageSelfTest {
         expect(failures, VeinKind.NETHER_STAR.yuanCostPerBatch == 8 && VeinKind.NETHER_STAR.outputsPerBatch == 1
                         && VeinKind.DRAGON_EGG.yuanCostPerBatch == 64 && VeinKind.DRAGON_EGG.outputsPerBatch == 1,
                 "high tier source vein batch costs registered");
+        expect(failures, VeinKind.ECHO_SHARD.yuanCostPerBatch == 16 && VeinKind.ECHO_SHARD.outputsPerBatch == 1
+                        && VeinKind.ECHO_SHARD.minStage == 8 && !VeinKind.ECHO_SHARD.fluid,
+                "echo shard source vein registered at 16 yuan per single output, stage 8");
         expect(failures, com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity.outputCostPerTick(VeinKind.STONE, 64) == 1,
                 "stone source cost at 64 flux");
         expect(failures, com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity.outputCostPerTick(VeinKind.STONE, 65) == 2,
@@ -348,6 +354,7 @@ public final class ImmortalStorageSelfTest {
         expectSourceBlock(failures, ModBlocks.SPIRIT_CRYSTAL_VEIN.get(), VeinKind.SPIRIT_CRYSTAL, "spirit crystal");
         expectSourceBlock(failures, ModBlocks.DIAMOND_VEIN.get(), VeinKind.DIAMOND, "diamond");
         expectSourceBlock(failures, ModBlocks.EMERALD_VEIN.get(), VeinKind.EMERALD, "emerald");
+        expectSourceBlock(failures, ModBlocks.ECHO_SHARD_VEIN.get(), VeinKind.ECHO_SHARD, "echo shard");
         expectSourceBlock(failures, ModBlocks.ANCIENT_DEBRIS_VEIN.get(), VeinKind.ANCIENT_DEBRIS, "ancient debris");
         expectSourceBlock(failures, ModBlocks.NETHER_STAR_VEIN.get(), VeinKind.NETHER_STAR, "nether star");
         expectSourceBlock(failures, ModBlocks.ENCHANTED_GOLDEN_APPLE_VEIN.get(), VeinKind.ENCHANTED_GOLDEN_APPLE, "enchanted golden apple");
@@ -384,6 +391,7 @@ public final class ImmortalStorageSelfTest {
         expectSourceOutput(failures, VeinKind.SPIRIT_CRYSTAL, ModItems.SPIRIT_CRYSTAL.get(), "spirit crystal output");
         expectSourceOutput(failures, VeinKind.DIAMOND, Items.DIAMOND, "diamond output");
         expectSourceOutput(failures, VeinKind.EMERALD, Items.EMERALD, "emerald output");
+        expectSourceOutput(failures, VeinKind.ECHO_SHARD, Items.ECHO_SHARD, "echo shard output");
         expectSourceOutput(failures, VeinKind.ANCIENT_DEBRIS, Items.ANCIENT_DEBRIS, "ancient debris output");
         expectSourceOutput(failures, VeinKind.NETHER_STAR, Items.NETHER_STAR, "nether star output");
         expectSourceOutput(failures, VeinKind.ENCHANTED_GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE, "enchanted golden apple output");

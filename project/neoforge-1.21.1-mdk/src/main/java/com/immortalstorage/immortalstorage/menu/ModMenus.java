@@ -13,6 +13,9 @@ import com.immortalstorage.immortalstorage.menu.custom.SourceVeinManagerMenu;
 import com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SimulatedReincarnationFurnaceMenu;
+import com.immortalstorage.immortalstorage.menu.custom.EntangledMiniatureRuinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.AdvancedStabilizedMiniatureImmortalRuinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.AdvancedEntangledMiniatureRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SimulatedSpiritFieldMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -56,6 +59,12 @@ public final class ModMenus {
                     () -> IMenuTypeExtension.create(StabilizedMiniatureImmortalRuinMenu::new));
     public static final Supplier<MenuType<MiniatureImmortalRuinMenu>> MINIATURE_IMMORTAL_RUIN =
             MENUS.register("miniature_immortal_ruin", () -> IMenuTypeExtension.create(MiniatureImmortalRuinMenu::new));
+    public static final Supplier<MenuType<EntangledMiniatureRuinMenu>> ENTANGLED_MINIATURE_IMMORTAL_RUIN =
+            MENUS.register("entangled_miniature_immortal_ruin", () -> IMenuTypeExtension.create(EntangledMiniatureRuinMenu::new));
+    public static final Supplier<MenuType<AdvancedStabilizedMiniatureImmortalRuinMenu>> ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            MENUS.register("advanced_stabilized_miniature_immortal_ruin", () -> IMenuTypeExtension.create(AdvancedStabilizedMiniatureImmortalRuinMenu::new));
+    public static final Supplier<MenuType<AdvancedEntangledMiniatureRuinMenu>> ADVANCED_ENTANGLED_MINIATURE_IMMORTAL_RUIN =
+            MENUS.register("advanced_entangled_miniature_immortal_ruin", () -> IMenuTypeExtension.create(AdvancedEntangledMiniatureRuinMenu::new));
 
     private ModMenus() {}
 }

@@ -134,7 +134,7 @@ final class ZeroPointZeroPointFiveContractTest {
 
     @Test void advancementTreeContainsEveryRequestedNode() throws Exception {
         Path root = ROOT.resolve("src/main/resources/data/immortalstorage/advancement");
-        assertEquals(16L, Files.list(root).filter(p -> p.toString().endsWith(".json")).count());
+        assertEquals(17L, Files.list(root).filter(p -> p.toString().endsWith(".json")).count());
         String all = String.join("\n", Files.list(root).map(path -> {
             try { return Files.readString(path); } catch (Exception e) { throw new RuntimeException(e); }
         }).toList());

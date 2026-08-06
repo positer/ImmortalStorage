@@ -38,6 +38,7 @@ public enum VeinKind {
     SPIRIT_CRYSTAL(1, 4, false, 8, false, false),
     DIAMOND(1, 4, false, 8, false, false),
     EMERALD(1, 4, false, 8, false, false),
+    ECHO_SHARD(16, 1, false, 8, false, false),
     ANCIENT_DEBRIS(1, 1, false, 9, false, false),
     NETHER_STAR(8, 1, false, 9, false, false),
     ENCHANTED_GOLDEN_APPLE(64, 1, false, 9, false, false),

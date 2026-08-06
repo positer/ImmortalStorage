@@ -75,6 +75,12 @@ public final class ModNetwork {
                 ModPayloads.SetStabilizedRuinFilter.STREAM_CODEC, ModNetwork::handleSetStabilizedRuinFilter);
         registrar.playToServer(ModPayloads.ToggleStabilizedRuinFilterMode.TYPE,
                 ModPayloads.ToggleStabilizedRuinFilterMode.STREAM_CODEC, ModNetwork::handleToggleStabilizedRuinFilterMode);
+        registrar.playToServer(ModPayloads.SetEntangledRuinFilter.TYPE,
+                ModPayloads.SetEntangledRuinFilter.STREAM_CODEC, ModNetwork::handleSetEntangledRuinFilter);
+        registrar.playToServer(ModPayloads.ToggleEntangledRuinFilterMode.TYPE,
+                ModPayloads.ToggleEntangledRuinFilterMode.STREAM_CODEC, ModNetwork::handleToggleEntangledRuinFilterMode);
+        registrar.playToServer(ModPayloads.SetEntangledRuinValue.TYPE,
+                ModPayloads.SetEntangledRuinValue.STREAM_CODEC, ModNetwork::handleSetEntangledRuinValue);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             com.immortalstorage.immortalstorage.client.ClientNetworkHandlers.register(registrar);
         }
@@ -109,6 +115,38 @@ public final class ModNetwork {
             if (player != null && player.containerMenu.containerId == payload.containerId()
                     && player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu
                     && menu.stillValid(player)) menu.toggleFilterMode(payload.mode());
+        });
+    }
+
+    private static void handleSetEntangledRuinFilter(ModPayloads.SetEntangledRuinFilter payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player != null && player.containerMenu.containerId == payload.containerId()
+                    && player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.SideFilterMenu menu
+                    && menu instanceof net.minecraft.world.inventory.AbstractContainerMenu container
+                    && container.stillValid(player)) menu.setFilter(payload.side(), payload.slot(), payload.stack());
+        });
+    }
+
+    private static void handleToggleEntangledRuinFilterMode(ModPayloads.ToggleEntangledRuinFilterMode payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player != null && player.containerMenu.containerId == payload.containerId()
+                    && player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.SideFilterMenu menu
+                    && menu instanceof net.minecraft.world.inventory.AbstractContainerMenu container
+                    && container.stillValid(player)) menu.toggleFilterMode(payload.side(), payload.mode());
+        });
+    }
+
+    private static void handleSetEntangledRuinValue(ModPayloads.SetEntangledRuinValue payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || player.containerMenu.containerId != payload.containerId()) return;
+            if (player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.EntangledMiniatureRuinMenu menu) {
+                menu.setAuthoritativeValue(payload.side(), payload.index(), payload.value());
+            } else if (player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.AdvancedEntangledMiniatureRuinMenu advanced) {
+                advanced.setAuthoritativeValue(payload.side(), payload.index(), payload.value());
+            }
         });
     }
 

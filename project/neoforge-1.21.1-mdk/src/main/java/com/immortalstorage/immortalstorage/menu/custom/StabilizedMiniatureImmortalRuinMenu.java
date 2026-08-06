@@ -14,27 +14,29 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** Six-row inventory plus server-validated configuration button actions. */
-public final class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
-    private final Container container;
-    private final ContainerData data;
-    private final StabilizedMiniatureImmortalRuinBlockEntity blockEntity;
-    private final net.minecraft.core.BlockPos blockPos;
+public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
+    protected final Container container;
+    protected final ContainerData data;
+    protected final StabilizedMiniatureImmortalRuinBlockEntity blockEntity;
+    protected final net.minecraft.core.BlockPos blockPos;
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, clientContainer(), new SimpleContainerData(10), null,
+        this(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id, inventory, clientContainer(),
+                new SimpleContainerData(11), null,
                 buffer == null ? net.minecraft.core.BlockPos.ZERO : buffer.readBlockPos());
     }
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, Container container, ContainerData data) {
-        this(id, inventory, container, data,
+        this(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id, inventory, container, data,
                 container instanceof StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin : null,
                 container instanceof StabilizedMiniatureImmortalRuinBlockEntity ruin ? ruin.getBlockPos() : net.minecraft.core.BlockPos.ZERO);
     }
 
-    private StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, Container container, ContainerData data,
-                                                StabilizedMiniatureImmortalRuinBlockEntity blockEntity,
-                                                net.minecraft.core.BlockPos blockPos) {
-        super(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id);
+    protected StabilizedMiniatureImmortalRuinMenu(net.minecraft.world.inventory.MenuType<?> type, int id, Inventory inventory,
+                                                   Container container, ContainerData data,
+                                                   StabilizedMiniatureImmortalRuinBlockEntity blockEntity,
+                                                   net.minecraft.core.BlockPos blockPos) {
+        super(type, id);
         this.container = container;
         this.data = data;
         this.blockEntity = blockEntity;
@@ -59,6 +61,9 @@ public final class StabilizedMiniatureImmortalRuinMenu extends AbstractContainer
     public void setFilter(int slot, ItemStack stack) { if (blockEntity != null) blockEntity.setFilter(slot, stack); }
     public void toggleFilterMode(int mode) { if (blockEntity != null) { if (mode == 0) blockEntity.toggleFilterMatchComponents(); else blockEntity.toggleFilterWhitelist(); } }
 
+    /** Data-slot index exposing the interaction face ordinal (-1 = any). */
+    protected int faceDataIndex() { return 10; }
+
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id >= 0 && id < 12) {
@@ -70,6 +75,12 @@ public final class StabilizedMiniatureImmortalRuinMenu extends AbstractContainer
         if (id == 13) { data.set(8, data.get(8) == 0 ? 1 : 0); return true; }
         if (id == 14) { data.set(6, Math.max(1, data.get(6) - 1)); return true; }
         if (id == 15) { data.set(6, data.get(6) + 1); return true; }
+        if (id >= 20 && id <= 25) {
+            int bit = 1 << (id - 20);
+            int current = data.get(faceDataIndex());
+            data.set(faceDataIndex(), (current & bit) == 0 ? current | bit : current & ~bit);
+            return true;
+        }
         return false;
     }
 

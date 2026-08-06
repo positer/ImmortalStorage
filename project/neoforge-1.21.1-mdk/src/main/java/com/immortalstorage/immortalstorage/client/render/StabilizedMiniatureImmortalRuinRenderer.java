@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 
@@ -35,6 +36,7 @@ public final class StabilizedMiniatureImmortalRuinRenderer implements BlockEntit
                 .inflate(0.002D);
         LevelRenderer.renderLineBox(poses, buffers.getBuffer(RenderType.lines()), area,
                 1.0F, 1.0F, 1.0F, 1.0F);
+        RuinFaceHighlightRenderer.render(poses, buffers, area, entity.faceMask());
     }
 
     @Override public boolean shouldRenderOffScreen(StabilizedMiniatureImmortalRuinBlockEntity entity) { return true; }

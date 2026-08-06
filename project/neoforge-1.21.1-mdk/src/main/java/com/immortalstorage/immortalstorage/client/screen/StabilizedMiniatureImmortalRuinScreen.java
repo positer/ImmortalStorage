@@ -15,16 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Vanilla six-row chest with a compact settings tab and server-backed +/- controls. */
-public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContainerScreen<StabilizedMiniatureImmortalRuinMenu> {
+public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniatureImmortalRuinMenu> extends AbstractContainerScreen<M> {
     private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
-    private boolean settings;
+    protected boolean settings;
     private boolean filtersOpen;
     private boolean syncingValues;
     private final List<EditBox> valueBoxes = new ArrayList<>();
     private Button previewButton;
     private Button enabledButton;
+    private final List<Button> faceButtons = new ArrayList<>();
 
-    public StabilizedMiniatureImmortalRuinScreen(StabilizedMiniatureImmortalRuinMenu menu, Inventory inventory, Component title) {
+    public StabilizedMiniatureImmortalRuinScreen(M menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageHeight = 222;
         inventoryLabelY = imageHeight - 94;
@@ -33,7 +34,7 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; refreshWidgets(); })
+        addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
@@ -65,8 +66,8 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
             valueBoxes.add(box);
             addRenderableWidget(box);
         }
-        previewButton = addActionButton(leftPos + imageWidth + 6, topPos + 130, 88, 18, "Preview", 12);
-        enabledButton = addActionButton(leftPos + imageWidth + 6, topPos + 150, 88, 18, "Enabled", 13);
+        previewButton = addActionButton(leftPos + imageWidth + 6, topPos + 130, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
+        enabledButton = addActionButton(leftPos + imageWidth + 6, topPos + 150, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
         addActionButton(leftPos + imageWidth + 6, topPos + 170, 20, 18, "-", 14);
         addActionButton(leftPos + imageWidth + 74, topPos + 170, 20, 18, "+", 15);
         EditBox frequency = new EditBox(font, leftPos + imageWidth + 29, topPos + 170, 42, 18, Component.empty());
@@ -97,7 +98,22 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
         addRenderableWidget(Button.builder(list, button -> PacketDistributor.sendToServer(
                         new ModPayloads.ToggleStabilizedRuinFilterMode(menu.containerId, 1)))
                 .bounds(panelX, topPos + 112, 88, 18).build());
+        faceButtons.clear();
+        faceButtons.addAll(RuinFaceGrid.add(this::sendFaceToggle, 20, panelX, topPos + 132));
+        for (Button button : faceButtons) addRenderableWidget(button);
+        RuinFaceGrid.sync(faceButtons, menu.value(faceDataIndex()), faceButtonVisible());
     }
+
+    /** Sends a menu-button click that toggles one Direction bit in the face mask. */
+    protected void sendFaceToggle(int id) {
+        if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
+    }
+
+    /** Data-slot index exposing the interaction face mask (one bit per Direction ordinal). */
+    protected int faceDataIndex() { return 10; }
+
+    /** Face only applies to container transfers; the plain stabilized ruin uses it when reversed. */
+    protected boolean faceButtonVisible() { return menu.value(9) != 0; }
 
     public com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity filterEntity() {
         if (minecraft == null || minecraft.level == null) return null;
@@ -155,11 +171,14 @@ public final class StabilizedMiniatureImmortalRuinScreen extends AbstractContain
                 if (ruin != null && !ruin.filter(slot).isEmpty()) graphics.renderItem(
                         ruin.filter(slot), bounds.getX() + 1, bounds.getY() + 1);
             }
+            if (!faceButtons.isEmpty()) {
+                RuinFaceGrid.sync(faceButtons, menu.value(faceDataIndex()), faceButtonVisible());
+            }
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
-        graphics.drawString(font, "tick", leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
+        graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

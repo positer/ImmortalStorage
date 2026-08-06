@@ -173,6 +173,46 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<ToggleStabilizedRuinFilterMode> type() { return TYPE; }
     }
 
+    public record SetEntangledRuinFilter(int containerId, int side, int slot, ItemStack stack) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SetEntangledRuinFilter> STREAM_CODEC = new StreamCodec<>() {
+            @Override public SetEntangledRuinFilter decode(RegistryFriendlyByteBuf buffer) {
+                return new SetEntangledRuinFilter(buffer.readVarInt(), buffer.readVarInt(), buffer.readVarInt(),
+                        ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer));
+            }
+            @Override public void encode(RegistryFriendlyByteBuf buffer, SetEntangledRuinFilter value) {
+                buffer.writeVarInt(value.containerId); buffer.writeVarInt(value.side); buffer.writeVarInt(value.slot);
+                ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, value.stack);
+            }
+        };
+        public static final CustomPacketPayload.Type<SetEntangledRuinFilter> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "set_entangled_ruin_filter"));
+        @Override public CustomPacketPayload.Type<SetEntangledRuinFilter> type() { return TYPE; }
+    }
+
+    public record ToggleEntangledRuinFilterMode(int containerId, int side, int mode) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ToggleEntangledRuinFilterMode> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, ToggleEntangledRuinFilterMode::containerId,
+                ByteBufCodecs.VAR_INT, ToggleEntangledRuinFilterMode::side,
+                ByteBufCodecs.VAR_INT, ToggleEntangledRuinFilterMode::mode,
+                ToggleEntangledRuinFilterMode::new);
+        public static final CustomPacketPayload.Type<ToggleEntangledRuinFilterMode> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "toggle_entangled_ruin_filter_mode"));
+        @Override public CustomPacketPayload.Type<ToggleEntangledRuinFilterMode> type() { return TYPE; }
+    }
+
+    public record SetEntangledRuinValue(int containerId, int side, int index, int value) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, SetEntangledRuinValue> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT, SetEntangledRuinValue::containerId,
+                ByteBufCodecs.VAR_INT, SetEntangledRuinValue::side,
+                ByteBufCodecs.VAR_INT, SetEntangledRuinValue::index,
+                ByteBufCodecs.VAR_INT, SetEntangledRuinValue::value,
+                SetEntangledRuinValue::new);
+        public static final CustomPacketPayload.Type<SetEntangledRuinValue> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "set_entangled_ruin_value"));
+        @Override public CustomPacketPayload.Type<SetEntangledRuinValue> type() { return TYPE; }
+    }
+
+
     /** Selects the item or typed-fluid directory within the same Xianqiao menu. */
     public record SetTerminalChannel(int containerId, boolean fluid) implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, SetTerminalChannel> STREAM_CODEC =

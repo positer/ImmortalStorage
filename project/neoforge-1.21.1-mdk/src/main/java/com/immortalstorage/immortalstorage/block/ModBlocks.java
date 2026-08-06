@@ -107,6 +107,15 @@ public final class ModBlocks {
     public static final Supplier<Block> STABILIZED_MINIATURE_IMMORTAL_RUIN = reg("stabilized_miniature_immortal_ruin",
             () -> new StabilizedMiniatureImmortalRuinBlock(setBlockId("stabilized_miniature_immortal_ruin",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion())));
+    public static final Supplier<Block> ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN = reg("entangled_stabilized_miniature_immortal_ruin",
+            () -> new EntangledStabilizedMiniatureImmortalRuinBlock(setBlockId("entangled_stabilized_miniature_immortal_ruin",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion())));
+    public static final Supplier<Block> ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN = reg("advanced_stabilized_miniature_immortal_ruin",
+            () -> new AdvancedStabilizedMiniatureImmortalRuinBlock(setBlockId("advanced_stabilized_miniature_immortal_ruin",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion())));
+    public static final Supplier<Block> ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN = reg("advanced_entangled_stabilized_miniature_immortal_ruin",
+            () -> new AdvancedEntangledStabilizedMiniatureImmortalRuinBlock(setBlockId("advanced_entangled_stabilized_miniature_immortal_ruin",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.OBSIDIAN).noOcclusion())));
     public static final Supplier<Block> MINIATURE_IMMORTAL_RUIN = BLOCKS.register("miniature_immortal_ruin_block",
             () -> new MiniatureImmortalRuinBlock(setBlockId("miniature_immortal_ruin_block",
                     BlockBehaviour.Properties.of().noCollission().noOcclusion().strength(-1.0F, 3_600_000.0F)
@@ -149,6 +158,7 @@ public final class ModBlocks {
     public static final Supplier<Block> SPIRIT_CRYSTAL_VEIN = reg("spirit_crystal_vein", () -> new SourceVeinBlock(VeinKind.SPIRIT_CRYSTAL));
     public static final Supplier<Block> DIAMOND_VEIN = reg("diamond_vein", () -> new SourceVeinBlock(VeinKind.DIAMOND));
     public static final Supplier<Block> EMERALD_VEIN = reg("emerald_vein", () -> new SourceVeinBlock(VeinKind.EMERALD));
+    public static final Supplier<Block> ECHO_SHARD_VEIN = reg("echo_shard_vein", () -> new SourceVeinBlock(VeinKind.ECHO_SHARD));
     public static final Supplier<Block> ANCIENT_DEBRIS_VEIN = reg("ancient_debris_vein", () -> new SourceVeinBlock(VeinKind.ANCIENT_DEBRIS));
     public static final Supplier<Block> NETHER_STAR_VEIN = reg("nether_star_vein", () -> new SourceVeinBlock(VeinKind.NETHER_STAR));
     public static final Supplier<Block> ENCHANTED_GOLDEN_APPLE_VEIN = reg("enchanted_golden_apple_vein", () -> new SourceVeinBlock(VeinKind.ENCHANTED_GOLDEN_APPLE));

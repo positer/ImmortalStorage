@@ -84,6 +84,9 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.LARGE_NURTURING_CRYSTAL_BUD.get());
                         output.accept(ModBlocks.NURTURING_CRYSTAL_CLUSTER.get());
                         output.accept(ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
+                        output.accept(ModBlocks.ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
+                        output.accept(ModBlocks.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
+                        output.accept(ModBlocks.ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.CRUDE_SPIRIT_IRON_BLOCK.get());
                         output.accept(ModBlocks.WATER_VEIN.get());
                         output.accept(ModBlocks.MILK_VEIN.get());
@@ -119,6 +122,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.SPIRIT_CRYSTAL_VEIN.get());
                         output.accept(ModBlocks.DIAMOND_VEIN.get());
                         output.accept(ModBlocks.EMERALD_VEIN.get());
+                        output.accept(ModBlocks.ECHO_SHARD_VEIN.get());
                         output.accept(ModBlocks.ANCIENT_DEBRIS_VEIN.get());
                         output.accept(ModBlocks.NETHER_STAR_VEIN.get());
                         output.accept(ModBlocks.ENCHANTED_GOLDEN_APPLE_VEIN.get());

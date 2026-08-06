@@ -42,6 +42,21 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(StabilizedMiniatureImmortalRuinBlockEntity::new,
                             ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get()).build(null));
 
+    public static final Supplier<BlockEntityType<EntangledStabilizedMiniatureImmortalRuinBlockEntity>> ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            BLOCK_ENTITIES.register("entangled_stabilized_miniature_immortal_ruin", () ->
+                    BlockEntityType.Builder.of(EntangledStabilizedMiniatureImmortalRuinBlockEntity::new,
+                            ModBlocks.ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get()).build(null));
+
+    public static final Supplier<BlockEntityType<AdvancedStabilizedMiniatureImmortalRuinBlockEntity>> ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            BLOCK_ENTITIES.register("advanced_stabilized_miniature_immortal_ruin", () ->
+                    BlockEntityType.Builder.of(AdvancedStabilizedMiniatureImmortalRuinBlockEntity::new,
+                            ModBlocks.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get()).build(null));
+
+    public static final Supplier<BlockEntityType<AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity>> ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN =
+            BLOCK_ENTITIES.register("advanced_entangled_stabilized_miniature_immortal_ruin", () ->
+                    BlockEntityType.Builder.of(AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity::new,
+                            ModBlocks.ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get()).build(null));
+
     public static final Supplier<BlockEntityType<SourceVeinBlockEntity>> SOURCE_VEIN =
             BLOCK_ENTITIES.register("source_vein", () ->
                     BlockEntityType.Builder.of(
@@ -121,6 +136,10 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TREASURE_BASIN.get(),
                 (be, side) -> be.getCacheHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
+                (be, side) -> be.itemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
+                (be, side) -> be.itemHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (be, side) -> be.itemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SOURCE_VEIN.get(),
                 (be, side) -> be.getItemHandler(side));

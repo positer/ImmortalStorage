@@ -428,6 +428,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
             case SPIRIT_CRYSTAL -> com.immortalstorage.immortalstorage.item.ModItems.SPIRIT_CRYSTAL.get();
             case DIAMOND -> Items.DIAMOND;
             case EMERALD -> Items.EMERALD;
+            case ECHO_SHARD -> Items.ECHO_SHARD;
             case ANCIENT_DEBRIS -> Items.ANCIENT_DEBRIS;
             case NETHER_STAR -> Items.NETHER_STAR;
             case ENCHANTED_GOLDEN_APPLE -> Items.ENCHANTED_GOLDEN_APPLE;

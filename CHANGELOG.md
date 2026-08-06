@@ -1,5 +1,63 @@
 # Changelog
 
+## [0.0.7] - 2026-08-06
+
+本节完整列出相对正式版 `0.0.6` 的用户可见变化。
+
+### 简体中文
+
+#### 新增
+
+- 新增回响碎片源方块：不可堆叠的回响碎片矿脉源方块，接入源方块管理器聚合与六面推出；附带成就、战利品表、合成配方，并可被镐子采集。
+- 新增纠缠、高级与高级纠缠的稳定化迷你仙墟三个变体；纠缠侧支持正常/反向双向 54 格缓冲，各侧拥有独立的频率、范围与 20 格过滤器。
+- 四个容器交互面变体统一改为 2×3 六格交互面掩码网格（上行 UP/NORTH/DOWN，下行 WEST/SOUTH/EAST），逐面启用并渲染半透明白色预览高亮；六格全关 = 该侧完全不与容器交互。
+- 水仙墟/岩浆仙墟现在可作为机械动力鼓风机触媒：通过 `create:fan_processing_catalysts/splashing` 与 `blasting` 标签充当洗炼与鼓风烧炼触媒，并提供 `create:fan_transparent` 使鼓风机风可以穿过源方块。
+- 安装 Applied Flux、Applied Mekanistics、Ars Énergistique、Applied Botanics 等 AE 附属模组时，自动把其现有资源键映射到同一仙窍账本，无需额外中介模组。
+
+#### 变更
+
+- 调度器改为严格的区内枚举：只与操作区域（预览盒）内的容器交互，不再越出预览盒一格、与区域外相邻容器交互。
+- 每个区内方块位置 × 每个已启用面 = 一个独立目标，统一通过 `Capabilities.ItemHandler.BLOCK, pos, face` 的面参数访问容器能力。
+- 旧存档的“任意面”(-1) 配置在加载时迁移为全关掩码。
+
+#### 修复
+
+- 修复源方块为完整方块、导致机械动力鼓风机风无法穿过的问题；源方块现已加入鼓风机透明白名单。
+
+#### 兼容与验证
+
+- 正式支持范围保持 Minecraft 1.21.1、NeoForge 21.1.235 与 Java 21；模组 ID、配置路径与网络协议（8）不变。
+- 700 项自动化测试全部通过，失败、错误与跳过均为 0；生产 JAR 边界、版本组成、精确版本产物、Ars Source API 与无 AE2 运行时校验通过。
+- 0.0.7 在 30-JAR 全模组 PCL2 配置（含 Create 6.0.10）中使用 JDK 21、`zh_cn` 完成启动与单人实机验证，进入个人仙窍维度无 ImmortalStorage 致命错误。
+
+### English
+
+This section is the complete user-visible delta from release `0.0.6`.
+
+#### Added
+
+- Added the Echo Shard Source Vein: a non-stacking source block feeding Source Vein Manager aggregation and per-face export, with an advancement, loot table, crafting recipe, and pickaxe mining.
+- Added the Entangled, Advanced, and Advanced-Entangled Stabilized Miniature Immortal Ruins. Entangled sides offer normal/reversed 54-slot buffering with independent frequency, range, and 20-slot filters per side.
+- All four container-facing variants now use a unified 2×3 interaction face-mask grid (top row UP/NORTH/DOWN, bottom row WEST/SOUTH/EAST) with per-face toggles and translucent white preview highlights; six-off disables interaction on that side entirely.
+- Water and Lava Source Veins now work as Create blower-fan catalysts: the `create:fan_processing_catalysts/splashing` and `blasting` tags mark them as fan-washing and fan-smelting catalysts, and the `create:fan_transparent` tag lets fan wind pass through the vein blocks.
+- When AE add-ons such as Applied Flux, Applied Mekanistics, Ars Énergistique, or Applied Botanics are installed, their existing resource keys are mapped onto the same Xianqiao ledger automatically, with no extra intermediary mod required.
+
+#### Changed
+
+- The scheduler now enumerates strictly in-area positions, interacting only with containers inside the operation area (preview box); it no longer reaches one layer outside.
+- Each in-area position times each enabled face is an independent target resolved through `Capabilities.ItemHandler.BLOCK, pos, face`.
+- Legacy "any face" (-1) saves migrate to the all-off mask on load.
+
+#### Fixed
+
+- Fixed the Source Vein blocks being full solid blocks that blocked Create blower-fan wind; the veins are now whitelisted as fan-transparent.
+
+#### Compatibility and verification
+
+- Supported versions remain Minecraft 1.21.1, NeoForge 21.1.235, and Java 21. Mod ID, configuration paths, and network protocol (8) are unchanged.
+- All 700 automated tests passed with zero failures, errors, or skips. Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, and no-AE2-runtime checks passed.
+- Version 0.0.7 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile (including Create 6.0.10) and passed single-player QA, entering the personal realm with no ImmortalStorage fatal errors.
+
 ## [0.0.6] - 2026-08-01
 
 本节完整列出相对正式版 `0.0.5` 的用户可见变化。

@@ -1,17 +1,14 @@
 # Reference material and external projects are never part of Cultivation releases.
 reference-mods/
 archive/
-forge-sources/
-forge-sources-2/
 tools/
 tasks/
 .agents/
 .codex/
+.opencode/
 .git/
 
 # Historical and not-yet-released version workspaces.
-project/forge-1.21.4-54.1.0-mdk/
-project/test/
 versions/
 
 # Local notes, extracted sources, screenshots, and one-off investigation files.

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "immortalstorage:entangled_stabilized_miniature_immortal_ruin"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "immortalstorage:blocks/entangled_stabilized_miniature_immortal_ruin"
+}

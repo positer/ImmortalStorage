@@ -6,17 +6,17 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current release is 0.0.6. It adds the Simulated Spirit Field, direct personal-storage Immortal Yuan payment for work blocks inside their owner's realm, and persistent day/night and weather controls.
+> The current release is 0.0.7. It adds the Echo Shard Source Vein, Create blower-fan source-vein catalysts (with a fan-transparent whitelist), automatic AE add-on adaptation, and the Entangled / Advanced / Advanced-Entangled Stabilized Miniature Immortal Ruins. All four container-facing variants now share a 2×3 face-mask grid and interact only with containers inside their operation area.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.6 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.7 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.6](https://github.com/positer/ImmortalStorage/releases/tag/0.0.6)
+**Download:** [ImmortalStorage 0.0.7](https://github.com/positer/ImmortalStorage/releases/tag/0.0.7)
 
-**Release JAR SHA256:** `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`
+**Release JAR SHA256:** `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`
 
 ## Highlights
 
@@ -37,17 +37,17 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| ImmortalStorage | 0.0.6 |
+| ImmortalStorage | 0.0.7 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
-`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.5 to 0.0.6 in both Simplified Chinese and English. The release gate passed 691 tests plus production-boundary, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, dedicated-server startup, and Numen single-player checks.
+`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.6 to 0.0.7 in both Simplified Chinese and English. The release gate passed 700 tests plus production-boundary, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks.
 
 ## Installation
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar` from GitHub Releases.
+3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar` from GitHub Releases.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -194,6 +194,18 @@ The Simulated Spirit Field uses the unmodified vanilla Smooth Stone texture on a
 - Data packs can extend modded crops through the `immortalstorage:simulated_spirit_field_seeds` and `immortalstorage:simulated_spirit_field_substrates` tags plus seed-to-crop-to-substrate JSON files under `data/*/simulated_spirit_field_crops/`.
 - The recipe yields four fields from Spirit Crystals, Primordial Qi, Spirit Iron Nuggets, Grass Block, and Nurturing Crystal. Its rarity is Uncommon.
 - On 2026-08-01, the 0.0.6 release artifact was deployed to the 30-JAR full-mod PCL2 profile and passed Numen single-player QA under JDK 21 and `zh_cn`.
+
+## Echo Shard Source Vein and Fan Catalysts (0.0.7)
+
+- Added the Echo Shard Source Vein: a non-stacking source block feeding Source Vein Manager aggregation and per-face export, with an advancement, loot table, crafting recipe, and pickaxe mining.
+- Water and Lava Source Veins work as Create blower-fan catalysts: fan washing and fan smelting are enabled through the `create:fan_processing_catalysts/*` tags, and both veins are registered as `create:fan_transparent` so fan wind passes straight through to the catalyst.
+
+## Stabilized Miniature Ruin Container Scheduling (0.0.7)
+
+- The Stabilized, Entangled, Advanced, and Advanced-Entangled container-facing variants share a 2×3 interaction face-mask grid (top row UP/NORTH/DOWN, bottom row WEST/SOUTH/EAST) with per-face toggles and translucent white preview highlights; six-off disables interaction on that side entirely.
+- Each in-area position times each enabled face is an independent target resolved through the official NeoForge `Capabilities.ItemHandler.BLOCK, pos, face`.
+- The scheduler interacts only with containers inside the preview box, never one layer outside; legacy "any face" (-1) saves migrate to the all-off mask.
+- Entangled variants support normal/reversed buffering: the normal side collects area item entities into a 54-slot buffer, and the reversed side ejects that buffer to target containers by frequency, range, and filter.
 
 ## Source Veins and Resource Automation
 
@@ -361,7 +373,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar
 ```
 
 Useful verification tasks:
@@ -370,7 +382,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The 0.0.6 release gate passes 691 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, dedicated-server startup, and Numen single-player checks. Release JAR SHA256: `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`.
+The 0.0.7 release gate passes 700 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks. Release JAR SHA256: `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`.
 
 ## Project Layout
 

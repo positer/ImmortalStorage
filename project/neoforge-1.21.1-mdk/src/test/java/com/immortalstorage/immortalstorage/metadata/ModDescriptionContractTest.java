@@ -8,16 +8,17 @@ import org.junit.jupiter.api.Test;
 
 class ModDescriptionContractTest {
     @Test
-    void descriptionRepresentsTheCompleteZeroPointZeroPointFourFeatureSet() throws Exception {
+    void descriptionRepresentsTheCompleteZeroPointZeroPointSevenFeatureSet() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("UUID-bound realm"));
-        assertTrue(properties.contains("Primordial Qi"));
-        assertTrue(properties.contains("Miniature Immortal Ruins"));
-        assertTrue(properties.contains("linked and filtered Miniature Immortal Ruins"));
-        assertTrue(properties.contains("Version 0.0.4"));
+        assertTrue(properties.contains("Echo Shard Source Vein"));
+        assertTrue(properties.contains("Create fan-processing catalysts"));
+        assertTrue(properties.contains("AE addon storage-capability adaptation"));
+        assertTrue(properties.contains("Entangled / Advanced / Advanced-Entangled"));
+        assertTrue(properties.contains("container scheduling and Xianqiao memory routing"));
     }
 
     private static Path locateProject() {

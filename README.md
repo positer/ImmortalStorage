@@ -2,7 +2,8 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前正式版本为 0.0.6：新增模拟灵田、仙窍内工作方块自动取用仙元，以及持久锁定的日夜与天气控制。
+> 当前正式版本为 0.0.7：新增回响碎片源方块、机械动力鼓风机源方块触媒（含透明白名单）、AE 附属自动适配，以及纠缠/高级/高级纠缠的稳定化迷你仙墟，全部四个容器交互面变体统一为 2×3 面掩码网格，仅与操作区域内的容器交互。
+
 
 **简体中文** | [English](README_en.md)
 
@@ -10,13 +11,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.6 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
+> 0.0.7 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**下载：**[仙藏 ImmortalStorage 0.0.6](https://github.com/positer/ImmortalStorage/releases/tag/0.0.6)
+**下载：**[仙藏 ImmortalStorage 0.0.7](https://github.com/positer/ImmortalStorage/releases/tag/0.0.7)
 
-**发行 JAR SHA256：**`21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`
+**发行 JAR SHA256：**`0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`
 
 ## 模组特色
 
@@ -38,9 +39,17 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.6 |
+| 仙藏 ImmortalStorage | 0.0.7 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
+
+### 0.0.7 发行验证
+
+- 回响碎片源方块与四个容器交互面变体的调度器、掩码解码、区内独占枚举、排序/收集/反向/投出等 9 项契约测试全部通过。
+- 全部 700 项自动化测试通过，失败、错误与跳过均为 0；生产 JAR 边界、版本组成、精确版本产物、Ars Source API 与无 AE2 运行时校验通过。
+- 0.0.7 在 30-JAR 全模组 PCL2 配置（含 Create 6.0.10 及其 ponder/flywheel）中使用 JDK 21、`zh_cn` 完成启动与单人实机验证，进入个人仙窍维度无 ImmortalStorage 致命错误。
+- 鼓风机源方块触媒：`create:fan_processing_catalysts/splashing`（水仙墟）、`blasting`（岩浆仙墟），并补充 `create:fan_transparent` 白名单使风机风穿过源方块。
+- 发行包 SHA256 为 `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`。
 
 ### 0.0.6 发行验证
 
@@ -55,7 +64,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar`。
+3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -206,6 +215,18 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 数据包可通过 `immortalstorage:simulated_spirit_field_seeds`、`immortalstorage:simulated_spirit_field_substrates` 标签，以及 `data/*/simulated_spirit_field_crops/*.json` 的种子—作物—基底清单扩展模组作物。
 - 工作台配方为“灵晶/混元一气/灵晶，灵铁粒/草方块/灵铁粒，灵晶/蕴灵晶/灵晶”，每次合成 4 个；物品稀有度为罕见（UNCOMMON）。
 - 2026-08-01 已将 0.0.6 正式制品部署到 30-JAR 全模组 PCL2 配置并用 JDK 21、`zh_cn` 完成 Numen 单人实机验证。
+
+## 回响碎片源方块与鼓风机触媒（0.0.7）
+
+- 新增回响碎片源方块：不可堆叠的源方块，接入源方块管理器聚合与六面推出，附带成就、战利品表与合成配方，可被镐子采集。
+- 水仙墟与岩浆仙墟可作为机械动力（Create）鼓风机触媒：洗炼（splashing）与鼓风烧炼（blasting）通过 `create:fan_processing_catalysts/*` 标签启用；两源方块同时注册 `create:fan_transparent`，使鼓风机风能直接穿过源方块到达触媒。
+
+## 稳定化迷你仙墟容器调度（0.0.7）
+
+- 基础稳定化、基础纠缠、高级稳定化与高级纠缠四个容器交互面变体统一采用 2×3 交互面掩码网格：上行 UP/NORTH/DOWN、下行 WEST/SOUTH/EAST，逐面启用并显示半透明白色预览高亮；六格全关 = 该侧完全不交互。
+- 每个操作区域内的方块位置 × 每个已启用面 = 一个独立目标，通过 NeoForge 官方 `Capabilities.ItemHandler.BLOCK, pos, face` 面参数访问容器能力。
+- 调度器严格只与预览盒内的容器交互，不会越出区域外一格与相邻容器交互；旧存档“任意面”(-1) 配置加载时迁移为全关掩码。
+- 纠缠变体支持正常/反向双向：正常侧把区域内的掉落物收集进 54 格缓冲，反向侧把缓冲按频率、范围与过滤器投出到目标容器。
 
 ## 源方块与自动化
 
@@ -397,7 +418,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.6.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar
 ```
 
 完整验证命令：
@@ -406,7 +427,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.6 正式发行已通过 691 项测试、生产边界、版本组成、精确制品与专用服务端启动检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
+0.0.7 正式发行已通过 700 项测试、生产边界、版本组成、精确制品与专用服务端启动检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
 
 ## 仓库结构
 

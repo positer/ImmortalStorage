@@ -28,6 +28,9 @@ public final class ModItems {
             case "ascension_dan", "white_day_thunder",
                     "immortal_ruin_forged_spirit_sword", "one_qi_returning_origin_sword",
                     "stabilized_miniature_immortal_ruin",
+                    "entangled_stabilized_miniature_immortal_ruin",
+                    "advanced_stabilized_miniature_immortal_ruin",
+                    "advanced_entangled_stabilized_miniature_immortal_ruin",
                     "world_shard_miner", "nether_star_vein", "enchanted_golden_apple_vein",
                     "dragon_egg_vein" -> Rarity.EPIC;
             case "immortal_yuan", "breakthrough_pill_embryo", "breakthrough_pill",
@@ -37,7 +40,7 @@ public final class ModItems {
                     "soul_catcher",
                     "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
                     "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
-                    "diamond_vein", "emerald_vein" -> Rarity.RARE;
+                    "diamond_vein", "emerald_vein", "echo_shard_vein" -> Rarity.RARE;
             case "jade_guide", "true_yuan", "refined_pill_embryo", "refined_pill",
                     "disposable_qi_collecting_bottle",
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",

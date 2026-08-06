@@ -217,6 +217,7 @@ public final class SourceDefinitions {
             case SPIRIT_CRYSTAL -> { namespace = ImmortalStorageMod.MODID; yield "spirit_crystal"; }
             case DIAMOND -> "diamond";
             case EMERALD -> "emerald";
+            case ECHO_SHARD -> "echo_shard";
             case ANCIENT_DEBRIS -> "ancient_debris";
             case NETHER_STAR -> "nether_star";
             case ENCHANTED_GOLDEN_APPLE -> "enchanted_golden_apple";

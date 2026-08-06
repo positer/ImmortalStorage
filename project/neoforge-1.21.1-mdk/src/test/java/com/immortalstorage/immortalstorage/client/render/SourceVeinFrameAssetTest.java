@@ -30,7 +30,7 @@ final class SourceVeinFrameAssetTest {
                     .sorted()
                     .toList();
         }
-        assertEquals(39, sourceModels.size(), "all registered and generic source models must be audited");
+        assertEquals(40, sourceModels.size(), "all registered and generic source models must be audited");
 
         for (Path modelPath : sourceModels) {
             JsonObject model = JsonParser.parseString(Files.readString(modelPath)).getAsJsonObject();

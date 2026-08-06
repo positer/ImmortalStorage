@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -21,27 +22,35 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.Nullable;
 
 /** 54-slot area collector/ejector with bounded offsets and persistent settings. */
-public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity implements Container, MenuProvider {
+public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity implements Container, MenuProvider {
     public static final int SLOT_COUNT = 54;
-    private final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
+    protected final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
         @Override protected void onContentsChanged(int slot) { setChanged(); }
     };
-    private int sizeX = 1, sizeY = 1, sizeZ = 1;
-    private int offsetX, offsetY, offsetZ;
-    private int frequency = 20;
-    private boolean preview;
-    private boolean enabled;
-    private boolean reversed;
-    private final NonNullList<ItemStack> filters = NonNullList.withSize(20, ItemStack.EMPTY);
-    private boolean filterMatchComponents;
-    private boolean filterWhitelist = true;
-    private BlockPos linkedPos;
-    private boolean portableRemoval;
+    protected int sizeX = 1, sizeY = 1, sizeZ = 1;
+    protected int offsetX, offsetY, offsetZ;
+    protected int frequency = 20;
+    protected boolean preview;
+    protected boolean enabled;
+    protected boolean reversed;
+    protected final NonNullList<ItemStack> filters = NonNullList.withSize(20, ItemStack.EMPTY);
+    protected boolean filterMatchComponents;
+    protected boolean filterWhitelist = true;
+    protected BlockPos linkedPos;
+    protected boolean portableRemoval;
+    /** Bit mask of enabled container interaction faces (one bit per Direction ordinal). */
+    protected int faceMask = AdvancedRuinScheduler.ALL_FACES;
 
     public StabilizedMiniatureImmortalRuinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), pos, state);
+    }
+
+    protected StabilizedMiniatureImmortalRuinBlockEntity(
+            net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public ItemStackHandler itemHandler() { return activeInventory(); }
@@ -63,6 +72,8 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
     public void toggleFilterWhitelist() { filterWhitelist = !filterWhitelist; setChangedAndSync(); }
     public BlockPos linkedPos() { return linkedPos; }
 
+    public int faceMask() { return faceMask; }
+
     public void setMenuValue(int index, int value) { menuData().set(index, value); }
 
     public ContainerData menuData() {
@@ -71,19 +82,21 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
                 case 0 -> sizeX; case 1 -> sizeY; case 2 -> sizeZ;
                 case 3 -> offsetX; case 4 -> offsetY; case 5 -> offsetZ;
                 case 6 -> frequency; case 7 -> preview ? 1 : 0; case 8 -> enabled ? 1 : 0;
-                case 9 -> reversed ? 1 : 0; default -> 0;
+                case 9 -> reversed ? 1 : 0; case 10 -> faceMask;
+                default -> 0;
             }; }
             @Override public void set(int index, int value) {
                 switch (index) {
                     case 0 -> sizeX = clamp(value, 1, 13); case 1 -> sizeY = clamp(value, 1, 13); case 2 -> sizeZ = clamp(value, 1, 13);
                     case 3 -> offsetX = clamp(value, -13, 13); case 4 -> offsetY = clamp(value, -13, 13); case 5 -> offsetZ = clamp(value, -13, 13);
                     case 6 -> frequency = clamp(value, 1, 72_000); case 7 -> preview = value != 0; case 8 -> enabled = value != 0;
+                    case 10 -> faceMask = value & AdvancedRuinScheduler.ALL_FACES;
                     default -> { }
                 }
                 if (reversed) sizeX = sizeY = sizeZ = 1;
                 setChangedAndSync();
             }
-            @Override public int getCount() { return 10; }
+            @Override public int getCount() { return 11; }
         };
     }
 
@@ -119,28 +132,33 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
     }
 
     private void eject(ServerLevel level) {
+        if (faceMask == 0) return;
         BlockPos target = worldPosition.offset(offsetX, offsetY, offsetZ);
-        var handler = level.getCapability(Capabilities.ItemHandler.BLOCK, target, null);
+        ItemStackHandler sourceInventory = activeInventory();
         for (int slot = 0; slot < SLOT_COUNT; slot++) {
-            ItemStackHandler sourceInventory = activeInventory();
             ItemStack stored = sourceInventory.getStackInSlot(slot);
             if (stored.isEmpty() || !allows(stored)) continue;
             ItemStack removed = sourceInventory.extractItem(slot, stored.getCount(), false);
-            if (handler != null) {
-                for (int targetSlot = 0; targetSlot < handler.getSlots() && !removed.isEmpty(); targetSlot++) {
-                    removed = handler.insertItem(targetSlot, removed, false);
+            if (removed.isEmpty()) continue;
+            for (Direction face : AdvancedRuinScheduler.enabledFaces(faceMask)) {
+                if (removed.isEmpty()) break;
+                var handler = level.getCapability(Capabilities.ItemHandler.BLOCK, target, face);
+                if (handler != null) {
+                    for (int targetSlot = 0; targetSlot < handler.getSlots() && !removed.isEmpty(); targetSlot++) {
+                        removed = handler.insertItem(targetSlot, removed, false);
+                    }
                 }
-            } else if (level.getBlockState(target).isAir()) {
+            }
+            if (!removed.isEmpty() && level.getBlockState(target).isAir()) {
                 level.addFreshEntity(new ItemEntity(level, target.getX() + 0.5D, target.getY() + 0.5D,
                         target.getZ() + 0.5D, removed));
                 removed = ItemStack.EMPTY;
             }
             if (!removed.isEmpty()) sourceInventory.insertItem(slot, removed, false);
-            break;
         }
     }
 
-    private boolean allows(ItemStack stack) {
+    protected boolean allows(ItemStack stack) {
         boolean matched = false;
         boolean configured = false;
         for (ItemStack filter : filters) {
@@ -153,7 +171,7 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         return filterWhitelist ? matched : !matched;
     }
 
-    private ItemStackHandler activeInventory() {
+    protected ItemStackHandler activeInventory() {
         if (linkedPos != null && level != null && level.getBlockEntity(linkedPos) instanceof StabilizedMiniatureImmortalRuinBlockEntity peer
                 && peer.linkedPos != null && peer.linkedPos.equals(worldPosition)
                 && peer.worldPosition.asLong() < worldPosition.asLong()) return peer.inventory;
@@ -237,6 +255,7 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         }
         tag.put("Filters", filterList); tag.putBoolean("FilterMatchComponents", filterMatchComponents);
         tag.putBoolean("FilterWhitelist", filterWhitelist);
+        tag.putInt("FaceMask", faceMask);
         if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong());
     }
 
@@ -257,7 +276,16 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         }
         filterMatchComponents = tag.getBoolean("FilterMatchComponents");
         filterWhitelist = !tag.contains("FilterWhitelist") || tag.getBoolean("FilterWhitelist");
+        faceMask = tag.contains("FaceMask") ? tag.getInt("FaceMask") & AdvancedRuinScheduler.ALL_FACES : migrateFace(tag);
         linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null;
+    }
+
+    /** Old single-face tag ({@code -1} = any face): {@code -1} becomes all faces, an ordinal becomes its bit. */
+    private static int migrateFace(CompoundTag tag) {
+        if (!tag.contains("Face")) return AdvancedRuinScheduler.ALL_FACES;
+        int value = tag.getInt("Face");
+        if (value < 0 || value >= Direction.values().length) return AdvancedRuinScheduler.ALL_FACES;
+        return 1 << value;
     }
 
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
@@ -268,9 +296,9 @@ public final class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntit
         return tag;
     }
 
-    private void setChangedAndSync() {
+    protected void setChangedAndSync() {
         setChanged();
         if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
-    private static int clamp(int value, int min, int max) { return Math.max(min, Math.min(max, value)); }
+    protected static int clamp(int value, int min, int max) { return Math.max(min, Math.min(max, value)); }
 }
