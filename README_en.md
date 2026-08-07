@@ -16,7 +16,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 **Download:** [ImmortalStorage 0.0.8](https://github.com/positer/ImmortalStorage/releases/tag/0.0.8)
 
-**Release JAR SHA256:** `DE6B82DED717CFB93A04E48870B5D5E80EE7240D3BCBC4641D98FB7782D2C1DB`
+**Release JAR SHA256:** `513B388E3FA1CBD8BE0FE39FBC69D2927B549FDD5C0CF3017030404F79AF9FED`
 
 ## Highlights
 

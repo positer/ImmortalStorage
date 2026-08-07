@@ -1,0 +1,13 @@
+{
+  "name": "高级仙窍接口",
+  "icon": "immortalstorage:advanced_xianqiao_interface",
+  "category": "immortalstorage:automation",
+  "sortnum": 11,
+  "pages": [
+    {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_xianqiao_interface","text":"高级仙窍接口保留普通接口的九个混合缓存槽与物主绑定，但把普通接口的六面抽/推语义应用到可配置包围盒内的每一个容器，适合成片容器的大宗自动化。"},
+    {"type":"patchouli:text","text":"六面仍是抽（Pull）/推（Push）/关三状态，左侧有主动抽入/主动推出开关。抽：在开启的抽面上，从区域内每个容器经该配置面提取全部可交互内容（物品/流体/电力/化学品）进入仙窍，不限于配置目标。推：在开启的推面上，把缓存槽中允许该面交互的内容经该面推出到区域内容器。"},
+    {"type":"patchouli:text","text":"⚙ 配置页提供与高级稳定化迷你仙墟一致的选项：xyz/+xzy 范围尺寸与偏移、周期、预览框开关、启用、访问（轮询跳过/强制轮询）、均分（逐个/按组）、顺序（远先/近先）。范围默认 1×1×1 且不含自身，请把范围扩到覆盖目标容器。"},
+    {"type":"patchouli:text","text":"打开预览框后，世界会绘制白色选区线框，交互面保持白色半透明，PULL 面叠加绿色半透明、PUSH 面叠加红色半透明，实时跟随服务端配置。Botania火花/魔力、Ars魔源等无方向交互保持可用。"},
+    {"type":"patchouli:text","text":"释放（Release）：清空或更换缓存目标时，非空缓存会先原子返还仙窍；空手左键配置槽可返还并清除；拆除接口时所有缓存同样先返还仙窍，仅无法放入的溢出余量会保留在掉落物的压缩数据中，重新放置后继续返回。"}
+  ]
+}

@@ -8,5 +8,5 @@
   "core_api_revision": 1,
   "integration_project": "project/neoforge-1.21.1-mdk",
   "adapter_source": "project/version-compat/neoforge/mc-1.21.1-nf-21.1.235/src/main/java",
-  "status": "development"
+  "status": "released"
 }
