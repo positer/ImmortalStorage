@@ -1,31 +1,74 @@
 # Changelog
 
-## [0.0.8] - 2026-08-07 (开发中 / development)
+## [0.0.8] - 2026-08-07
 
-本节列出相对 `0.0.7` 的开发中变化（尚未发布，正式 Release 正文会在发布时重新编写）。
+本节完整列出相对正式版 `0.0.7` 的全部用户可见变化。
 
 ### 简体中文
 
 #### 新增
 
-- 新增高级仙窍接口（`advanced_xianqiao_interface`）：使用 `design/advanced-xianqiao-interface/` 的空心框架 + 浮空核心 + 顶部圆垫设计稿模型（默认 scale display）。保留普通仙窍接口的九个物品/流体/电力/化学品缓存槽与物主绑定，并额外支持配置范围内的流体、电力、化学品输入/输出；但**拒绝接口方块自身的六面主动推拉功能**（`setSideMode`/`setActivePullEnabled`/`setActivePushEnabled` 变为无操作）。
-- 高级仙窍接口采用与高级稳定化迷你仙墟系列一致的调度行为：主界面六面区域改为容器交互面掩码网格（`RuinFaceGrid`，六位掩码）；设置面板提供 **xyz/+xzy** 范围尺寸与偏移栏、周期、预览框开关、启用开关、访问（轮询跳过/强制轮询）、均分（逐个/按组）、顺序（远先/近先）与汇入/推出模式按钮；设置面板内不含六面行为设置。
-- 世界中可选白色选区线框与逐面半透明高亮预览（`AdvancedXianqiaoInterfaceRenderer` + `RuinFaceHighlightRenderer`），与高级稳定化迷你仙墟系列一致。
+- 新增高级仙窍接口（`advanced_xianqiao_interface`）：使用 `design/advanced-xianqiao-interface/` 的空心框架 + 浮空核心 + 顶部圆垫设计稿模型（默认 scale display）。保留普通仙窍接口的九个物品/流体/电力/化学品缓存槽与物主绑定，并额外支持对配置范围内容器的流体、电力、化学品输入/输出。
+- 高级仙窍接口复用普通仙窍接口一致的六面（抽/推/关）三状态与左侧主动抽入/主动推出开关，但把这两种行为应用到可配置包围盒内的每一个容器：抽（PULL）从区域内每个容器经该配置面提取全部可交互内容（物品/流体/电力/化学品）进入仙窍；推（PUSH）从接口缓存中把允许该面交互的缓存槽按配置面向区域内容器推出。
+- 高级仙窍接口新增与高级稳定化迷你仙墟系列一致的配置页（⚙ tag）：xyz/+xzy 范围尺寸与偏移、周期、预览框开关、启用、访问（轮询跳过/强制轮询）、均分（逐个/按组）、顺序（远先/近先）。
+- 世界中可选白色选区线框 + 逐面高亮：交互面保持白色半透明，PULL 面叠加绿色半透明、PUSH 面叠加红色半透明，实时跟随服务端配置。
+- 高级仙窍接口保留本方块的植物魔法火花/魔力交互、新生魔艺魔源交互、工业先锋灵魂与通用机械严格能量/化学品能力。
 - 高级仙窍接口合成：`{灵晶，迷你仙墟，灵晶，回响碎片，仙窍接口，回响碎片，灵晶，村民刷怪蛋，灵晶}` 有序 3×3。
 
 #### 变更
 
-- 仙窍接口、灵剑、仙墟锻灵剑、一气归元剑的材质/方块模型改用 `design/` 下的美化设计稿：仙窍接口由 `minecraft:block/cube` 换成 13 元素六面内凹模型（12 棱边框架 + 内陷核心），旧 `xianqiao_interface_front.png` 移除；三把剑采用 16×16 原版风格像素材质（一气归元剑保持水平镜像、剑尖朝左上并带光束枪口）。方块模型均忽略设计稿缩放参数，使用默认 scale display。
-- `XianqiaoInterfaceBlockEntity` 与 `XianqiaoInterfaceMenu` 解除 final 以便高级变体继承；`XianqiaoInterfaceMenu` 增加类型感知构造与 `configurationDataCount`/`readExtraData`/`writeExtraData` 扩展点。
+- 仙窍接口、灵剑、仙墟锻灵剑、一气归元剑的材质/方块模型改用 `design/` 下的美化设计稿：仙窍接口由 `minecraft:block/cube` 换成 13 元素六面内凹模型（12 棱边框架 + 内陷核心），旧 `xianqiao_interface_front.png` 移除；三把剑采用 16×16 原版风格像素材质（一气归元剑保持水平镜像、剑尖朝左上并带光束枪口）。方块模型均忽略设计稿缩放参数，使用默认 scale display，物品栏与手持按标准方块尺寸绘制。
+- 仙窍接口六面按钮只显示方位字母，开启状态由边框颜色与悬停提示体现，不再溢出；高级仙窍接口的六面按钮沿用该样式（抽/推/关循环、绿/红/灰边框），但按钮内不显示相邻方块。
+- `XianqiaoInterfaceBlockEntity` 与 `XianqiaoInterfaceMenu` 解除 final 以便高级变体继承；`XianqiaoInterfaceMenu` 增加类型感知构造与 `configurationDataCount`/`readExtraData`/`writeExtraData` 数据槽扩展点。
+- 仙窍接口/高级仙窍接口的主动抽推按钮与缓存槽管道抽取提示改为完整双语翻译键，不再硬编码中文。
 - 版本提升为 `0.0.8`（`gradle.properties` 与 `versions/supported_versions.json`）。
 
 #### 修复
 
-- 无（开发中）。
+- 修复高级仙窍接口选中范围预览不渲染：接口方块实体补上 `getUpdatePacket` 并在面模式变化时同步客户端，预览框与绿/红面高亮即时跟随服务端配置。
+- 修复高级接口调度器化学品面参数不一致（改用与物品/流体/电力相同的面方向）。
+- 修复高级接口的植物魔法火花/魔力与工业先锋灵魂能力注册（对高级方块实体类型注册）。
+
+#### 兼容与验证
+
+- 官方支持范围：Minecraft 1.21.1、NeoForge 21.1.235、Java 21。模组 ID、资源命名空间、网络协议（8）不变。
+- 700 项自动化测试全部通过（失败/错误/跳过为 0）；生产 JAR 边界、版本组成、精确版本产物、Ars Source API 与无 AE2 运行时校验通过。
+- 0.0.8 在 30-JAR 全模组 PCL2 配置（含 Create 6.0.10）中使用 JDK 21、`zh_cn` 完成 2560×1504 大窗口启动并进入个人仙窍维度，无 ImmortalStorage 致命错误。
+- 古玉手册新增高级仙窍接口条目，并补全仙窍接口的 Push（推出）与 Release（缓存返还）双语说明。
 
 ### English
 
-- Added the Advanced Xianqiao Interface with ruin-style range scheduling (see archive). Promoted the design sword/interface art into the mod. Version bumped to 0.0.8 (development).
+This section is the complete user-visible delta from release `0.0.7`.
+
+#### Added
+
+- Added the Advanced Xianqiao Interface (`advanced_xianqiao_interface`) with the `design/advanced-xianqiao-interface/` hollow-frame / floating-core / top-puck model (default-scale display). It keeps the plain interface's nine mixed item/fluid/power/chemical cache slots and owner binding, and adds fluid, power, and chemical input/output over a configurable bounding box.
+- The Advanced interface reuses the plain interface's six-face PULL/PUSH/OFF three-state modes and the left-side active pull/push toggles, but applies them to every container inside the configured box: PULL extracts all interactive content (items/fluids/power/chemicals) from each in-area container's configured face into Xianqiao; PUSH exports the cache slots that permit that face into the in-area containers.
+- Added an advanced-stabilized-ruin-style configuration page (⚙ tag): xyz/+xzy range size and offset, frequency, preview toggle, enabled, access (poll-skip/force-poll), split (item-by-item/group-by-group), and order (far-first/near-first).
+- Optional world selection box with per-face highlights: interaction faces stay white translucent, PULL faces gain green translucent and PUSH faces red translucent, live with server config.
+- The Advanced interface keeps the block's own Botania spark/mana, Ars Nouveau source, Industrial Foregoing Soul, and Mekanism strict-energy/chemical interactions.
+- Crafting: `{spirit crystal, miniature immortal ruin, spirit crystal, echo shard, xianqiao interface, echo shard, spirit crystal, villager spawn egg, spirit crystal}` ordered 3×3.
+
+#### Changed
+
+- The Xianqiao Interface and the Spirit Sword / Immortal-Ruin-Forged Spirit Sword / One-Qi Returning Origin Sword now use the `design/` beautified textures/models. The interface block switched from `minecraft:block/cube` to a 13-element six-face recessed model (12 edge beams + recessed core); the old `xianqiao_interface_front.png` was removed. The swords are 16x16 vanilla-style pixel icons (One-Qi kept horizontally mirrored with the beam muzzle at the upper-left tip). Both block models ignore the design scale and use default-scale display, so inventory and hand-held rendering are standard block size.
+- Interface six-face buttons now show only the direction letter; state is conveyed by border color and tooltip (no overflow). The Advanced interface reuses that style (PULL/PUSH/OFF cycle, green/red/gray borders) without the adjacent-block preview.
+- `XianqiaoInterfaceBlockEntity` and `XianqiaoInterfaceMenu` are no longer final; the menu gained a type-aware constructor and `configurationDataCount`/`readExtraData`/`writeExtraData` data-slot extension points.
+- The active pull/push buttons and the cache-slot pipe-extraction tooltips on both interfaces now use full bilingual translation keys instead of hardcoded Chinese.
+- Version bumped to `0.0.8`.
+
+#### Fixed
+
+- Fixed the Advanced interface range preview not rendering: the block entity now overrides `getUpdatePacket` and re-syncs face-mode changes, so the box and green/red highlights follow server config live.
+- Fixed the advanced scheduler chemical face inconsistency (now uses the same face as items/fluids/energy).
+- Restored Botania spark/mana and Industrial Foregoing Soul capability registration for the Advanced interface block entity type.
+
+#### Compatibility and validation
+
+- Official support: Minecraft 1.21.1, NeoForge 21.1.235, Java 21. Mod ID, resource namespace, and network protocol (8) unchanged.
+- All 700 automated tests pass (0 failures/errors/skips); production-JAR boundary, version composition, exact artifact, Ars Source API, and no-AE2 runtime checks pass.
+- 0.0.8 was validated in the 30-JAR full-mod PCL2 setup (incl. Create 6.0.10) with JDK 21 and `zh_cn` at 2560×1504, entering the personal Xianqiao realm with no ImmortalStorage fatal error.
+- The Ancient Jade handbook gained an Advanced Xianqiao Interface entry and expanded bilingual Push (export) and Release (cache-return) coverage.
 
 ## [0.0.7] - 2026-08-06
 
