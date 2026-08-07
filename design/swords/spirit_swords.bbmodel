@@ -1,0 +1,496 @@
+{
+  "meta": {
+    "format_version": "5.0.0",
+    "model_format": "java_item",
+    "box_uv": false
+  },
+  "name": "spirit_swords",
+  "model_identifier": "immortalstorage:spirit_swords",
+  "visible_box": [
+    0,
+    0,
+    0,
+    32,
+    32,
+    16
+  ],
+  "variable_placeholders": "",
+  "variable_placeholder_buttons": [],
+  "unidentified": {},
+  "duplicate_uuid": [],
+  "elements": [
+    {
+      "name": "spirit_sword",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "type": "cube",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8.0,
+        8.0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        }
+      },
+      "uuid": "31e3b665-e15c-4513-b3f5-5253cd3feaf9"
+    },
+    {
+      "name": "immortal_ruin_forged_spirit_sword",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "type": "cube",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8.0,
+        8.0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        }
+      },
+      "uuid": "88da8c25-4937-47be-a219-cb4a79a46d09"
+    },
+    {
+      "name": "one_qi_returning_origin_sword",
+      "box_uv": false,
+      "rescale": false,
+      "locked": false,
+      "render_order": "default",
+      "allow_mirror_modeling": true,
+      "type": "cube",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        1
+      ],
+      "autouv": 0,
+      "color": 0,
+      "origin": [
+        8.0,
+        8.0,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "texture": null
+        }
+      },
+      "uuid": "4922598f-6e6c-4487-8ded-ab893d9add9a"
+    }
+  ],
+  "outliner": [
+    {
+      "uuid": "31e3b665-e15c-4513-b3f5-5253cd3feaf9",
+      "isOpen": true,
+      "children": []
+    },
+    {
+      "uuid": "88da8c25-4937-47be-a219-cb4a79a46d09",
+      "isOpen": true,
+      "children": []
+    },
+    {
+      "uuid": "4922598f-6e6c-4487-8ded-ab893d9add9a",
+      "isOpen": true,
+      "children": []
+    }
+  ],
+  "resolution": {
+    "width": 32,
+    "height": 32
+  },
+  "textures": [
+    {
+      "path": "textures/spirit_sword.png",
+      "name": "spirit_sword",
+      "folder": "textures",
+      "namespace": "",
+      "id": "0",
+      "uv": [
+        0,
+        0
+      ],
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA3klEQVR4nGNkIANIadv8J0cfXPP8Hdf+z99x7b+ha8x/JlI1t/bOYjh//iz5Nue1L4bbTpbmYzfe0UizlLbNf/TQldK2+X/sxjvibJbStvkf5awJN4QkzciG5LUv/m/oGkO0ZqzRaOvkzsDAwMAQEejNkJ2bx3B+9xJGgraju0JK24YoZ6O4oCpG7//TK4cZDu/bycDAwMDw8tkDBkKGwJ1WFaP3Pz5IjSFiOgfDy2cPUBSJSyng9gYs+m6uC8HpbEPXGPzxH+WsSVrqQgIs4lIKDNcZFMjRy8DAwMAAAB/tnW3r56nmAAAAAElFTkSuQmCC",
+      "width": 16,
+      "height": 16,
+      "relpath": "textures/spirit_sword.png",
+      "uuid": "adaeb625-9f66-4450-9276-12095619dd00"
+    },
+    {
+      "path": "textures/immortal_ruin_forged_spirit_sword.png",
+      "name": "immortal_ruin_forged_spirit_sword",
+      "folder": "textures",
+      "namespace": "",
+      "id": "1",
+      "uv": [
+        0,
+        0
+      ],
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1UlEQVR4nLWRIQ7CUBBEp1yiOMQKbLG/CourIfmqCkQdhgvg2nt8wQHAVTWEqvYACJB13GAQpD+B0LT9Cav3zczOenAYEU0XzsLGkMaQSqWcjIUPB4OieLg7J8ndujvBZfkvWETzu10RzbIc6CyiGa5SK9LC9ZXDY4toJsmdSqWDnX++MQjWAIA4nmG3y3C57L1e9+8UInpQ7I8EUZTzdjOo6yMAoGkq9IlYgSjKudkuEYYZmqayC70i7ftOZ3bGVirtPMcT0ZzOF+AT48pqT/D9N+w6L78AqesQ82LiAAAAAElFTkSuQmCC",
+      "width": 16,
+      "height": 16,
+      "relpath": "textures/immortal_ruin_forged_spirit_sword.png",
+      "uuid": "0c481b8d-4f08-46a9-a923-f02704baf6f5"
+    },
+    {
+      "path": "textures/one_qi_returning_origin_sword.png",
+      "name": "one_qi_returning_origin_sword",
+      "folder": "textures",
+      "namespace": "",
+      "id": "2",
+      "uv": [
+        0,
+        0
+      ],
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABBUlEQVR4nM2PMUvDUBRGT6rg8OAZhG5SXNzkrcJbpSCvECrokg6Coz+giEt3l/4Du4hTxa0ILkVQyKg4OUiHDF2EUHCwUK6T0NrEhEx+44XvfOeirBEREWWNUCYiIkGUyNHkrRSkst5qADC80ex1HyhlokMnQZRItTeWIErKvaNDJ514+s8gnXi6BFHW5IOzIMoaOXa1Yma/ITp0Uu2Nl8qVLMDkeuB1201O6xsArNUvc0czTZQ1qet/GvyUZ6MYgK/7E94fn6mdXxR7Yb4MMBvFbLca7J41FyCrWWWAz6cXb+G+tSmD/UPcXZ+P4ZUAeGmAvOjQyUHySj/x0w2K5NbfYcWHb0cFogSF+va/AAAAAElFTkSuQmCC",
+      "width": 16,
+      "height": 16,
+      "relpath": "textures/one_qi_returning_origin_sword.png",
+      "uuid": "295e190d-d076-495d-b6db-d153f5bf909a"
+    }
+  ],
+  "parent": "",
+  "description": {
+    "identifier": "immortalstorage:spirit_swords",
+    "name": "spirit_swords",
+    "visible_box": [
+      0,
+      0,
+      0,
+      32,
+      32,
+      16
+    ],
+    "variable_placeholders": "",
+    "variable_placeholder_buttons": []
+  },
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        90,
+        55
+      ],
+      "translation": [
+        0,
+        4.25,
+        2.5
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        55
+      ],
+      "translation": [
+        0,
+        4.25,
+        2.5
+      ],
+      "scale": [
+        0.85,
+        0.85,
+        0.85
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        25
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        25
+      ],
+      "translation": [
+        1.13,
+        3.2,
+        1.13
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.68
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.625,
+        0.625,
+        0.625
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "head": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        13,
+        7
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  }
+}

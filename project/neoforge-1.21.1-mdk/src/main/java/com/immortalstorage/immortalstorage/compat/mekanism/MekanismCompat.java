@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.compat.mekanism;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.immortalstorage.immortalstorage.block.entity.AdvancedXianqiaoInterfaceBlockEntity;
 import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.block.entity.XianqiaoInterfaceBlockEntity;
 import com.immortalstorage.immortalstorage.compat.SpiritStaffWrenchCompat;
@@ -14,6 +15,7 @@ import mekanism.api.MekanismAPI;
 import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalHandler;
 import mekanism.api.IConfigurable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -72,6 +74,23 @@ public final class MekanismCompat {
                 public void serverTick(
                         XianqiaoInterfaceBlockEntity blockEntity, ServerLevel level) {
                     activeChemicalTransferTick(blockEntity, level);
+                }
+
+                @Override
+                public void scheduledChemicalTransfer(
+                        AdvancedXianqiaoInterfaceBlockEntity blockEntity, ServerLevel level,
+                        BlockPos target, Direction face, boolean pull) {
+                    IChemicalHandler adjacent = level.getCapability(
+                            CHEMICAL, target, face);
+                    if (adjacent == null) return;
+                    if (pull) {
+                        MekanismChemicalActiveTransfer.pull(adjacent,
+                                blockEntity::resolveExternalResourceStore);
+                    } else {
+                        MekanismChemicalActiveTransfer.push(
+                                key -> blockEntity.resolveExternalResourceCache(key, face),
+                                adjacent);
+                    }
                 }
 
                 @Override
@@ -161,6 +180,10 @@ public final class MekanismCompat {
         event.registerBlockEntity(STRICT_ENERGY, ModBlockEntities.XIANQIAO_INTERFACE.get(),
                 MekanismCompat::handlerOrNull);
         event.registerBlockEntity(CHEMICAL, ModBlockEntities.XIANQIAO_INTERFACE.get(),
+                MekanismCompat::chemicalHandlerOrNull);
+        event.registerBlockEntity(STRICT_ENERGY, ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(),
+                MekanismCompat::handlerOrNull);
+        event.registerBlockEntity(CHEMICAL, ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(),
                 MekanismCompat::chemicalHandlerOrNull);
         ImmortalStorageMod.LOG.info(
                 "[Compat/Mekanism] Registered owner-bound Xianqiao Interface strict energy and chemical capabilities");

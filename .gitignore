@@ -66,3 +66,7 @@ out/
 **/server*.log
 **/focused.log
 **/build-final*.log
+
+# Python bytecode caches.
+__pycache__/
+*.pyc

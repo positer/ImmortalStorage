@@ -92,6 +92,11 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(XianqiaoInterfaceBlockEntity::new,
                             ModBlocks.XIANQIAO_INTERFACE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<AdvancedXianqiaoInterfaceBlockEntity>> ADVANCED_XIANQIAO_INTERFACE =
+            BLOCK_ENTITIES.register("advanced_xianqiao_interface", () ->
+                    BlockEntityType.Builder.of(AdvancedXianqiaoInterfaceBlockEntity::new,
+                            ModBlocks.ADVANCED_XIANQIAO_INTERFACE.get()).build(null));
+
     public static final Supplier<BlockEntityType<SourceVeinManagerBlockEntity>> SOURCE_VEIN_MANAGER =
             BLOCK_ENTITIES.register("source_vein_manager", () ->
                     BlockEntityType.Builder.of(SourceVeinManagerBlockEntity::new,
@@ -128,6 +133,12 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, XIANQIAO_INTERFACE.get(),
                 (be, side) -> be.getFluidHandler(side));
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, XIANQIAO_INTERFACE.get(),
+                (be, side) -> be.getEnergyHandler(side));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ADVANCED_XIANQIAO_INTERFACE.get(),
+                (be, side) -> be.getItemHandler(side));
+        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, ADVANCED_XIANQIAO_INTERFACE.get(),
+                (be, side) -> be.getFluidHandler(side));
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ADVANCED_XIANQIAO_INTERFACE.get(),
                 (be, side) -> be.getEnergyHandler(side));
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> be.getFluidHandler());

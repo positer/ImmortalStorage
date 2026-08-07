@@ -62,6 +62,9 @@ public final class IndustrialForegoingSoulsCompat {
         event.registerBlockEntity(SoulCapabilities.BLOCK,
                 ModBlockEntities.XIANQIAO_INTERFACE.get(),
                 IndustrialForegoingSoulsCompat::handlerOrNull);
+        event.registerBlockEntity(SoulCapabilities.BLOCK,
+                ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(),
+                IndustrialForegoingSoulsCompat::handlerOrNull);
         ImmortalStorageMod.LOG.info(
                 "[Compat/IndustrialForegoingSouls] Registered owner-bound Xianqiao Interface soul capability");
     }

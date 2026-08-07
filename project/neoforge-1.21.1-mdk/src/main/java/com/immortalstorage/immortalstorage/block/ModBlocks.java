@@ -45,11 +45,15 @@ public final class ModBlocks {
     public static final Supplier<Block> XIANQIAO_MANAGER = reg("xianqiao_manager",
             () -> new XianqiaoManagerBlock(setBlockId("xianqiao_manager",
                     BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_CYAN).strength(4.0f)
-                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(state -> 7))));
-    public static final Supplier<Block> XIANQIAO_INTERFACE = reg("xianqiao_interface",
+                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(state -> 7))));    public static final Supplier<Block> XIANQIAO_INTERFACE = reg("xianqiao_interface",
             () -> new XianqiaoInterfaceBlock(setBlockId("xianqiao_interface",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_CYAN).strength(4.0f)
+                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
+    public static final Supplier<Block> ADVANCED_XIANQIAO_INTERFACE = reg("advanced_xianqiao_interface",
+            () -> new AdvancedXianqiaoInterfaceBlock(setBlockId("advanced_xianqiao_interface",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
+                            .mapColor(MapColor.COLOR_PURPLE).strength(4.0f)
                             .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
     public static final Supplier<Block> SIMULATED_REINCARNATION_FURNACE = reg("simulated_reincarnation_furnace",
             () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",

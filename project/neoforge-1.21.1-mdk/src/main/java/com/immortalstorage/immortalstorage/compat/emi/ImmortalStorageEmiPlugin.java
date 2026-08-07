@@ -67,19 +67,19 @@ public final class ImmortalStorageEmiPlugin implements EmiPlugin {
                                 .setAmount(hover.amountMb()));
             }
 
-            int visibleSlots = Math.min(XianqiaoInterfaceMenu.PLAYER_START,
-                    screen.getMenu().slots.size());
+            XianqiaoInterfaceMenu menu = screen.getMenu();
+            int visibleSlots = Math.min(XianqiaoInterfaceMenu.PLAYER_START, menu.slots.size());
             for (int slotIndex = 0; slotIndex < visibleSlots; slotIndex++) {
                 int resourceSlot = slotIndex % XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT;
-                if (screen.getMenu().isFluidTarget(resourceSlot)) continue;
-                Slot slot = screen.getMenu().slots.get(slotIndex);
+                if (menu.isFluidTarget(resourceSlot)) continue;
+                Slot slot = menu.slots.get(slotIndex);
                 if (!slot.hasItem()) continue;
                 int x = screen.getGuiLeft() + slot.x;
                 int y = screen.getGuiTop() + slot.y;
                 if (mouseX < x || mouseX >= x + 16 || mouseY < y || mouseY >= y + 16) continue;
                 long amount = slotIndex < XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT
-                        ? screen.getMenu().getConfiguredAmount(resourceSlot)
-                        : screen.getMenu().getCachedAmount(resourceSlot);
+                        ? menu.getConfiguredAmount(resourceSlot)
+                        : menu.getCachedAmount(resourceSlot);
                 return TerminalEmiInteraction.lookupOnly(
                         EmiStack.of(slot.getItem().copyWithCount(1))
                                 .setAmount(Math.max(1L, amount)));

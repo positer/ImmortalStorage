@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CMC",
+    "EIE",
+    "CVC"
+  ],
+  "key": {
+    "C": { "item": "immortalstorage:spirit_crystal" },
+    "M": { "item": "immortalstorage:miniature_immortal_ruin" },
+    "E": { "item": "minecraft:echo_shard" },
+    "I": { "item": "immortalstorage:xianqiao_interface" },
+    "V": { "item": "minecraft:villager_spawn_egg" }
+  },
+  "result": {
+    "id": "immortalstorage:advanced_xianqiao_interface",
+    "count": 1
+  }
+}

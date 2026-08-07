@@ -38,7 +38,7 @@ final class XianqiaoInterfaceResourceTest {
 
     @Test
     void originalBlockTexturesArePixelSizedAndLanguageHasNoPlaceholderCopy() throws IOException {
-        for (String name : List.of("front", "side", "top")) {
+        for (String name : List.of("panel", "side", "top")) {
             Path texture = RESOURCES.resolve(
                     "assets/immortalstorage/textures/block/xianqiao_interface_" + name + ".png");
             BufferedImage image = ImageIO.read(texture.toFile());

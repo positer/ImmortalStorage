@@ -40,7 +40,7 @@ import java.util.List;
  * real output buffers. Clicking a ghost slot copies the carried stack without
  * consuming it; clicking it with an empty cursor clears the target.</p>
  */
-public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
+public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     public static final long DEFAULT_EXTERNAL_CACHE_AMOUNT = 1_000L;
     public static final int CONFIG_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
     public static final int BUFFER_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
@@ -66,7 +66,7 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     private static final int SLOT_MASK_DATA_START = FLUID_LIMIT_DATA + 1;
     private static final int ACTIVE_PULL_DATA = SLOT_MASK_DATA_START + CONFIG_SLOT_COUNT;
     private static final int ACTIVE_PUSH_DATA = ACTIVE_PULL_DATA + 1;
-    private static final int CONFIG_DATA_COUNT = ACTIVE_PUSH_DATA + 1;
+    protected static final int CONFIG_DATA_COUNT = ACTIVE_PUSH_DATA + 1;
     public static final String FLUID_DISPLAY_TAG = "ImmortalStorageInterfaceFluid";
     public static final String EXTERNAL_DISPLAY_TAG = "ImmortalStorageInterfaceExternalResource";
 
@@ -75,24 +75,34 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     private final Player openingPlayer;
     private final SimpleContainer configurationMirror = new SimpleContainer(CONFIG_SLOT_COUNT);
     private final SimpleContainer bufferMirror = new SimpleContainer(BUFFER_SLOT_COUNT);
-    private final ContainerData configurationData;
+    protected final ContainerData configurationData;
 
     public XianqiaoInterfaceMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, resolveBlockEntity(inventory, buffer));
+        this(ModMenus.XIANQIAO_INTERFACE.get(), id, inventory,
+                resolveBlockEntity(inventory, buffer));
     }
 
     public XianqiaoInterfaceMenu(
             int id, Inventory inventory, XianqiaoInterfaceBlockEntity blockEntity) {
-        super(ModMenus.XIANQIAO_INTERFACE.get(), id);
+        this(ModMenus.XIANQIAO_INTERFACE.get(), id, inventory, blockEntity);
+    }
+
+    protected XianqiaoInterfaceMenu(net.minecraft.world.inventory.MenuType<?> type,
+                                    int id, Inventory inventory,
+                                    XianqiaoInterfaceBlockEntity blockEntity) {
+        super(type, id);
         this.blockEntity = blockEntity;
         this.openingPlayer = inventory.player;
         this.backend = blockEntity == null ? disconnectedBackend() : blockEntity.getInventory();
         this.configurationData = blockEntity == null || blockEntity.getLevel() == null
                 || blockEntity.getLevel().isClientSide()
-                ? new SimpleContainerData(CONFIG_DATA_COUNT)
+                ? new SimpleContainerData(configurationDataCount())
                 : new ContainerData() {
                     @Override
                     public int get(int index) {
+                        if (index >= CONFIG_DATA_COUNT) {
+                            return readExtraData(index - CONFIG_DATA_COUNT);
+                        }
                         if (index >= 0 && index < Direction.values().length) {
                             return blockEntity.getSideMode(Direction.values()[index]).ordinal();
                         }
@@ -134,8 +144,12 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                         return 0;
                     }
 
-                    @Override public void set(int index, int value) { }
-                    @Override public int getCount() { return CONFIG_DATA_COUNT; }
+                    @Override public void set(int index, int value) {
+                        if (index >= CONFIG_DATA_COUNT) {
+                            writeExtraData(index - CONFIG_DATA_COUNT, value);
+                        }
+                    }
+                    @Override public int getCount() { return configurationDataCount(); }
                 };
         addDataSlots(configurationData);
 
@@ -274,6 +288,20 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
 
     public XianqiaoInterfaceBlockEntity getBlockEntity() {
         return blockEntity;
+    }
+
+    /** Number of synchronized data slots; subclasses may append extra slots. */
+    protected int configurationDataCount() {
+        return CONFIG_DATA_COUNT;
+    }
+
+    /** Reads one appended data slot (index relative to {@code CONFIG_DATA_COUNT}). */
+    protected int readExtraData(int index) {
+        return 0;
+    }
+
+    /** Writes one appended data slot on the server (index relative to {@code CONFIG_DATA_COUNT}). */
+    protected void writeExtraData(int index, int value) {
     }
 
     public long getConfigRevision() {
@@ -475,7 +503,7 @@ public final class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                 blockEntity.getBlockPos().getZ() + 0.5D) <= 64.0D;
     }
 
-    private static XianqiaoInterfaceBlockEntity resolveBlockEntity(
+    protected static XianqiaoInterfaceBlockEntity resolveBlockEntity(
             Inventory inventory, FriendlyByteBuf buffer) {
         if (inventory == null || inventory.player == null || buffer == null) return null;
         if (inventory.player.level().getBlockEntity(buffer.readBlockPos())

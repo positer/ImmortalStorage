@@ -56,23 +56,20 @@ final class ZeroPointZeroPointFiveContractTest {
         assertTrue(Files.exists(texture.resolve("gui/container/simulated_reincarnation_furnace.png")));
     }
 
-    @Test void scaledOneQiSwordKeepsHardTransparentPadding() throws Exception {
+    @Test void oneQiSwordIsSixteenPixelHardTransparentVanillaStyle() throws Exception {
         Path path = ROOT.resolve("src/main/resources/assets/immortalstorage/textures/item/one_qi_returning_origin_sword.png");
         BufferedImage image = ImageIO.read(path.toFile());
-        assertEquals(32, image.getWidth());
-        assertEquals(32, image.getHeight());
+        assertEquals(16, image.getWidth());
+        assertEquals(16, image.getHeight());
         int transparent = 0;
-        for (int y = 0; y < 32; y++) {
-            for (int x = 0; x < 32; x++) {
+        for (int y = 0; y < 16; y++) {
+            for (int x = 0; x < 16; x++) {
                 int alpha = image.getRGB(x, y) >>> 24;
                 assertTrue(alpha == 0 || alpha == 255, "texture must not contain partial alpha at " + x + "," + y);
                 if (alpha == 0) transparent++;
-                if (x < 3 || x > 28 || y < 3 || y > 28) {
-                    assertEquals(0, alpha, "center scaling must leave transparent padding at " + x + "," + y);
-                }
             }
         }
-        assertTrue(transparent > 0, "scaled texture must retain transparent source pixels");
+        assertTrue(transparent > 0, "vanilla-style sword texture must retain transparent pixels");
     }
 
     @Test void furnaceRegistrationModelAndWorkingStateAreComplete() throws Exception {

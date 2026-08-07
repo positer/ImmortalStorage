@@ -6,17 +6,17 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current release is 0.0.7. It adds the Echo Shard Source Vein, Create blower-fan source-vein catalysts (with a fan-transparent whitelist), automatic AE add-on adaptation, and the Entangled / Advanced / Advanced-Entangled Stabilized Miniature Immortal Ruins. All four container-facing variants now share a 2×3 face-mask grid and interact only with containers inside their operation area.
+> The current release is 0.0.8. It promotes the design-sheet textures/models for the Xianqiao Interface and the Spirit Sword family, and adds the Advanced Xianqiao Interface: the plain interface's six-face PULL/PUSH/OFF modes and active pull/push toggles are applied to every container inside a configurable bounding box (PULL imports all interactive items/fluids/power/chemicals; PUSH exports the face-allowed cache slots), with an advanced-stabilized-ruin configuration page and green/red face highlights in the range preview.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.7 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Release 0.0.8 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.7](https://github.com/positer/ImmortalStorage/releases/tag/0.0.7)
+**Download:** [ImmortalStorage 0.0.8](https://github.com/positer/ImmortalStorage/releases/tag/0.0.8)
 
-**Release JAR SHA256:** `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`
+**Release JAR SHA256:** `DE6B82DED717CFB93A04E48870B5D5E80EE7240D3BCBC4641D98FB7782D2C1DB`
 
 ## Highlights
 

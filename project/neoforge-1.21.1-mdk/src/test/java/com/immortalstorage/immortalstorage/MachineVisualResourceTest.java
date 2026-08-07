@@ -19,9 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 final class MachineVisualResourceTest {
     @Test
     void interfaceAndSourceManagerUseIndependentNativePixelTextures() throws Exception {
-        for (String face : new String[]{"front", "side", "top"}) {
+        for (String face : new String[]{"panel", "side", "top"}) {
             BufferedImage xianqiao = png("assets/immortalstorage/textures/block/xianqiao_interface_" + face + ".png");
-            BufferedImage sourceManager = png("assets/immortalstorage/textures/block/source_vein_manager_" + face + ".png");
+            String managerFace = "panel".equals(face) ? "front" : face;
+            BufferedImage sourceManager = png("assets/immortalstorage/textures/block/source_vein_manager_" + managerFace + ".png");
             assertEquals(16, xianqiao.getWidth());
             assertEquals(16, xianqiao.getHeight());
             assertEquals(16, sourceManager.getWidth());

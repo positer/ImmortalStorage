@@ -8,17 +8,18 @@ import org.junit.jupiter.api.Test;
 
 class ModDescriptionContractTest {
     @Test
-    void descriptionRepresentsTheCompleteZeroPointZeroPointSevenFeatureSet() throws Exception {
+    void descriptionRepresentsTheCompleteZeroPointZeroPointEightFeatureSet() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("UUID-bound realm"));
-        assertTrue(properties.contains("Echo Shard Source Vein"));
-        assertTrue(properties.contains("Create fan-processing catalysts"));
-        assertTrue(properties.contains("AE addon storage-capability adaptation"));
-        assertTrue(properties.contains("Entangled / Advanced / Advanced-Entangled"));
-        assertTrue(properties.contains("container scheduling and Xianqiao memory routing"));
+        assertTrue(properties.contains("beautified Xianqiao Interface and Spirit Sword family textures/models"));
+        assertTrue(properties.contains("Advanced Xianqiao Interface"));
+        assertTrue(properties.contains("advanced-stabilized-ruin-style range scheduling"));
+        assertTrue(properties.contains("xyz/+xzy"));
+        assertTrue(properties.contains("preview"));
+        assertTrue(properties.contains("item/fluid/power/chemical cache slots"));
     }
 
     private static Path locateProject() {

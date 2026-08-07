@@ -1,7 +1,10 @@
 package com.immortalstorage.immortalstorage.compat;
 
+import com.immortalstorage.immortalstorage.block.entity.AdvancedXianqiaoInterfaceBlockEntity;
 import com.immortalstorage.immortalstorage.block.entity.XianqiaoInterfaceBlockEntity;
 import com.immortalstorage.core.resource.ResourceChannelKey;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
@@ -55,6 +58,15 @@ public final class XianqiaoInterfaceCompatHooks {
         return InteractionResult.PASS;
     }
 
+    /** Optional-resource half of the advanced interface's range scheduler. */
+    public static void scheduledChemicalTransfer(
+            AdvancedXianqiaoInterfaceBlockEntity blockEntity, ServerLevel level,
+            BlockPos target, Direction face, boolean pull) {
+        for (Hook hook : HOOKS) {
+            hook.scheduledChemicalTransfer(blockEntity, level, target, face, pull);
+        }
+    }
+
     public record ContainedExternalResource(ResourceChannelKey key, long amount) {
         public ContainedExternalResource {
             Objects.requireNonNull(key, "key");
@@ -68,6 +80,10 @@ public final class XianqiaoInterfaceCompatHooks {
         default void serverTick(XianqiaoInterfaceBlockEntity blockEntity, ServerLevel level) {}
 
         default void onRemoved(XianqiaoInterfaceBlockEntity blockEntity, ServerLevel level) {}
+
+        default void scheduledChemicalTransfer(
+                AdvancedXianqiaoInterfaceBlockEntity blockEntity, ServerLevel level,
+                BlockPos target, Direction face, boolean pull) {}
 
         default Optional<ContainedExternalResource> containedExternalResource(ItemStack stack) {
             return Optional.empty();

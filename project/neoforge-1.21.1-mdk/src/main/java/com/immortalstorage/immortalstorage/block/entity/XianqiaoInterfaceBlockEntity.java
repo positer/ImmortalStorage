@@ -55,7 +55,7 @@ import java.util.UUID;
  * item storage. The block owns only nine real one-stack output buffers; all
  * bulk storage remains in the player's stage-six-or-higher Xianqiao.
  */
-public final class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuProvider {
+public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuProvider {
     private static final String OWNER_TAG = "Owner";
     private static final String BUFFERS_TAG = "Buffers";
     private static final String ITEM_SLOTS_TAG = "ItemSlots";

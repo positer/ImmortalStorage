@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.0.8] - 2026-08-07 (开发中 / development)
+
+本节列出相对 `0.0.7` 的开发中变化（尚未发布，正式 Release 正文会在发布时重新编写）。
+
+### 简体中文
+
+#### 新增
+
+- 新增高级仙窍接口（`advanced_xianqiao_interface`）：使用 `design/advanced-xianqiao-interface/` 的空心框架 + 浮空核心 + 顶部圆垫设计稿模型（默认 scale display）。保留普通仙窍接口的九个物品/流体/电力/化学品缓存槽与物主绑定，并额外支持配置范围内的流体、电力、化学品输入/输出；但**拒绝接口方块自身的六面主动推拉功能**（`setSideMode`/`setActivePullEnabled`/`setActivePushEnabled` 变为无操作）。
+- 高级仙窍接口采用与高级稳定化迷你仙墟系列一致的调度行为：主界面六面区域改为容器交互面掩码网格（`RuinFaceGrid`，六位掩码）；设置面板提供 **xyz/+xzy** 范围尺寸与偏移栏、周期、预览框开关、启用开关、访问（轮询跳过/强制轮询）、均分（逐个/按组）、顺序（远先/近先）与汇入/推出模式按钮；设置面板内不含六面行为设置。
+- 世界中可选白色选区线框与逐面半透明高亮预览（`AdvancedXianqiaoInterfaceRenderer` + `RuinFaceHighlightRenderer`），与高级稳定化迷你仙墟系列一致。
+- 高级仙窍接口合成：`{灵晶，迷你仙墟，灵晶，回响碎片，仙窍接口，回响碎片，灵晶，村民刷怪蛋，灵晶}` 有序 3×3。
+
+#### 变更
+
+- 仙窍接口、灵剑、仙墟锻灵剑、一气归元剑的材质/方块模型改用 `design/` 下的美化设计稿：仙窍接口由 `minecraft:block/cube` 换成 13 元素六面内凹模型（12 棱边框架 + 内陷核心），旧 `xianqiao_interface_front.png` 移除；三把剑采用 16×16 原版风格像素材质（一气归元剑保持水平镜像、剑尖朝左上并带光束枪口）。方块模型均忽略设计稿缩放参数，使用默认 scale display。
+- `XianqiaoInterfaceBlockEntity` 与 `XianqiaoInterfaceMenu` 解除 final 以便高级变体继承；`XianqiaoInterfaceMenu` 增加类型感知构造与 `configurationDataCount`/`readExtraData`/`writeExtraData` 扩展点。
+- 版本提升为 `0.0.8`（`gradle.properties` 与 `versions/supported_versions.json`）。
+
+#### 修复
+
+- 无（开发中）。
+
+### English
+
+- Added the Advanced Xianqiao Interface with ruin-style range scheduling (see archive). Promoted the design sword/interface art into the mod. Version bumped to 0.0.8 (development).
+
 ## [0.0.7] - 2026-08-06
 
 本节完整列出相对正式版 `0.0.6` 的全部用户可见变化。

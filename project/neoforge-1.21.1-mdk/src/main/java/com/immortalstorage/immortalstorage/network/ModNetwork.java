@@ -94,9 +94,12 @@ public final class ModNetwork {
     private static void handleSetStabilizedRuinValue(ModPayloads.SetStabilizedRuinValue payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             ServerPlayer player = serverPlayer(ctx);
-            if (player == null || player.containerMenu.containerId != payload.containerId()
-                    || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu)) return;
-            menu.setAuthoritativeValue(payload.index(), payload.value());
+            if (player == null || player.containerMenu.containerId != payload.containerId()) return;
+            if (player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu) {
+                menu.setAuthoritativeValue(payload.index(), payload.value());
+            } else if (player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.AdvancedXianqiaoInterfaceMenu menu) {
+                menu.setAuthoritativeValue(payload.index(), payload.value());
+            }
         });
     }
 

@@ -46,7 +46,7 @@ import java.util.Optional;
  * every frame; there is no frame counter, time gate, animation throttling, or
  * off-screen list to keep alive.</p>
  */
-public final class XianqiaoInterfaceScreen
+public class XianqiaoInterfaceScreen
         extends AbstractContainerScreen<XianqiaoInterfaceMenu>
         implements TerminalFluidScreenAccess {
     private static final int TEXT = 0xFF404040;
@@ -99,7 +99,7 @@ public final class XianqiaoInterfaceScreen
                     + (index / 3) * SIDE_ROW_STRIDE;
             FacePreviewButton button = new FacePreviewButton(
                     buttonX, buttonY, SIDE_BUTTON_WIDTH, Component.literal(shortSide(side)),
-                    () -> adjacentBlockPreview(side), () -> interfaceModeColor(side),
+                    () -> sideButtonPreview(side), () -> interfaceModeColor(side),
                     ignored -> cycleSideMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
             this.addRenderableWidget(button);
@@ -562,22 +562,33 @@ public final class XianqiaoInterfaceScreen
             sideButton.active = menu.getBlockEntity() != null
                     && !amountDialogOpen && !externalDialogOpen;
         }
-        activePullButton.setMessage(Component.literal("抽"));
-        activePushButton.setMessage(Component.literal("推"));
+        activePullButton.setMessage(Component.translatable(
+                "container.immortalstorage.xianqiao_interface.active_pull"));
+        activePushButton.setMessage(Component.translatable(
+                "container.immortalstorage.xianqiao_interface.active_push"));
         activePullButton.setAlpha(menu.isActivePullEnabled() ? 1.0F : 0.35F);
         activePushButton.setAlpha(menu.isActivePushEnabled() ? 1.0F : 0.35F);
-        activePullButton.setTooltip(Tooltip.create(Component.literal(
-                "主动抽入 - " + (menu.isActivePullEnabled() ? "开启" : "关闭"))));
-        activePushButton.setTooltip(Tooltip.create(Component.literal(
-                "主动推出 - " + (menu.isActivePushEnabled() ? "开启" : "关闭"))));
+        activePullButton.setTooltip(Tooltip.create(Component.translatable(
+                "container.immortalstorage.xianqiao_interface.active_pull_tooltip",
+                Component.translatable(menu.isActivePullEnabled()
+                        ? "container.immortalstorage.xianqiao_interface.state_on"
+                        : "container.immortalstorage.xianqiao_interface.state_off"))));
+        activePushButton.setTooltip(Tooltip.create(Component.translatable(
+                "container.immortalstorage.xianqiao_interface.active_push_tooltip",
+                Component.translatable(menu.isActivePushEnabled()
+                        ? "container.immortalstorage.xianqiao_interface.state_on"
+                        : "container.immortalstorage.xianqiao_interface.state_off"))));
         activePullButton.visible = !amountDialogOpen && !externalDialogOpen;
         activePushButton.visible = !amountDialogOpen && !externalDialogOpen;
         for (Map.Entry<Direction, FacePreviewButton> entry : slotFaceButtons.entrySet()) {
             boolean enabled = menu.isSlotFaceEnabled(selectedTarget, entry.getKey());
             entry.getValue().setAlpha(enabled ? 1.0F : 0.35F);
-            entry.getValue().setTooltip(Tooltip.create(Component.literal(
-                    fullSideName(entry.getKey()) + "（" + shortSide(entry.getKey()) + "）- 管道抽取"
-                            + (enabled ? "开放" : "关闭"))));
+            entry.getValue().setTooltip(Tooltip.create(Component.translatable(
+                    "container.immortalstorage.xianqiao_interface.slot_face_tooltip",
+                    fullSideName(entry.getKey()), shortSide(entry.getKey()),
+                    Component.translatable(enabled
+                            ? "container.immortalstorage.xianqiao_interface.slot_face_open"
+                            : "container.immortalstorage.xianqiao_interface.slot_face_closed"))));
         }
         validateAmount();
     }
@@ -618,6 +629,11 @@ public final class XianqiaoInterfaceScreen
         ItemStack preview = new ItemStack(blockEntity.getLevel().getBlockState(
                 blockEntity.getBlockPos().relative(side)).getBlock().asItem());
         return preview.isEmpty() ? ItemStack.EMPTY : preview;
+    }
+
+    /** Side-button preview; subclasses may suppress the adjacent-block icon. */
+    protected ItemStack sideButtonPreview(Direction side) {
+        return adjacentBlockPreview(side);
     }
 
     private int interfaceModeColor(Direction side) {
@@ -980,9 +996,7 @@ public final class XianqiaoInterfaceScreen
     }
 
     private Component sideLabel(Direction side) {
-        return Component.translatable("container.immortalstorage.xianqiao_interface.side_mode",
-                Component.translatable("container.immortalstorage.xianqiao_interface.side." + side.getName()),
-                modeLabel(menu.getSideMode(side)));
+        return Component.literal(shortSide(side));
     }
 
     private Component sideTooltip(Direction side) {

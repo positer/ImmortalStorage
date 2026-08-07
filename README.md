@@ -2,7 +2,7 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前正式版本为 0.0.7：新增回响碎片源方块、机械动力鼓风机源方块触媒（含透明白名单）、AE 附属自动适配，以及纠缠/高级/高级纠缠的稳定化迷你仙墟，全部四个容器交互面变体统一为 2×3 面掩码网格，仅与操作区域内的容器交互。
+> 当前开发版本为 0.0.8：仙窍接口、灵剑、仙墟锻灵剑与一气归元剑改用设计稿材质/建模（默认 scale display），并新增高级仙窍接口——保留九个物品/流体/电力/化学品缓存槽，同时以与高级稳定化迷你仙墟系列一致的 xyz/+xzy 范围、预览框与面高亮、轮询选项对配置范围内的容器进行调度，拒绝接口自身原有的六面主动推拉功能。
 
 
 **简体中文** | [English](README_en.md)
@@ -257,6 +257,8 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 仙窍接口可以放置在其他维度，且不能被其他玩家重新认领。
 
+> **0.0.8：** 仙窍接口方块已改用 `design/xianqiao-interface/` 的六面内凹设计稿——12 根深色金属棱边框架住内陷核心（上表面金色、其余五面面板），以 13 元素独立方块模型渲染；渲染采用默认 scale display（忽略设计稿的缩放参数）。设计源文件与接入说明见 `design/xianqiao-interface/README.md` 与 `archive/2026-08-07-immortalstorage-0.0.8-development.md`。
+
 - 配置物品与流体缓存目标。
 - 默认每个物品槽上限 128，每个流体槽上限 16 桶，可在配置中调整。
 - 支持从 JEI/EMI 拖动设置幽灵目标，并通过小窗口输入缓存数量。
@@ -267,6 +269,17 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 主动推出会从真实缓存向对应面输出配置资源。
 - 安装对应模组后可配置电力、化学品、魔源、魔力和灵魂涌动等额外资源缓存。
 - FE、植物魔法 Mana 与新生魔艺魔源均先消耗真实缓存，缓存不足时才按配置原子消耗仙元兑换缺口。
+
+### 高级仙窍接口（0.0.8 开发中）
+
+高级仙窍接口（`advanced_xianqiao_interface`）采用 `design/advanced-xianqiao-interface/` 的空心框架+浮空核心+顶部圆垫设计稿（默认 scale display）。它保留普通仙窍接口的九个混合缓存槽与物品/流体/电力/化学品输入输出能力，但**拒绝接口自身原有的六面主动推拉功能**——六面区域改为配置与高级稳定化迷你仙墟系列一致的容器交互面掩码网格，主动调度改为对配置范围内的容器进行：
+
+- **xyz / +xzy 配置栏**：范围尺寸 `sizeX/Y/Z`（1–13）与偏移 `offsetX/Y/Z`（-13–13）。
+- **预览框与面预览渲染与开关**：`preview` 开关在世界上绘制白色选区线框与每个启用面的半透明高亮。
+- **轮询相关选项**：周期 `frequency`、启用总开关、访问（轮询跳过/强制轮询）、均分（逐个/按组）、顺序（远处/近处优先），以及通过潜行右键或设置面板按钮切换的**汇入/推出**模式。
+- 汇入模式把范围内容器中可抽取的物品、流体、电力与化学品输入所有者的仙窍；推出模式把配置的缓存槽资源按面掩码推入范围内的容器。
+- 设置面板（齿轮）不含六面行为设置，六面行为只在主界面六面区域配置。
+- 合成：`{灵晶，迷你仙墟，灵晶，回响碎片，仙窍接口，回响碎片，灵晶，村民刷怪蛋，灵晶}` 有序 3×3。
 
 ## 灵器
 
@@ -418,7 +431,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.8.jar
 ```
 
 完整验证命令：
@@ -427,7 +440,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.7 正式发行已通过 700 项测试、生产边界、版本组成、精确制品与专用服务端启动检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
+0.0.8 开发版已通过 700 项测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
 
 ## 仓库结构
 
@@ -437,6 +450,10 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 ├── README_en.md              English documentation
 ├── CHANGELOG.md              版本变更记录
 ├── LICENSE                   发行许可证
+├── design/
+│   ├── xianqiao-interface/       六面内凹仙窍接口美化设计稿（已接入 0.0.8 生产模型）
+│   ├── advanced-xianqiao-interface/  高级仙窍接口设计稿（空心框架 + 边框材质，已接入 0.0.8）
+│   └── swords/                   灵剑/仙墟锻灵剑/一气归元剑 剑系美化设计稿（已接入 0.0.8 材质）
 └── project/
     └── neoforge-1.21.1-mdk/
         ├── build.gradle

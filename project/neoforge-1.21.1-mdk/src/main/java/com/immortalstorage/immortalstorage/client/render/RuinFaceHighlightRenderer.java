@@ -34,12 +34,31 @@ public final class RuinFaceHighlightRenderer {
         }
     }
 
+    /** Renders white on enabled faces, then green for pull and red for push. */
+    public static void render(PoseStack poses, MultiBufferSource buffers, AABB box,
+                              int[] faceModes) {
+        for (Direction face : Direction.values()) {
+            int mode = faceModes[face.ordinal()];
+            if (mode == 0) continue;
+            render(poses, buffers, box, face, 1.0F, 1.0F, 1.0F, 0.35F);
+            if (mode == 1) {
+                render(poses, buffers, box, face, 0.0F, 1.0F, 0.0F, 0.35F);
+            } else if (mode == 2) {
+                render(poses, buffers, box, face, 1.0F, 0.0F, 0.0F, 0.35F);
+            }
+        }
+    }
+
     public static void render(PoseStack poses, MultiBufferSource buffers, AABB box,
                               @Nullable Direction face) {
+        render(poses, buffers, box, face, 1.0F, 1.0F, 1.0F, 0.35F);
+    }
+
+    public static void render(PoseStack poses, MultiBufferSource buffers, AABB box,
+                              @Nullable Direction face, float r, float g, float b, float a) {
         if (face == null) return;
         VertexConsumer vertices = buffers.getBuffer(TRANSLUCENT);
         PoseStack.Pose pose = poses.last();
-        final float r = 1.0F, g = 1.0F, b = 1.0F, a = 0.35F;
         switch (face) {
             case DOWN -> quad(vertices, pose,
                     box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ,

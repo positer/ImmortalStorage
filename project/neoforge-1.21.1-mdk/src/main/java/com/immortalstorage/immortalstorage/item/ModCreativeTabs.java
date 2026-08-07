@@ -72,6 +72,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.SIMULATED_SPIRIT_FIELD.get());
                         output.accept(ModBlocks.XIANQIAO_MANAGER.get());
                         output.accept(ModBlocks.XIANQIAO_INTERFACE.get());
+                        output.accept(ModBlocks.ADVANCED_XIANQIAO_INTERFACE.get());
                         output.accept(ModBlocks.SOURCE_VEIN_MANAGER.get());
                         output.accept(ModBlocks.WORLD_SHARD_MINER.get());
                         output.accept(ModBlocks.TREASURE_BASIN.get());

@@ -20,7 +20,7 @@ final class FacePreviewButtonContractTest {
         assertTrue(button.contains("graphics.renderFakeItem"));
         assertTrue(xianqiao.contains("adjacentBlockPreview"));
         assertTrue(xianqiao.contains("interfaceModeColor"));
-        assertTrue(xianqiao.contains("管道抽取"));
+        assertTrue(xianqiao.contains("slot_face_tooltip"));
         assertTrue(source.contains("adjacentBlockPreview"));
         assertTrue(source.contains("sourceModeColor"));
         assertTrue(source.contains("case BYPASS_PUSH -> 0xFF9A4BC2"));

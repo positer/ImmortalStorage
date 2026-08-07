@@ -33,12 +33,12 @@ final class XianqiaoInterfaceJeiGuiHandler
                     .buildWithArea(hover.bounds());
         }
 
-        int visibleSlots = Math.min(XianqiaoInterfaceMenu.PLAYER_START,
-                screen.getMenu().slots.size());
+        XianqiaoInterfaceMenu menu = screen.getMenu();
+        int visibleSlots = Math.min(XianqiaoInterfaceMenu.PLAYER_START, menu.slots.size());
         for (int slotIndex = 0; slotIndex < visibleSlots; slotIndex++) {
             int resourceSlot = slotIndex % XianqiaoInterfaceMenu.CONFIG_SLOT_COUNT;
-            if (screen.getMenu().isFluidTarget(resourceSlot)) continue;
-            Slot slot = screen.getMenu().slots.get(slotIndex);
+            if (menu.isFluidTarget(resourceSlot)) continue;
+            Slot slot = menu.slots.get(slotIndex);
             ItemStack identity = slot.getItem();
             if (identity.isEmpty()) continue;
             Rect2i area = new Rect2i(screen.getGuiLeft() + slot.x,

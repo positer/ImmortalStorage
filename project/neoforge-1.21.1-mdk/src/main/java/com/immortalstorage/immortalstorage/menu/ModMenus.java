@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.menu.custom.XianqiaoStorageMenu;
 import com.immortalstorage.immortalstorage.menu.custom.XianqiaoInterfaceMenu;
+import com.immortalstorage.immortalstorage.menu.custom.AdvancedXianqiaoInterfaceMenu;
 import com.immortalstorage.immortalstorage.menu.custom.ImmortalFurnaceMenu;
 import com.immortalstorage.immortalstorage.menu.custom.KongqiaoMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinMenu;
@@ -35,6 +36,9 @@ public final class ModMenus {
 
     public static final Supplier<MenuType<XianqiaoInterfaceMenu>> XIANQIAO_INTERFACE =
             MENUS.register("xianqiao_interface", () -> IMenuTypeExtension.create(XianqiaoInterfaceMenu::new));
+
+    public static final Supplier<MenuType<AdvancedXianqiaoInterfaceMenu>> ADVANCED_XIANQIAO_INTERFACE =
+            MENUS.register("advanced_xianqiao_interface", () -> IMenuTypeExtension.create(AdvancedXianqiaoInterfaceMenu::new));
 
     public static final Supplier<MenuType<ImmortalFurnaceMenu>> IMMORTAL_FURNACE =
             MENUS.register("immortal_furnace", () -> IMenuTypeExtension.create(ImmortalFurnaceMenu::new));

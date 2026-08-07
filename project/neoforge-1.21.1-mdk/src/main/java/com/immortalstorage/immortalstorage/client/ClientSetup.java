@@ -19,11 +19,13 @@ import com.immortalstorage.immortalstorage.client.render.AdvancedEntangledStabil
 import com.immortalstorage.immortalstorage.client.render.EntangledRuinCoreItemDecorator;
 import com.immortalstorage.immortalstorage.client.render.SimulatedSpiritFieldItemDecorator;
 import com.immortalstorage.immortalstorage.client.render.XianqiaoManagerItemDecorator;
+import com.immortalstorage.immortalstorage.client.render.AdvancedXianqiaoInterfaceRenderer;
 import com.immortalstorage.immortalstorage.client.screen.ImmortalFurnaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.KongqiaoScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoStorageScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoInterfaceScreen;
+import com.immortalstorage.immortalstorage.client.screen.AdvancedXianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.TreasureBasinScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinManagerScreen;
 import com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen;
@@ -80,6 +82,7 @@ public final class ClientSetup {
         e.register(ModMenus.KONGQIAO.get(), KongqiaoScreen::new);
         e.register(ModMenus.XIANQIAO_STORAGE.get(), XianqiaoStorageScreen::new);
         e.register(ModMenus.XIANQIAO_INTERFACE.get(), XianqiaoInterfaceScreen::new);
+        e.register(ModMenus.ADVANCED_XIANQIAO_INTERFACE.get(), AdvancedXianqiaoInterfaceScreen::new);
         e.register(ModMenus.IMMORTAL_FURNACE.get(), ImmortalFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_REINCARNATION_FURNACE.get(), SimulatedReincarnationFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_SPIRIT_FIELD.get(), SimulatedSpiritFieldScreen::new);
@@ -98,6 +101,7 @@ public final class ClientSetup {
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.XIANQIAO_MANAGER.get(), XianqiaoManagerRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(), AdvancedXianqiaoInterfaceRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SOURCE_VEIN.get(), SourceVeinRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.WORLD_SHARD_MINER.get(), WorldShardMinerRenderer::new);

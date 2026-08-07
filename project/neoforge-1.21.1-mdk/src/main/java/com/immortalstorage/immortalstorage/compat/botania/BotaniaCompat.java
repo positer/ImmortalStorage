@@ -69,6 +69,10 @@ public final class BotaniaCompat {
                 (blockEntity, direction) -> adapterOrNull(blockEntity));
         event.registerBlockEntity(sparkAttachable, ModBlockEntities.XIANQIAO_INTERFACE.get(),
                 (blockEntity, context) -> adapterOrNull(blockEntity));
+        event.registerBlockEntity(manaReceiver, ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(),
+                (blockEntity, direction) -> adapterOrNull(blockEntity));
+        event.registerBlockEntity(sparkAttachable, ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get(),
+                (blockEntity, context) -> adapterOrNull(blockEntity));
         ImmortalStorageMod.LOG.info("[Compat/Botania] Registered owner-bound Xianqiao Interface mana and spark capabilities");
     }
 
