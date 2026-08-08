@@ -1,7 +1,7 @@
 # NeoForge 1.21.1 / 21.1.235 compatibility adapter
 
 This area contains only compatibility code for the exact published interval
-`Minecraft [1.21.1]` and `NeoForge [21.1.235]`.
+`Minecraft [1.21.1]` and `NeoForge [21.1.235,21.2)`.
 
 The integration project composes this adapter with `project/immortalstorage-core`.
 Any API break requires a new sibling adapter and a non-overlapping artifact;
