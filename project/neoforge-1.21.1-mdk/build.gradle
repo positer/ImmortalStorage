@@ -123,8 +123,8 @@ configurations {
 }
 
 dependencies {
-    compileOnly 'mezz.jei:jei-1.21.1-common-api:19.37.0.363'
-    compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.37.0.363'
+    compileOnly "mezz.jei:jei-1.21.1-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
     compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
     compileOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'
     compileOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
@@ -176,7 +176,7 @@ dependencies {
     }
 
     if (providers.gradleProperty('enableRecipeViewerRuntime').map(String::toBoolean).getOrElse(false)) {
-        runtimeOnly 'mezz.jei:jei-1.21.1-neoforge:19.37.0.363@jar'
+        runtimeOnly "mezz.jei:jei-1.21.1-neoforge:${jei_version}@jar"
         runtimeOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1@jar'
     }
 }
@@ -212,6 +212,7 @@ tasks.named('processResources', ProcessResources).configure {
             neo_version: neo_version,
             neo_version_range: neo_version_range,
             loader_version_range: loader_version_range,
+            jei_version: jei_version,
             mod_id: mod_id,
             mod_name: mod_name,
             mod_license: mod_license,

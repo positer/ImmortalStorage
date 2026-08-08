@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 
-/** JEI 19.37 ghost targets for the nine mixed-resource configuration slots. */
 final class XianqiaoInterfaceJeiGhostHandler
         implements IGhostIngredientHandler<XianqiaoInterfaceScreen> {
     @Override

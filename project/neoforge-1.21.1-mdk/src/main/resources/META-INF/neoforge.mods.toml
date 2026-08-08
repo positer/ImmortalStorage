@@ -41,7 +41,7 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="jei"
 type="optional"
-versionRange="[19.37.0.363,)"
+versionRange="[${jei_version},)"
 ordering="AFTER"
 side="CLIENT"
 
@@ -69,7 +69,7 @@ side="BOTH"
 [[dependencies.${mod_id}]]
 modId="refinedtypes"
 type="optional"
-versionRange="[0.3.0,0.4)"
+versionRange="[0.3.0,0.4),[1.21.1-0.3.0,1.21.1-0.4)"
 ordering="AFTER"
 side="BOTH"
 
