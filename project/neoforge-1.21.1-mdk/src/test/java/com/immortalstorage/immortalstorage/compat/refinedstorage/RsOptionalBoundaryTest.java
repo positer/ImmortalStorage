@@ -94,7 +94,8 @@ final class RsOptionalBoundaryTest {
         String modsToml = source("resources/META-INF/neoforge.mods.toml");
         assertTrue(modsToml.contains("modId=\"refinedtypes\""));
         assertTrue(modsToml.contains("modId=\"refinedstorage_mekanism_integration\""));
-        assertTrue(modsToml.contains("versionRange=\"[0.3.0,0.4)\""));
+        assertTrue(modsToml.contains(
+                "versionRange=\"[0.3.0,0.4),[1.21.1-0.3.0,1.21.1-0.4)\""));
         assertTrue(modsToml.contains("ordering=\"AFTER\""));
     }
 

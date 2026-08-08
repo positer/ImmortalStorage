@@ -62,9 +62,9 @@ final class RecipeViewerOptionalBoundaryTest {
         Path root = projectRoot();
         String gradle = Files.readString(root.resolve("build.gradle"));
         assertTrue(gradle.contains(
-                "compileOnly 'mezz.jei:jei-1.21.1-common-api:19.37.0.363'"));
+                "compileOnly \"mezz.jei:jei-1.21.1-common-api:${jei_version}\""));
         assertTrue(gradle.contains(
-                "compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.37.0.363'"));
+                "compileOnly \"mezz.jei:jei-1.21.1-neoforge-api:${jei_version}\""));
         assertTrue(gradle.contains(
                 "compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'"));
         assertFalse(Pattern.compile(
@@ -76,6 +76,10 @@ final class RecipeViewerOptionalBoundaryTest {
                 "src/main/resources/META-INF/neoforge.mods.toml"));
         assertOptionalClientDependency(modsToml, "jei");
         assertOptionalClientDependency(modsToml, "emi");
+        assertTrue(modsToml.contains("versionRange=\"[${jei_version},)\""));
+
+        String properties = Files.readString(root.resolve("gradle.properties"));
+        assertTrue(properties.contains("jei_version=19.27.0.343"));
     }
 
     private static void assertOptionalClientDependency(String toml, String modId) {
