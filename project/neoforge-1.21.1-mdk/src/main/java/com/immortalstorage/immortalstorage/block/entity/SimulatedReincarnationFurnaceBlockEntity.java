@@ -120,7 +120,8 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         }
         if (fuel.is(ModItems.SPIRIT_DRIVE.get())) {
             UUID driveOwner = SpiritDriveItem.owner(fuel).orElse(null);
-            ServerPlayer player = driveOwner == null ? null : level.getServer().getPlayerList().getPlayer(driveOwner);
+            ServerPlayer player = driveOwner == null ? null
+                    : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), driveOwner);
             if (player != null) {
                 var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(player);
                 if (data.consumeImmortalYuan(1L)) { burnTicks = 500; return true; }
@@ -129,7 +130,7 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         }
         UUID realmOwner = ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
         ServerPlayer ownerPlayer = realmOwner == null ? null
-                : level.getServer().getPlayerList().getPlayer(realmOwner);
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), realmOwner);
         if (ownerPlayer != null) {
             var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(ownerPlayer);
             if (data.consumeImmortalYuan(1L)) { burnTicks = 500; return true; }
@@ -162,7 +163,8 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
 
     private void produce(ServerLevel level, LivingEntity specimen) {
         UUID outputOwner = effectiveOutputOwner(level);
-        ServerPlayer killer = outputOwner == null ? null : level.getServer().getPlayerList().getPlayer(outputOwner);
+        ServerPlayer killer = outputOwner == null ? null
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), outputOwner);
         if (killer == null) killer = level.getNearestPlayer(worldPosition.getX(), worldPosition.getY(),
                 worldPosition.getZ(), 32.0D, false) instanceof ServerPlayer nearby ? nearby : null;
         ItemStack weapon = items.getStackInSlot(WEAPON_SLOT).copyWithCount(1);
@@ -213,9 +215,11 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
     private @Nullable UUID effectiveOutputOwner(ServerLevel level) {
         if (!automaticOutput) return null;
         if (owner != null && ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), owner)
-                && level.getServer().getPlayerList().getPlayer(owner) != null) return owner;
+                && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), owner) != null) return owner;
         UUID driveOwner = SpiritDriveItem.owner(items.getStackInSlot(FUEL_SLOT)).orElse(null);
-        return driveOwner != null && level.getServer().getPlayerList().getPlayer(driveOwner) != null
+        return driveOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), driveOwner) != null
                 ? driveOwner : null;
     }
 
@@ -241,9 +245,7 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
 
     public void dropAsItem(ServerPlayer player) {
         ItemStack dropped = new ItemStack(getBlockState().getBlock());
-        CompoundTag preserved = new CompoundTag();
-        saveAdditional(preserved, player.registryAccess());
-        dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(preserved));
+        dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(saveWithFullMetadata(player.registryAccess())));
         net.minecraft.world.level.block.Block.popResource(player.level(), worldPosition, dropped);
         player.level().removeBlock(worldPosition, false);
     }
@@ -252,9 +254,7 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         return Component.translatable("block.immortalstorage.simulated_reincarnation_furnace");
     }
     public void saveToItem(ItemStack stack, HolderLookup.Provider registries) {
-        CompoundTag preserved = new CompoundTag();
-        saveAdditional(preserved, registries);
-        stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(preserved));
+        stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(saveWithFullMetadata(registries)));
     }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new SimulatedReincarnationFurnaceMenu(id, inventory, this);

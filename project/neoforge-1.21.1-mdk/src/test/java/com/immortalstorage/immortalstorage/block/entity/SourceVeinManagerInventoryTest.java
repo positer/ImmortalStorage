@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SourceVeinManagerInventoryTest {
@@ -100,6 +101,20 @@ final class SourceVeinManagerInventoryTest {
         assertFalse(SourceVeinManagerBlockEntity.canPlaceStackFor(manager, stranger));
         assertTrue(SourceVeinManagerBlockEntity.canPlaceStackFor(
                 new ItemStack(ModBlocks.SOURCE_VEIN_MANAGER.get()), stranger));
+    }
+
+    @Test
+    void freshMemberWithoutPreExistingDataIsSerializedWithTheSourceVeinEntityId() {
+        SourceVeinManagerInventory inventory = new SourceVeinManagerInventory(() -> {});
+        inventory.setStackInSlot(0, source(VeinKind.COBBLE, 1));
+
+        CustomData data = inventory.getStackInSlot(0).get(DataComponents.BLOCK_ENTITY_DATA);
+        assertNotNull(data, "creative/JEI-given members must gain a persisted block-entity tag");
+        assertEquals("immortalstorage:source_vein", data.copyTag().getString("id"));
+
+        // Regression: vanilla's BLOCK_ENTITY_DATA codec rejects an id-less tag with
+        // "Missing id for entity in: {CachedUnits:...}", crashing on manager save/destroy.
+        inventory.serializeNBT(registries);
     }
 
     private static ItemStack source(VeinKind kind, int count) {

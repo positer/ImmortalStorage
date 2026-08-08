@@ -6,17 +6,25 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current release is 0.0.8. It promotes the design-sheet textures/models for the Xianqiao Interface and the Spirit Sword family, and adds the Advanced Xianqiao Interface: the plain interface's six-face PULL/PUSH/OFF modes and active pull/push toggles are applied to every container inside a configurable bounding box (PULL imports all interactive items/fluids/power/chemicals; PUSH exports the face-allowed cache slots), with an advanced-stabilized-ruin configuration page and green/red face highlights in the range preview.
+> The current development version is **0.0.9**. Personal realms, AE2/RS exchange disks, Spirit Drives, Substitute Puppets and owner-bound machines now share one stable identity persisted with player data instead of trusting each launcher's session UUID. Pre-0.0.9 saves migrate once from saved realm references or consistent legacy-bound items, preserving disk IDs, contents, durability and anchors. This version also includes the AE2 `external_resource` render-handler crash fix.
+>
+> **0.0.9 RS external-resource display and addon compatibility (2026-08-08):** With Refined Storage 2.0.9 alone, the Xianqiao exchange disk displays FE, Mana, Source, Souls, and Mekanism chemicals through ImmortalStorage's own `xianqiao_external` resource type. When Refined Types is installed, FE/Source/Souls use its native keys; when the official RS Mekanism Integration is installed, chemicals use its native keys. The built-in fallback remains readable and writable for old caches or addon removal, while each ledger resource is emitted only once. ExtraStorage-style addons remain compatible through RS's standard storage-container contract. See `archive/2026-08-08-rs-external-resource-display-and-addon-compat.md`.
+>
+> **0.0.8 realm identity unification (Bug 2, 2026-08-08):** launching the same test world through different launcher paths previously produced two isolated offline identities and personal realms. A chunk-level migration with "canonical wins" is complete: the canonical `00000fff-ffff-ffff-ffff-fffffff16c5c` is now the single identity, the old `00000000-0000-3003-998f-501bcc516c5c` realm chunks/advancements were merged in (+9 unique entity chunks, +14 advancements), canonical playerdata was kept, and the old-identity files plus the whole old realm folder were quarantined to `saves\Test\_quarantine_old_identity\` (pre-merge backup: `saves\_backups\Test_pre-realm-merge_20260808_141636`). All launcher bat files already hardcode the canonical `--uuid`, so no launcher changes were needed. See `archive/2026-08-08-realm-identity-unification-bug2.md`.
+>
+> **0.0.8 realm snow never counts toward forced chunk loading (design invariant, 2026-08-08):** realm snow is a client-only visual; the server SNOW weather mode deliberately does not enable `raining` (which would otherwise let vanilla lay snow layers across the whole realm). The "player-modified chunks" set that drives forced chunk loading is fed only by entity-driven break/place events, and vanilla snow uses a null-entity `setBlock`, so it can never be recorded as a player modification. The invariant is locked by the pure `RealmEnvironmentPolicy.requiresRain`/`requiresThunder` helpers and their regression tests.
+>
+> **0.0.8 AE2 client crash fix (2026-08-08):** fixed a `Missing render handler for channel immortalstorage:external_resource` crash when opening an AE2 terminal inside the merged Xianqiao realm. The server already registered the `immortalstorage:external_resource` AEKey channel, but the client never registered a render handler with `AEKeyRendering`, so rendering/hovering that external-resource entry threw in `getOrThrow`. The fix adds a client registration entry `Ae2ClientCompat` (reflected from `CompatManager.initializeClientIntegrations` under the `AE2_LOADED` guard) and `ImmortalStorageExternalResourceKeyRenderHandler` (drawing/naming reuse `ExternalResourceCatalog`, identical to the Xianqiao interface look); regression tests reproduce the original crash condition directly. Full gate at **191 suites / 706 tests / 0 failures**. See `archive/2026-08-08-ae2-missing-render-handler-crash-fix.md`.
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Release 0.0.8 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed by this release.
+> Version 0.0.9 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
 **Download:** [ImmortalStorage 0.0.8](https://github.com/positer/ImmortalStorage/releases/tag/0.0.8)
 
-**Release JAR SHA256:** `513B388E3FA1CBD8BE0FE39FBC69D2927B549FDD5C0CF3017030404F79AF9FED`
+**Release JAR SHA256:** `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870` (5,137,573 bytes)
 
 ## Highlights
 
@@ -26,7 +34,7 @@ The interface follows Minecraft's native pixel language while borrowing the info
 - A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
 - Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
 - Shared weapon attack projection writes paid resource and tempering growth into standard main-hand attributes so systems such as Apotheosis can read and multiply the real weapon damage.
-- Bundled Patchouli Ancient Jade handbook with bilingual progression, recipes, and 0.0.3 mechanics; no separate Patchouli install is required.
+- Bundled Patchouli Ancient Jade handbook with bilingual progression, real recipes, and complete major-system coverage from 0.0.3 through 0.0.9: all Spirit Sword branches, Soul Catcher, Spirit Drive, simulated production, all Stabilized Ruin variants, Source Veins/Manager, personal-realm weather and persistent-identity migration, and AE2/RS external resources. Locale-tree parity and later-version coverage are enforced by tests; no separate Patchouli install is required.
 - Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
 - Complete Simplified Chinese and English localization for gameplay and configuration.
 
@@ -227,6 +235,7 @@ Source definitions are data/config driven. A configured output resource can have
 - Allows only one Source Vein of the same name per manager.
 - Aggregates the installed veins into an extract-only resource view while keeping every member's cache and accounting independent.
 - Binds the aggregate to Xianqiao storage statistics so terminals and storage buses can see the available maximum budget plus real cache.
+- 0.0.8 visual rework: the `design/SourceVeinController.bbmodel` look (open black wire cage from 12 baked Edge beams) with 8 inner source-core cubes lighting up in an 8-segment blue/purple/red stair by fill level and rotating as one rigid body about the block center; hand/item rendering shows the same rotating core through a block-item BEWLR (state read from the persisted `DisplayState` when present), and the top/bottom ring beams gained `up`/`down` cap faces so the top frame never disappears.
 
 ### Xianqiao Manager
 

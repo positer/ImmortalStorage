@@ -58,7 +58,7 @@ public final class XianqiaoInterfaceBlock extends HorizontalDirectionalBlock imp
         Player player = context.getPlayer();
         if (player == null || ImmortalStoragePlayerData.get(player).getStage() < 6) return null;
         if (!XianqiaoInterfaceBlockEntity.canPlaceStackFor(
-                context.getItemInHand(), player.getUUID())) return null;
+                context.getItemInHand(), com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player))) return null;
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
 

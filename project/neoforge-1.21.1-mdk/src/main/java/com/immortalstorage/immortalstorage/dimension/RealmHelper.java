@@ -44,12 +44,75 @@ public final class RealmHelper {
 
     private RealmHelper() {}
 
+    /**
+     * Resolve the durable realm id stored with the player's ImmortalStorage
+     * data. Pre-0.0.9 saves are migrated once: a saved personal-realm respawn
+     * or exit dimension wins, otherwise the legacy session UUID is retained.
+     */
+    public static UUID realmId(ServerPlayer player) {
+        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
+        UUID established = data.getPersonalRealmId();
+        if (established != null) return established;
+        UUID legacy = ImmortalStorageDimensions.personalRealmOwner(player.getRespawnDimension()).orElse(null);
+        if (legacy == null && data.hasExitPosition()) {
+            ResourceLocation exit = ResourceLocation.tryParse(data.getLastExitDim());
+            if (exit != null) {
+                legacy = ImmortalStorageDimensions.personalRealmOwner(
+                        ResourceKey.create(Registries.DIMENSION, exit)).orElse(null);
+            }
+        }
+        if (legacy == null) legacy = legacyBoundItemOwner(player, data);
+        UUID chosen = data.bindPersonalRealmOnce(legacy == null ? player.getUUID() : legacy);
+        LOG.info("Bound player {} ({}) to persistent Xianqiao realm {}{}",
+                player.getGameProfile().getName(), player.getUUID(), chosen,
+                chosen.equals(player.getUUID()) ? "" : " via legacy migration");
+        return chosen;
+    }
+
+    private static UUID legacyBoundItemOwner(ServerPlayer player, ImmortalStoragePlayerData data) {
+        Set<UUID> candidates = new HashSet<>();
+        for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            collectLegacyOwner(player.getInventory().getItem(slot), candidates);
+        }
+        for (net.minecraft.world.item.ItemStack stack : data.getXianqiaoStorageItems()) {
+            collectLegacyOwner(stack, candidates);
+        }
+        if (candidates.size() == 1) return candidates.iterator().next();
+        if (candidates.size() > 1) {
+            LOG.warn("Cannot infer one legacy owner id for {}: bound items contain {}",
+                    player.getGameProfile().getName(), candidates);
+        }
+        return null;
+    }
+
+    private static void collectLegacyOwner(net.minecraft.world.item.ItemStack stack, Set<UUID> candidates) {
+        if (stack == null || stack.isEmpty()) return;
+        com.immortalstorage.immortalstorage.item.custom.SpiritDriveItem.owner(stack).ifPresent(candidates::add);
+        com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem.owner(stack).ifPresent(candidates::add);
+        com.immortalstorage.immortalstorage.item.custom.XianqiaoExchangeCellItem.owner(stack).ifPresent(candidates::add);
+        com.immortalstorage.immortalstorage.item.custom.XianqiaoRsExchangeDiskItem.owner(stack).ifPresent(candidates::add);
+    }
+
+    public static boolean isInOwnRealm(ServerPlayer player) {
+        return player != null && ImmortalStorageDimensions.isPersonalRealmFor(
+                player.level().dimension(), realmId(player));
+    }
+
+    /** Find the current session player whose persisted data owns this realm. */
+    public static ServerPlayer onlinePlayerForRealm(MinecraftServer server, UUID realmId) {
+        if (server == null || realmId == null) return null;
+        for (ServerPlayer candidate : server.getPlayerList().getPlayers()) {
+            if (realmId(candidate).equals(realmId)) return candidate;
+        }
+        return null;
+    }
+
     /** Restore a saved personal-realm respawn target before vanilla needs to resolve it. */
     public static void ensureRespawnRealmRegistered(ServerPlayer player) {
         if (player == null || player.server == null) return;
         ResourceKey<Level> respawnDimension = player.getRespawnDimension();
         java.util.Optional<UUID> owner = ImmortalStorageDimensions.personalRealmOwner(respawnDimension);
-        if (owner.isPresent() && owner.get().equals(player.getUUID())) {
+        if (owner.isPresent() && owner.get().equals(realmId(player))) {
             PersonalRealmLevelFactory.getOrCreate(player.server, owner.get());
         }
     }
@@ -57,7 +120,7 @@ public final class RealmHelper {
     public static ServerLevel resolveOwnedPersonalRealm(ServerPlayer player, ResourceKey<Level> target) {
         if (player == null || player.server == null || target == null) return null;
         java.util.Optional<UUID> owner = ImmortalStorageDimensions.personalRealmOwner(target);
-        if (owner.isEmpty() || !owner.get().equals(player.getUUID())) return null;
+        if (owner.isEmpty() || !owner.get().equals(realmId(player))) return null;
         return PersonalRealmLevelFactory.getOrCreate(player.server, owner.get());
     }
 
@@ -70,12 +133,13 @@ public final class RealmHelper {
         }
         MinecraftServer server = player.level().getServer();
         if (server == null) return false;
-        ServerLevel realm = PersonalRealmLevelFactory.getOrCreate(server, player.getUUID());
+        UUID realmId = realmId(player);
+        ServerLevel realm = PersonalRealmLevelFactory.getOrCreate(server, realmId);
         if (realm == null) {
             player.sendSystemMessage(Component.literal("Your personal realm could not be registered; check the server log."));
             return false;
         }
-        if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), player.getUUID())) {
+        if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId)) {
             player.sendSystemMessage(Component.literal("Refusing to enter a realm that is not bound to your player id."));
             return false;
         }
@@ -84,13 +148,13 @@ public final class RealmHelper {
             return false;
         }
         // Save the "real" position so we can return.
-        if (!ImmortalStorageDimensions.isPersonalRealmFor(player.level().dimension(), player.getUUID())) {
+        if (!isInOwnRealm(player)) {
             data.markExitPosition(
                     player.getX(), player.getY(), player.getZ(),
                     player.level().dimension().location().toString());
         }
 
-        forceChunkIfNeeded(realm, player.getUUID(), CENTER_CHUNK_X, CENTER_CHUNK_Z, true);
+        forceChunkIfNeeded(realm, realmId, CENTER_CHUNK_X, CENTER_CHUNK_Z, true);
 
         // Teleport to the surface of this player's independent dimension origin.
         double surfaceY = XianqiaoRealmChunkGenerator.TOP_Y + 1.0;
@@ -104,7 +168,7 @@ public final class RealmHelper {
     /** Try to leave the realm and return to the previous real-world position. */
     public static boolean exitRealm(ServerPlayer player) {
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
-        if (!ImmortalStorageDimensions.isPersonalRealmFor(player.level().dimension(), player.getUUID())) {
+        if (!isInOwnRealm(player)) {
             player.sendSystemMessage(Component.literal("You are not in the realm."));
             return false;
         }
@@ -127,7 +191,7 @@ public final class RealmHelper {
         }
 
         // Restore normal time flow before leaving and release all owner tickets.
-        releaseRealmTickRate(server, player.getUUID());
+        releaseRealmTickRate(server, realmId(player));
 
         BlockPos fallback = target.getSharedSpawnPos();
         double x = data.hasExitPosition() ? data.getLastExitX() : fallback.getX() + 0.5;
@@ -145,13 +209,14 @@ public final class RealmHelper {
      * current stage.  No-op if player is not in the realm.
      */
     public static void ensureChunksForced(ServerPlayer player) {
-        if (ADMIN_SUSPENDED_REALMS.contains(player.getUUID())) return;
+        UUID realmId = realmId(player);
+        if (ADMIN_SUSPENDED_REALMS.contains(realmId)) return;
         if (!(player.level() instanceof ServerLevel realm)) return;
-        if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), player.getUUID())) return;
+        if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId)) return;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
-        forceChunkIfNeeded(realm, player.getUUID(), CENTER_CHUNK_X, CENTER_CHUNK_Z, false);
+        forceChunkIfNeeded(realm, realmId, CENTER_CHUNK_X, CENTER_CHUNK_Z, false);
         for (long packed : data.getModifiedRealmChunks()) {
-            forceChunkIfNeeded(realm, player.getUUID(),
+            forceChunkIfNeeded(realm, realmId,
                     net.minecraft.world.level.ChunkPos.getX(packed),
                     net.minecraft.world.level.ChunkPos.getZ(packed), false);
         }
@@ -160,9 +225,9 @@ public final class RealmHelper {
     /** Draw and enforce the finite plot only while its owner is inside this realm. */
     public static boolean enforcePlayerBoundary(ServerPlayer player) {
         if (!(player.level() instanceof ServerLevel realm)
-                || !ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), player.getUUID())) return false;
+                || !ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId(player))) return false;
         int stage = ImmortalStoragePlayerData.get(player).getStage();
-        refreshVisibleBoundary(realm, player.getUUID(), stage,
+        refreshVisibleBoundary(realm, realmId(player), stage,
                 ImmortalStoragePlayerData.get(player).getRealmRadiusChunks());
         if (stage < 6 || stage >= 9) return false;
         int radius = Math.max(1, ImmortalStoragePlayerData.get(player).getRealmRadiusChunks());
@@ -224,10 +289,11 @@ public final class RealmHelper {
 
     /** Apply the stored scale only when the owner is inside their bound realm. */
     public static boolean refreshRealmTickRate(ServerPlayer player) {
-        if (ADMIN_SUSPENDED_REALMS.contains(player.getUUID())) return false;
+        UUID realmId = realmId(player);
+        if (ADMIN_SUSPENDED_REALMS.contains(realmId)) return false;
         if (!(player.level() instanceof ServerLevel realm)
-                || !ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), player.getUUID())) {
-            releaseRealmTickRate(player.server, player.getUUID());
+                || !ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId)) {
+            releaseRealmTickRate(player.server, realmId);
             return false;
         }
         return activateRealmTickRate(player, realm);
@@ -236,18 +302,19 @@ public final class RealmHelper {
     /** Apply the owner's persisted day/weather selection immediately when its realm is loaded. */
     public static boolean refreshRealmEnvironment(ServerPlayer player) {
         if (player == null || player.server == null) return false;
-        ServerLevel realm = player.server.getLevel(ImmortalStorageDimensions.personalRealmKey(player.getUUID()));
-        if (!(realm instanceof PersonalRealmServerLevel personal) || !personal.isBoundTo(player.getUUID())) {
+        UUID realmId = realmId(player);
+        ServerLevel realm = player.server.getLevel(ImmortalStorageDimensions.personalRealmKey(realmId));
+        if (!(realm instanceof PersonalRealmServerLevel personal) || !personal.isBoundTo(realmId)) {
             return false;
         }
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
-        personal.refreshEnvironmentLock(player.getUUID(), data.isRealmDaytime(), data.getRealmWeatherMode());
+        personal.refreshEnvironmentLock(realmId, data.isRealmDaytime(), data.getRealmWeatherMode());
         return true;
     }
 
     private static boolean activateRealmTickRate(ServerPlayer player, ServerLevel realm) {
         if (!(realm instanceof PersonalRealmServerLevel personal)
-                || !personal.isBoundTo(player.getUUID())) {
+                || !personal.isBoundTo(realmId(player))) {
             return false;
         }
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
@@ -260,7 +327,7 @@ public final class RealmHelper {
             data.setRealmTimeRatePermille(clampedPermille);
         }
         double requestedScale = clampedPermille / 1_000.0D;
-        personal.activateTickScale(player.getUUID(), requestedScale);
+        personal.activateTickScale(realmId(player), requestedScale);
         return true;
     }
 
@@ -299,14 +366,15 @@ public final class RealmHelper {
 
     public static boolean resumeRealmLoading(ServerPlayer owner) {
         if (owner == null) return false;
-        ADMIN_SUSPENDED_REALMS.remove(owner.getUUID());
-        ServerLevel realm = owner.server.getLevel(ImmortalStorageDimensions.personalRealmKey(owner.getUUID()));
+        UUID realmId = realmId(owner);
+        ADMIN_SUSPENDED_REALMS.remove(realmId);
+        ServerLevel realm = owner.server.getLevel(ImmortalStorageDimensions.personalRealmKey(realmId));
         if (realm == null) return true;
-        if (ImmortalStorageDimensions.isPersonalRealmFor(owner.level().dimension(), owner.getUUID())) {
+        if (isInOwnRealm(owner)) {
             ensureChunksForced(owner);
             return refreshRealmTickRate(owner);
         }
-        forceChunkIfNeeded(realm, owner.getUUID(), CENTER_CHUNK_X, CENTER_CHUNK_Z, false);
+        forceChunkIfNeeded(realm, realmId, CENTER_CHUNK_X, CENTER_CHUNK_Z, false);
         return true;
     }
 

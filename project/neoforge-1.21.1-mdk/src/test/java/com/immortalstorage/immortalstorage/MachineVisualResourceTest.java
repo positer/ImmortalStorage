@@ -18,60 +18,82 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MachineVisualResourceTest {
     @Test
-    void interfaceAndSourceManagerUseIndependentNativePixelTextures() throws Exception {
-        for (String face : new String[]{"panel", "side", "top"}) {
-            BufferedImage xianqiao = png("assets/immortalstorage/textures/block/xianqiao_interface_" + face + ".png");
-            String managerFace = "panel".equals(face) ? "front" : face;
-            BufferedImage sourceManager = png("assets/immortalstorage/textures/block/source_vein_manager_" + managerFace + ".png");
+    void managerUsesIndependentNativePixelTexturesAndBakedEdgeCage() throws Exception {
+        for (String xianqiaoFace : new String[]{"panel", "side", "top"}) {
+            BufferedImage xianqiao = png("assets/immortalstorage/textures/block/xianqiao_interface_" + xianqiaoFace + ".png");
             assertEquals(16, xianqiao.getWidth());
             assertEquals(16, xianqiao.getHeight());
-            assertEquals(16, sourceManager.getWidth());
-            assertEquals(16, sourceManager.getHeight());
-            assertNotEquals(pixelHash(xianqiao), pixelHash(sourceManager), face);
+            for (String managerTexture : new String[]{"source_vein_manager_edge",
+                    "source_vein_manager_core_empty", "source_vein_manager_core_used",
+                    "source_vein_manager_core_full"}) {
+                BufferedImage managerImage = png("assets/immortalstorage/textures/block/" + managerTexture + ".png");
+                assertEquals(16, managerImage.getWidth());
+                assertEquals(16, managerImage.getHeight());
+                assertNotEquals(pixelHash(xianqiao), pixelHash(managerImage), managerTexture);
+            }
         }
 
         String model = text("assets/immortalstorage/models/block/source_vein_manager.json");
-        assertTrue(model.contains("immortalstorage:block/source_vein_manager_front"));
+        assertTrue(model.contains("immortalstorage:block/source_vein_manager_edge"));
+        assertTrue(model.contains("immortalstorage:block/source_vein_manager_core_used"));
+        assertFalse(model.contains("immortalstorage:block/source_vein_manager_front"));
         assertFalse(model.contains("immortalstorage:block/xianqiao_interface_"));
     }
 
     @Test
-    void sourceManagerIsAnOpaqueNeutralBookshelfCubeWithoutBakedMembersOrPerspective() throws Exception {
-        for (String face : new String[]{"front", "side", "top"}) {
-            BufferedImage image = png("assets/immortalstorage/textures/block/source_vein_manager_" + face + ".png");
+    void managerCageIsABlackOpaqueFrameWithSolidColourCore() throws Exception {
+        BufferedImage edge = png("assets/immortalstorage/textures/block/source_vein_manager_edge.png");
+        assertEquals(16, edge.getWidth());
+        assertEquals(16, edge.getHeight());
+        assertOpaqueBlack(edge, 0, 0);
+        assertOpaqueBlack(edge, 2, 2);
+        assertOpaqueBlack(edge, 3, 3);
+        assertOpaqueBlack(edge, 0, 4);
+        assertOpaqueBlack(edge, 1, 5);
+        assertOpaqueBlack(edge, 4, 0);
+        assertOpaqueBlack(edge, 5, 1);
+        assertTransparent(edge, 4, 4);
+        assertTransparent(edge, 6, 0);
+        assertTransparent(edge, 15, 15);
+
+        Map<String, int[]> lockedCoreColors = Map.of(
+                "source_vein_manager_core_empty", new int[]{0, 41, 255},
+                "source_vein_manager_core_used", new int[]{163, 114, 218},
+                "source_vein_manager_core_full", new int[]{255, 0, 0});
+        for (Map.Entry<String, int[]> entry : lockedCoreColors.entrySet()) {
+            String name = entry.getKey();
+            int[] expected = entry.getValue();
+            BufferedImage image = png("assets/immortalstorage/textures/block/" + name + ".png");
             assertEquals(16, image.getWidth());
             assertEquals(16, image.getHeight());
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     int argb = image.getRGB(x, y);
-                    int red = argb >>> 16 & 0xFF;
-                    int green = argb >>> 8 & 0xFF;
-                    int blue = argb & 0xFF;
-                    assertEquals(255, argb >>> 24, face + " must remain an opaque full-cube face");
-                    assertEquals(red, green, face + " must not bake a colored source member");
-                    assertEquals(red, blue, face + " must use only the neutral black/gray frame palette");
+                    assertEquals(255, argb >>> 24, name + " must stay opaque");
+                    assertEquals(expected[0], argb >>> 16 & 0xFF, name + " red");
+                    assertEquals(expected[1], argb >>> 8 & 0xFF, name + " green");
+                    assertEquals(expected[2], argb & 0xFF, name + " blue");
                 }
             }
         }
 
-        BufferedImage front = png("assets/immortalstorage/textures/block/source_vein_manager_front.png");
-        int emptyBay = front.getRGB(3, 4);
-        for (int y : new int[]{4, 11}) {
-            for (int x : new int[]{3, 7, 12}) {
-                assertEquals(emptyBay, front.getRGB(x, y),
-                        "all six bookshelf bays must stay empty in the baked texture");
-            }
-        }
-        assertNotEquals(emptyBay, front.getRGB(7, 7), "the central shelf must remain structural");
-
         String blockModel = text("assets/immortalstorage/models/block/source_vein_manager.json");
-        assertTrue(blockModel.contains("\"parent\": \"minecraft:block/cube\""));
-        assertFalse(blockModel.contains("\"elements\""), "no pre-baked perspective machine geometry");
-        assertFalse(blockModel.contains("\"display\""), "block model must not carry an item-only preview transform");
+        assertTrue(blockModel.contains("\"parent\": \"minecraft:block/block\""));
+        assertTrue(blockModel.contains("\"elements\""));
+        assertEquals(12, countOccurrences(blockModel, "\"from\":"));
+        assertTrue(blockModel.contains("\"texture\": \"#edge\""));
+        assertTrue(blockModel.contains("immortalstorage:block/source_vein_manager_core_used"));
+        assertFalse(blockModel.contains("\"rotation\""), "the twelve edge beams are baked flat");
+        assertEquals(4, countOccurrences(blockModel, "\"up\""),
+                "the four top ring beams gain a closed top face");
+        assertEquals(4, countOccurrences(blockModel, "\"down\""),
+                "the four bottom ring beams gain a closed bottom face");
+        assertFalse(blockModel.contains("source_vein_manager_front"));
 
         String itemModel = text("assets/immortalstorage/models/item/source_vein_manager.json");
         assertTrue(itemModel.contains("\"parent\": \"immortalstorage:block/source_vein_manager\""));
-        assertFalse(itemModel.contains("\"overrides\""), "the inventory model only shows the manager body");
+        assertFalse(itemModel.contains("\"overrides\""),
+                "the rotating core comes from the item BEWLR, not model overrides");
     }
 
     @Test
@@ -140,6 +162,28 @@ final class MachineVisualResourceTest {
                     + "/profession/immortal_sage.png.mcmeta");
             assertTrue(metadata.contains("\"hat\": \"none\""));
         }
+    }
+
+    private static void assertOpaqueBlack(BufferedImage image, int x, int y) {
+        int argb = image.getRGB(x, y);
+        assertEquals(255, argb >>> 24, "edge frame pixel (" + x + "," + y + ") must be opaque");
+        assertEquals(0, argb >>> 16 & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
+        assertEquals(0, argb >>> 8 & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
+        assertEquals(0, argb & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
+    }
+
+    private static void assertTransparent(BufferedImage image, int x, int y) {
+        assertEquals(0, image.getRGB(x, y) >>> 24, "edge pixel (" + x + "," + y + ") must stay transparent");
+    }
+
+    private static int countOccurrences(String text, String needle) {
+        int count = 0;
+        int index = 0;
+        while ((index = text.indexOf(needle, index)) >= 0) {
+            count++;
+            index += needle.length();
+        }
+        return count;
     }
 
     private static BufferedImage png(String path) throws Exception {

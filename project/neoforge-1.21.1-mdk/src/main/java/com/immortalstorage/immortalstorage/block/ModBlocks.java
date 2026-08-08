@@ -4,6 +4,7 @@ import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.block.custom.*;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.item.SourceVeinBlockItem;
+import com.immortalstorage.immortalstorage.item.SourceVeinManagerBlockItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -172,6 +173,8 @@ public final class ModBlocks {
         Supplier<Block> ro = BLOCKS.register(id, b);
         ModItems.ITEMS.register(id, () -> ro.get() instanceof SourceVeinBlock source
                 ? new SourceVeinBlockItem(source, ModItems.setItemId(id, new Item.Properties()))
+                : ro.get() instanceof SourceVeinManagerBlock manager
+                ? new SourceVeinManagerBlockItem(manager, ModItems.setItemId(id, new Item.Properties()))
                 : new BlockItem(ro.get(), ModItems.setItemId(id, new Item.Properties())));
         return ro;
     }

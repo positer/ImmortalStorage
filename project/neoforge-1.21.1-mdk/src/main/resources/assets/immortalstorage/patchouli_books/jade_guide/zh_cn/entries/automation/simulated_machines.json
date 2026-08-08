@@ -1,0 +1,9 @@
+{
+  "name":"模拟生产设备","icon":"immortalstorage:simulated_reincarnation_furnace","category":"immortalstorage:automation","sortnum":25,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"immortalstorage:simulated_reincarnation_furnace","title":"模拟轮回炼化炉","text":"主手持混元一气、副手持灵核对刷怪笼使用可将其转换。种源放刷怪蛋或装有生物的拘灵器，武器槽会参与真实战利品表与幸运计算；每50刻完成一轮，产物进入4×3输出区。"},
+    {"type":"patchouli:text","text":"真元提供50燃烧刻，仙元提供500刻；已认主的仙灵驱动器会从对应玩家个人存储优先支付仙元、再支付真元。在自己的仙窍内也可由维度物主提供仙元。支持自动输出、六面输出、经验缓存与直接领取。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:simulated_spirit_field","text":"模拟灵田合成一次获得4个。种源不消耗，每50刻按真实作物战利品产生一轮；燃料、额外工具、4×3输出、自动输出、六面配置与经验缓存沿用模拟炼化炉。"},
+    {"type":"patchouli:text","text":"用合法土壤/耕地、末地石类或灵魂沙类方块右键可替换基底，旧基底优先返回背包。数据包可扩展种子、基底和作物清单。紫颂果仅接受末地石，每轮固定产出1紫颂花和2紫颂果；地狱疣使用灵魂沙类基底。"}
+  ]
+}

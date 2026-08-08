@@ -8,7 +8,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,18 +45,60 @@ final class PatchouliBundledHandbookContractTest {
     }
 
     @Test
-    void handbookHasRootDefinitionAndVersionThreeEntries() throws Exception {
+    void handbookHasRootDefinitionAndAllPostVersionThreeEntries() throws Exception {
         JsonObject book = resource("assets/immortalstorage/patchouli_books/jade_guide/book.json");
         assertEqualsString("item.immortalstorage.jade_guide", book, "name");
         for (String entry : new String[]{
                 "entries/recipes/nurturing_crystal.json",
                 "entries/equipment/substitute_puppet.json",
                 "entries/equipment/immortal_ruin_sword.json",
-                "entries/automation/immortal_ruins.json"}) {
+                "entries/equipment/one_qi_returning_origin_sword.json",
+                "entries/equipment/soul_catcher.json",
+                "entries/automation/immortal_ruins.json",
+                "entries/automation/simulated_machines.json",
+                "entries/storage/spirit_drive.json"}) {
             assertNotNull(PatchouliBundledHandbookContractTest.class.getClassLoader().getResource(
                     "assets/immortalstorage/patchouli_books/jade_guide/zh_cn/" + entry));
             assertNotNull(PatchouliBundledHandbookContractTest.class.getClassLoader().getResource(
                     "assets/immortalstorage/patchouli_books/jade_guide/en_us/" + entry));
+        }
+    }
+
+    @Test
+    void bilingualEntryTreesStayInSync() throws Exception {
+        Path guide = ROOT.resolve("resources/assets/immortalstorage/patchouli_books/jade_guide");
+        assertEquals(relativeJsonFiles(guide.resolve("zh_cn/entries")),
+                relativeJsonFiles(guide.resolve("en_us/entries")));
+    }
+
+    @Test
+    void handbookCoversEveryUserFacingSystemAddedAfterVersionThree() throws Exception {
+        String[][] coverage = {
+                {"entries/recipes/primordial_qi.json", "qi_collecting_bottle", "primordial_qi"},
+                {"entries/equipment/one_qi_returning_origin_sword.json",
+                        "one_qi_returning_origin_sword", "64"},
+                {"entries/equipment/soul_catcher.json", "soul_catcher"},
+                {"entries/automation/simulated_machines.json",
+                        "simulated_reincarnation_furnace", "simulated_spirit_field"},
+                {"entries/automation/immortal_ruins.json",
+                        "entangled_stabilized_miniature_immortal_ruin",
+                        "advanced_stabilized_miniature_immortal_ruin",
+                        "advanced_entangled_stabilized_miniature_immortal_ruin"},
+                {"entries/automation/sources.json", "echo_shard_vein", "72"},
+                {"entries/automation/advanced_interface.json", "advanced_xianqiao_interface"},
+                {"entries/storage/spirit_drive.json", "spirit_drive", "UUID"},
+                {"entries/storage/furnace_realm.json", "immortal_furnace", "0.0.8", "UUID"},
+                {"entries/compat/viewers_storage.json", "AE2", "RS", "ExtraStorage"}
+        };
+        for (String locale : new String[]{"zh_cn", "en_us"}) {
+            for (String[] contract : coverage) {
+                String text = resourceText("assets/immortalstorage/patchouli_books/jade_guide/"
+                        + locale + "/" + contract[0]);
+                for (int i = 1; i < contract.length; i++) {
+                    assertTrue(text.contains(contract[i]),
+                            locale + "/" + contract[0] + " missing " + contract[i]);
+                }
+            }
         }
     }
 
@@ -62,6 +107,24 @@ final class PatchouliBundledHandbookContractTest {
         assertNotNull(stream, "missing resource " + path);
         try (stream; var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
             return JsonParser.parseReader(reader).getAsJsonObject();
+        }
+    }
+
+    private static String resourceText(String path) throws Exception {
+        var stream = PatchouliBundledHandbookContractTest.class.getClassLoader().getResourceAsStream(path);
+        assertNotNull(stream, "missing resource " + path);
+        try (stream) {
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static Set<String> relativeJsonFiles(Path root) throws Exception {
+        try (var files = Files.walk(root)) {
+            return files.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".json"))
+                    .map(root::relativize)
+                    .map(path -> path.toString().replace('\\', '/'))
+                    .collect(Collectors.toSet());
         }
     }
 

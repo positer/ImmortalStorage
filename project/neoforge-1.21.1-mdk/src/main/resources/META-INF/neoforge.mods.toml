@@ -67,6 +67,20 @@ ordering="AFTER"
 side="BOTH"
 
 [[dependencies.${mod_id}]]
+modId="refinedtypes"
+type="optional"
+versionRange="[0.3.0,0.4)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
+modId="refinedstorage_mekanism_integration"
+type="optional"
+versionRange="[1.0.0,2)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.${mod_id}]]
 modId="botania"
 type="optional"
 versionRange="[454-SNAPSHOT,456)"

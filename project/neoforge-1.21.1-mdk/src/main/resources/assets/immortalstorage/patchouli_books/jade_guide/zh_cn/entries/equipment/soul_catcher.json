@@ -1,0 +1,8 @@
+{
+  "name":"拘灵器","icon":"immortalstorage:soul_catcher","category":"immortalstorage:equipment","sortnum":50,
+  "pages":[
+    {"type":"patchouli:smithing","recipe":"immortalstorage:soul_catcher","text":"以灵核为模板、栓绳为基底、混元一气为追加材料锻成拘灵器。"},
+    {"type":"patchouli:text","text":"对生物右键可完整收纳其实体数据，装有生物时物品会显示附魔光效与对象Tooltip；再对可放置的空地右键即可释放。创造模式也会正确更新当前手持物品。"},
+    {"type":"patchouli:text","text":"拘灵器支持普通与模组生物，可作为模拟轮回炼化炉的种源。渡劫期间禁止收纳或释放，避免改变渡劫目标流程。"}
+  ]
+}

@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -161,7 +162,7 @@ public final class SourceVeinManagerInventory extends ItemStackHandler {
         if (stack == null || stack.isEmpty() || definition == null) return 0L;
         long target = definition.free() ? Long.MAX_VALUE
                 : Math.max(cachedUnits(stack), Math.max(0L, paidTarget));
-        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag tag = writableMemberTag(stack);
         tag.putLong(CACHE_TAG, target);
         stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
         return target;
@@ -169,9 +170,24 @@ public final class SourceVeinManagerInventory extends ItemStackHandler {
 
     public static void setCachedUnits(ItemStack stack, long amount) {
         if (stack == null || stack.isEmpty()) return;
-        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        CompoundTag tag = writableMemberTag(stack);
         tag.putLong(CACHE_TAG, Math.max(0L, amount));
         stack.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(tag));
+    }
+
+    /**
+     * Vanilla's BLOCK_ENTITY_DATA codec rejects tags without a string {@code id}
+     * key ("Missing id for entity"). Fresh creative/JEI-given members carry no
+     * pre-existing tag, so the manager must stamp the source-vein block entity
+     * id before persisting any cache value.
+     */
+    private static CompoundTag writableMemberTag(ItemStack stack) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        if (!tag.contains("id", net.minecraft.nbt.Tag.TAG_STRING)) {
+            ResourceLocation id = BlockEntityType.getKey(ModBlockEntities.SOURCE_VEIN.get());
+            if (id != null) tag.putString("id", id.toString());
+        }
+        return tag;
     }
 
     private static boolean validSlot(int slot) {

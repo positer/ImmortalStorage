@@ -14,27 +14,27 @@ public final class RealmTickRateEvents {
     @SubscribeEvent
     public void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (ImmortalStorageDimensions.isPersonalRealmFor(player.level().dimension(), player.getUUID())) {
+        if (RealmHelper.isInOwnRealm(player)) {
             RealmHelper.refreshRealmTickRate(player);
         } else {
-            RealmHelper.releaseRealmTickRate(player.server, player.getUUID());
+            RealmHelper.releaseRealmTickRate(player.server, RealmHelper.realmId(player));
         }
     }
 
     @SubscribeEvent
     public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            RealmHelper.releaseRealmTickRate(player.server, player.getUUID());
+            RealmHelper.releaseRealmTickRate(player.server, RealmHelper.realmId(player));
         }
     }
 
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getFrom(), player.getUUID())) {
-            RealmHelper.releaseRealmTickRate(player.server, player.getUUID());
+        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getFrom(), RealmHelper.realmId(player))) {
+            RealmHelper.releaseRealmTickRate(player.server, RealmHelper.realmId(player));
         }
-        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getTo(), player.getUUID())) {
+        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getTo(), RealmHelper.realmId(player))) {
             RealmHelper.refreshRealmTickRate(player);
         }
     }

@@ -129,7 +129,7 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos));
         UUID ownerId = basin.activation.owner();
         if (ownerId != null) {
-            ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+            ServerPlayer owner = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), ownerId);
             if (owner != null) {
                 paramsBuilder.withOptionalParameter(LootContextParams.THIS_ENTITY, owner)
                         .withLuck(owner.getLuck());

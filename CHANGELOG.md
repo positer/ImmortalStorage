@@ -1,5 +1,85 @@
 # Changelog
 
+## [0.0.9] - 2026-08-08
+
+本节完整列出相对正式版 `0.0.8` 的全部用户可见变化。
+
+### 简体中文
+
+#### 新增与迁移
+
+- 新增统一持久玩家身份：个人仙窍维度不再直接依赖启动器本次会话 UUID。首次加载 0.0.8 及更早存档时，依次从已保存的仙窍重生维度、仙窍退出维度或一致的旧绑定物品所有者执行一次性迁移；没有可靠旧证据时保留原 UUID 目录，不覆盖、复制或猜测维度数据。
+- 仙窍存储磁盘、AE2 交换磁盘、RS 交换磁盘、仙灵驱动器、替死傀儡、仙窍/源方块管理器、普通/高级仙窍接口、源方块、世界碎片矿机与聚宝盆、轮回炼化炉、模拟轮回炼化炉、模拟灵田、渡劫与个人存储/燃料解析统一使用同一持久身份。
+- 合法的旧会话 UUID 绑定会在首次交互时原地升级；磁盘独立 ID、物品内容与组件、耐久、替死傀儡锚点和机器数据全部保留。不同启动器启动同一用户时不再出现“物品栏/仙窍存储一致，但个人维度或绑定物品失联”。
+- 完整补齐古玉指导书在后续版本中遗漏的双语章节：一气归元剑、拘灵器、仙灵驱动器、模拟轮回炼化炉、模拟灵田、回响碎片源方块、纠缠/高级/高级纠缠稳定化迷你仙墟，以及新版个人仙窍天气和持久身份迁移说明；灵剑、替死傀儡、源方块、兼容与个人仙窍旧章节同步校正。
+
+#### 材质、模型与渲染
+
+- 源方块管理器采用 `design/SourceVeinController.bbmodel` 新外观：12 根黑色 Edge 梁构成顶底开敞的镂空笼，内部 8 个 3×3×3 源核按 72 格容量映射为八段状态，使用空=蓝、使用中=紫、满=红的纯色不透明材质，并以 4°/tick 绕中心 Y 轴整体旋转。
+- 源方块管理器移除旧六格指示器和 `source_vein_manager_side/top/front.png` 三张旧贴图，改用 `source_vein_manager_edge.png` 与三张独立核心材质；方块模型按世界方向映射 UV，内部开口保持无面遮挡。
+- 源方块管理器手持/物品栏改为方块物品 BEWLR：标准笼模型上叠加与世界完全相同的八段旋转核心，优先读取拆下物品保留的 `DisplayState`，其次按序列化成员数推导。
+- AE2 与 RS 的仙藏额外资源渲染统一复用 `ExternalResourceCatalog` 的名称、颜色和纹理定义。化学品严格采用仙藏一致的注册表取样纯色；FE、Mana、Source、Souls 等非纯色资源使用仙藏自带纹理，未安装资源渲染附属时不再借用交换磁盘模型。
+
+#### 修复
+
+- 修复摧毁源方块管理器时 `Missing id for entity in: {CachedUnits:...}` 导致的崩溃：管理器为新建/免费源成员写入 `CachedUnits` 时补齐方块实体字符串 `id`，已有 `id` 的成员只更新缓存；模拟轮回炼化炉拆下/保存同步改用含完整元数据的序列化路径。
+- 修复源方块管理器顶面圆环不可见：顶部四根圆环梁补齐 `up` 面，底部四根补齐 `down` 面，复用 edge 贴图既有不透明采样区而不增加额外贴图。
+- 修复源方块管理器手持/物品栏只显示空笼，动态核心、阶段颜色和拆下状态现在与世界内渲染一致。
+- 修复 AE2 终端渲染或悬停 `immortalstorage:external_resource` 时因缺失客户端 `AEKeyRendering` 处理器而崩溃；新增受 AE2 可选加载边界保护的客户端注册，服务端与无 AE2 运行时不加载 AE2 客户端类。
+- 修复 RS 合成终端触及 `RsExternalResource` 时因缺少网格仓库 Mapper 而断开连接；通过官方 `addGridResourceRepositoryMapper` 注册安全网格条目，名称、检索、数量、提示和提取分发均正常。
+- 修复 RS 无额外资源附属时不显示仙藏额外存储，以及安装/移除附属后旧回退键可能失效的问题；同一账本资源只枚举一次，回退键继续可读写。
+- 修复 RS 化学品渲染错误：`solidColor` 取样与纹理 `blit` 改为互斥分支，不再在绿色、灰色、粉色等化学品色块上叠加蓝色图标。
+- 修复仙窍雪天气可能被误解为服务端降水并纳入强制加载的问题：SNOW 只保留客户端粒子，服务端不启用 rain/thunder；强制加载的玩家改动区块只接受玩家/实体驱动的破坏与放置事件。
+
+#### 兼容与验证
+
+- 仅安装 Refined Storage 2.0.9 时，仙窍 RS 交换磁盘以内置资源类型显示 FE、Mana、Source、Souls 与 Mekanism 化学品。
+- 安装 Refined Types 0.3.x 时优先使用其 FE/Source/Souls 原生键；安装官方 RS Mekanism Integration 1.x 时优先使用其化学品原生键。仙藏回退键保留最低优先级，避免升级或移除附属后数据不可读。
+- ExtraStorage 等标准 RS 容量附属继续通过官方 `StorageContainerItem` 契约共存，不需要硬依赖或专用分支；Refined Types 与 RS Mekanism Integration 仍是可选依赖。
+- 正式支持范围保持 Minecraft 1.21.1、NeoForge 21.1.235、Java 21；网络协议保持 8。
+- 完整门禁通过 **196 suites / 717 tests / 0 failures / 0 errors / 0 skipped**，并通过生产 JAR 边界、版本组成、精确版本制品、Ars Source API 与无 AE2 运行时验证；新增手册契约会检查中英条目树一致及后续版本主要系统覆盖。
+- 30-JAR PCL2 全模组实例完成 JDK 21、`zh_cn` 实机验证：绑定旧 AE2/RS 磁盘可打开终端，RS 化学品取样颜色正确，`Missing render handler`、`No factory for class`、高级屏幕处理失败和仙藏外部资源纹理加载失败均为 0。
+- 版本更新为 `0.0.9`。
+
+### English
+
+This section is the complete user-visible delta from release `0.0.8`.
+
+#### Added and migrated
+
+- Added one persistent player identity for personal realms. The realm key no longer depends directly on the launcher's current session UUID. On the first load of a 0.0.8-or-earlier save, a one-shot migration uses the saved realm respawn dimension, saved realm exit dimension, or one consistent legacy-bound item owner in that order; without reliable evidence, the existing UUID directory is preserved rather than copied or guessed.
+- Xianqiao storage disks, AE2/RS exchange media, Spirit Drives, Substitute Puppets, Xianqiao/Source Vein Managers, plain/Advanced Xianqiao Interfaces, Source Veins, World Shard machines, reincarnation machines, Simulated Spirit Fields, tribulation ownership, and personal-storage/fuel resolution now share that same stable identity.
+- Valid legacy session-UUID bindings upgrade in place on first interaction. Independent disk IDs, item contents/components, durability, puppet anchors, and machine data are preserved. Starting the same user through another launcher no longer separates the personal realm while inventory and Xianqiao storage remain shared.
+- Completed the bilingual Ancient Jade handbook for systems missed by later updates: One-Qi Returning Origin Sword, Soul Catcher, Spirit Drive, Simulated Reincarnation Furnace, Simulated Spirit Field, Echo Shard Source Vein, Entangled/Advanced/Advanced Entangled Stabilized Ruins, plus current personal-realm weather and persistent-identity migration. The older sword, puppet, source, compatibility, and realm chapters were corrected at the same time.
+
+#### Materials, models, and rendering
+
+- Replaced the Source Vein Manager appearance with `design/SourceVeinController.bbmodel`: 12 black Edge beams form an open-top/open-bottom cage, while eight inner 3×3×3 cores map the 72-slot capacity to eight stages, use opaque empty-blue / used-purple / full-red materials, and rotate as one rigid body around Y at 4°/tick.
+- Removed the old six-slot indicator and `source_vein_manager_side/top/front.png` textures. The new model uses `source_vein_manager_edge.png` plus three dedicated core textures, world-direction UV mapping, and an unobstructed inner opening.
+- Hand/inventory rendering now uses a block-item BEWLR that overlays the same eight-stage rotating core on the standard cage model, reading persisted `DisplayState` first and serialized member count as fallback.
+- AE2 and RS external-resource entries now share `ExternalResourceCatalog` names, colors, and textures. Chemicals use the same registry-sampled solid colors as Xianqiao; non-solid FE/Mana/Source/Souls entries use bundled ImmortalStorage textures when no resource-rendering addon is present.
+
+#### Fixed
+
+- Fixed `Missing id for entity in: {CachedUnits:...}` when destroying a Source Vein Manager. Fresh/free member data now receives the source-vein block-entity string `id`; existing IDs are preserved while cache data changes, and Simulated Reincarnation Furnace pickup/save uses full metadata.
+- Fixed the Source Vein Manager top ring being invisible by adding `up` faces to the four top beams and `down` faces to the four bottom beams, reusing opaque regions of the existing edge texture.
+- Fixed the Source Vein Manager hand/inventory item showing only an empty cage; its dynamic core, stage colors, and persisted pickup state now match world rendering.
+- Fixed the AE2 terminal crash caused by a missing client `AEKeyRendering` handler for `immortalstorage:external_resource`; client registration remains behind the optional AE2 class-loading boundary and does not affect dedicated servers or no-AE2 runtimes.
+- Fixed the RS crafting-terminal disconnect caused by the missing repository mapper for `RsExternalResource`. The official `addGridResourceRepositoryMapper` extension point now supplies safe grid entries with correct naming, search, amount, tooltip, and extraction dispatch.
+- Fixed missing ImmortalStorage external resources with base RS and preserved readability when resource addons are installed or removed. Each ledger resource is emitted once and legacy fallback keys remain readable/writable.
+- Fixed RS chemical rendering: sampled `solidColor` fills and textured `blit` rendering are now mutually exclusive, so no blue icon is overlaid on green, gray, pink, or other chemical swatches.
+- Fixed personal-realm snow being eligible for server precipitation/forced-load interpretation. SNOW remains client particles only, rain/thunder stay disabled, and the forced-chunk set accepts only player/entity-driven break/place changes.
+
+#### Compatibility and validation
+
+- With Refined Storage 2.0.9 alone, Xianqiao RS exchange disks expose FE, Mana, Source, Souls, and Mekanism chemicals through the built-in resource type.
+- Refined Types 0.3.x native FE/Source/Souls keys and official RS Mekanism Integration 1.x chemical keys take priority when installed. The ImmortalStorage fallback remains at lowest priority for upgrade/removal safety.
+- Standard RS capacity addons such as ExtraStorage continue to coexist through the official `StorageContainerItem` contract; Refined Types and RS Mekanism Integration remain optional.
+- Official support remains Minecraft 1.21.1, NeoForge 21.1.235, and Java 21; network protocol remains 8.
+- The full gate passes **196 suites / 717 tests / 0 failures / 0 errors / 0 skipped**, plus production-JAR boundary, version composition, exact-version artifact, Ars Source API, and no-AE2 runtime verification. New handbook contracts enforce bilingual entry-tree parity and later-version major-system coverage.
+- A 30-JAR full-mod PCL2 client passed JDK 21 / `zh_cn` live validation: bound legacy AE2/RS disks open their terminals, RS chemicals use the correct sampled colors, and there are zero `Missing render handler`, `No factory for class`, advanced-screen handling, or ImmortalStorage external-texture load failures.
+- Bumped the version to `0.0.9`.
+
 ## [0.0.8] - 2026-08-07
 
 本节完整列出相对正式版 `0.0.7` 的全部用户可见变化。

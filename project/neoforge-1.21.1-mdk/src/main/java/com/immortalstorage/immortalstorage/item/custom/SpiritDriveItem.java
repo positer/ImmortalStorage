@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.crafting.RecipeType;
 import org.jetbrains.annotations.Nullable;
@@ -86,7 +87,7 @@ public class SpiritDriveItem extends Item {
         long nextRetry = VANILLA_RETRY_TICKS.getOrDefault(retryKey, Long.MIN_VALUE);
         if (now < nextRetry) return 0;
 
-        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+        ServerPlayer owner = PersistentPlayerIdentity.onlinePlayer(level.getServer(), ownerId);
         ImmortalStoragePlayerData data = owner == null ? null : ImmortalStoragePlayerData.get(owner);
         if (data != null && !data.extractStack(new ItemStack(ModItems.IMMORTAL_YUAN.get()), 1).isEmpty()) {
             VANILLA_RETRY_TICKS.remove(retryKey);
@@ -104,7 +105,15 @@ public class SpiritDriveItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (level.isClientSide) return InteractionResultHolder.success(stack);
-        boolean bound = bind(stack, player.getUUID(), player.getGameProfile().getName());
+        UUID stableOwner = PersistentPlayerIdentity.id(player);
+        UUID storedOwner = owner(stack).orElse(null);
+        if (storedOwner != null && PersistentPlayerIdentity.matches(player, storedOwner)
+                && !stableOwner.equals(storedOwner)) {
+            CompoundTag migrated = customTag(stack);
+            migrated.putUUID(OWNER_TAG, stableOwner);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(migrated));
+        }
+        boolean bound = bind(stack, stableOwner, player.getGameProfile().getName());
         player.displayClientMessage(Component.translatable(bound
                 ? "message.immortalstorage.spirit_drive.bound"
                 : "message.immortalstorage.spirit_drive.wrong_owner"), true);

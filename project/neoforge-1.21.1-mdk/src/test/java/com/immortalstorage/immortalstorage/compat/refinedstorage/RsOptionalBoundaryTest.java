@@ -41,14 +41,61 @@ final class RsOptionalBoundaryTest {
                 "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsExternalResource.java");
         String client = source(
                 "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsClientCompat.java");
+        String rendering = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsExternalResourceRendering.java");
 
         assertTrue(bootstrap.contains("getResourceTypeRegistry"));
         assertTrue(bootstrap.contains("RsExternalResourceType.INSTANCE"));
         assertTrue(storage.contains("externalResourceStorage"));
-        assertTrue(storage.contains("resource instanceof RsExternalResource"));
+        assertTrue(storage.contains("RsExternalResourceKeyBridges.toResourceKey"));
         assertTrue(resource.contains("implements PlatformResourceKey"));
         assertTrue(resource.contains("ResourceChannelKey"));
+        assertTrue(bootstrap.contains("addGridResourceRepositoryMapper"));
+        assertTrue(bootstrap.contains("RsExternalGridResourceMapper.INSTANCE"));
         assertTrue(client.contains("registerResourceRendering"));
+        assertTrue(rendering.contains("ExternalResourceCatalog.definition"));
+        assertTrue(rendering.contains("graphics.blit(definition.icon()"));
+        assertTrue(rendering.contains("graphics.fill"));
+        int fill = rendering.indexOf("graphics.fill");
+        int exclusiveElse = rendering.indexOf("} else {", fill);
+        int blit = rendering.indexOf("graphics.blit(definition.icon()", fill);
+        assertTrue(fill < exclusiveElse && exclusiveElse < blit,
+                "solid-color sampling and textured icons must remain mutually exclusive");
+        assertFalse(rendering.contains("renderItem(new ItemStack"));
+    }
+
+    @Test
+    void installedResourceAddonsUseNativeKeysAndKeepTheBuiltinKeyAsFallback() throws IOException {
+        String bootstrap = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsCompat.java");
+        String storage = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/XianqiaoRsStorage.java");
+        String addons = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/InstalledAddonRsExternalResourceKeyBridges.java");
+        String fallback = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/ImmortalStorageRsExternalResourceKeyBridge.java");
+
+        assertTrue(bootstrap.contains("InstalledAddonRsExternalResourceKeyBridges.registerPresent"));
+        assertTrue(addons.contains("refinedtypes"));
+        assertTrue(addons.contains("refinedstorage_mekanism_integration"));
+        assertTrue(addons.contains("EnergyResource"));
+        assertTrue(addons.contains("SourceResource"));
+        assertTrue(addons.contains("SoulResource"));
+        assertTrue(addons.contains("ChemicalResource"));
+        assertTrue(addons.contains("ExternalResourceChannels.mekanismChemical"));
+        assertTrue(fallback.contains("Integer.MIN_VALUE"));
+        assertTrue(storage.contains("RsExternalResourceKeyBridges.toRsKey"));
+        assertTrue(storage.contains("RsExternalResourceKeyBridges.toResourceKey"));
+        assertFalse(storage.contains("result.add(new ResourceAmount(new RsExternalResource"));
+    }
+
+    @Test
+    void resourceAddonMetadataIsOptionalAndOrderedBeforeImmortalStorageSetup() throws IOException {
+        String modsToml = source("resources/META-INF/neoforge.mods.toml");
+        assertTrue(modsToml.contains("modId=\"refinedtypes\""));
+        assertTrue(modsToml.contains("modId=\"refinedstorage_mekanism_integration\""));
+        assertTrue(modsToml.contains("versionRange=\"[0.3.0,0.4)\""));
+        assertTrue(modsToml.contains("ordering=\"AFTER\""));
     }
 
     @Test

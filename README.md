@@ -2,7 +2,23 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前开发版本为 0.0.8：仙窍接口、灵剑、仙墟锻灵剑与一气归元剑改用设计稿材质/建模（默认 scale display），并新增高级仙窍接口——保留九个物品/流体/电力/化学品缓存槽，同时以与高级稳定化迷你仙墟系列一致的 xyz/+xzy 范围、预览框与面高亮、轮询选项对配置范围内的容器进行调度，拒绝接口自身原有的六面主动推拉功能。
+> 当前开发版本为 **0.0.9**：个人仙窍维度、仙窍/RS 存储磁盘、仙灵驱动器、替死傀儡与所有者绑定机器统一改用随玩家数据持久化的稳定身份，不再直接依赖启动器本次会话 UUID。旧存档首次加载时从已保存仙窍引用或一致的旧绑定物品执行一次性迁移，合法旧绑定原地升级且不改变磁盘 ID、物品内容、耐久或锚点；同时包含 AE2 `external_resource` 缺失客户端渲染处理器的崩溃修复。
+>
+> **0.0.9 RS 额外资源显示与附属兼容（2026-08-08）：** 仅安装 Refined Storage 2.0.9 时，仙窍交换磁盘会用仙藏自有 `xianqiao_external` 资源类型在 RS 网格中显示 FE、Mana、Source、Souls 与 Mekanism 化学品。安装 Refined Types 时 FE/Source/Souls 自动改用其原生键，安装官方 RS Mekanism Integration 时化学品自动改用其原生键；仙藏回退键继续可读写，避免升级、移除附属或网络缓存中的旧条目失效，并保证同一账本资源只枚举一次。ExtraStorage 等使用 RS 标准存储容器协议的扩容附属可与仙窍交换磁盘共存。详见 `archive/2026-08-08-rs-external-resource-display-and-addon-compat.md`。
+>
+> **0.0.9 RS 合成网格闪退修复（2026-08-08）：** 修复打开含仙藏额外资源的 RS 合成网格时 `No factory for class ... RsExternalResource` 导致连接中断。资源类型序列化与图标渲染此前均已注册，但遗漏了 RS 网格仓库的 `ResourceRepositoryMapper`；现补齐 `addGridResourceRepositoryMapper` 及安全网格条目。绑定旧磁盘的 `Test` 世界已通过 Numen 实机复测，`CraftingGridScreen` 正常显示资源且无高级屏幕处理失败。详见 `archive/2026-08-08-rs-grid-mapper-crash-fix.md`。
+>
+> **0.0.8 崩溃修复（2026-08-08）：** 修复摧毁源方块管理器时 `Missing id for entity in: {CachedUnits:...}` 闪退。根源是原版 `block_entity_data` 组件编码要求携带字符串 `id` 键，而管理器为新建/免费源成员写入 `CachedUnits` 时未补 `id`，导致成员序列化报错。现统一在写入侧补齐 `id`，且对已有 `id` 的成员（挖掘入仓）只更新缓存不覆盖；模拟轮回炼化炉的拆下/保存路径同步改用含 `id` 的 `saveWithFullMetadata`。详见 `archive/2026-08-08-source-vein-manager-missing-entity-id-crash-fix.md`。
+>
+> **0.0.8 源方块管理器控制器动效（2026-08-08）：** 源方块管理器改用 `design/SourceVeinController.bbmodel` 设计稿——12 根黑色 Edge 梁组成顶底开敞的镂空笼子（静态烘焙模型），内部 8 个 3x3x3 源核小立方按 72 格→8 段阶梯从空（蓝）→用（紫）→满（红）点亮，并作为刚体整体绕块中心 y 轴缓慢旋转（自定义 BlockEntityRenderer 动画）。手持/物品栏按原版默认渲染（空笼）。详见 `archive/2026-08-08-source-vein-manager-controller-bbmodel-animation.md`。
+>
+> **0.0.8 源方块管理器实机修复（2026-08-08）：** 实机验证发现两个显示缺陷并已修复：① 顶面圆环消失——顶/底各四根圆环梁补齐 `up`/`down` 封口面（复用既有 edge 贴图的备用不透明 2x2 采样区，贴图零改动），顶部框架不再消失；② 手持/物品栏只显示空笼——改为方块物品 BEWLR，在标准方块模型之上叠加与世界中完全一致的 8 段旋转源核（状态读取拆下时保留的 `DisplayState`，缺失时按成员数推导），与世界中渲染像素一致。详见 `archive/2026-08-08-source-vein-manager-bugfix-frame-and-item-core.md`。
+>
+> **0.0.8 仙窍身份统一（Bug 2，2026-08-08）：** 不同启动方式进入同一测试世界会产生两条互相隔离的离线身份与个人仙窍。已按“规范身份获胜”完成区块级迁移：规范 `00000fff-ffff-ffff-ffff-fffffff16c5c` 作为唯一身份，旧身份 `00000000-0000-3003-998f-501bcc516c5c` 的仙窍区块/成就并入（entities +9 独有区块、成就 +14 条），玩家数据保留规范身份，旧身份文件与旧仙窍目录整体隔离到 `saves\Test\_quarantine_old_identity\`，迁移前全量备份见 `saves\_backups\Test_pre-realm-merge_20260808_141636`。所有启动批处理均已硬编码规范 `--uuid`，无需改启动脚本。详见 `archive/2026-08-08-realm-identity-unification-bug2.md`。
+>
+> **0.0.8 仙窍雪不计入强制加载（设计约束，2026-08-08）：** 仙窍下雪仅为客户端粒子视觉，服务端 SNOW 天气不置 `raining=true`（否则 vanilla 会在整个仙窍铺雪层）；驱动强制加载的“玩家改动区块”集合只由玩家/实体驱动的破坏/放置事件喂养，vanilla 下雪用 null 实体的 `setBlock` 永远不会进入该记录路径。该不变式已通过 `RealmEnvironmentPolicy.requiresRain/requiresThunder` 纯函数与 `RealmEnvironmentPolicyTest` 回归测试锁定。
+>
+> **0.0.8 AE2 客户端闪退修复（2026-08-08）：** 修复在合并后的仙窍内打开 AE2 终端时 `Missing render handler for channel immortalstorage:external_resource` 闪退。根源是服务端已注册 `immortalstorage:external_resource` AEKey 通道，但客户端从未向 `AEKeyRendering` 注册渲染处理器，AE2 终端渲染/悬停该外部资源条目时 `getOrThrow` 抛异常。现新增客户端注册入口 `Ae2ClientCompat`（在 `CompatManager.initializeClientIntegrations` 中于 `AE2_LOADED` 守护下反射调用）与 `ImmortalStorageExternalResourceKeyRenderHandler`（绘制与命名复用 `ExternalResourceCatalog`，与仙窍接口视觉一致），并由回归测试直接复现原崩溃条件。全门禁 **191 suites / 706 tests / 0 failures**。详见 `archive/2026-08-08-ae2-missing-render-handler-crash-fix.md`。
 
 
 **简体中文** | [English](README_en.md)
@@ -11,13 +27,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.7 仅正式支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未在本次 Release 中声明支持。
+> 0.0.9 仅支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
 **下载：**[仙藏 ImmortalStorage 0.0.7](https://github.com/positer/ImmortalStorage/releases/tag/0.0.7)
 
-**发行 JAR SHA256：**`513B388E3FA1CBD8BE0FE39FBC69D2927B549FDD5C0CF3017030404F79AF9FED`
+**发行 JAR SHA256：** `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`（5,137,573 字节）
 
 ## 模组特色
 
@@ -39,7 +55,7 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.7 |
+| 仙藏 ImmortalStorage | 0.0.9 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
@@ -87,7 +103,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面以及 0.0.3、0.0.4 的新增机制说明。
+古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面，并完整覆盖 0.0.3–0.0.9 的主要玩法：替死傀儡、灵剑三条内容线、拘灵器、仙灵驱动器、模拟生产设备、四类稳定化仙墟、源方块/管理器、个人仙窍天气与持久身份迁移，以及 AE2/RS 额外资源兼容。中英条目树与后续版本系统覆盖均由自动契约检查。
 
 ## 修行阶段
 
@@ -248,6 +264,8 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 同名源方块在同一个管理器中只能存在一个。
 - 每个成员源仍独立工作和保存缓存，管理器仅聚合其对外取出能力。
 - 聚合视图会绑定到仙窍存储统计，使终端和存储总线能读取最大预算与真实缓存。
+- 成员源方块物品的持久缓存写在 `block_entity_data` 组件上；管理器会在写入 `CachedUnits` 时确保该组件带合法的方块实体 `id`（`immortalstorage:source_vein`），避免摧毁管理器或保存时触发原版 `Missing id for entity` 序列化错误。
+- 0.0.8 改用 `design/SourceVeinController.bbmodel` 设计稿外观：黑色镂空笼子（12 根 Edge 梁，顶/底圆环梁已补齐 `up`/`down` 封口面）静态渲染，内部 8 个 3x3x3 源核小立方按 72 格→8 段阶梯从空（蓝）→用（紫）→满（红）点亮，并作为刚体绕块中心缓慢旋转；手持/物品栏通过方块物品 BEWLR 叠加同一旋转源核（状态读取拆下保留的 `DisplayState`），与世界中渲染一致。
 
 ### 仙窍管理器
 
@@ -431,7 +449,7 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.8.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.9.jar
 ```
 
 完整验证命令：
@@ -440,7 +458,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 .\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-0.0.8 开发版已通过 700 项测试、生产边界、版本组成与精确制品检查。详细版本变更见 `CHANGELOG.md`，开发和实机验证记录保存在 `archive/`。
+0.0.9 正式制品已通过 **717 项测试（196 suites / 0 failures/errors/skips）**、生产边界、版本组成与精确制品检查；统一持久身份、旧 UUID 一次性迁移、AE2/RS 磁盘、RS 无附属额外资源显示、RS 网格 Mapper、Refined Types/官方 RS Mekanism Integration 原生键退让、仙灵驱动器、替死傀儡、绑定机器、AE2 `Missing render handler` 崩溃条件及古玉手册双语完整性均有回归覆盖。此前 SHA-256 为 `BE3F8C2A5283166513CA178DE5A9186651C3780C9DCD358B416BA849FE4C1228` 的实机验证制品已部署到 30-JAR 全模组 PCL2 实例；Numen 在绑定旧交换磁盘上实机打开 RS `CraftingGridScreen`，确认化学品与仙藏一致仅显示注册表取样纯色，非纯色资源继续使用目录纹理，且 `No factory`、高级屏幕处理失败与外部资源纹理加载失败均为 0。包含完整手册的最终发布 JAR SHA-256 为 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`。详细记录见 `archive/2026-08-08-rs-native-fallback-rendering.md`。
 
 ## 仓库结构
 
@@ -453,6 +471,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 ├── design/
 │   ├── xianqiao-interface/       六面内凹仙窍接口美化设计稿（已接入 0.0.8 生产模型）
 │   ├── advanced-xianqiao-interface/  高级仙窍接口设计稿（空心框架 + 边框材质，已接入 0.0.8）
+│   ├── SourceVeinController.bbmodel  源方块管理器控制器设计稿（黑框笼 + 8 核旋转动效，已接入 0.0.8）
 │   └── swords/                   灵剑/仙墟锻灵剑/一气归元剑 剑系美化设计稿（已接入 0.0.8 材质）
 └── project/
     └── neoforge-1.21.1-mdk/

@@ -200,7 +200,7 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         if (level == null || engine.isLit() || !getItem(FUEL).isEmpty() || !hasAnyInput()) return false;
         UUID ownerId = autoConsumeOwner(level.dimension()).orElse(null);
         if (ownerId == null) return false;
-        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+        ServerPlayer owner = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), ownerId);
         if (owner == null) return false;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(owner);
         if (data == null || data.getStage() < 6 || !data.consumeImmortalYuan(1L)) return false;
@@ -239,7 +239,7 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
                 || !sameSpiritDrive(observedSpiritDrive, drive)) return ImmortalFurnaceEngine.NO_FUEL;
         UUID ownerId = SpiritDriveItem.owner(drive).orElse(null);
         ServerPlayer owner = ownerId == null ? null
-                : serverLevel.getServer().getPlayerList().getPlayer(ownerId);
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), ownerId);
         ImmortalStoragePlayerData data = owner == null ? null : ImmortalStoragePlayerData.get(owner);
         if (data == null) return ImmortalFurnaceEngine.NO_FUEL;
         ItemStack currency = fuelCurrency(candidate);
@@ -257,7 +257,7 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         }
         UUID ownerId = SpiritDriveItem.owner(drive).orElse(null);
         ServerPlayer owner = ownerId == null ? null
-                : serverLevel.getServer().getPlayerList().getPlayer(ownerId);
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), ownerId);
         ImmortalStoragePlayerData data = owner == null ? null : ImmortalStoragePlayerData.get(owner);
         ItemStack paidStack = data == null ? ItemStack.EMPTY : extractFuelPayment(data, offered);
         boolean paid = !paidStack.isEmpty();

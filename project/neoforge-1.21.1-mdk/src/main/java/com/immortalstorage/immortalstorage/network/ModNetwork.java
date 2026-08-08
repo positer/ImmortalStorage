@@ -204,7 +204,8 @@ public final class ModNetwork {
             }
 
             if (!com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
-                    .isPersonalRealmFor(sp.level().dimension(), sp.getUUID())) {
+                    .isPersonalRealmFor(sp.level().dimension(),
+                            com.immortalstorage.immortalstorage.dimension.RealmHelper.realmId(sp))) {
                 sp.displayClientMessage(Component.literal("Tribulation can begin only in your personal Xianqiao realm"), true);
                 return;
             }
@@ -469,7 +470,7 @@ public final class ModNetwork {
         ctx.enqueueWork(() -> {
             ServerPlayer sp = serverPlayer(ctx);
             if (sp == null) return;
-            if (com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions.isPersonalRealmFor(sp.level().dimension(), sp.getUUID())) {
+            if (com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(sp)) {
                 com.immortalstorage.immortalstorage.dimension.RealmHelper.exitRealm(sp);
             } else {
                 com.immortalstorage.immortalstorage.dimension.RealmHelper.enterRealm(sp);
@@ -504,7 +505,7 @@ public final class ModNetwork {
                     || source != menu.getBlockEntity() || !menu.stillValid(sp)) {
                 return;
             }
-            if (!source.isOwnedBy(sp.getUUID()) && !sp.hasPermissions(2)) {
+            if (!com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(sp, source.getOwner()) && !sp.hasPermissions(2)) {
                 sp.displayClientMessage(Component.translatable("message.immortalstorage.source_vein.configure.denied"), true);
                 return;
             }
@@ -820,7 +821,7 @@ public final class ModNetwork {
                 || player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 64.0D) {
             return null;
         }
-        if (!source.isOwnedBy(player.getUUID())) {
+        if (!com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, source.getOwner())) {
             player.displayClientMessage(Component.translatable("message.immortalstorage.source_vein.configure.denied"), true);
             return null;
         }

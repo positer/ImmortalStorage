@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.item.custom;
 
 import com.immortalstorage.immortalstorage.item.ModItems;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -39,14 +40,15 @@ public final class SubstitutePuppetItem extends Item {
         ItemStack puppet = player.getItemInHand(hand);
         if (!(player instanceof ServerPlayer serverPlayer)) return InteractionResultHolder.success(puppet);
         CompoundTag tag = data(puppet);
+        UUID stableOwner = PersistentPlayerIdentity.id(serverPlayer);
         if (!tag.hasUUID(OWNER)) {
-            tag.putUUID(OWNER, player.getUUID());
+            tag.putUUID(OWNER, stableOwner);
             tag.putString(OWNER_NAME, player.getGameProfile().getName());
             write(puppet, tag);
             player.displayClientMessage(Component.translatable("message.immortalstorage.substitute_puppet.bound"), true);
             return InteractionResultHolder.consume(puppet);
         }
-        if (!tag.getUUID(OWNER).equals(player.getUUID())) return InteractionResultHolder.fail(puppet);
+        if (!migrateOwner(serverPlayer, puppet, tag)) return InteractionResultHolder.fail(puppet);
         ItemStack other = player.getItemInHand(hand == InteractionHand.MAIN_HAND
                 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
         if (other.is(ModItems.NURTURING_CRYSTAL.get())) {
@@ -72,7 +74,7 @@ public final class SubstitutePuppetItem extends Item {
         if (!(context.getPlayer() instanceof ServerPlayer player)) return InteractionResult.SUCCESS;
         ItemStack puppet = context.getItemInHand();
         CompoundTag tag = data(puppet);
-        if (!tag.hasUUID(OWNER) || !tag.getUUID(OWNER).equals(player.getUUID())) return InteractionResult.FAIL;
+        if (!migrateOwner(player, puppet, tag)) return InteractionResult.FAIL;
         BlockPos pos = context.getClickedPos();
         if (!context.getLevel().getBlockState(pos).is(Blocks.RESPAWN_ANCHOR)) return InteractionResult.PASS;
         tag.putString(ANCHOR_DIMENSION, context.getLevel().dimension().location().toString());
@@ -105,12 +107,18 @@ public final class SubstitutePuppetItem extends Item {
         return stack.is(ModItems.SUBSTITUTE_PUPPET.get()) && tag.hasUUID(OWNER) && tag.getUUID(OWNER).equals(owner);
     }
 
+    public static java.util.Optional<UUID> owner(ItemStack stack) {
+        CompoundTag tag = data(stack);
+        return stack != null && stack.is(ModItems.SUBSTITUTE_PUPPET.get()) && tag.hasUUID(OWNER)
+                ? java.util.Optional.of(tag.getUUID(OWNER)) : java.util.Optional.empty();
+    }
+
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         super.inventoryTick(stack, level, entity, slot, selected);
         if (level.isClientSide || !(entity instanceof ServerPlayer player)) return;
         CompoundTag tag = data(stack);
-        if (!tag.hasUUID(OWNER) || !tag.getUUID(OWNER).equals(player.getUUID())) return;
+        if (!migrateOwner(player, stack, tag)) return;
         String currentName = player.getGameProfile().getName();
         if (!currentName.equals(tag.getString(OWNER_NAME))) {
             tag.putString(OWNER_NAME, currentName);
@@ -179,5 +187,18 @@ public final class SubstitutePuppetItem extends Item {
 
     private static void write(ItemStack stack, CompoundTag tag) {
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+    }
+
+    /** Accept and atomically upgrade a pre-0.0.9 session-UUID owner. */
+    private static boolean migrateOwner(ServerPlayer player, ItemStack stack, CompoundTag tag) {
+        if (!tag.hasUUID(OWNER)) return false;
+        UUID stable = PersistentPlayerIdentity.migrate(player, tag.getUUID(OWNER));
+        if (stable == null) return false;
+        if (!stable.equals(tag.getUUID(OWNER))) {
+            tag.putUUID(OWNER, stable);
+            tag.putString(OWNER_NAME, player.getGameProfile().getName());
+            write(stack, tag);
+        }
+        return true;
     }
 }

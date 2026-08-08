@@ -17,6 +17,7 @@ import com.immortalstorage.immortalstorage.menu.custom.SourceFluxValue;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinMenu;
 import com.immortalstorage.immortalstorage.network.storage.SourceVeinStorageIndex;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -168,11 +169,12 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     public boolean canPlayerClaim(Player player) {
         int stage = ImmortalStoragePlayerData.get(player).getStage();
-        return canClaim(owner, player.getUUID(), stage, definition().minStage(), ImmortalStorageConfig.SOURCE_ALLOW_OTHER_PLAYER_CLAIM.get());
+        if (PersistentPlayerIdentity.matches(player, owner)) return stage >= definition().minStage();
+        return canClaim(owner, PersistentPlayerIdentity.id(player), stage, definition().minStage(), ImmortalStorageConfig.SOURCE_ALLOW_OTHER_PLAYER_CLAIM.get());
     }
 
     public ClaimResult claimFor(Player player) {
-        UUID actor = player.getUUID();
+        UUID actor = PersistentPlayerIdentity.id(player);
         boolean hadOwner = owner != null;
         if (!canPlayerClaim(player)) {
             int stage = ImmortalStoragePlayerData.get(player).getStage();
@@ -507,7 +509,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         if (requestedOwner == null || owner == null || !owner.equals(requestedOwner)
                 || isRemoved() || !(level instanceof ServerLevel serverLevel)) return false;
         if (!ImmortalStorageDimensions.isPersonalRealmFor(serverLevel.dimension(), owner)) return false;
-        var player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        var player = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (player == null) return false;
         int stage = ImmortalStoragePlayerData.get(player).getStage();
         return stage >= Math.max(6, definition().minStage());
@@ -634,7 +636,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
             return;
         }
 
-        var ownerPlayer = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        var ownerPlayer = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (ownerPlayer == null) return;
         long currencyCap;
         long spendableUnits;

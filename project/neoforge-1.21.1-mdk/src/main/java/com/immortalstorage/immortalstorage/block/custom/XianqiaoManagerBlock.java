@@ -39,7 +39,8 @@ public class XianqiaoManagerBlock extends BaseEntityBlock {
         Player player = context.getPlayer();
         if (player == null
                 || ImmortalStoragePlayerData.get(player).getStage() < 6
-                || !ImmortalStorageDimensions.isPersonalRealmFor(context.getLevel().dimension(), player.getUUID())) {
+                || !ImmortalStorageDimensions.isPersonalRealmFor(context.getLevel().dimension(),
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player))) {
             return null;
         }
         return super.getStateForPlacement(context);

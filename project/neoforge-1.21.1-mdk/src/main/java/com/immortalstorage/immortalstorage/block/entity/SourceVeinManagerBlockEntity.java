@@ -65,10 +65,10 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
     public boolean tryClaimOwner(@Nullable ServerPlayer player) {
         if (player == null || player.serverLevel() != level
                 || ImmortalStoragePlayerData.get(player).getStage() < 6
-                || !ImmortalStorageDimensions.isPersonalRealmFor(player.level().dimension(), player.getUUID())) return false;
-        boolean wasUnowned = ownerBinding.owner() == null;
-        boolean accepted = ownerBinding.claim(player.getUUID());
-        if (accepted && wasUnowned) membersChanged();
+                || !com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(player)) return false;
+        UUID before = ownerBinding.owner();
+        boolean accepted = ownerBinding.claim(player);
+        if (accepted && !java.util.Objects.equals(before, ownerBinding.owner())) membersChanged();
         return accepted;
     }
 
@@ -95,7 +95,7 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
         if (definition.free()) return Long.MAX_VALUE;
         long cached = memberCachedUnits(slot);
         if (!(level instanceof ServerLevel serverLevel) || getOwner() == null) return cached;
-        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(getOwner());
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), getOwner());
         if (player == null) return cached;
         SourceChargePlan plan = chargePlan(definition);
         long convertible = SourceVeinBuffer.affordableRefill(Long.MAX_VALUE, 0L,
@@ -135,7 +135,7 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
                 || !ImmortalStorageDimensions.isPersonalRealmFor(serverLevel.dimension(), owner)
                 || !members.isActiveMember(slot)) return false;
         SourceDefinition definition = memberDefinition(slot);
-        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         return definition != null && player != null
                 && ImmortalStoragePlayerData.get(player).getStage() >= Math.max(6, definition.minStage());
     }
@@ -234,7 +234,7 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
         return level == player.level() && level.getBlockEntity(worldPosition) == this
                 && player.distanceToSqr(worldPosition.getX() + 0.5D,
                 worldPosition.getY() + 0.5D, worldPosition.getZ() + 0.5D) <= 64.0D
-                && player.getUUID().equals(getOwner());
+                && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, getOwner());
     }
     @Override public void clearContent() {
         for (int slot = 0; slot < memberSlots(); slot++) members.setStackInSlot(slot, ItemStack.EMPTY);

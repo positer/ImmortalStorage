@@ -160,10 +160,11 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         net.minecraft.server.MinecraftServer server = player instanceof ServerPlayer serverPlayer
                 ? serverPlayer.server : null;
         this.itemStorage = new PersonalStorageLongItemStorage(data, this::invalidateItemSnapshot,
-                () -> data.getStage() >= 6, server, player.getUUID());
+                () -> data.getStage() >= 6, server,
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         this.fluidStorage = new PersonalStorageFluidHandler(data, this::invalidateFluidSnapshot,
                 () -> data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_FLUID_UNLOCK_STAGE,
-                server, player.getUUID());
+                server, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {

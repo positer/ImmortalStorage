@@ -142,7 +142,7 @@ public class SourceVeinMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player player) {
         return blockEntity != null
-                && blockEntity.isOwnedBy(player.getUUID())
+                && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, blockEntity.getOwner())
                 && blockEntity.getLevel() == player.level()
                 && blockEntity.getLevel().getBlockEntity(blockEntity.getBlockPos()) == blockEntity
                 && player.distanceToSqr(blockEntity.getBlockPos().getX() + 0.5D,

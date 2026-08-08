@@ -58,7 +58,7 @@ public class CommonEvents {
                         .defaultBlockState());
         if (event.getLevel().getBlockEntity(event.getPos()) instanceof
                 com.immortalstorage.immortalstorage.block.entity.SimulatedReincarnationFurnaceBlockEntity furnace) {
-            furnace.setOwner(player.getUUID());
+            furnace.setOwner(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         }
         if (!player.getAbilities().instabuild) {
             main.shrink(1);
@@ -96,6 +96,7 @@ public class CommonEvents {
     @SubscribeEvent
     public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer p) {
+            com.immortalstorage.immortalstorage.dimension.RealmHelper.realmId(p);
             com.immortalstorage.immortalstorage.dimension.RealmHelper.ensureRespawnRealmRegistered(p);
             grantStartingJade(p);
             TribulationHelper.reconcile(p);
@@ -154,7 +155,7 @@ public class CommonEvents {
         if (!(level.getBlockEntity(e.getPos()) instanceof SourceVeinBlockEntity source)) return;
         Player player = e.getPlayer();
         if (player instanceof ServerPlayer sp && sp.hasPermissions(2)) return;
-        if (!source.isUnowned() && !source.isOwnedBy(player.getUUID())) {
+        if (!source.isUnowned() && !com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, source.getOwner())) {
             e.setCanceled(true);
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the source block owner can break it."), true);
         }
@@ -205,11 +206,16 @@ public class CommonEvents {
     }
 
     private void markPersonalRealmModified(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+        // Chokepoint for the realm "player-modified chunks" set that drives
+        // forced chunk loading. Only entity-driven break/place events reach
+        // here; vanilla weather snow uses setBlock with a null entity and so
+        // can never be recorded as a player modification.
         if (!(level instanceof ServerLevel serverLevel)) return;
         java.util.Optional<java.util.UUID> ownerId =
                 com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions.personalRealmOwner(serverLevel.dimension());
         if (ownerId.isEmpty()) return;
-        ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(ownerId.get());
+        ServerPlayer owner = com.immortalstorage.immortalstorage.dimension.RealmHelper
+                .onlinePlayerForRealm(serverLevel.getServer(), ownerId.get());
         if (owner != null) {
             com.immortalstorage.immortalstorage.dimension.RealmHelper.markModifiedChunk(owner, pos);
         }
@@ -246,7 +252,7 @@ public class CommonEvents {
     private static void tickPersonalStorageMagnet(ServerPlayer player, ImmortalStoragePlayerData data) {
         if (data.getStage() < 4 || !data.isMagnetEnabled()) return;
         var endpoint = com.immortalstorage.immortalstorage.api.storage.PersonalStorageApi.resolve(
-                player.server, player.getUUID());
+                player.server, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         if (endpoint == null) return;
         for (ItemEntity entity : player.serverLevel().getEntitiesOfClass(ItemEntity.class,
                 new net.minecraft.world.phys.AABB(player.blockPosition()).inflate(6.0D), ItemEntity::isAlive)) {
@@ -346,21 +352,21 @@ public class CommonEvents {
     private static SubstitutePuppetLocation findOwnedSubstitutePuppet(ServerPlayer player, ImmortalStoragePlayerData data) {
         for (ItemStack stack : player.getInventory().items) {
             if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
-                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+                    .isOwnedBy(stack, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player)) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
         }
         for (ItemStack stack : player.getInventory().offhand) {
             if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
-                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+                    .isOwnedBy(stack, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player)) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
         }
         for (ItemStack stack : data.getKongqiaoItems()) {
             if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
-                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
+                    .isOwnedBy(stack, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player)) && stack.getDamageValue() < 16) return new SubstitutePuppetLocation(stack, () -> {});
         }
         java.util.List<ItemStack> xianqiao = data.getXianqiaoStorageItems();
         for (int slot = 0; slot < xianqiao.size(); slot++) {
             ItemStack stack = xianqiao.get(slot);
             if (com.immortalstorage.immortalstorage.item.custom.SubstitutePuppetItem
-                    .isOwnedBy(stack, player.getUUID()) && stack.getDamageValue() < 16) {
+                    .isOwnedBy(stack, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player)) && stack.getDamageValue() < 16) {
                 int storageSlot = slot;
                 return new SubstitutePuppetLocation(stack, () -> data.setXianqiaoSlot(storageSlot, stack));
             }
@@ -418,15 +424,14 @@ public class CommonEvents {
             applyStageEffects(p, d);
         }
         // Personal realm: keep the owner's active chunks force-loaded.
-        if (com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions.isPersonalRealmFor(p.level().dimension(), p.getUUID())) {
+        if (com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(p)) {
             com.immortalstorage.immortalstorage.dimension.RealmHelper.enforcePlayerBoundary(p);
             com.immortalstorage.immortalstorage.dimension.RealmHelper.ensureChunksForced(p);
         }
     }
 
     private void tickTribulation(ServerPlayer p, ImmortalStoragePlayerData d) {
-        if (!com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
-                .isPersonalRealmFor(p.level().dimension(), p.getUUID())) {
+        if (!com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(p)) {
             TribulationHelper.fail(p);
             p.displayClientMessage(net.minecraft.network.chat.Component.literal(
                     "Tribulation failed after leaving the personal realm."), true);

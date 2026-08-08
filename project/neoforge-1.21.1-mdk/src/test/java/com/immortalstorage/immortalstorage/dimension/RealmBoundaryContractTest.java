@@ -27,7 +27,7 @@ final class RealmBoundaryContractTest {
         assertTrue(helper.contains("message.immortalstorage.realm_boundary_reached"));
         assertTrue(helper.contains("BOUNDARY_NOTICE_COOLDOWN_TICKS"));
         assertTrue(events.contains("RealmHelper.enforcePlayerBoundary(p)"));
-        assertTrue(events.contains("isPersonalRealmFor(p.level().dimension(), p.getUUID())"));
+        assertTrue(events.contains("RealmHelper.isInOwnRealm(p)"));
         assertTrue(!generator.contains("Blocks.BARRIER"));
     }
 

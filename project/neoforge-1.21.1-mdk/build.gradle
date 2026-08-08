@@ -119,6 +119,7 @@ sourceSets.test {
 
 configurations {
     arsNouveauProbe
+    rsAddonProbe
 }
 
 dependencies {
@@ -158,6 +159,12 @@ dependencies {
     testRuntimeOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
         transitive = false
     }
+    rsAddonProbe('maven.modrinth:refined-types:1.21.1-0.3.2') {
+        transitive = false
+    }
+    rsAddonProbe('maven.modrinth:refined-storage-mekanism-integration:1.1.1') {
+        transitive = false
+    }
     testRuntimeOnly('mekanism:Mekanism:1.21.1-10.7.19.85:api') {
         transitive = false
     }
@@ -176,6 +183,7 @@ dependencies {
 
 tasks.named('test', Test).configure {
     useJUnitPlatform()
+    systemProperty 'immortalstorage.rsAddonProbe', configurations.rsAddonProbe.asPath
 }
 
 // Prove the production-facing shared resource API can be loaded when AE2 is

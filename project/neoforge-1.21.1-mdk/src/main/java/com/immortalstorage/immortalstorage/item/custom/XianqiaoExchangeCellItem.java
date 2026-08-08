@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.item.custom;
 
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -128,7 +129,7 @@ public final class XianqiaoExchangeCellItem extends Item {
         super.onCraftedBy(stack, level, player);
         if (level.isClientSide) return;
         if (ImmortalStoragePlayerData.get(player).getStage() >= 6) {
-            bindUnbound(stack, player.getUUID(), UUID.randomUUID(), playerName(player));
+            bindUnbound(stack, PersistentPlayerIdentity.id(player), UUID.randomUUID(), playerName(player));
         }
     }
 
@@ -142,13 +143,15 @@ public final class XianqiaoExchangeCellItem extends Item {
                     "message.immortalstorage.xianqiao_exchange_cell.requires_xianqiao"), true);
             return InteractionResultHolder.fail(stack);
         }
-        bindUnbound(stack, player.getUUID(), UUID.randomUUID(), playerName(player));
-        if (!isBoundToOwner(stack, player.getUUID())) {
+        UUID stableOwner = PersistentPlayerIdentity.id(player);
+        migrateLegacyOwner(stack, player, stableOwner);
+        bindUnbound(stack, stableOwner, UUID.randomUUID(), playerName(player));
+        if (!isBoundToOwner(stack, stableOwner)) {
             player.displayClientMessage(Component.translatable(
                     "message.immortalstorage.xianqiao_exchange_cell.wrong_owner"), true);
             return InteractionResultHolder.fail(stack);
         }
-        refreshOwnerName(stack, player.getUUID(), playerName(player));
+        refreshOwnerName(stack, stableOwner, playerName(player));
         player.displayClientMessage(Component.translatable(
                 "message.immortalstorage.xianqiao_exchange_cell.bound"), true);
         return InteractionResultHolder.consume(stack);
@@ -193,5 +196,16 @@ public final class XianqiaoExchangeCellItem extends Item {
 
     private static String playerName(Player player) {
         return player.getGameProfile().getName();
+    }
+
+    private static void migrateLegacyOwner(ItemStack stack, Player player, UUID stableOwner) {
+        CompoundTag tag = customTag(stack);
+        if (!tag.hasUUID(OWNER_TAG) || !tag.hasUUID(DISK_TAG)) return;
+        UUID stored = tag.getUUID(OWNER_TAG);
+        if (!stored.equals(stableOwner) && stored.equals(player.getUUID())) {
+            tag.putUUID(OWNER_TAG, stableOwner);
+            putOwnerName(tag, playerName(player));
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        }
     }
 }

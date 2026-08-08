@@ -51,7 +51,7 @@ final class XianqiaoAccessBoundaryTest {
         assertTrue(currentEndpoint.contains("PersonalStorageNetwork.resolveInOwnerRealm("));
         assertTrue(occurrences(manager, "PersonalStorageNetwork.resolveInOwnerRealm(") == 1,
                 "item and fluid lookups must share the one continuously realm-bound resolver path");
-        assertTrue(currentEndpoint.contains("getPlayer(owner)"));
+        assertTrue(currentEndpoint.contains("PersistentPlayerIdentity.onlinePlayer"));
         assertTrue(currentEndpoint.contains("cachedEndpoint.data() == data"));
         assertTrue(currentEndpoint.contains("cachedEndpoint.itemHandler().getSlots() > 0"),
                 "a cached endpoint must re-run its live stage/owner access predicate");

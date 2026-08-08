@@ -14,6 +14,10 @@ public final class RsCompat {
 
     public static synchronized void initialize() {
         if (initialized) return;
+        RsExternalResourceKeyBridges.register(ImmortalStorageRsExternalResourceKeyBridge.INSTANCE);
+        InstalledAddonRsExternalResourceKeyBridges.registerPresent();
+        RefinedStorageApi.INSTANCE.addGridResourceRepositoryMapper(
+                RsExternalResource.class, RsExternalGridResourceMapper.INSTANCE);
         var registry = RefinedStorageApi.INSTANCE.getStorageTypeRegistry();
         if (registry.get(STORAGE_TYPE_ID).isEmpty()) {
             registry.register(STORAGE_TYPE_ID, RsXianqiaoStorageType.INSTANCE);
@@ -24,7 +28,8 @@ public final class RsCompat {
         }
         initialized = true;
         ImmortalStorageMod.LOG.info(
-                "[Compat/RS] Registered RS 2.0.9 Xianqiao storage and external-resource types");
+                "[Compat/RS] Registered RS 2.0.9 Xianqiao storage and {} external-resource key bridges",
+                RsExternalResourceKeyBridges.registered().size());
     }
 
     private RsCompat() {

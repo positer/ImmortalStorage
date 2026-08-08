@@ -166,7 +166,7 @@ public class SpiritStaffItem extends Item {
         ItemStack held = enabledExploreInstrument(player);
         if (held.isEmpty() || !isLootPageMenu(menu, player)) return;
         PersonalStorageEndpoint endpoint = PersonalStorageApi.resolve(
-                player.server, player.getUUID());
+                player.server, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         if (endpoint == null) {
             player.displayClientMessage(Component.translatable(
                     "message.immortalstorage.spirit_staff.storage_unavailable"), true);
@@ -372,16 +372,16 @@ public class SpiritStaffItem extends Item {
     private static boolean ownsDismantleTarget(BlockEntity blockEntity, Player player) {
         if (player.hasPermissions(2)) return true;
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity source) {
-            return source.isOwnedBy(player.getUUID());
+            return com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, source.getOwner());
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.SourceVeinManagerBlockEntity manager) {
-            return player.getUUID().equals(manager.getOwner());
+            return com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, manager.getOwner());
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoInterfaceBlockEntity xianqiaoInterface) {
-            return player.getUUID().equals(xianqiaoInterface.getOwner());
+            return com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, xianqiaoInterface.getOwner());
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity manager) {
-            return player.getUUID().equals(manager.getOwner());
+            return com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, manager.getOwner());
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.StabilizedMiniatureImmortalRuinBlockEntity) {
             return true;

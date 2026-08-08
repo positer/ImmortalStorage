@@ -2,6 +2,7 @@ package com.immortalstorage.immortalstorage.event;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import com.immortalstorage.immortalstorage.progression.TribulationPolicy;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -69,7 +70,7 @@ public final class TribulationHelper {
 
         UUID ownerId = tag.getUUID(NBT_TRIB_OWNER);
         UUID attemptId = tag.getUUID(NBT_TRIB_ATTEMPT);
-        ServerPlayer owner = level.getServer().getPlayerList().getPlayer(ownerId);
+        ServerPlayer owner = PersistentPlayerIdentity.onlinePlayer(level.getServer(), ownerId);
         if (owner == null) return true;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(owner);
         if (data.completeTribulation(attemptId, dead.getUUID(), owner)) {
@@ -83,7 +84,7 @@ public final class TribulationHelper {
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         if (!data.isTribulationActive()) return 0L;
         UUID attemptId = data.getTribulationAttemptId();
-        removeAttemptTargets(player.server, player.getUUID(), attemptId);
+        removeAttemptTargets(player.server, PersistentPlayerIdentity.id(player), attemptId);
         return data.failTribulation();
     }
 
@@ -98,7 +99,7 @@ public final class TribulationHelper {
         }
         Entity target = player.serverLevel().getEntity(targetId);
         if (!(target instanceof Mob mob)
-                || !isBoundTarget(mob, player.getUUID(), attemptId)) {
+                || !isBoundTarget(mob, PersistentPlayerIdentity.id(player), attemptId)) {
             if (data.noteTribulationTargetMissing(TARGET_LOAD_GRACE_TICKS)) fail(player);
             return;
         }
@@ -109,7 +110,7 @@ public final class TribulationHelper {
     private static void configureTarget(Mob target, ServerPlayer player, UUID attemptId, int startStage) {
         var persistentData = target.getPersistentData();
         boolean firstProfile = !persistentData.contains(NBT_TRIB_BASE_HEALTH);
-        persistentData.putUUID(NBT_TRIB_OWNER, player.getUUID());
+        persistentData.putUUID(NBT_TRIB_OWNER, PersistentPlayerIdentity.id(player));
         persistentData.putUUID(NBT_TRIB_ATTEMPT, attemptId);
         target.setPersistenceRequired();
         target.setGlowingTag(true);

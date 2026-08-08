@@ -3,26 +3,29 @@ package com.immortalstorage.immortalstorage.client.render;
 import com.immortalstorage.immortalstorage.block.entity.SourceVeinManagerBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Renders the manager's fixed six-cell occupancy indicator in its bookshelf
- * bays.  The inventory item deliberately renders only the body.
+ * Renders the manager's eight-segment source core as one rigid body that
+ * slowly spins around the block centre [8,8,8].  Each 3x3x3 segment samples
+ * the solid empty/used/full textures selected by the eight-state ladder.  The
+ * static block model carries only the black edge cage; the same core geometry
+ * is shared with the inventory/hand BEWLR through {@link #drawCore}.
  */
 public final class SourceVeinManagerRenderer implements BlockEntityRenderer<SourceVeinManagerBlockEntity> {
-    private static final ResourceLocation WHITE_TEXTURE =
-            ResourceLocation.withDefaultNamespace("textures/misc/white.png");
-    private static final RenderType INDICATORS = RenderType.entityTranslucentEmissive(WHITE_TEXTURE);
+    static final float DEGREES_PER_TICK = 4.0F;
+    private static final RenderType TYPE_EMPTY = materialType("source_vein_manager_core_empty");
+    private static final RenderType TYPE_USED = materialType("source_vein_manager_core_used");
+    private static final RenderType TYPE_FULL = materialType("source_vein_manager_core_full");
 
     public SourceVeinManagerRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -34,33 +37,39 @@ public final class SourceVeinManagerRenderer implements BlockEntityRenderer<Sour
                        MultiBufferSource buffers,
                        int packedLight,
                        int packedOverlay) {
-        if (manager.getLevel() != null) {
-            BlockPos coveredPos = manager.getBlockPos().relative(Direction.NORTH);
-            if (manager.getLevel().getBlockState(coveredPos)
-                    .isSolidRender(manager.getLevel(), coveredPos)) return;
-        }
+        float worldTime = manager.getLevel() == null
+                ? partialTick
+                : manager.getLevel().getGameTime() + partialTick;
 
-        VertexConsumer vertices = buffers.getBuffer(INDICATORS);
-        PoseStack.Pose pose = poseStack.last();
-        int state = manager.displayState();
-        for (int index = 0; index < SourceVeinManagerIndicatorLayout.INDICATORS; index++) {
-            float half = SourceVeinManagerIndicatorLayout.INDICATOR_SIZE * 0.5F;
-            float centerX = SourceVeinManagerIndicatorLayout.centerX(index);
-            float centerY = SourceVeinManagerIndicatorLayout.centerY(index);
-            indicator(vertices, pose, centerX - half, centerY - half,
-                    centerX + half, centerY + half,
-                    SourceVeinManagerIndicatorLayout.colorFor(state, index));
+        drawCore(poseStack, buffers, manager.displayState(), worldTime * DEGREES_PER_TICK);
+    }
+
+    /**
+     * Draws the eight-segment core as one rigid body spinning around the block
+     * centre.  Shared by the world renderer and the inventory/hand BEWLR so
+     * both views stay pixel-identical.
+     */
+    static void drawCore(PoseStack poseStack, MultiBufferSource buffers,
+                         int state, float rotationDegrees) {
+        poseStack.pushPose();
+        poseStack.translate(0.5F, 0.5F, 0.5F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(rotationDegrees));
+        poseStack.translate(-0.5F, -0.5F, -0.5F);
+
+        for (int segment = 0; segment < SourceVeinCoreLayout.SEGMENTS; segment++) {
+            RenderType type = renderTypeFor(SourceVeinCoreLayout.materialFor(state, segment));
+            PoseStack.Pose pose = poseStack.last();
+            cube(buffers.getBuffer(type), pose,
+                    SourceVeinCoreLayout.centerX(segment),
+                    SourceVeinCoreLayout.centerY(segment),
+                    SourceVeinCoreLayout.centerZ(segment));
         }
+        poseStack.popPose();
     }
 
     @Override
     public boolean shouldRender(SourceVeinManagerBlockEntity manager, Vec3 cameraPosition) {
-        BlockPos pos = manager.getBlockPos();
-        // The six bays exist only on the north face.  Default BER frustum
-        // culling still applies; this additional face test avoids submitting
-        // indicator geometry while the face itself cannot be seen.
-        return cameraPosition.z < pos.getZ() + 0.5D
-                && Vec3.atCenterOf(pos).closerThan(cameraPosition, getViewDistance());
+        return Vec3.atCenterOf(manager.getBlockPos()).closerThan(cameraPosition, getViewDistance());
     }
 
     @Override
@@ -68,21 +77,87 @@ public final class SourceVeinManagerRenderer implements BlockEntityRenderer<Sour
         return new AABB(manager.getBlockPos()).inflate(0.01D);
     }
 
-    private static void indicator(VertexConsumer vertices, PoseStack.Pose pose,
-                                  float minX, float minY, float maxX, float maxY, int rgb) {
-        vertex(vertices, pose, maxX, minY, 0.0F, 0.0F, 1.0F, rgb);
-        vertex(vertices, pose, minX, minY, 0.0F, 1.0F, 1.0F, rgb);
-        vertex(vertices, pose, minX, maxY, 0.0F, 1.0F, 0.0F, rgb);
-        vertex(vertices, pose, maxX, maxY, 0.0F, 0.0F, 0.0F, rgb);
+    private static RenderType renderTypeFor(SourceVeinCoreLayout.Material material) {
+        return switch (material) {
+            case EMPTY -> TYPE_EMPTY;
+            case USED -> TYPE_USED;
+            case FULL -> TYPE_FULL;
+        };
     }
 
-    private static void vertex(VertexConsumer vertices, PoseStack.Pose pose,
-                               float x, float y, float z, float u, float v, int rgb) {
-        vertices.addVertex(pose, x, y, z - 0.002F)
-                .setColor(rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF, 255)
+    private static RenderType materialType(String texture) {
+        return RenderType.entityTranslucentEmissive(ResourceLocation
+                .fromNamespaceAndPath("immortalstorage", "textures/block/" + texture + ".png"));
+    }
+
+    private static void cube(VertexConsumer vertices, PoseStack.Pose pose,
+                             float cx, float cy, float cz) {
+        float h = SourceVeinCoreLayout.HALF_SIZE;
+        face(vertices, pose,
+                cx - h, cy - h, cz - h,
+                cx + h, cy - h, cz - h,
+                cx + h, cy - h, cz + h,
+                cx - h, cy - h, cz + h,
+                0.0F, -1.0F, 0.0F, 12.0F, 6.0F, 16.0F, 12.0F, 0.82F);
+        face(vertices, pose,
+                cx - h, cy + h, cz + h,
+                cx + h, cy + h, cz + h,
+                cx + h, cy + h, cz - h,
+                cx - h, cy + h, cz - h,
+                0.0F, 1.0F, 0.0F, 12.0F, 0.0F, 16.0F, 6.0F, 1.0F);
+        face(vertices, pose,
+                cx + h, cy - h, cz - h,
+                cx - h, cy - h, cz - h,
+                cx - h, cy + h, cz - h,
+                cx + h, cy + h, cz - h,
+                0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 6.0F, 6.0F, 0.86F);
+        face(vertices, pose,
+                cx - h, cy - h, cz + h,
+                cx + h, cy - h, cz + h,
+                cx + h, cy + h, cz + h,
+                cx - h, cy + h, cz + h,
+                0.0F, 0.0F, 1.0F, 0.0F, 6.0F, 6.0F, 12.0F, 0.94F);
+        face(vertices, pose,
+                cx - h, cy - h, cz - h,
+                cx - h, cy - h, cz + h,
+                cx - h, cy + h, cz + h,
+                cx - h, cy + h, cz - h,
+                -1.0F, 0.0F, 0.0F, 6.0F, 6.0F, 12.0F, 12.0F, 0.84F);
+        face(vertices, pose,
+                cx + h, cy - h, cz + h,
+                cx + h, cy - h, cz - h,
+                cx + h, cy + h, cz - h,
+                cx + h, cy + h, cz + h,
+                1.0F, 0.0F, 0.0F, 6.0F, 0.0F, 12.0F, 6.0F, 0.96F);
+    }
+
+    private static void face(VertexConsumer vertices,
+                             PoseStack.Pose pose,
+                             float x0, float y0, float z0,
+                             float x1, float y1, float z1,
+                             float x2, float y2, float z2,
+                             float x3, float y3, float z3,
+                             float normalX, float normalY, float normalZ,
+                             float u1, float v1, float u2, float v2,
+                             float shade) {
+        int light = Math.round(shade * 255.0F);
+        vertex(vertices, pose, x0, y0, z0, u1, v2, normalX, normalY, normalZ, light);
+        vertex(vertices, pose, x1, y1, z1, u2, v2, normalX, normalY, normalZ, light);
+        vertex(vertices, pose, x2, y2, z2, u2, v1, normalX, normalY, normalZ, light);
+        vertex(vertices, pose, x3, y3, z3, u1, v1, normalX, normalY, normalZ, light);
+    }
+
+    private static void vertex(VertexConsumer vertices,
+                               PoseStack.Pose pose,
+                               float x, float y, float z,
+                               float u, float v,
+                               float normalX, float normalY, float normalZ,
+                               int light) {
+        vertices.addVertex(pose, x, y, z)
+                .setColor(light, light, light, 255)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(pose, 0.0F, 0.0F, -1.0F);
+                .setNormal(pose, normalX, normalY, normalZ);
     }
 }

@@ -105,7 +105,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
         // A nested invocation would multiply the pass budget recursively. The
         // normal server loop is the sole permitted entry into this scheduler.
         if (this.tickingRealm) return;
-        var owner = getServer().getPlayerList().getPlayer(this.ownerId);
+        var owner = RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId);
         if (owner == null || owner.level() != this) {
             this.tickBudget.restore();
         }
@@ -130,9 +130,8 @@ final class PersonalRealmServerLevel extends ServerLevel {
     private void applyEnvironmentLock() {
         setDayTime(RealmEnvironmentPolicy.lockedDayTime(realmLevelData.lockedDaytime()));
         int weather = realmLevelData.lockedWeatherMode();
-        boolean raining = weather == RealmEnvironmentPolicy.RAIN
-                || weather == RealmEnvironmentPolicy.THUNDER;
-        boolean thundering = weather == RealmEnvironmentPolicy.THUNDER;
+        boolean raining = RealmEnvironmentPolicy.requiresRain(weather);
+        boolean thundering = RealmEnvironmentPolicy.requiresThunder(weather);
         if (realmLevelData.isRaining() != raining) realmLevelData.setRaining(raining);
         if (realmLevelData.isThundering() != thundering) realmLevelData.setThundering(thundering);
         if (raining) {

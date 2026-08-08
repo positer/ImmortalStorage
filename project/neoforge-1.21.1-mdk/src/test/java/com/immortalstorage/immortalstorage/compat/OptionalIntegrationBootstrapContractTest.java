@@ -37,7 +37,7 @@ final class OptionalIntegrationBootstrapContractTest {
         String endpoint = Files.readString(JAVA.resolve(Path.of(
                 "com", "immortalstorage", "immortalstorage", "block", "entity",
                 "XianqiaoInterfaceBlockEntity.java")));
-        assertTrue(endpoint.contains("getPlayerList().getPlayer(owner)"));
+        assertTrue(endpoint.contains("PersistentPlayerIdentity.onlinePlayer"));
         assertTrue(endpoint.contains("getStage() < 8"));
     }
 

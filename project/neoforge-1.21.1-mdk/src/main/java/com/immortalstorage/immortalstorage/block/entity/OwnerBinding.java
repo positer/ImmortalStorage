@@ -1,6 +1,8 @@
 package com.immortalstorage.immortalstorage.block.entity;
 
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -18,6 +20,18 @@ final class OwnerBinding {
         if (candidate == null) return false;
         if (owner == null) owner = candidate;
         return owner.equals(candidate);
+    }
+
+    /** Claims with the stable id and upgrades this player's legacy session id. */
+    public boolean claim(Player player) {
+        if (player == null) return false;
+        UUID stable = PersistentPlayerIdentity.id(player);
+        if (owner == null || owner.equals(player.getUUID())) owner = stable;
+        return owner.equals(stable);
+    }
+
+    public boolean isOwner(Player player) {
+        return player != null && PersistentPlayerIdentity.matches(player, owner);
     }
 
     public boolean isOwner(@Nullable UUID candidate) {

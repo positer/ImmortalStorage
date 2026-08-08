@@ -11,6 +11,7 @@ import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalItemStor
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalStorageAction;
 import com.immortalstorage.immortalstorage.menu.custom.XianqiaoInterfaceMenu;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import com.immortalstorage.immortalstorage.compat.XianqiaoInterfaceCompatHooks;
 import com.immortalstorage.immortalstorage.config.ImmortalStorageConfig;
 import com.immortalstorage.core.resource.AtomicEnergyRefill;
@@ -141,7 +142,15 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
     /** First placement binds once; neither opening nor capability lookup calls this method. */
     public boolean tryBindOwner(Player placer) {
         if (placer == null) return false;
-        return tryBindOwner(placer.getUUID(), ImmortalStoragePlayerData.get(placer).getStage());
+        if (ImmortalStoragePlayerData.get(placer).getStage() < 6) return false;
+        UUID before = ownerBinding.owner();
+        boolean accepted = ownerBinding.claim(placer);
+        if (accepted && !java.util.Objects.equals(before, ownerBinding.owner())) {
+            clearEndpointCache();
+            setChanged();
+            if (level != null && !level.isClientSide) level.invalidateCapabilities(worldPosition);
+        }
+        return accepted;
     }
 
     boolean tryBindOwner(@Nullable UUID candidate, int stage) {
@@ -158,7 +167,7 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
 
     public boolean canUse(Player player) {
         if (player == null) return false;
-        return canUse(player.getUUID(), ImmortalStoragePlayerData.get(player).getStage(), ownerBinding.owner());
+        return ImmortalStoragePlayerData.get(player).getStage() >= 6 && ownerBinding.isOwner(player);
     }
 
     static boolean canUse(@Nullable UUID actor, int stage, @Nullable UUID owner) {
@@ -203,7 +212,7 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
         if (!(level instanceof ServerLevel serverLevel) || channel == null) return null;
         UUID owner = ownerBinding.owner();
         if (owner == null) return null;
-        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (player == null || ImmortalStoragePlayerData.get(player).getStage() < 8) return null;
         return ImmortalStoragePlayerData.get(player).externalResourceStore(channel);
     }
@@ -292,7 +301,7 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
         if (!(level instanceof ServerLevel serverLevel)) return null;
         UUID owner = ownerBinding.owner();
         if (owner == null) return null;
-        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (player == null) return null;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         return data.getStage() >= 8 ? data : null;

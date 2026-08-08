@@ -1,8 +1,10 @@
 {
   "name":"查看器与存储网络","icon":"immortalstorage:xianqiao_exchange_cell","category":"immortalstorage:compat","sortnum":0,
   "pages":[
-    {"type":"patchouli:text","text":"安装JEI或EMI后，终端支持R/U、材料识别、搜索同步、缺料提示和配方转移；仙炉拥有独立配方分类。未安装查看器时，本古玉手册仍提供完整流程和真实配方页。"},
-    {"type":"patchouli:text","text":"AE2/RS交流磁盘绑定玩家UUID并显示最新用户名。同一网络只挂载一张指向同一玩家的磁盘。仙藏内置共享资源Key，无需额外AEKey中介模组。"},
-    {"type":"patchouli:text","text":"仙元资源转化可在模组配置页和immortalstorage-common.toml调整。只有安装对应模组时才显示FE、Botania Mana或Ars Source分组；每类均可独立关闭、调整比例与每刻上限。"}
+    {"type":"patchouli:text","text":"安装JEI或EMI后，终端支持R/U、材料识别、搜索同步、缺料提示和配方转移；仙炉与模拟轮回炼化拥有独立配方分类。未安装查看器时，本古玉手册仍提供完整流程和真实配方页。"},
+    {"type":"patchouli:text","text":"AE2/RS交流磁盘绑定仙藏持久玩家身份并显示最新用户名，同一网络只挂载一张指向同一玩家的磁盘。0.0.8及更早的合法会话UUID绑定首次交互时原地迁移，磁盘独立ID、内容与组件全部保留。"},
+    {"type":"patchouli:text","text":"AE2终端直接注册仙藏额外资源渲染器；缺少附属渲染时，FE、Mana、Source与Souls使用仙藏自带材质，化学品使用与仙藏终端一致的注册表纯色取样，不会因缺少处理器崩溃。"},
+    {"type":"patchouli:text","text":"仅安装RS 2.0.9时也会显示仙藏额外资源。安装Refined Types或RS Mekanism Integration后优先采用其原生键；仙藏回退键保持可读写以兼容安装/移除附属。ExtraStorage等容量附属通过RS标准StorageContainerItem契约共存。"},
+    {"type":"patchouli:text","text":"仙元资源转化可在模组配置页和immortalstorage-common.toml调整。只有对应模组可用时才显示FE、Botania Mana、Ars Source、工业先锋Souls或Mekanism化学品；每类均可独立关闭、调整比例与每刻上限。"}
   ]
 }

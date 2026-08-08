@@ -20,6 +20,7 @@ import com.refinedmods.refinedstorage.common.api.storage.StorageType;
 import com.refinedmods.refinedstorage.common.support.resource.FluidResource;
 import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import com.immortalstorage.core.resource.ResourceTransferAction;
+import com.immortalstorage.core.resource.ResourceChannelKey;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -89,7 +90,8 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
             access.externalResources().snapshot().forEach(entry -> {
                 long amount = RsAmountPolicy.advertised(entry.amount());
                 if (entry.key() != null && amount > 0L) {
-                    result.add(new ResourceAmount(new RsExternalResource(entry.key()), amount));
+                    ResourceKey resource = RsExternalResourceKeyBridges.toRsKey(entry.key());
+                    if (resource != null) result.add(new ResourceAmount(resource, amount));
                 }
             });
         }
@@ -124,10 +126,11 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                     fluid.components());
             inserted = access.fluids().insert(
                     TerminalFluidKey.of(stack), amount, terminalAction);
-        } else if (resource instanceof RsExternalResource external
-                && access.externalResources() != null) {
+        } else if (access.externalResources() != null) {
+            ResourceChannelKey external = RsExternalResourceKeyBridges.toResourceKey(resource);
+            if (external == null) return 0L;
             inserted = access.externalResources().insert(
-                    external.resource(), amount, resourceAction(action));
+                    external, amount, resourceAction(action));
         } else {
             return 0L;
         }
@@ -152,10 +155,11 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                     fluid.components());
             extracted = access.fluids().extract(
                     TerminalFluidKey.of(stack), amount, terminalAction);
-        } else if (resource instanceof RsExternalResource external
-                && access.externalResources() != null) {
+        } else if (access.externalResources() != null) {
+            ResourceChannelKey external = RsExternalResourceKeyBridges.toResourceKey(resource);
+            if (external == null) return 0L;
             extracted = access.externalResources().extract(
-                    external.resource(), amount, resourceAction(action));
+                    external, amount, resourceAction(action));
         } else {
             return 0L;
         }

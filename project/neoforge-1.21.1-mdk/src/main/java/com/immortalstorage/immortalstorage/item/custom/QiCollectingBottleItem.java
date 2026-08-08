@@ -35,7 +35,8 @@ public final class QiCollectingBottleItem extends Item {
             ItemStack result = new ItemStack(ModItems.PRIMORDIAL_QI.get());
             serverPlayer.getInventory().add(result);
             if (!result.isEmpty()) {
-                PersonalStorageEndpoint endpoint = PersonalStorageApi.resolve(serverPlayer.server, serverPlayer.getUUID());
+                PersonalStorageEndpoint endpoint = PersonalStorageApi.resolve(serverPlayer.server,
+                        com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(serverPlayer));
                 if (endpoint != null) result = endpoint.insert(result, false);
             }
             boolean delivered = result.isEmpty();

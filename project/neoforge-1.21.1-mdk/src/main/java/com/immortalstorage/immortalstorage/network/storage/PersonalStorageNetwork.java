@@ -6,6 +6,8 @@ import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalFluidSto
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalItemStorage;
 import com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
+import com.immortalstorage.immortalstorage.dimension.RealmHelper;
 import com.immortalstorage.core.resource.ResourceChannelEntry;
 import com.immortalstorage.core.resource.ResourceChannelKey;
 import com.immortalstorage.core.resource.ResourceTransferAction;
@@ -36,7 +38,7 @@ public final class PersonalStorageNetwork {
 
     public static @Nullable Endpoint resolve(MinecraftServer server, @Nullable UUID owner, @Nullable Runnable onChanged) {
         if (server == null || owner == null) return null;
-        ServerPlayer player = server.getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(server, owner);
         // Player attachments are the persistent source of truth. Creating an
         // unrelated transient UUID entry while the owner is offline would fork
         // storage and resource state, so offline endpoints are deliberately absent.
@@ -45,7 +47,7 @@ public final class PersonalStorageNetwork {
         HolderLookup.Provider registryAccess = player.registryAccess();
         if (data.getStage() < 1) return null;
         BooleanSupplier accessAllowed = () -> {
-            ServerPlayer currentPlayer = server.getPlayerList().getPlayer(owner);
+            ServerPlayer currentPlayer = PersistentPlayerIdentity.onlinePlayer(server, owner);
             return currentPlayer != null
                     && ImmortalStoragePlayerData.get(currentPlayer) == data
                     && data.getStage() >= 1;
@@ -70,12 +72,12 @@ public final class PersonalStorageNetwork {
     public static @Nullable Endpoint resolveXianqiao(
             MinecraftServer server, @Nullable UUID owner, @Nullable Runnable onChanged) {
         if (server == null || owner == null) return null;
-        ServerPlayer player = server.getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(server, owner);
         if (player == null) return null;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         if (data.getStage() < 6) return null;
         BooleanSupplier accessAllowed = () -> {
-            ServerPlayer currentPlayer = server.getPlayerList().getPlayer(owner);
+            ServerPlayer currentPlayer = PersistentPlayerIdentity.onlinePlayer(server, owner);
             return currentPlayer != null
                     && ImmortalStoragePlayerData.get(currentPlayer) == data
                     && data.getStage() >= 6;
@@ -95,12 +97,12 @@ public final class PersonalStorageNetwork {
         if (realm == null || realm.isClientSide || owner == null || realm.getServer() == null) return null;
         if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), owner)) return null;
         MinecraftServer boundServer = realm.getServer();
-        ServerPlayer player = boundServer.getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(boundServer, owner);
         if (player == null) return null;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         if (data.getStage() < 6) return null;
         BooleanSupplier accessAllowed = () -> {
-            ServerPlayer currentPlayer = boundServer.getPlayerList().getPlayer(owner);
+            ServerPlayer currentPlayer = PersistentPlayerIdentity.onlinePlayer(boundServer, owner);
             return currentPlayer != null
                     && ImmortalStoragePlayerData.get(currentPlayer) == data
                     && data.getStage() >= 6
@@ -116,12 +118,12 @@ public final class PersonalStorageNetwork {
             MinecraftServer server, @Nullable UUID owner, @Nullable Runnable onChanged,
             BooleanSupplier additionalAccessCheck) {
         if (server == null || owner == null) return null;
-        ServerPlayer player = server.getPlayerList().getPlayer(owner);
+        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(server, owner);
         if (player == null) return null;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         if (data.getStage() < ImmortalStoragePlayerData.XIANQIAO_FLUID_UNLOCK_STAGE) return null;
         BooleanSupplier accessAllowed = () -> {
-            ServerPlayer currentPlayer = server.getPlayerList().getPlayer(owner);
+            ServerPlayer currentPlayer = PersistentPlayerIdentity.onlinePlayer(server, owner);
             return currentPlayer != null
                     && ImmortalStoragePlayerData.get(currentPlayer) == data
                     && data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_FLUID_UNLOCK_STAGE

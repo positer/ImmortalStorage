@@ -40,8 +40,10 @@ public final class SourceVeinManagerBlock extends BaseEntityBlock {
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
         Player player = context.getPlayer();
         return player != null && ImmortalStoragePlayerData.get(player).getStage() >= 6
-                && ImmortalStorageDimensions.isPersonalRealmFor(context.getLevel().dimension(), player.getUUID())
-                && SourceVeinManagerBlockEntity.canPlaceStackFor(context.getItemInHand(), player.getUUID())
+                && ImmortalStorageDimensions.isPersonalRealmFor(context.getLevel().dimension(),
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player))
+                && SourceVeinManagerBlockEntity.canPlaceStackFor(context.getItemInHand(),
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player))
                 ? super.getStateForPlacement(context) : null;
     }
 

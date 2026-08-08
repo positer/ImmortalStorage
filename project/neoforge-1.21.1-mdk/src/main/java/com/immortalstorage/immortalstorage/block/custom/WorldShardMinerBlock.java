@@ -57,7 +57,7 @@ public final class WorldShardMinerBlock extends BaseEntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide && placer instanceof Player player
                 && level.getBlockEntity(pos) instanceof WorldShardMinerBlockEntity miner) {
-            miner.tryClaimOwner(player.getUUID());
+            miner.tryClaimOwner(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         }
     }
 

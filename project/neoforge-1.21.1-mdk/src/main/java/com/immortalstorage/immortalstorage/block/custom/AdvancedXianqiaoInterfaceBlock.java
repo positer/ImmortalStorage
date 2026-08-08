@@ -57,7 +57,7 @@ public final class AdvancedXianqiaoInterfaceBlock extends Block implements Entit
         Player player = context.getPlayer();
         if (player == null || ImmortalStoragePlayerData.get(player).getStage() < 6) return null;
         if (!XianqiaoInterfaceBlockEntity.canPlaceStackFor(
-                context.getItemInHand(), player.getUUID())) return null;
+                context.getItemInHand(), com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player))) return null;
         return defaultBlockState();
     }
 

@@ -215,7 +215,8 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         }
         UUID payer = fuel.getItem() instanceof SpiritDriveItem ? SpiritDriveItem.owner(fuel).orElse(null)
                 : ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
-        ServerPlayer owner = payer == null ? null : level.getServer().getPlayerList().getPlayer(payer);
+        ServerPlayer owner = payer == null ? null
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), payer);
         ImmortalStoragePlayerData ownerData = owner == null ? null : ImmortalStoragePlayerData.get(owner);
         if (ownerData != null && ownerData.consumeImmortalYuan(1L)) {
             burnTicks = burnDuration = ImmortalFurnaceEngine.IMMORTAL_YUAN.burnTicks(); return true;
@@ -327,11 +328,13 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private @Nullable UUID effectiveOutputOwner(ServerLevel level) {
         if (!automaticOutput) return null;
         UUID realmOwner = ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
-        if (realmOwner != null && level.getServer().getPlayerList().getPlayer(realmOwner) != null) {
+        if (realmOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), realmOwner) != null) {
             return realmOwner;
         }
         UUID driveOwner = SpiritDriveItem.owner(items.get(FUEL_SLOT)).orElse(null);
-        return driveOwner != null && level.getServer().getPlayerList().getPlayer(driveOwner) != null
+        return driveOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), driveOwner) != null
                 ? driveOwner : null;
     }
 

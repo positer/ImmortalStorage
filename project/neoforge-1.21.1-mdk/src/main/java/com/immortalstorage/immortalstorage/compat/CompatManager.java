@@ -67,6 +67,10 @@ public final class CompatManager {
 
     /** Called only from the physical client setup class. */
     public static void initializeClientIntegrations() {
+        if (AE2_LOADED) {
+            invokeOptionalBootstrap(
+                    "com.immortalstorage.immortalstorage.compat.ae2.Ae2ClientCompat");
+        }
         if (RS_LOADED) {
             invokeOptionalBootstrap(
                     "com.immortalstorage.immortalstorage.compat.refinedstorage.RsClientCompat");

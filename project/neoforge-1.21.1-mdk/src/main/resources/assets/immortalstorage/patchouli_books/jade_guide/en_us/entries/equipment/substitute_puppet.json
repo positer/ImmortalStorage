@@ -1,12 +1,9 @@
 {
-  "name": "Substitute Puppet",
-  "icon": "immortalstorage:substitute_puppet",
-  "category": "immortalstorage:equipment",
-  "sortnum": 20,
-  "pages": [
-    {"type":"patchouli:crafting","recipe":"immortalstorage:substitute_puppet","text":"The Substitute Puppet stacks to one. Use it in air once to register its owner. Its tooltip shows owner, respawn anchor and durability."},
-    {"type":"patchouli:text","text":"Hold the puppet in one hand and Nurturing Crystal in the other, then use it. Eight crystals restore one durability, consuming as many complete groups as possible up to sixteen."},
-    {"type":"patchouli:text","text":"When its owner dies, a puppet in inventory, Kongqiao or Xianqiao storage triggers a cooldown-free Totem effect and spends one durability. The activation animation displays the puppet."},
-    {"type":"patchouli:text","text":"Use the puppet on a Respawn Anchor to bind it. A later activation teleports the owner there across dimensions without cheat permission. Use the puppet in air to clear the anchor; breaking or exploding the bound anchor also clears it automatically."}
+  "name":"Substitute Puppet","icon":"immortalstorage:substitute_puppet","category":"immortalstorage:equipment","sortnum":20,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:substitute_puppet","text":"The Substitute Puppet is non-stacking. Use an unbound puppet in the air to claim it; the tooltip shows owner, Respawn Anchor, and durability. It shares the personal realm's persistent identity. First use migrates only a valid legacy owner field while preserving durability and anchor; another player cannot rebind it."},
+    {"type":"patchouli:text","text":"Hold the puppet in the offhand and use a Nurturing Crystal from the other hand to recharge it. Every eight crystals restore one durability, consuming as many full sets as possible up to sixteen durability."},
+    {"type":"patchouli:text","text":"When its owner dies, a puppet in inventory, Kongqiao, or Xianqiao storage immediately applies the Totem of Undying effect and spends one durability, with the puppet itself in the activation animation. Logging into the same account through another launcher does not detach ownership."},
+    {"type":"patchouli:text","text":"Use the held puppet on a Respawn Anchor to save that position. A rescue teleports across dimensions to the anchor even without cheats. Use it in the air to clear the anchor; breaking or exploding the bound anchor also clears it automatically."}
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "name":"Simulated Production","icon":"immortalstorage:simulated_reincarnation_furnace","category":"immortalstorage:automation","sortnum":25,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"immortalstorage:simulated_reincarnation_furnace","title":"Simulated Reincarnation Furnace","text":"Use a spawner with Primordial Qi in the main hand and a Spirit Core in the off hand to convert it. Supply a spawn egg or filled Soul Catcher as specimen; the weapon slot participates in real loot-table and luck evaluation. One cycle takes 50 ticks and fills the 4x3 output area."},
+    {"type":"patchouli:text","text":"True Yuan supplies 50 burn ticks and Immortal Yuan 500. A bound Spirit Drive pays from its owner's personal storage, preferring Immortal Yuan before True Yuan. Inside the owner's Xianqiao, the realm owner can also fund Immortal Yuan. Automatic output, six output faces, stored experience, and direct collection are supported."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:simulated_spirit_field","text":"The Simulated Spirit Field recipe yields four blocks. Its permanent seed produces one real crop-loot cycle every 50 ticks. Fuel, extra tool, 4x3 output, automatic output, six-face controls, and stored experience follow the simulated furnace."},
+    {"type":"patchouli:text","text":"Use valid soil/farmland, End Stone-like, or Soul Sand-like blocks to replace the substrate; the former substrate returns to inventory first. Data packs may extend seed, substrate, and crop catalogs. Chorus Fruit requires End Stone and yields one Chorus Flower plus two Chorus Fruit; Nether Wart uses Soul Sand-like substrate."}
+  ]
+}

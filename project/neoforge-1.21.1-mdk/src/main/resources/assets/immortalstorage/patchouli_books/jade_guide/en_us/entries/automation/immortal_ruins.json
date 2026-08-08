@@ -1,14 +1,11 @@
 {
-  "name": "Miniature Immortal Ruins",
-  "icon": "immortalstorage:miniature_immortal_ruin",
-  "category": "immortalstorage:automation",
-  "sortnum": 30,
-  "pages": [
-    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"Miniature Immortal Ruin stacks to one. Place it as an unbreakable, non-colliding partial block. Empty-hand use reverses both field state and black/white rendering."},
-    {"type":"patchouli:text","text":"It attracts non-player living entities in a 13x13x13 region. Use directly for settings and sneak-use empty-handed to reverse. Reverse mode converts Teleport force to None. Sneak-wrench dismantles it."},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"Surround a Miniature Immortal Ruin with Nurturing Crystal and Crying Obsidian. The stabilized block has 54 inventory slots."},
-    {"type":"patchouli:text","text":"The stabilized filter panel has a 5x4 ghost grid, Data Component matching and whitelist/blacklist modes. JEI and EMI ingredients can be dragged into it."},
-    {"type":"patchouli:text","text":"Normal mode collects every dropped item in the selected area. Sneak-use empty-handed reverses it: size is fixed to 1x1x1 and the first occupied slot is dropped into an air target or inserted directly into a NeoForge item storage."},
-    {"type":"patchouli:text","text":"Wrench-use two opposite-state ruins of the same type to link them; a white line appears while holding the wrench. Stabilized links share one 54-slot inventory. Ordinary links can enable Warp on the attractor to send living entities and drops to the reversed endpoint every tick."}
+  "name":"Miniature Immortal Ruins","icon":"immortalstorage:miniature_immortal_ruin","category":"immortalstorage:automation","sortnum":30,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"A plain ruin attracts non-player creatures in a 13x13x13 area. Sneak-use with an empty hand toggles attraction/repulsion; sneak-use with the Spirit Staff wrench picks it up. Wrench-link opposite states, then enable Warp on the attracting end for one-way transfer from its center collision box."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"The Stabilized version has 54 slots plus area, frequency, preview, enabled, six-face interaction, and 20-slot whitelist/blacklist controls. Normal mode collects drops; reversed mode ejects to air or an item handler. Linked opposite ends share one inventory."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:entangled_stabilized_miniature_immortal_ruin","text":"The Entangled Stabilized version runs its normal and reversed sides in parallel every tick over one shared 54-slot buffer. Each side has independent range, frequency, preview, enabled, face mask, and 20-slot filter settings; switch the configured side with the left/right arrows."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_stabilized_miniature_immortal_ruin","text":"The Advanced Stabilized version is an independent 54-slot container and is not Xianqiao-bound. Normal mode pulls one acceptable stack per in-range container; reversed mode distributes its inventory across those containers. Unaccepted remainder stays inside instead of becoming a world drop."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_entangled_stabilized_miniature_immortal_ruin","text":"The Advanced Entangled version combines two independent advanced schedules over one shared 54-slot buffer and can also be converted from the Advanced Stabilized version. Normal and reversed sides configure their filters, range, frequency, preview, enabled switch, and face masks separately."},
+    {"type":"patchouli:text","text":"Advanced scheduling offers access (poll-skip/force-poll), split (item-by-item/group-by-group), and order (far-first/near-first). The scanned area exactly matches the preview box. Every in-range position times every enabled face is a separate target; all faces off disables container interaction for that side. Settings and filter panels are mutually exclusive."}
   ]
 }

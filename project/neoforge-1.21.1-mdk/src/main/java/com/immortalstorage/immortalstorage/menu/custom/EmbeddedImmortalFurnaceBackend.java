@@ -359,7 +359,8 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
         ItemStack sword = getItem(INPUT_SLOTS[channel]);
         UUID token = UUID.randomUUID();
         ItemStack summoned = sword.copy();
-        writeRecall(summoned, player.getUUID(), channel, token);
+        writeRecall(summoned,
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player), channel, token);
         recallTokens[channel] = token;
         internalMutation = true;
         try {
@@ -510,7 +511,8 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
     }
 
     private int matchingReservedChannel(ServerPlayer player, RecallIdentity identity) {
-        if (identity == null || !player.getUUID().equals(identity.owner())
+        if (identity == null || !com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .matches(player, identity.owner())
                 || !backendId.equals(identity.backend()) || identity.channel() < 0
                 || identity.channel() >= recallTokens.length) return -1;
         UUID authoritative = recallTokens[identity.channel()];

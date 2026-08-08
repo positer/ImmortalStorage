@@ -3,6 +3,8 @@ package com.immortalstorage.immortalstorage.dimension;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class RealmEnvironmentPolicyTest {
     @Test void dayAndNightUseStableVanillaTimes() {
@@ -24,5 +26,25 @@ final class RealmEnvironmentPolicyTest {
     @Test void unknownWeatherModesFailClosedToClear() {
         assertEquals(RealmEnvironmentPolicy.CLEAR, RealmEnvironmentPolicy.sanitizeWeatherMode(-1));
         assertEquals(RealmEnvironmentPolicy.CLEAR, RealmEnvironmentPolicy.sanitizeWeatherMode(4));
+    }
+
+    @Test void snowNeverEnablesRainingOrThundering() {
+        assertFalse(RealmEnvironmentPolicy.requiresRain(RealmEnvironmentPolicy.SNOW));
+        assertFalse(RealmEnvironmentPolicy.requiresThunder(RealmEnvironmentPolicy.SNOW));
+    }
+
+    @Test void rainEnablesRainingButNotThundering() {
+        assertTrue(RealmEnvironmentPolicy.requiresRain(RealmEnvironmentPolicy.RAIN));
+        assertFalse(RealmEnvironmentPolicy.requiresThunder(RealmEnvironmentPolicy.RAIN));
+    }
+
+    @Test void thunderEnablesRainingAndThundering() {
+        assertTrue(RealmEnvironmentPolicy.requiresRain(RealmEnvironmentPolicy.THUNDER));
+        assertTrue(RealmEnvironmentPolicy.requiresThunder(RealmEnvironmentPolicy.THUNDER));
+    }
+
+    @Test void clearEnablesNeitherRainingNorThundering() {
+        assertFalse(RealmEnvironmentPolicy.requiresRain(RealmEnvironmentPolicy.CLEAR));
+        assertFalse(RealmEnvironmentPolicy.requiresThunder(RealmEnvironmentPolicy.CLEAR));
     }
 }

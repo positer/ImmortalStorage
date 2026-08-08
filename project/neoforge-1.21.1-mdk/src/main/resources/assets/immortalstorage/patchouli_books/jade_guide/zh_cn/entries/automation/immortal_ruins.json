@@ -1,14 +1,11 @@
 {
-  "name": "迷你仙墟",
-  "icon": "immortalstorage:miniature_immortal_ruin",
-  "category": "immortalstorage:automation",
-  "sortnum": 30,
-  "pages": [
-    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"迷你仙墟最大堆叠一。右键放置为不可破坏、无碰撞的不完整方块；空手右键反转吸引/排斥视觉与状态。"},
-    {"type":"patchouli:text","text":"默认在13×13×13范围吸引非玩家生物。直接右键打开设置，空手Shift右键反转；反转不支持传送力度，会自动改为无。灵器扳手Shift右键拆卸。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"蕴灵晶与哭泣的黑曜石包围迷你仙墟可合成稳定化版本。它拥有并排大箱子的54格内存。"},
-    {"type":"patchouli:text","text":"稳定化版本可设置区域、预览、启用和频率。过滤面板提供5×4设定格、NBT/数据组件匹配及白名单/黑名单；JEI/EMI可拖入幽灵物品。"},
-    {"type":"patchouli:text","text":"正常模式按频率收集选区内全部掉落物。Shift空手右键进入反转：尺寸固定1×1×1，向目标空气格投出首个非空槽，或直接输入目标NeoForge物品存储。目标被实体方块阻断时不输出。"},
-    {"type":"patchouli:text","text":"扳手依次右键两个相反状态的同类仙墟即可链接，手持扳手显示白线。稳定化链接共享54格且合并溢出会掉落；普通链接可在吸引端开启Warp，将范围内生物与掉落物每刻单向传到反转端。"}
+  "name":"迷你仙墟系列","icon":"immortalstorage:miniature_immortal_ruin","category":"immortalstorage:automation","sortnum":30,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"普通迷你仙墟默认在13×13×13范围吸引非玩家生物。空手Shift右键切换吸引/排斥；灵器扳手Shift右键拆卸。两个相反状态的同类仙墟可由扳手链接，吸引端的Warp会把中心碰撞箱内目标单向传送。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"稳定化版本拥有54格内存，可设置区域、频率、预览、启用、六面交互及20格白/黑名单过滤。正常侧收集掉落物，反向侧向目标空气格投出或输入目标物品存储。链接的相反端共享同一库存。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:entangled_stabilized_miniature_immortal_ruin","text":"纠缠稳定化版本让正常/反向两侧每刻并行工作并共享54格缓冲。两侧各自保存范围、频率、预览、启用、六面掩码与20格过滤器；用◀/▶切换正在配置的侧。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_stabilized_miniature_immortal_ruin","text":"高级稳定化版本是独立54格容器，不绑定仙窍。正常模式从范围内每个容器逐格提取一个可接受堆栈；反向模式把自身库存均分到范围内容器。无法接收的余量留在本机，不生成世界掉落。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_entangled_stabilized_miniature_immortal_ruin","text":"高级纠缠版本组合两套独立高级调度配置并共享54格缓冲；也可从高级稳定化版本转换。正常/反向侧分别配置过滤、范围、频率、预览、启用及六面掩码。"},
+    {"type":"patchouli:text","text":"高级调度可选择访问（轮询跳过/强制轮询）、均分（逐件/逐组）与顺序（远先/近先）。选区严格等于预览框；每个区内位置×每个已启用面都是独立目标，六面全关即停止该侧容器交互。⚙设置与▦过滤面板互斥。"}
   ]
 }

@@ -171,7 +171,7 @@ public final class SourceVeinStorageIndex {
     }
 
     private static void notifyOwner(MinecraftServer server, UUID owner, boolean fluid) {
-        ServerPlayer player = server.getPlayerList().getPlayer(owner);
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(server, owner);
         if (player == null) return;
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         if (fluid) data.invalidateXianqiaoSourceFluidDirectory();

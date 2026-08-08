@@ -15,7 +15,8 @@ public final class ClientRealmSnowfall {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.level == null || minecraft.isPaused()) return;
         if (!ImmortalStorageDimensions.isPersonalRealmFor(
-                minecraft.level.dimension(), minecraft.player.getUUID())) return;
+                minecraft.level.dimension(),
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(minecraft.player))) return;
         if (ImmortalStoragePlayerData.get(minecraft.player).getRealmWeatherMode()
                 != RealmEnvironmentPolicy.SNOW) return;
 

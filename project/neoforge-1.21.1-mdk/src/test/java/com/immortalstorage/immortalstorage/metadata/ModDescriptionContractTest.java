@@ -8,18 +8,16 @@ import org.junit.jupiter.api.Test;
 
 class ModDescriptionContractTest {
     @Test
-    void descriptionRepresentsTheCompleteZeroPointZeroPointEightFeatureSet() throws Exception {
+    void descriptionRepresentsTheZeroPointZeroPointNineIdentityAndCompatibilityFixes() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
-        assertTrue(properties.contains("UUID-bound realm"));
-        assertTrue(properties.contains("beautified Xianqiao Interface and Spirit Sword family textures/models"));
-        assertTrue(properties.contains("Advanced Xianqiao Interface"));
-        assertTrue(properties.contains("advanced-stabilized-ruin-style range scheduling"));
-        assertTrue(properties.contains("xyz/+xzy"));
-        assertTrue(properties.contains("preview"));
-        assertTrue(properties.contains("item/fluid/power/chemical cache slots"));
+        assertTrue(properties.contains("persistent-player-bound realm"));
+        assertTrue(properties.contains("Version 0.0.9"));
+        assertTrue(properties.contains("realm, device, puppet, AE2 and RS disk ownership"));
+        assertTrue(properties.contains("one-shot legacy migration"));
+        assertTrue(properties.contains("AE2 external-resource rendering crashes"));
     }
 
     private static Path locateProject() {

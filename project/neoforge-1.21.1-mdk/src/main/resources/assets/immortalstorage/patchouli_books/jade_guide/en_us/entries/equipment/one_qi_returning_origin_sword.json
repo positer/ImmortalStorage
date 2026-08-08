@@ -1,0 +1,9 @@
+{
+  "name":"One-Qi Returning Origin Sword","icon":"immortalstorage:one_qi_returning_origin_sword","category":"immortalstorage:equipment","sortnum":40,
+  "pages":[
+    {"type":"patchouli:smithing","recipe":"immortalstorage:one_qi_returning_origin_sword","text":"Forge it at a smithing table with a Spirit Core template, a Spirit Sword base, and Primordial Qi. It inherits stage-scaled damage, aura repair, continuous furnace tempering, and tempering points."},
+    {"type":"patchouli:text","text":"Hold use for 5 ticks to fire a 64-block beam that pierces multiple living targets. Phase one deals 20% attack damage every 10 ticks and costs 1 Immortal Yuan on entry."},
+    {"type":"patchouli:text","text":"At 25 ticks, phase two spends 2 more Immortal Yuan and deals 20% attack damage every 5 ticks. Beyond 50 ticks, phase three deals 50% every 5 ticks while spending 10 tempering points per beam."},
+    {"type":"patchouli:text","text":"Sustained use stops when the required Yuan or tempering points run out. Every living target along the beam may be hit. Component updates do not repeatedly lower and raise the sword; only a real slot or item change causes re-equip animation."}
+  ]
+}

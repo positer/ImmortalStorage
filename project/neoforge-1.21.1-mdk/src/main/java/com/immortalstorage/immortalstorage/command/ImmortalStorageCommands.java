@@ -57,10 +57,12 @@ public final class ImmortalStorageCommands {
     private static int unloadRealm(ServerPlayer player,
                                    com.mojang.brigadier.context.CommandContext<net.minecraft.commands.CommandSourceStack> context) {
         if (com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
-                .isPersonalRealmFor(player.level().dimension(), player.getUUID())) {
+                .isPersonalRealmFor(player.level().dimension(),
+                        com.immortalstorage.immortalstorage.dimension.RealmHelper.realmId(player))) {
             com.immortalstorage.immortalstorage.dimension.RealmHelper.exitRealm(player);
         }
-        com.immortalstorage.immortalstorage.dimension.RealmHelper.suspendRealmLoading(player.server, player.getUUID());
+        com.immortalstorage.immortalstorage.dimension.RealmHelper.suspendRealmLoading(
+                player.server, com.immortalstorage.immortalstorage.dimension.RealmHelper.realmId(player));
         context.getSource().sendSuccess(() -> Component.literal(
                 "Suspended Xianqiao realm loading for " + player.getGameProfile().getName()), true);
         return 1;
@@ -93,7 +95,8 @@ public final class ImmortalStorageCommands {
             throw INVALID_SPEED.create();
         }
         data.setRealmTimeRatePermille(permille);
-        if (!com.immortalstorage.immortalstorage.dimension.RealmHelper.isRealmLoadingSuspended(player.getUUID())) {
+        if (!com.immortalstorage.immortalstorage.dimension.RealmHelper.isRealmLoadingSuspended(
+                com.immortalstorage.immortalstorage.dimension.RealmHelper.realmId(player))) {
             com.immortalstorage.immortalstorage.dimension.RealmHelper.refreshRealmTickRate(player);
         }
         context.getSource().sendSuccess(() -> Component.literal(

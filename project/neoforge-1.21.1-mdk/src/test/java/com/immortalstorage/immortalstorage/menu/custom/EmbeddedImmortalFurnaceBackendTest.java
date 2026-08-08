@@ -339,7 +339,8 @@ final class EmbeddedImmortalFurnaceBackendTest {
         String engine = Files.readString(source("ImmortalFurnaceEngine.java"));
         assertTrue(backend.contains("SpiritSwordReservations"));
         assertTrue(backend.contains("UUID[] recallTokens"));
-        assertTrue(backend.contains("writeRecall(summoned, player.getUUID(), channel, token)"));
+        assertTrue(backend.contains("PersistentPlayerIdentity.id(player)"));
+        assertTrue(backend.contains("PersistentPlayerIdentity") && backend.contains(".matches(player, identity.owner())"));
         assertTrue(backend.contains("matchingReservedChannel(player, identity)"));
         assertTrue(backend.contains("if (isRecallReserved(channel)) continue;"),
                 "auto fill and template capture must leave recalled channels idle");

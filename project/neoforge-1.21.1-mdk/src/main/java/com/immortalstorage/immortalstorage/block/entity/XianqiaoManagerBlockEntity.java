@@ -3,6 +3,8 @@ package com.immortalstorage.immortalstorage.block.entity;
 import com.immortalstorage.immortalstorage.menu.ModMenus;
 import com.immortalstorage.immortalstorage.api.storage.PersonalStorageEndpoint;
 import com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions;
+import com.immortalstorage.immortalstorage.dimension.RealmHelper;
+import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import com.immortalstorage.immortalstorage.network.storage.PersonalStorageNetwork;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import net.minecraft.core.BlockPos;
@@ -48,10 +50,11 @@ public class XianqiaoManagerBlockEntity extends BlockEntity implements MenuProvi
     public boolean tryClaimOwner(Player player) {
         if (player == null || ImmortalStoragePlayerData.get(player).getStage() < 6
                 || level == null
-                || !ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), player.getUUID())) return false;
+                || !(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+                || !RealmHelper.isInOwnRealm(serverPlayer)) return false;
         UUID before = ownerBinding.owner();
-        boolean accepted = ownerBinding.claim(player.getUUID());
-        if (accepted && before == null) {
+        boolean accepted = ownerBinding.claim(player);
+        if (accepted && !java.util.Objects.equals(before, ownerBinding.owner())) {
             invalidateCapabilityCache();
             setChanged();
         }
@@ -112,7 +115,7 @@ public class XianqiaoManagerBlockEntity extends BlockEntity implements MenuProvi
             clearCachedEndpoint();
             return null;
         }
-        ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (player == null) {
             clearCachedEndpoint();
             return null;
@@ -154,7 +157,7 @@ public class XianqiaoManagerBlockEntity extends BlockEntity implements MenuProvi
         ImmortalStoragePlayerData data = null;
         int layout = 0;
         if (owner != null && ImmortalStorageDimensions.isPersonalRealmFor(serverLevel.dimension(), owner)) {
-            ServerPlayer player = serverLevel.getServer().getPlayerList().getPlayer(owner);
+            ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
             if (player != null) {
                 data = ImmortalStoragePlayerData.get(player);
                 if (data.getStage() >= 10) layout = 3;

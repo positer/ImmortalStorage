@@ -22,5 +22,25 @@ public final class RealmEnvironmentPolicy {
         return daytime ? DAY_TIME : NIGHT_TIME;
     }
 
+    /**
+     * Whether the server realm must be raining for a weather mode.
+     *
+     * <p>SNOW deliberately returns false: realm snow is a client-only visual,
+     * and enabling rain for it would let vanilla lay snow layers across the
+     * whole realm. Such weather-driven, non-entity block updates must never be
+     * recorded as player-modified chunks for the forced-chunk-load set.</p>
+     */
+    public static boolean requiresRain(int weatherMode) {
+        int mode = sanitizeWeatherMode(weatherMode);
+        return mode == RAIN || mode == THUNDER;
+    }
+
+    /**
+     * Whether the server realm must be thundering for a weather mode.
+     */
+    public static boolean requiresThunder(int weatherMode) {
+        return sanitizeWeatherMode(weatherMode) == THUNDER;
+    }
+
     private RealmEnvironmentPolicy() {}
 }

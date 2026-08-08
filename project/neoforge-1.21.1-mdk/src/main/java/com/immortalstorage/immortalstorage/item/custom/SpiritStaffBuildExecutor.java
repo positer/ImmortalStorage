@@ -183,7 +183,8 @@ public final class SpiritStaffBuildExecutor {
         }
         if (inventory >= limit) return limit;
         PersonalStorageEndpoint endpoint = PersonalStorageApi.resolve(
-                player.serverLevel().getServer(), player.getUUID());
+                player.serverLevel().getServer(),
+                com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
         if (endpoint == null || endpoint.itemStorage() == null) return inventory;
         long storage = endpoint.itemStorage().extract(
                 TerminalEntryKey.of(template), limit - inventory, TerminalStorageAction.SIMULATE);
@@ -246,7 +247,8 @@ public final class SpiritStaffBuildExecutor {
 
         static MaterialEscrow reserve(ServerPlayer player, ItemStack template, int requested) {
             PersonalStorageEndpoint endpoint = PersonalStorageApi.resolve(
-                    player.serverLevel().getServer(), player.getUUID());
+                    player.serverLevel().getServer(),
+                    com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
             if (player.isCreative()) return new MaterialEscrow(template, endpoint, 0, 0);
 
             int fromInventory = removeFromPlayer(player, template, requested);

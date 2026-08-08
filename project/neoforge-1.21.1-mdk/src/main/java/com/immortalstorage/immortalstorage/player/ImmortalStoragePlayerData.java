@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalEntryKey;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalFluidKey;
@@ -115,6 +116,12 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     private boolean hasKongqiao = false;
     private boolean hasXianqiao = false;
     private boolean hasXianqiaoRealm = false;
+    /**
+     * Stable id of the personal realm save. It is intentionally independent
+     * from the launcher's current session UUID so the same persisted player
+     * data keeps one realm across offline/online launcher identity changes.
+     */
+    private UUID personalRealmId;
     private int realmRadiusChunks = 1;
     private int realmTimeRatePermille = 1000;
     private int preTribulationRealmTimeRatePermille = 1000;
@@ -309,6 +316,16 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public boolean isHasKongqiao() { return hasKongqiao; }
     public boolean isHasXianqiao() { return hasXianqiao; }
     public boolean isHasXianqiaoRealm() { return hasXianqiaoRealm; }
+    public UUID getPersonalRealmId() { return personalRealmId; }
+
+    /** One-shot legacy migration boundary; never replaces an established binding. */
+    public UUID bindPersonalRealmOnce(UUID fallback) {
+        if (personalRealmId == null) {
+            personalRealmId = Objects.requireNonNull(fallback, "fallback");
+            syncOwner();
+        }
+        return personalRealmId;
+    }
     public int getRealmRadiusChunks() { return realmRadiusChunks; }
     public int getRealmTimeRatePermille() { return realmTimeRatePermille; }
     public void setRealmTimeRatePermille(int v) {
@@ -1532,6 +1549,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putBoolean("hasKongqiao", hasKongqiao);
         tag.putBoolean("hasXianqiao", hasXianqiao);
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
+        if (personalRealmId != null) tag.putUUID("personalRealmId", personalRealmId);
         tag.putInt("realmRadiusChunks", realmRadiusChunks);
         tag.putInt("realmTimeRatePermille", realmTimeRatePermille);
         tag.putInt("preTribulationRealmTimeRatePermille", preTribulationRealmTimeRatePermille);
@@ -1571,6 +1589,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         hasKongqiao = tag.getBoolean("hasKongqiao");
         hasXianqiao = tag.getBoolean("hasXianqiao");
         hasXianqiaoRealm = tag.getBoolean("hasXianqiaoRealm");
+        personalRealmId = tag.hasUUID("personalRealmId") ? tag.getUUID("personalRealmId") : null;
         realmRadiusChunks = Math.max(1, tag.getInt("realmRadiusChunks"));
         int syncedRate = tag.contains("realmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("realmTimeRatePermille") : RealmTimeScalePolicy.NORMAL_PERMILLE;
@@ -1669,6 +1688,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putBoolean("hasKongqiao", hasKongqiao);
         tag.putBoolean("hasXianqiao", hasXianqiao);
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
+        if (personalRealmId != null) tag.putUUID("personalRealmId", personalRealmId);
         tag.putInt("realmRadiusChunks", realmRadiusChunks);
         tag.putInt("realmTimeRatePermille", realmTimeRatePermille);
         tag.putBoolean("realmDaytime", realmDaytime);
@@ -1775,6 +1795,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         hasKongqiao = tag.getBoolean("hasKongqiao");
         hasXianqiao = tag.getBoolean("hasXianqiao");
         hasXianqiaoRealm = tag.getBoolean("hasXianqiaoRealm");
+        personalRealmId = tag.hasUUID("personalRealmId") ? tag.getUUID("personalRealmId") : null;
         realmRadiusChunks = tag.getInt("realmRadiusChunks");
         realmTimeRatePermille = tag.contains("realmTimeRatePermille", Tag.TAG_ANY_NUMERIC)
                 ? tag.getInt("realmTimeRatePermille") : RealmTimeScalePolicy.NORMAL_PERMILLE;

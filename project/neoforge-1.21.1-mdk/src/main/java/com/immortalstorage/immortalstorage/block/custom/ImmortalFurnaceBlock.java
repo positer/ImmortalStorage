@@ -79,7 +79,8 @@ public class ImmortalFurnaceBlock extends BaseEntityBlock {
         if (level.isClientSide) return InteractionResult.SUCCESS;
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof ImmortalFurnaceBlockEntity f) {
-            if (p.isShiftKeyDown() && ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), p.getUUID())) {
+            if (p.isShiftKeyDown() && p instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                    && com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(serverPlayer)) {
                 f.setAutoConsume(!f.isAutoConsume());
                 p.displayClientMessage(Component.translatable(f.isAutoConsume()
                         ? "message.immortalstorage.immortal_furnace.auto_consume.enabled"

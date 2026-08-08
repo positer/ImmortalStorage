@@ -1,0 +1,8 @@
+{
+  "name":"Soul Catcher","icon":"immortalstorage:soul_catcher","category":"immortalstorage:equipment","sortnum":50,
+  "pages":[
+    {"type":"patchouli:smithing","recipe":"immortalstorage:soul_catcher","text":"Forge a Soul Catcher from a Spirit Core template, a Lead base, and Primordial Qi."},
+    {"type":"patchouli:text","text":"Use it on a creature to preserve and contain its full entity data. A filled catcher glints and names its occupant in the tooltip; use it on valid empty ground to release the creature. Creative mode updates the held stack correctly as well."},
+    {"type":"patchouli:text","text":"The Soul Catcher accepts vanilla and modded creatures and can supply a specimen to the Simulated Reincarnation Furnace. Capture and release are disabled during tribulation so its target flow cannot be bypassed."}
+  ]
+}

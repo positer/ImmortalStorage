@@ -25,7 +25,8 @@ public final class ImmortalStorageChargeProviders {
     private static final class ImmortalYuanProvider implements SourceChargeProvider {
         @Override
         public boolean canReserve(SourceChargeContext context, long units) {
-            var owner = context.level().getServer().getPlayerList().getPlayer(context.owner());
+            var owner = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                    .onlinePlayer(context.level().getServer(), context.owner());
             if (owner == null || units <= 0L) return false;
             synchronized (owner) {
                 return ImmortalStoragePlayerData.get(owner).getImmortalYuan() >= units;
@@ -34,7 +35,8 @@ public final class ImmortalStorageChargeProviders {
 
         @Override
         public Reservation reserve(SourceChargeContext context, long units) {
-            var owner = context.level().getServer().getPlayerList().getPlayer(context.owner());
+            var owner = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                    .onlinePlayer(context.level().getServer(), context.owner());
             if (owner == null || units <= 0L) return null;
             synchronized (owner) {
                 ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(owner);
