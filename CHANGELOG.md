@@ -30,9 +30,12 @@
 
 #### 支持范围、验证与发布
 
-- 版本更新为 `0.0.10`；正式支持范围为 Minecraft 1.21.1、NeoForge 21.1.235、Java 21，网络协议保持 8。
+- 版本更新为 `0.0.10`；构建基线为 Minecraft 1.21.1、NeoForge 21.1.235、Java 21，正式 NeoForge 支持范围扩展为 `[21.1.235,21.2)`，网络协议保持 8。
+- 已采纳并合并 PR #2 与 PR #3：JEI 基线为 `19.27.0.343`，Refined Types 接受 `0.3.x`/`1.21.1-0.3.x`，并以 `[21.1.235,21.2)` 关闭 Issue #1；对应版本清单、适配器描述和 JAR 元数据保持一致。
+- 兼容范围在 NeoForge `21.1.236` 与 `21.1.248` 上分别执行 `clean test`，每次均为 **724 tests / 0 failures / 0 errors / 0 skipped**；正式 21.1.235 基线完整门禁同样通过。
+- 以合并后 0.0.10 JAR 在 35 模组临时客户端中分别启动 Sodium `0.8.12-alpha.4` 与 Embeddium `1.0.15` 栈，并加入 ModernFix `5.27.20`、FerriteCore `7.0.3`、ImmediatelyFast `1.6.11`、Entity Culling `1.10.5`；两次均完成 NeoForge 客户端启动、资源重载、声音引擎初始化和 ImmortalStorage 可选联动注册，无优化模组或仙藏崩溃。
+- 重新发布的 `0.0.10` JAR 使用 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`；发布哈希、Git 提交、标签、GitHub Release 和远端回下载校验以本次重发结果为准。
 - 完整门禁包含 `test`、`build`、Ars Source API、无 AE2 运行时、生产 JAR 边界、版本组成和精确版本产物检查，结果为 **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**。
-- 最终 JAR 会以 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 发布；发布哈希、Git 提交、标签、GitHub Release 和远端回下载校验以本节最终版本为准。
 
 ### English
 
@@ -62,9 +65,12 @@ This section is the complete user-visible delta from `0.0.9` to `0.0.10`.
 
 #### Support, verification, and release
 
-- Bumped the version to `0.0.10`; official support remains Minecraft 1.21.1, NeoForge 21.1.235, and Java 21, with network protocol 8 unchanged.
+- Bumped the version to `0.0.10`; the build baseline is Minecraft 1.21.1, NeoForge 21.1.235, and Java 21, while the official NeoForge support range is now `[21.1.235,21.2)`, with network protocol 8 unchanged.
+- Accepted and merged PR #2 and PR #3: JEI is based on `19.27.0.343`, Refined Types accepts `0.3.x`/`1.21.1-0.3.x`, and `[21.1.235,21.2)` closes Issue #1; the supported-version manifest, adapter descriptor, and JAR metadata stay aligned.
+- The compatibility range passed `clean test` separately on NeoForge `21.1.236` and `21.1.248`, with **724 tests / 0 failures / 0 errors / 0 skipped** each time; the formal 21.1.235 baseline also passed the complete gate.
+- The merged 0.0.10 JAR started in two 35-mod temporary clients: a Sodium `0.8.12-alpha.4` stack and an Embeddium `1.0.15` stack, each also using ModernFix `5.27.20`, FerriteCore `7.0.3`, ImmediatelyFast `1.6.11`, and Entity Culling `1.10.5`. Both reached NeoForge client startup, resource reload, sound-engine initialization, and ImmortalStorage optional-integration registration without an optimization-mod or ImmortalStorage crash.
+- The republished `0.0.10` JAR is `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`; the release hash, Git commit, tag, GitHub Release, and remote redownload audit are recorded in the final republish state.
 - The complete gate includes `test`, `build`, the Ars Source API check, no-AE2 runtime verification, production-JAR boundary, version composition, and exact-version-artifact checks. It passes **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**.
-- The final JAR is published as `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`; the final hash, Git commit, tag, GitHub Release, and remote redownload audit are recorded in the final release state.
 
 ## [0.0.9] - 2026-08-08
 

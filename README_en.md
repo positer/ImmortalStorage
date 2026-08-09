@@ -18,13 +18,13 @@ ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dim
 
 The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, fluid and chemical-container interaction, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Version 0.0.10 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed.
+> The republished 0.0.10 JAR uses **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21** as its build baseline and officially declares the NeoForge range `[21.1.235,21.2)`; the range is active in this release asset.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
 **Latest published version:** [ImmortalStorage 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)
 
-**Release JAR SHA256:** `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF` (5,162,987 bytes)
+**Release JAR SHA256:** `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4` (5,163,055 bytes)
 
 ## Highlights
 
@@ -43,11 +43,17 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Component | Version |
 | --- | --- |
 | Minecraft | 1.21.1 |
-| NeoForge | 21.1.235 |
+| NeoForge | 21.1.235 (build baseline); supported range: `[21.1.235,21.2)` |
 | Java | 21 |
 | ImmortalStorage | 0.0.10 |
 
-No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
+No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed. The republished 0.0.10 artifact also passed startup smoke tests in temporary 35-mod clients using both Sodium and Embeddium rendering stacks.
+
+### Optimization-Mod Compatibility
+
+- Sodium `0.8.12-alpha.4` with ModernFix `5.27.20`, FerriteCore `7.0.3`, ImmediatelyFast `1.6.11`, and Entity Culling `1.10.5` started successfully; Embeddium `1.0.15` with the same general-purpose optimization set also started successfully.
+- Both temporary clients completed NeoForge mod loading, resource reload, sound-engine initialization, and ImmortalStorage registration for Mekanism, Botania, Industrial Foregoing Souls, AE2, Refined Storage, and Ars Nouveau without an optimization-mod or ImmortalStorage crash.
+- Sodium and Embeddium are mutually exclusive rendering backends and must not be installed together. The ImmortalStorage JAR has no direct references to their classes and no mixins into their internal renderer; compatibility relies on standard Minecraft/NeoForge rendering entry points.
 
 `CHANGELOG.md` records the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.9 to the current 0.0.10 release in both Simplified Chinese and English; the GitHub Release body covers the published 0.0.10 artifact. The current gate passes 724 tests in 199 suites plus production-boundary, version-composition, exact-artifact, Ars Source API, and no-AE2-runtime checks.
 
@@ -55,7 +61,7 @@ No recipe viewer or storage mod is required. Optional integrations activate only
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Use the latest published 0.0.10 JAR, or build `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` from source.
+3. Use the republished 0.0.10 JAR (NeoForge supported range `[21.1.235,21.2)`, build baseline 21.1.235), or build `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` from the current main source.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -329,7 +335,7 @@ Implemented integration areas include AE2 and Refined Storage exchange media, st
 
 The terminal also treats Mekanism chemical containers like fluid containers: an empty container left-clicks the selected chemical row to withdraw it, while a filled container right-clicks to deposit its registered chemical into Xianqiao. The optional bridge uses Mekanism's chemical capability boundary and server-side simulate/execute/rollback handling for stacked containers and long ledger amounts.
 
-Release 0.0.2 includes the adapters documented for the stated Minecraft/NeoForge target. Other planned loader lines remain unreleased until their own build and runtime gates are complete.
+The republished 0.0.10 release declares the Minecraft 1.21.1 / NeoForge `[21.1.235,21.2)` adapter range, built against NeoForge 21.1.235; source gates on 21.1.236 and 21.1.248 plus Sodium/Embeddium client startup smoke tests are complete.
 
 ## Configuration
 
@@ -395,7 +401,7 @@ Useful verification tasks:
 .\gradlew.bat test build verifyArsSourceAdapter verifyWithoutAe2Runtime verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The final 0.0.10 artifact passed **199 suites / 724 tests / 0 failures/errors/skips**, including the Ars Source API, no-AE2-runtime, production-boundary, version-composition, and exact-version-artifact checks. The built `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` is 5,162,987 bytes with SHA256 `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`; this release also covers sword-specific tempering coefficients, at-most-two-decimal tooltip percentages, the bilingual handbook entry-tree contract, Mekanism chemical-container terminal transactions, the centered realm time-flow layout, and the no-shadow text fix. This JAR is the sole asset for GitHub Release 0.0.10.
+The republished 0.0.10 artifact passed **199 suites / 724 tests / 0 failures/errors/skips**, including the Ars Source API, no-AE2-runtime, production-boundary, version-composition, and exact-version-artifact checks. The built `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` is 5,163,055 bytes with SHA256 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`; NeoForge 21.1.236/21.1.248 source checks and Sodium/Embeddium optimization-stack client startup smoke tests also passed. This release covers sword-specific tempering coefficients, at-most-two-decimal tooltip percentages, the bilingual handbook entry-tree contract, Mekanism chemical-container terminal transactions, the centered realm time-flow layout, and the no-shadow text fix. This JAR is the sole asset for GitHub Release 0.0.10.
 
 The 0.0.7 release gate passed 700 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks. Release JAR SHA256: `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`.
 

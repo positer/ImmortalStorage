@@ -27,13 +27,13 @@
 
 模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、化学品容器、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.10 仅支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未声明支持。
+> 重发后的 0.0.10 JAR 以 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21** 为构建基线，正式声明 NeoForge 兼容范围 `[21.1.235,21.2)`；该范围已随本次发布资产生效。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
 **最新已发布版本：**[仙藏 ImmortalStorage 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)
 
-**发行 JAR SHA256：** `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`（5,162,987 字节）
+**发行 JAR SHA256：** `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`（5,163,055 字节）
 
 ## 模组特色
 
@@ -53,11 +53,17 @@
 | 项目 | 版本 |
 | --- | --- |
 | Minecraft | 1.21.1 |
-| NeoForge | 21.1.235 |
+| NeoForge | 21.1.235（构建基线）；支持范围：`[21.1.235,21.2)` |
 | Java | 21 |
 | 仙藏 ImmortalStorage | 0.0.10 |
 
-JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
+JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。0.0.10 重发资产还在临时 35 模组客户端中分别通过了 Sodium 与 Embeddium 渲染栈启动烟测。
+
+### 优化模组兼容性
+
+- Sodium `0.8.12-alpha.4` 与 ModernFix `5.27.20`、FerriteCore `7.0.3`、ImmediatelyFast `1.6.11`、Entity Culling `1.10.5` 组合启动成功；Embeddium `1.0.15` 与同一组通用优化模组也启动成功。
+- 两个临时客户端都完成 NeoForge 模组加载、资源重载、声音引擎初始化和 ImmortalStorage 的 Mekanism、Botania、Industrial Foregoing Souls、AE2、RS、Ars Nouveau 注册；没有优化模组或仙藏崩溃。
+- Sodium 与 Embeddium 是二选一的渲染后端，不应同时安装。仙藏 JAR 不直接引用这些优化模组的类，也没有针对其内部渲染实现的 Mixin；兼容性依赖标准 Minecraft/NeoForge 渲染入口。
 
 ### 0.0.7 发行验证
 
@@ -80,7 +86,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 使用最新已发布的 0.0.10 JAR，或从源码构建 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`。
+3. 使用重发后的 0.0.10 JAR（NeoForge 支持范围 `[21.1.235,21.2)`，构建基线 21.1.235），或从当前 main 源码构建 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -392,7 +398,7 @@ Beyond Dimensions 安装与否都不会停用、替换或迁移 ImmortalStorage 
 
 植物魔法联动通过在仙窍接口上放置真实火花实现：接口向 Botania 注册官方 `SparkAttachable` 与 `ManaReceiver`，火花实体和强化负责网络流向，魔力直接进入或离开仙窍接口的共享魔力缓存。Ars Nouveau Source 同样通过官方的按位置 Source Provider 直接读写接口魔源缓存。这两类由方块本身直接完成、没有物理面参数的交互不受接口六面模式、主动推拉总开关或逐槽面掩码影响；即使六面全部关闭也保持可用。六面配置只约束物品、流体、FE、化学品等明确携带方向的能力。
 
-本次 Release 只声明已经针对 Minecraft 1.21.1 / NeoForge 21.1.235 构建和验证的适配，不将尚未独立发布的其他 NeoForge 版本区间描述为已支持。
+本次重发的 Release 0.0.10 声明 Minecraft 1.21.1 / NeoForge `[21.1.235,21.2)` 的发行适配，构建基线为 NeoForge 21.1.235；21.1.236、21.1.248 源码门禁和 Sodium/Embeddium 客户端启动烟测均已完成。
 
 ## 游戏内配置
 
@@ -463,7 +469,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 
 0.0.9 正式制品已通过 **717 项测试（196 suites / 0 failures/errors/skips）**、生产边界、版本组成与精确制品检查；统一持久身份、旧 UUID 一次性迁移、AE2/RS 磁盘、RS 无附属额外资源显示、RS 网格 Mapper、Refined Types/官方 RS Mekanism Integration 原生键退让、仙灵驱动器、替死傀儡、绑定机器、AE2 `Missing render handler` 崩溃条件及古玉手册双语完整性均有回归覆盖。此前 SHA-256 为 `BE3F8C2A5283166513CA178DE5A9186651C3780C9DCD358B416BA849FE4C1228` 的实机验证制品已部署到 30-JAR 全模组 PCL2 实例；Numen 在绑定旧交换磁盘上实机打开 RS `CraftingGridScreen`，确认化学品与仙藏一致仅显示注册表取样纯色，非纯色资源继续使用目录纹理，且 `No factory`、高级屏幕处理失败与外部资源纹理加载失败均为 0。包含完整手册的最终发布 JAR SHA-256 为 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`。详细记录见 `archive/2026-08-08-rs-native-fallback-rendering.md`。
 
-0.0.10 最终制品已通过 **199 suites / 724 项测试 / 0 failures/errors/skips**、Ars Source API、无 AE2 运行时、生产边界、版本组成与精确版本产物检查。生成的 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 为 5,162,987 字节，SHA-256 为 `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`；本次变更覆盖剑系淬火系数、最多两位小数的淬火百分比 Tooltip、双语古玉手册条目树契约、Mekanism 化学品容器交互、仙窍管理时间流速居中排版及文字重影修复。该制品将作为 GitHub Release 0.0.10 的唯一 JAR 资产。
+0.0.10 重发制品已通过 **199 suites / 724 项测试 / 0 failures/errors/skips**、Ars Source API、无 AE2 运行时、生产边界、版本组成与精确版本产物检查。生成的 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 为 5,163,055 字节，SHA-256 为 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`；同时完成 NeoForge 21.1.236/21.1.248 源码验证与 Sodium/Embeddium 优化栈客户端启动烟测。本次变更覆盖剑系淬火系数、最多两位小数的淬火百分比 Tooltip、双语古玉手册条目树契约、Mekanism 化学品容器交互、仙窍管理时间流速居中排版及文字重影修复。该制品作为 GitHub Release 0.0.10 的唯一 JAR 资产。
 
 ## 仓库结构
 
