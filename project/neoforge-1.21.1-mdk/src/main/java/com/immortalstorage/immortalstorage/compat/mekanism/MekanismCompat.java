@@ -5,6 +5,7 @@ import com.immortalstorage.immortalstorage.block.entity.AdvancedXianqiaoInterfac
 import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.block.entity.XianqiaoInterfaceBlockEntity;
 import com.immortalstorage.immortalstorage.compat.SpiritStaffWrenchCompat;
+import com.immortalstorage.immortalstorage.compat.TerminalExternalResourceCompatHooks;
 import com.immortalstorage.immortalstorage.compat.XianqiaoInterfaceCompatHooks;
 import com.immortalstorage.immortalstorage.compat.ExternalResourceCatalog;
 import com.immortalstorage.core.resource.AtomicEnergyRefill;
@@ -53,6 +54,7 @@ public final class MekanismCompat {
             AtomicEnergyRefill.ResourceStore> storageResolver = ignored -> null;
     private static final AtomicBoolean WRENCH_BRIDGE_INSTALLED = new AtomicBoolean();
     private static final AtomicBoolean ACTIVE_TRANSFER_HOOK_INSTALLED = new AtomicBoolean();
+    private static final AtomicBoolean TERMINAL_TRANSFER_HOOK_INSTALLED = new AtomicBoolean();
 
     public static void installBridge(Function<XianqiaoInterfaceBlockEntity,
             AtomicEnergyRefill.ResourceStore> resolver) {
@@ -67,6 +69,31 @@ public final class MekanismCompat {
                         .map(XianqiaoMekanismChemicalAdapter::key).toList());
         if (WRENCH_BRIDGE_INSTALLED.compareAndSet(false, true)) {
             SpiritStaffWrenchCompat.register(MekanismCompat::configureWithSpiritStaff);
+        }
+        if (TERMINAL_TRANSFER_HOOK_INSTALLED.compareAndSet(false, true)) {
+            TerminalExternalResourceCompatHooks.register(new TerminalExternalResourceCompatHooks.Hook() {
+                @Override
+                public boolean isContainer(ItemStack stack) {
+                    return chemicalItemHandler(stack.copyWithCount(1)) != null;
+                }
+
+                @Override
+                public TerminalExternalResourceCompatHooks.TransferResult depositToStorage(
+                        ItemStack carried, com.immortalstorage.immortalstorage.api.storage.ExternalResourceStorage storage,
+                        net.neoforged.neoforge.items.IItemHandler returnInventory) {
+                    return MekanismChemicalContainerTransfer.depositToStorage(
+                            carried, storage, returnInventory);
+                }
+
+                @Override
+                public TerminalExternalResourceCompatHooks.TransferResult withdrawFromStorage(
+                        ItemStack carried, ResourceChannelKey key,
+                        com.immortalstorage.immortalstorage.api.storage.ExternalResourceStorage storage,
+                        net.neoforged.neoforge.items.IItemHandler returnInventory) {
+                    return MekanismChemicalContainerTransfer.withdrawFromStorage(
+                            carried, key, storage, returnInventory);
+                }
+            });
         }
         if (ACTIVE_TRANSFER_HOOK_INSTALLED.compareAndSet(false, true)) {
             XianqiaoInterfaceCompatHooks.register(new XianqiaoInterfaceCompatHooks.Hook() {
@@ -96,7 +123,7 @@ public final class MekanismCompat {
                 @Override
                 public Optional<XianqiaoInterfaceCompatHooks.ContainedExternalResource>
                         containedExternalResource(ItemStack stack) {
-                    IChemicalHandler handler = stack.copyWithCount(1).getCapability(CHEMICAL_ITEM);
+                    IChemicalHandler handler = chemicalItemHandler(stack.copyWithCount(1));
                     if (handler == null) return Optional.empty();
                     for (int tank = 0; tank < handler.getChemicalTanks(); tank++) {
                         ChemicalStack chemical = handler.getChemicalInTank(tank);
@@ -110,6 +137,10 @@ public final class MekanismCompat {
                 }
             });
         }
+    }
+
+    static @Nullable IChemicalHandler chemicalItemHandler(ItemStack stack) {
+        return stack == null || stack.isEmpty() ? null : stack.getCapability(CHEMICAL_ITEM);
     }
 
     private static ExternalResourceCatalog.Definition chemicalDefinition(ResourceChannelKey key) {

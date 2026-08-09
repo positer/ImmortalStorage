@@ -6,7 +6,7 @@
 
 ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dimension mod for Minecraft. It turns cultivation into a complete survival path: awaken through the Ancient Jade, gather spiritual materials, advance through ten stages, expand a storage space bound to your character, construct a personal Xianqiao realm, automate resources, master specialized tools, and face tribulations that test each late-game breakthrough.
 
-> The current development version is **0.0.9**. Personal realms, AE2/RS exchange disks, Spirit Drives, Substitute Puppets and owner-bound machines now share one stable identity persisted with player data instead of trusting each launcher's session UUID. Pre-0.0.9 saves migrate once from saved realm references or consistent legacy-bound items, preserving disk IDs, contents, durability and anchors. This version also includes the AE2 `external_resource` render-handler crash fix.
+> The current release is **0.0.10**. Building on 0.0.9's persistent player identity and AE2/RS external-resource compatibility, this update fixes the tempering coefficients shown by the One-Qi Returning Origin and Immortal-Ruin-Forged sword tooltips, limits displayed tempering percentages to at most two decimal places, expands the bilingual Patchouli handbook, adds Mekanism chemical-container interaction with stored chemicals in the terminal, rearranges realm time-flow controls into a centered symmetric `- value +` row, and removes the control-text shadow/ghosting.
 >
 > **0.0.9 RS external-resource display and addon compatibility (2026-08-08):** With Refined Storage 2.0.9 alone, the Xianqiao exchange disk displays FE, Mana, Source, Souls, and Mekanism chemicals through ImmortalStorage's own `xianqiao_external` resource type. When Refined Types is installed, FE/Source/Souls use its native keys; when the official RS Mekanism Integration is installed, chemicals use its native keys. The built-in fallback remains readable and writable for old caches or addon removal, while each ledger resource is emitted only once. ExtraStorage-style addons remain compatible through RS's standard storage-container contract. See `archive/2026-08-08-rs-external-resource-display-and-addon-compat.md`.
 >
@@ -16,25 +16,25 @@ ImmortalStorage (仙藏) is a progression, personal-storage, automation, and dim
 >
 > **0.0.8 AE2 client crash fix (2026-08-08):** fixed a `Missing render handler for channel immortalstorage:external_resource` crash when opening an AE2 terminal inside the merged Xianqiao realm. The server already registered the `immortalstorage:external_resource` AEKey channel, but the client never registered a render handler with `AEKeyRendering`, so rendering/hovering that external-resource entry threw in `getOrThrow`. The fix adds a client registration entry `Ae2ClientCompat` (reflected from `CompatManager.initializeClientIntegrations` under the `AE2_LOADED` guard) and `ImmortalStorageExternalResourceKeyRenderHandler` (drawing/naming reuse `ExternalResourceCatalog`, identical to the Xianqiao interface look); regression tests reproduce the original crash condition directly. Full gate at **191 suites / 706 tests / 0 failures**. See `archive/2026-08-08-ae2-missing-render-handler-crash-fix.md`.
 
-The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
+The interface follows Minecraft's native pixel language while borrowing the information architecture of large storage networks: one continuous terminal combines storage, crafting, furnace processing, equipment, fluid and chemical-container interaction, search, recipe-viewer interaction, and realm management without forcing the player through disconnected screens.
 
-> Version 0.0.9 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed.
+> Version 0.0.10 targets **Minecraft 1.21.1**, **NeoForge 21.1.235**, and **Java 21**. Other NeoForge version ranges are not claimed.
 
 > **Breaking brand migration:** this republished build changes the mod ID, resource namespace, Java package, network payload namespace, configuration files, command root, and artifact name to `immortalstorage`. It does not load old `cultivation` worlds or configuration. Delete test worlds and create a new world; never install an old `cultivation-*.jar` beside this build.
 
-**Download:** [ImmortalStorage 0.0.8](https://github.com/positer/ImmortalStorage/releases/tag/0.0.8)
+**Latest published version:** [ImmortalStorage 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)
 
-**Release JAR SHA256:** `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870` (5,137,573 bytes)
+**Release JAR SHA256:** `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF` (5,162,987 bytes)
 
 ## Highlights
 
 - Ten cultivation stages with persistent benefits, pills, Yuan resources, ascension, and tribulations.
 - Per-player Kongqiao/Xianqiao storage that follows the character rather than a single block.
-- Smooth, searchable storage terminal with real crafting, furnace, armor, fluid, and magnet management.
+- Smooth, searchable storage terminal with real crafting, furnace, armor, fluid, Mekanism chemical-container, and magnet management.
 - A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
 - Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
 - Shared weapon attack projection writes paid resource and tempering growth into standard main-hand attributes so systems such as Apotheosis can read and multiply the real weapon damage.
-- Bundled Patchouli Ancient Jade handbook with bilingual progression, real recipes, and complete major-system coverage from 0.0.3 through 0.0.9: all Spirit Sword branches, Soul Catcher, Spirit Drive, simulated production, all Stabilized Ruin variants, Source Veins/Manager, personal-realm weather and persistent-identity migration, and AE2/RS external resources. Locale-tree parity and later-version coverage are enforced by tests; no separate Patchouli install is required.
+- Bundled Patchouli Ancient Jade handbook with bilingual progression, real recipes, and major-system coverage through 0.0.10: the Xianqiao Manager, World Shard Miner/Treasure Basin datapack rules, terminal management, external-resource boundaries, all Spirit Sword branches and their actual tempering coefficients, plus Soul Catcher, Spirit Drive, simulated production, all Stabilized Ruin variants, Source Veins/Manager, personal-realm weather and persistent-identity migration. Locale-tree parity and later-version coverage are enforced by tests; no separate Patchouli install is required.
 - Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
 - Complete Simplified Chinese and English localization for gameplay and configuration.
 
@@ -45,17 +45,17 @@ The interface follows Minecraft's native pixel language while borrowing the info
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| ImmortalStorage | 0.0.7 |
+| ImmortalStorage | 0.0.10 |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed.
 
-`CHANGELOG.md` and the GitHub Release body list the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.6 to 0.0.7 in both Simplified Chinese and English. The release gate passed 700 tests plus production-boundary, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks.
+`CHANGELOG.md` records the complete Added, Changed, Fixed, compatibility, and verification delta from 0.0.9 to the current 0.0.10 release in both Simplified Chinese and English; the GitHub Release body covers the published 0.0.10 artifact. The current gate passes 724 tests in 199 suites plus production-boundary, version-composition, exact-artifact, Ars Source API, and no-AE2-runtime checks.
 
 ## Installation
 
 1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
 2. Use Java 21 for the client and dedicated server.
-3. Download `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar` from GitHub Releases.
+3. Use the latest published 0.0.10 JAR, or build `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` from source.
 4. Place the JAR in the instance or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
@@ -134,6 +134,8 @@ Personal storage is opened with a configurable key binding. The default global s
 - Embedded three-lane Immortal Furnace with automatic input refill and direct storage output.
 - Magnet management with enable state, whitelist/blacklist filtering, and direct pickup into Xianqiao.
 - Exact-component held-stack refill after the current hand stack is consumed.
+- On an external chemical row, right-clicking with a filled Mekanism chemical container deposits its chemical; left-clicking with an empty container fills it from the selected chemical. Stacked containers, long amounts, revision checks, and server-side rollback follow the fluid-container transaction model.
+- Three compact 8x8 inventory-action icons (sort, deposit-all, and filtered withdraw) are centered in the gap between the Xianqiao storage grid and the player inventory, with hover descriptions and no overlap with item slots.
 
 ## Personal Xianqiao Realm
 
@@ -284,7 +286,7 @@ The Spirit Sword's tooltip and combat code share the same damage model, so the d
 - The sword supports anvil enchantments using the current netherite-sword rules but rejects random enchanting-table rolls.
 - Spirit Repair can consume Yuan to restore durability.
 - Repeated processing in a furnace, blast furnace, placed Immortal Furnace, or embedded Immortal Furnace adds one tempering point with no experience reward.
-- Every tempering point adds 1% damage; after a hit, tempering points are reduced to 50%, rounded down.
+- Ordinary Spirit Swords gain 1% per tempering point; the One-Qi Returning Origin Sword gains 0%, and the Immortal-Ruin-Forged Spirit Sword gains 1.5%; after a hit, tempering points are reduced to 50%, rounded down.
 - The current tempering bonus is visible in the tooltip.
 
 ## World Shard Miner and Treasure Basin
@@ -324,6 +326,8 @@ Installing neither viewer is supported. Installing both is also guarded against 
 ImmortalStorage uses standard NeoForge item/fluid capability surfaces for ordinary automation. Optional integrations are isolated so an absent mod cannot cause a class-loading crash.
 
 Implemented integration areas include AE2 and Refined Storage exchange media, storage-bus visibility, Mekanism energy/chemical access, Botania mana, Ars Nouveau Source, Flux Networks energy, and Industrial Foregoing Souls. Exact behavior depends on the installed mod version and the enabled server configuration.
+
+The terminal also treats Mekanism chemical containers like fluid containers: an empty container left-clicks the selected chemical row to withdraw it, while a filled container right-clicks to deposit its registered chemical into Xianqiao. The optional bridge uses Mekanism's chemical capability boundary and server-side simulate/execute/rollback handling for stacked containers and long ledger amounts.
 
 Release 0.0.2 includes the adapters documented for the stated Minecraft/NeoForge target. Other planned loader lines remain unreleased until their own build and runtime gates are complete.
 
@@ -382,16 +386,18 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 The release artifact is written to:
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar
 ```
 
 Useful verification tasks:
 
 ```powershell
-.\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
+.\gradlew.bat test build verifyArsSourceAdapter verifyWithoutAe2Runtime verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
-The 0.0.7 release gate passes 700 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks. Release JAR SHA256: `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`.
+The final 0.0.10 artifact passed **199 suites / 724 tests / 0 failures/errors/skips**, including the Ars Source API, no-AE2-runtime, production-boundary, version-composition, and exact-version-artifact checks. The built `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` is 5,162,987 bytes with SHA256 `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`; this release also covers sword-specific tempering coefficients, at-most-two-decimal tooltip percentages, the bilingual handbook entry-tree contract, Mekanism chemical-container terminal transactions, the centered realm time-flow layout, and the no-shadow text fix. This JAR is the sole asset for GitHub Release 0.0.10.
+
+The 0.0.7 release gate passed 700 tests on JDK 21, plus production-class, version-composition, exact-artifact, Ars Source API, no-AE2-runtime, and single-player QA checks. Release JAR SHA256: `0547EFD1B1E75C9FE4305F3F6A48A79A9F5147FD42CA468AF716B87E91739B75`.
 
 ## Project Layout
 

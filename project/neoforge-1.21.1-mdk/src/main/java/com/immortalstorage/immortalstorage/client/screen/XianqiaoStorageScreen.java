@@ -3,6 +3,7 @@ package com.immortalstorage.immortalstorage.client.screen;
 import com.immortalstorage.immortalstorage.block.ModBlocks;
 import com.immortalstorage.immortalstorage.menu.custom.XianqiaoStorageMenu;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalQuery;
+import com.immortalstorage.immortalstorage.compat.TerminalExternalResourceCompatHooks;
 import com.immortalstorage.immortalstorage.network.ModPayloads;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -31,6 +32,10 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     private static final int REALM_HEIGHT = 160;
     /** Small vanilla panel seam; the removed channel rail no longer reserves 32 px. */
     private static final int REALM_GAP = 4;
+    private static final int REALM_TIME_BUTTON_SIZE = 20;
+    private static final int REALM_TIME_SIDE_INSET = 8;
+    private static final int REALM_TIME_LABEL_Y = 43;
+    private static final int REALM_TIME_ROW_Y = 53;
 
     private boolean realmVisible;
     private boolean furnaceVisible;
@@ -116,15 +121,19 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 .bounds(environmentX + 46, this.topPos + 78, 42, 18)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.weather_hint"))).build());
+        int realmPanelX = this.leftPos + this.imageWidth + REALM_GAP;
+        int timeControlY = this.topPos + REALM_TIME_ROW_Y;
         this.slowerTimeButton = this.addRenderableWidget(Button.builder(Component.literal("-"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, -1)))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 57, 20, 20)
+                .bounds(realmPanelX + REALM_TIME_SIDE_INSET, timeControlY,
+                        REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(
                         Component.translatable("container.immortalstorage.terminal.time_slower")))
                 .build());
         this.fasterTimeButton = this.addRenderableWidget(Button.builder(Component.literal("+"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, 1)))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + REALM_WIDTH - 28, this.topPos + 57, 20, 20)
+                .bounds(realmPanelX + REALM_WIDTH - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE,
+                        timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(
                         Component.translatable("container.immortalstorage.terminal.time_faster")))
                 .build());
@@ -154,7 +163,8 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 139, 88, 16)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.terminal.magnet_hint"))).build());
-        int inventoryActionsY = this.topPos + this.imageHeight - 106;
+        int inventoryActionsY = this.topPos + TerminalLayout.inventoryY(this.imageHeight)
+                - (TerminalLayout.SLOT_SIZE + TerminalInventoryActionButton.SIZE) / 2;
         int inventoryActionsX = this.leftPos + this.imageWidth - 30;
         this.sortInventoryButton = this.addRenderableWidget(new TerminalInventoryActionButton(
                 inventoryActionsX, inventoryActionsY, TerminalInventoryActionButton.Icon.WRENCH,
@@ -202,10 +212,18 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
             VanillaGuiPainter.moduleTitle(graphics, this.font,
                     Component.translatable("container.immortalstorage.terminal.management").getString(),
                     panelX + 8, this.topPos + 26);
-            graphics.drawString(this.font,
-                    Component.translatable("container.immortalstorage.terminal.time_scale",
-                            String.format(java.util.Locale.ROOT, "%.1fx", this.menu.getData().getTimeScale())),
-                    panelX + 8, this.topPos + 51, 0xFF404040, false);
+            Component timeScaleTitle = Component.translatable(
+                    "container.immortalstorage.terminal.time_scale_title");
+            graphics.drawString(this.font, timeScaleTitle,
+                    panelX + (REALM_WIDTH - this.font.width(timeScaleTitle)) / 2,
+                    this.topPos + REALM_TIME_LABEL_Y, 0xFF404040, false);
+            String timeScale = String.format(java.util.Locale.ROOT, "%.1fx", this.menu.getData().getTimeScale());
+            Component timeScaleValue = Component.literal(timeScale);
+            graphics.drawString(this.font, timeScaleValue,
+                    panelX + (REALM_WIDTH - this.font.width(timeScaleValue)) / 2,
+                    this.topPos + REALM_TIME_ROW_Y
+                            + (REALM_TIME_BUTTON_SIZE - this.font.lineHeight) / 2,
+                    0xFF404040, false);
         }
     }
 
@@ -380,6 +398,21 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                         && carriedIsFluidContainer()) {
                     PacketDistributor.sendToServer(new ModPayloads.TerminalFluidEntryAction(
                             this.menu.containerId, this.menu.fluidRevision(), 0L, true));
+                    consumeCustomSlotRelease(button);
+                    return true;
+                }
+                var external = this.menu.displayedExternalEntryAtIndex(cell.index());
+                if (external != null) {
+                    PacketDistributor.sendToServer(new ModPayloads.TerminalExternalResourceEntryAction(
+                            this.menu.containerId, this.menu.externalRevision(),
+                            button == 1 ? 0L : external.entryId(), button == 1));
+                    consumeCustomSlotRelease(button);
+                    return true;
+                }
+                if (button == 1 && this.menu.displayedEntryAtSlot(cell.index()) == null
+                        && carriedIsChemicalContainer()) {
+                    PacketDistributor.sendToServer(new ModPayloads.TerminalExternalResourceEntryAction(
+                            this.menu.containerId, this.menu.externalRevision(), 0L, true));
                     consumeCustomSlotRelease(button);
                     return true;
                 }
@@ -608,6 +641,12 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         ItemStack carried = this.menu.getCarried();
         return !carried.isEmpty()
                 && FluidUtil.getFluidHandler(carried.copyWithCount(1)).isPresent();
+    }
+
+    private boolean carriedIsChemicalContainer() {
+        ItemStack carried = this.menu.getCarried();
+        return !carried.isEmpty()
+                && TerminalExternalResourceCompatHooks.isContainer(carried.copyWithCount(1));
     }
 
     private void updateRealmWidgets() {

@@ -24,6 +24,19 @@ class XianqiaoInventorySorterContractTest {
         assertFalse(screen.contains("keyPressed(int keyCode"));
     }
 
+    @Test
+    void inventoryActionsAreCenteredInTheGapAboveThePlayerInventory() throws Exception {
+        Path root = locateMainSourceRoot();
+        String screen = Files.readString(root.resolve(
+                "java/com/immortalstorage/immortalstorage/client/screen/XianqiaoStorageScreen.java"));
+
+        assertTrue(screen.contains("TerminalLayout.inventoryY(this.imageHeight)"));
+        assertTrue(screen.contains("(TerminalLayout.SLOT_SIZE + TerminalInventoryActionButton.SIZE) / 2"),
+                "the three 8x8 action icons should be centered in the storage/inventory gap");
+        assertFalse(screen.contains("this.topPos + this.imageHeight - 106"),
+                "the old position overlaps the final storage row");
+    }
+
     private static Path locateMainSourceRoot() {
         Path cursor = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
         while (cursor != null) {

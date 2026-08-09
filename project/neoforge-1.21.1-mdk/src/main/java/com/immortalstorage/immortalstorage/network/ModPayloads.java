@@ -250,6 +250,31 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<TerminalFluidEntryAction> type() { return TYPE; }
     }
 
+    /** Deposits a carried Mekanism chemical container or fills it from one external chemical entry. */
+    public record TerminalExternalResourceEntryAction(int containerId, long revision, long entryId,
+                                                      boolean deposit) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, TerminalExternalResourceEntryAction>
+                STREAM_CODEC = new StreamCodec<>() {
+            @Override
+            public TerminalExternalResourceEntryAction decode(RegistryFriendlyByteBuf buffer) {
+                return new TerminalExternalResourceEntryAction(buffer.readVarInt(), buffer.readVarLong(),
+                        buffer.readVarLong(), buffer.readBoolean());
+            }
+
+            @Override
+            public void encode(RegistryFriendlyByteBuf buffer, TerminalExternalResourceEntryAction payload) {
+                buffer.writeVarInt(payload.containerId());
+                buffer.writeVarLong(payload.revision());
+                buffer.writeVarLong(payload.entryId());
+                buffer.writeBoolean(payload.deposit());
+            }
+        };
+        public static final CustomPacketPayload.Type<TerminalExternalResourceEntryAction> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "terminal_external_resource_entry_action"));
+        @Override public CustomPacketPayload.Type<TerminalExternalResourceEntryAction> type() { return TYPE; }
+    }
+
     /** Current 2R-buffered typed-fluid directory; amounts remain exact long mB. */
     public record TerminalFluidViewSnapshot(int containerId, long revision, int visibleRows,
                                              int baseRow, int bufferBaseRow, int totalRows,

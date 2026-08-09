@@ -20,7 +20,12 @@ import com.immortalstorage.immortalstorage.network.storage.PersonalStorageFluidH
 import com.immortalstorage.immortalstorage.network.storage.PersonalStorageLongItemStorage;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.compat.ExternalResourceCatalog;
+import com.immortalstorage.immortalstorage.compat.TerminalExternalResourceCompatHooks;
+import com.immortalstorage.immortalstorage.compat.XianqiaoInterfaceCompatHooks;
+import com.immortalstorage.immortalstorage.api.storage.ExternalResourceStorage;
 import com.immortalstorage.core.resource.ResourceChannelEntry;
+import com.immortalstorage.core.resource.ExternalResourceChannels;
+import com.immortalstorage.core.resource.ResourceTransferAction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -105,6 +110,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private final TerminalFluidCatalog fluidCatalog = new TerminalFluidCatalog();
     private final TerminalItemStorage itemStorage;
     private final PersonalStorageFluidHandler fluidStorage;
+    private final ExternalResourceStorage externalResourceStorage;
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
     private final ResultContainer resultSlots = new ResultContainer();
     private final EmbeddedSmithingBackend smithing;
@@ -165,6 +171,27 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         this.fluidStorage = new PersonalStorageFluidHandler(data, this::invalidateFluidSnapshot,
                 () -> data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_FLUID_UNLOCK_STAGE,
                 server, com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
+        this.externalResourceStorage = new ExternalResourceStorage() {
+            @Override public long revision() { return data.getExternalResourceRevision(); }
+
+            @Override
+            public List<ResourceChannelEntry> snapshot() {
+                return data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_EXTERNAL_UNLOCK_STAGE
+                        ? data.getExternalResourceEntries() : List.of();
+            }
+
+            @Override
+            public long insert(com.immortalstorage.core.resource.ResourceChannelKey key,
+                               long amount, ResourceTransferAction action) {
+                return data.insertExternalResource(key, amount, action);
+            }
+
+            @Override
+            public long extract(com.immortalstorage.core.resource.ResourceChannelKey key,
+                                long amount, ResourceTransferAction action) {
+                return data.extractExternalResource(key, amount, action);
+            }
+        };
         this.addDataSlot(new DataSlot() {
             @Override
             public int get() {
@@ -447,6 +474,70 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             return false;
         }
         return finishFluidContainerTransfer(actor, false, fluidStorage, selected.key());
+    }
+
+    /** Executes one Mekanism chemical-container interaction against the external directory. */
+    public boolean handleExternalResourceContainerAction(ServerPlayer actor, long expectedRevision,
+                                                         long entryId, boolean deposit) {
+        if (!hasLiveExternalAccess(actor)) return false;
+        rebuildExternalCatalog();
+        if (expectedRevision > data.getExternalResourceRevision()) return false;
+
+        ItemStack carried = getCarried();
+        if (carried.isEmpty() || !TerminalExternalResourceCompatHooks.isContainer(carried)) {
+            actor.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                    "message.immortalstorage.terminal.chemical_container_required"), true);
+            return false;
+        }
+
+        TerminalExternalResourceEntry selected = entryId == 0L ? null : displayedExternalEntry(entryId);
+        if (entryId != 0L && selected == null) return false;
+        Optional<XianqiaoInterfaceCompatHooks.ContainedExternalResource> contained =
+                XianqiaoInterfaceCompatHooks.containedExternalResource(carried);
+        if (deposit) {
+            if (contained.isEmpty()) {
+                actor.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                        "message.immortalstorage.terminal.chemical_deposit_mismatch"), true);
+                return false;
+            }
+            return finishExternalResourceContainerTransfer(actor, true, null);
+        }
+
+        if (selected == null || !ExternalResourceChannels.MEKANISM_CHEMICAL_CHANNEL
+                .equals(selected.key().channel())) {
+            actor.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                    "message.immortalstorage.terminal.chemical_entry_required"), true);
+            return false;
+        }
+        if (contained.isPresent()) {
+            actor.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                    "message.immortalstorage.terminal.chemical_empty_container_required"), true);
+            return false;
+        }
+        return finishExternalResourceContainerTransfer(actor, false, selected.key());
+    }
+
+    private boolean finishExternalResourceContainerTransfer(
+            ServerPlayer actor, boolean deposit,
+            com.immortalstorage.core.resource.ResourceChannelKey selectedKey) {
+        ItemStack carried = getCarried();
+        PlayerInvWrapper inventory = new PlayerInvWrapper(actor.getInventory());
+        TerminalExternalResourceCompatHooks.TransferResult result = deposit
+                ? TerminalExternalResourceCompatHooks.depositToStorage(
+                        carried, externalResourceStorage, inventory)
+                : TerminalExternalResourceCompatHooks.withdrawFromStorage(
+                        carried, selectedKey, externalResourceStorage, inventory);
+        if (!result.handled() || !result.success()) {
+            actor.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                    result.failure() == TerminalExternalResourceCompatHooks.Failure.EXECUTE_FAILED
+                            ? "message.immortalstorage.terminal.chemical_transfer_failed"
+                            : "message.immortalstorage.terminal.chemical_transfer_no_space"), true);
+            return false;
+        }
+        setCarried(result.carried());
+        rebuildExternalCatalog();
+        broadcastChanges();
+        return true;
     }
 
     private boolean finishFluidContainerTransfer(ServerPlayer actor, boolean deposit,
@@ -854,6 +945,11 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
                 && data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_FLUID_UNLOCK_STAGE;
     }
 
+    public boolean hasLiveExternalAccess(Player actor) {
+        return hasLiveTerminalAccess(actor)
+                && data.getStage() >= ImmortalStoragePlayerData.XIANQIAO_EXTERNAL_UNLOCK_STAGE;
+    }
+
     @Override public boolean stillValid(Player actor) { return hasLiveTerminalAccess(actor); }
 
     private void refreshCraftingResult(RecipeHolder<CraftingRecipe> lastRecipe) {
@@ -916,6 +1012,10 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
 
     private void rebuildExternalCatalog() {
         if (player.level().isClientSide()) return;
+        if (data.getStage() < ImmortalStoragePlayerData.XIANQIAO_EXTERNAL_UNLOCK_STAGE) {
+            filteredExternalEntries = List.of();
+            return;
+        }
         String search = terminalQuery.normalizedText();
         Comparator<TerminalExternalResourceEntry> comparator = switch (terminalQuery.sortOrder()) {
             case AMOUNT -> Comparator.comparingLong(TerminalExternalResourceEntry::amount);
@@ -1048,6 +1148,15 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
 
     private int inferredClientFluidEntryCount() {
         return clientTotalFluidEntries;
+    }
+
+    private TerminalExternalResourceEntry displayedExternalEntry(long entryId) {
+        int slots = bufferedRowCount() * VISIBLE_COLS;
+        for (int index = 0; index < slots; index++) {
+            TerminalExternalResourceEntry entry = displayedExternalEntryAtIndex(index);
+            if (entry != null && entry.entryId() == entryId) return entry;
+        }
+        return null;
     }
 
     public TerminalExternalResourceEntry displayedExternalEntryAtIndex(int viewIndex) {

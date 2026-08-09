@@ -1,5 +1,71 @@
 # Changelog
 
+## [0.0.10] - 2026-08-09
+
+本节完整列出 `0.0.9` → `0.0.10` 的用户可见变化。
+
+### 简体中文
+
+#### 新增与兼容
+
+- 新增可选 Mekanism 化学品容器与仙窍终端的双向交互。阶段 8 及以上可右键手持已装容器将化学品存入仙窍，左键点击已选中的化学品条目并手持空容器取出化学品；操作遵循流体/流体容器的容器驱动语义。
+- 化学品容器事务由服务端负责：校验实时菜单、阶段 8 外部资源权限、菜单 revision、化学品频道/注册表身份，并使用模拟、执行、返回容器与存储回滚处理，支持堆叠容器而不产生半完成转移。
+- Mekanism 类仅位于可选兼容边界；未安装 Mekanism 时公共终端、网络和存储代码仍可加载，安装后才注册化学品容器能力桥。
+- 补充双语帕秋莉古玉手册的缺失内容：新增仙窍管理器章节，扩展世界碎片开采器/聚宝盆的 27 格缓存、2400 刻战利品周期与数据包规则，并同步补充终端、源方块、仙窍接口、AE2/RS、可选联动和三类灵剑系数说明。
+- 手册条目树契约现在检查中英文资源的结构一致性、JSON 合法性，以及新增系统与关键规则均已进入随 JAR 内置的 Patchouli 手册。
+
+#### 优化与界面
+
+- 统一三类灵剑的淬火系数来源：一气归元剑为 `0%/淬火点`，普通灵剑为 `1%/淬火点`，仙墟锻灵剑为 `1.5%/淬火点`；Tooltip 预览、标准主手攻击属性和战斗计算使用同一剑型规则。
+- 仙窍存储的整理、全部存入、按筛选取出三个 `8×8` 操作按钮移动到存储网格与玩家背包之间的空隙，并保持原版背包槽和外部整理器识别契约。
+- 仙窍管理时间流速改为居中的 `- 数值 +` 对称布局：标题独立居中，数值位于两个调速按钮之间，白天/天气控制保持在下一行。
+- 时间流速标题和数值改用显式关闭阴影的原版文字绘制路径，消除截图中的文字重影并保持像素字体清晰。
+
+#### 修复
+
+- 修复一气归元剑 Tooltip 将每点淬火误显示为 `1%` 的问题；现在显示并使用 `0%/淬火点`。
+- 修复仙墟锻灵剑 Tooltip 将每点淬火误显示为 `1%` 的问题；现在显示并使用 `1.5%/淬火点`，普通灵剑仍为 `1%`。
+- 修复仙墟锻灵剑的 `1.5%` 淬火系数因浮点转换显示为 `1.49999……%` 的问题；Tooltip 百分比现在最多保留两位小数，并自动去除无意义的尾零。
+- 固定外部资源阶段边界常量，避免能量、化学品、魔力和工业先锋灵魂等频道在阶段不足时通过不同入口出现不一致权限。
+
+#### 支持范围、验证与发布
+
+- 版本更新为 `0.0.10`；正式支持范围为 Minecraft 1.21.1、NeoForge 21.1.235、Java 21，网络协议保持 8。
+- 完整门禁包含 `test`、`build`、Ars Source API、无 AE2 运行时、生产 JAR 边界、版本组成和精确版本产物检查，结果为 **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**。
+- 最终 JAR 会以 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 发布；发布哈希、Git 提交、标签、GitHub Release 和远端回下载校验以本节最终版本为准。
+
+### English
+
+This section is the complete user-visible delta from `0.0.9` to `0.0.10`.
+
+#### Added and compatibility
+
+- Added optional Mekanism chemical-container interaction with the Xianqiao terminal. From stage 8 onward, right-clicking with a filled container deposits its chemical into Xianqiao, while left-clicking a selected chemical entry with an empty container withdraws it; the interaction follows the existing fluid/container model.
+- Made the chemical-container transaction server-authoritative: it validates the live menu, stage-8 external-resource access, menu revision, chemical channel/registry identity, and uses simulate, execute, returned-container handling, and storage rollback to support stacked containers without partial transfers.
+- Kept Mekanism classes behind the optional compatibility boundary. Common terminal, network, and storage code remains loadable without Mekanism; the chemical-container hook is installed only when Mekanism is present.
+- Expanded the bilingual Patchouli Ancient Jade handbook with a dedicated Xianqiao Manager chapter, World Shard Miner/Treasure Basin 27-slot cache, 2400-tick loot cycle and datapack rules, plus deeper terminal, Source Vein, Xianqiao Interface, AE2/RS, optional-integration, and sword-coefficient guidance.
+- Handbook contracts now enforce bilingual entry-tree parity, valid JSON, and inclusion of the new systems and key rules in the bundled Patchouli handbook.
+
+#### Improvements and interface
+
+- Unified all three sword tempering coefficient sources: One-Qi Returning Origin Sword `0%/tempering point`, ordinary Spirit Sword `1%/tempering point`, and Immortal-Ruin-Forged Spirit Sword `1.5%/tempering point`. Tooltip previews, standard main-hand attributes, and combat calculations now use the same item-specific rule.
+- Moved the three Xianqiao storage `8×8` sort, deposit-all, and filtered-withdraw buttons into the gap between the storage grid and player inventory while preserving vanilla player slots and external sorter recognition.
+- Reworked realm time flow into a centered symmetric `- value +` row: the title is centered separately, the value sits between the two controls, and day/weather controls remain on the following row.
+- Switched the time-flow title and value to the explicit no-shadow vanilla text-rendering overload, removing the visible ghosting while retaining the pixel-font layout.
+
+#### Fixed
+
+- Fixed the One-Qi Returning Origin Sword tooltip showing `1%` per tempering point; it now shows and uses `0%/tempering point`.
+- Fixed the Immortal-Ruin-Forged Spirit Sword tooltip showing `1%` per tempering point; it now shows and uses `1.5%/tempering point`; the ordinary Spirit Sword remains at `1%`.
+- Fixed the Immortal-Ruin-Forged Spirit Sword `1.5%` tempering coefficient being rendered as `1.49999…%` after floating-point conversion; tooltip percentages now use at most two decimal places and trim insignificant trailing zeroes.
+- Centralized the external-resource stage boundary so energy, chemicals, mana, Industrial Foregoing souls, and similar channels cannot expose inconsistent access through separate entry points below their unlock stage.
+
+#### Support, verification, and release
+
+- Bumped the version to `0.0.10`; official support remains Minecraft 1.21.1, NeoForge 21.1.235, and Java 21, with network protocol 8 unchanged.
+- The complete gate includes `test`, `build`, the Ars Source API check, no-AE2 runtime verification, production-JAR boundary, version composition, and exact-version-artifact checks. It passes **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**.
+- The final JAR is published as `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`; the final hash, Git commit, tag, GitHub Release, and remote redownload audit are recorded in the final release state.
+
 ## [0.0.9] - 2026-08-08
 
 本节完整列出相对正式版 `0.0.8` 的全部用户可见变化。

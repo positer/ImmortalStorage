@@ -2,7 +2,7 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前开发版本为 **0.0.9**：个人仙窍维度、仙窍/RS 存储磁盘、仙灵驱动器、替死傀儡与所有者绑定机器统一改用随玩家数据持久化的稳定身份，不再直接依赖启动器本次会话 UUID。旧存档首次加载时从已保存仙窍引用或一致的旧绑定物品执行一次性迁移，合法旧绑定原地升级且不改变磁盘 ID、物品内容、耐久或锚点；同时包含 AE2 `external_resource` 缺失客户端渲染处理器的崩溃修复。
+> 当前发布版本为 **0.0.10**：在 0.0.9 的持久玩家身份、AE2/RS 额外资源兼容和崩溃修复基础上，修复一气归元剑与仙墟锻灵剑的淬火点 tooltip 系数显示，将淬火百分比限制为最多两位小数，补齐扩展后的双语帕秋莉手册内容，新增 Mekanism 化学品容器与终端内储存化学品的双向交互，并将仙窍管理的时间流速控件重排为居中的 `- 数值 +` 对称布局，同时修复控件文字重影。
 >
 > **0.0.9 RS 额外资源显示与附属兼容（2026-08-08）：** 仅安装 Refined Storage 2.0.9 时，仙窍交换磁盘会用仙藏自有 `xianqiao_external` 资源类型在 RS 网格中显示 FE、Mana、Source、Souls 与 Mekanism 化学品。安装 Refined Types 时 FE/Source/Souls 自动改用其原生键，安装官方 RS Mekanism Integration 时化学品自动改用其原生键；仙藏回退键继续可读写，避免升级、移除附属或网络缓存中的旧条目失效，并保证同一账本资源只枚举一次。ExtraStorage 等使用 RS 标准存储容器协议的扩容附属可与仙窍交换磁盘共存。详见 `archive/2026-08-08-rs-external-resource-display-and-addon-compat.md`。
 >
@@ -25,21 +25,21 @@
 
 仙藏（ImmortalStorage）是一个面向 Minecraft 生存流程的修仙、个人存储、自动化与专属维度模组。玩家会从凡人启灵开始，通过古玉了解修行道路，积累灵气与材料，逐步突破十个阶段，扩展与角色绑定的空窍/仙窍存储，建设属于自己的仙窍维度，并在后期通过渡劫完成境界提升。
 
-模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
+模组界面采用 Minecraft 原版像素语言，并借鉴大型存储网络的信息架构：存储、检索、合成、仙炉、装备、流体、化学品容器、磁铁和仙窍管理集中在连续终端中，不需要频繁打开互不关联的独立窗口。
 
-> 0.0.9 仅支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未声明支持。
+> 0.0.10 仅支持 **Minecraft 1.21.1、NeoForge 21.1.235、Java 21**。其他 NeoForge 版本区间尚未声明支持。
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**下载：**[仙藏 ImmortalStorage 0.0.7](https://github.com/positer/ImmortalStorage/releases/tag/0.0.7)
+**最新已发布版本：**[仙藏 ImmortalStorage 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)
 
-**发行 JAR SHA256：** `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`（5,137,573 字节）
+**发行 JAR SHA256：** `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`（5,162,987 字节）
 
 ## 模组特色
 
 - 从凡人到十阶的完整修行阶段，包含灵气、丹药、真元、仙元、飞升和渡劫。
 - 与玩家身份绑定的空窍/仙窍存储，不依赖某一个固定放置的箱子或机器。
-- 原版风格连续滚动终端，支持搜索、排序、合成、仙炉、装备、流体与磁铁管理。
+- 原版风格连续滚动终端，支持搜索、排序、合成、仙炉、装备、流体、Mekanism 化学品容器与磁铁管理。
 - 每位玩家独有的仙窍维度，空间边界和时间流速会随阶段成长。
 - 源方块、源方块管理器、仙窍管理器和仙窍接口组成的大宗资源自动化系统。
 - 探索、扳手、镐子、建筑、传送五模式灵器，以及可淬火成长的灵剑。
@@ -55,7 +55,7 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235 |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.9 |
+| 仙藏 ImmortalStorage | 0.0.10 |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。
 
@@ -74,13 +74,13 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 仙窍日夜和天气由服务器持久锁定；Numen 实机完成“黑夜 → 白天 → 黑夜”往返并确认午夜天空盒、雨与四态天气切换。
 - 2026-08-01 全量 691 项测试、生产 JAR 边界、版本组成、精确版本产物、Ars Source API、无 AE2 运行时及专用服务端启动校验通过。
 - 发行包 SHA256 为 `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`。
-- `CHANGELOG.md` 与 GitHub Release 正文用中英文完整列出相对 0.0.5 的新增、行为变化、修复、兼容性和验证记录。
+- `CHANGELOG.md` 与 GitHub Release 正文用中英文完整列出相对 0.0.9 的新增、行为变化、修复、兼容性和验证记录；0.0.10 当前门禁为 199 suites / 724 tests。
 
 ## 安装方法
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 从 GitHub Release 下载 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.7.jar`。
+3. 使用最新已发布的 0.0.10 JAR，或从源码构建 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -103,7 +103,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面，并完整覆盖 0.0.3–0.0.9 的主要玩法：替死傀儡、灵剑三条内容线、拘灵器、仙灵驱动器、模拟生产设备、四类稳定化仙墟、源方块/管理器、个人仙窍天气与持久身份迁移，以及 AE2/RS 额外资源兼容。中英条目树与后续版本系统覆盖均由自动契约检查。
+古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面，并覆盖 0.0.3–0.0.10 的主要玩法：新增独立的仙窍管理器、世界碎片开采器/聚宝盆数据包扩展、终端管理页、外部资源与可选联动边界，以及一气归元剑和仙墟锻灵剑的实际淬火系数；同时保留替死傀儡、拘灵器、仙灵驱动器、模拟生产设备、四类稳定化仙墟、源方块/管理器、个人仙窍天气与持久身份迁移说明。中英条目树与后续版本系统覆盖均由自动契约检查。
 
 ## 修行阶段
 
@@ -163,6 +163,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 内置三工作格仙炉，支持自动补入上一组原料并将输出送回存储。
 - 磁铁支持开关、黑名单/白名单与掉落物直接入库。
 - 手持物品耗尽后可按完整数据组件自动补充一组。
+- 在外部资源化学品行上，右键手持已装 Mekanism 化学品容器入库；左键手持空容器从选中的化学品行取出，支持堆叠容器、长数量和服务端事务回滚。
 
 ## 个人仙窍维度
 
@@ -333,7 +334,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 不能在附魔台随机附魔，但可通过铁砧接受当前下界合金剑允许的附魔。
 - 自带灵气修复，可消耗元气恢复耐久。
 - 可在熔炉、高炉、放置仙炉和内置仙炉中反复淬火，每次增加一点淬火点且不给予经验。
-- 每一点淬火使伤害提高 1%；每次命中后淬火点减半并向下取整。
+- 普通灵剑每一点淬火使伤害提高 1%；一气归元剑为 0%，仙墟锻灵剑为 1.5%；每次命中后淬火点减半并向下取整。
 - 当前淬火点与伤害加成会直接显示在 Tooltip 中。
 
 仙墟锻灵剑右键传送目标后会立即清除目标速度，并施加 40 tick（2 秒）的绝对禁锢；期间忽略实体碰撞、挤压和外力，目标被固定在原位。`immortalstorage-common.toml` 与原生模组配置页提供“传送影响其他玩家”开关：默认开启以保持原行为；关闭后范围传送与禁锢只影响非玩家生物。
@@ -383,7 +384,9 @@ JEI 和 EMI 均为可选依赖。安装后支持：
 
 当前工程包含 AE2、RS 交流存储介质与存储总线读取，以及通用机械能量/化学品、植物魔法魔力、Ars Nouveau Source、通量网络能量、工业先锋灵魂等兼容区域。具体可用功能取决于实际安装版本与服务器配置。
 
-仙窍存储界面的玩家背包槽保持为直接绑定原版 `Inventory` 的标准槽，供 R 键整理类辅助模组识别；ImmortalStorage 不监听或占用 R 键。界面在背包右上方另提供三个 16x16 小图标按钮：扳手整理、绿色上箭头全部存入、红色下箭头按当前筛选取出，并保留完整悬停说明。Building Gadgets 2 1.3.9 的复制粘贴小帮手在玩家主手或副手持有时，可把当前空窍/仙窍物品作为材料来源，模拟检查不扣物，正式施工才执行抽取。Create 蓝图大炮可把仙窍管理器当作标准 NeoForge 方块物品仓库读取，不需要 Create 私有 API。
+终端内的 Mekanism 化学品容器交互沿用流体/流体容器的容器驱动语义：空容器左键取出当前选中的化学品，已装容器右键把自身化学品存入仙窍；服务端按化学品注册 ID、菜单 revision 和访问阶段校验，并使用模拟、执行、回滚保证容器堆叠与存储账本不会半完成。
+
+仙窍存储界面的玩家背包槽保持为直接绑定原版 `Inventory` 的标准槽，供 R 键整理类辅助模组识别；ImmortalStorage 不监听或占用 R 键。界面在仙窍存储与背包之间的空隙中提供三个紧凑的 8x8 小图标按钮：扳手整理、绿色上箭头全部存入、红色下箭头按当前筛选取出，并保留完整悬停说明。Building Gadgets 2 1.3.9 的复制粘贴小帮手在玩家主手或副手持有时，可把当前空窍/仙窍物品作为材料来源，模拟检查不扣物，正式施工才执行抽取。Create 蓝图大炮可把仙窍管理器当作标准 NeoForge 方块物品仓库读取，不需要 Create 私有 API。
 
 Beyond Dimensions 安装与否都不会停用、替换或迁移 ImmortalStorage 自有空窍/仙窍存储；两套存储保持彼此独立，当前版本不安装外部权威后端路由。
 
@@ -449,16 +452,18 @@ $env:JAVA_HOME = "C:\path\to\jdk-21"
 发行文件生成在：
 
 ```text
-project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.9.jar
+project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar
 ```
 
 完整验证命令：
 
 ```powershell
-.\gradlew.bat test build verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
+.\gradlew.bat test build verifyArsSourceAdapter verifyWithoutAe2Runtime verifyProductionJarBoundary verifyVersionComposition verifyVersionArtifact --no-daemon --max-workers 1 --console=plain
 ```
 
 0.0.9 正式制品已通过 **717 项测试（196 suites / 0 failures/errors/skips）**、生产边界、版本组成与精确制品检查；统一持久身份、旧 UUID 一次性迁移、AE2/RS 磁盘、RS 无附属额外资源显示、RS 网格 Mapper、Refined Types/官方 RS Mekanism Integration 原生键退让、仙灵驱动器、替死傀儡、绑定机器、AE2 `Missing render handler` 崩溃条件及古玉手册双语完整性均有回归覆盖。此前 SHA-256 为 `BE3F8C2A5283166513CA178DE5A9186651C3780C9DCD358B416BA849FE4C1228` 的实机验证制品已部署到 30-JAR 全模组 PCL2 实例；Numen 在绑定旧交换磁盘上实机打开 RS `CraftingGridScreen`，确认化学品与仙藏一致仅显示注册表取样纯色，非纯色资源继续使用目录纹理，且 `No factory`、高级屏幕处理失败与外部资源纹理加载失败均为 0。包含完整手册的最终发布 JAR SHA-256 为 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`。详细记录见 `archive/2026-08-08-rs-native-fallback-rendering.md`。
+
+0.0.10 最终制品已通过 **199 suites / 724 项测试 / 0 failures/errors/skips**、Ars Source API、无 AE2 运行时、生产边界、版本组成与精确版本产物检查。生成的 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 为 5,162,987 字节，SHA-256 为 `6BAF167B57179A20E4B20632EDCFB66D6F4897C65C9DAB9CAA0D502BE3554BDF`；本次变更覆盖剑系淬火系数、最多两位小数的淬火百分比 Tooltip、双语古玉手册条目树契约、Mekanism 化学品容器交互、仙窍管理时间流速居中排版及文字重影修复。该制品将作为 GitHub Release 0.0.10 的唯一 JAR 资产。
 
 ## 仓库结构
 

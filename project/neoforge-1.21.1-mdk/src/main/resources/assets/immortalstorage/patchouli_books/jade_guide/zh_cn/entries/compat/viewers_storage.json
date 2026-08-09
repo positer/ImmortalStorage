@@ -5,6 +5,9 @@
     {"type":"patchouli:text","text":"AE2/RS交流磁盘绑定仙藏持久玩家身份并显示最新用户名，同一网络只挂载一张指向同一玩家的磁盘。0.0.8及更早的合法会话UUID绑定首次交互时原地迁移，磁盘独立ID、内容与组件全部保留。"},
     {"type":"patchouli:text","text":"AE2终端直接注册仙藏额外资源渲染器；缺少附属渲染时，FE、Mana、Source与Souls使用仙藏自带材质，化学品使用与仙藏终端一致的注册表纯色取样，不会因缺少处理器崩溃。"},
     {"type":"patchouli:text","text":"仅安装RS 2.0.9时也会显示仙藏额外资源。安装Refined Types或RS Mekanism Integration后优先采用其原生键；仙藏回退键保持可读写以兼容安装/移除附属。ExtraStorage等容量附属通过RS标准StorageContainerItem契约共存。"},
-    {"type":"patchouli:text","text":"仙元资源转化可在模组配置页和immortalstorage-common.toml调整。只有对应模组可用时才显示FE、Botania Mana、Ars Source、工业先锋Souls或Mekanism化学品；每类均可独立关闭、调整比例与每刻上限。"}
+    {"type":"patchouli:text","text":"仙元资源转化可在模组配置页和immortalstorage-common.toml调整。只有对应模组可用时才显示FE、Botania Mana、Ars Source、工业先锋Souls或Mekanism化学品；每类均可独立关闭、调整比例与每刻上限。"},
+    {"type":"patchouli:text","text":"Mekanism、Flux Networks、Botania、Ars Nouveau与Industrial Foregoing优先通过官方能力连接仙窍接口；具体资源只在目标模组存在时启用。Iron's Spells玩家魔力不进入仙藏共享账本。"},
+    {"type":"patchouli:text","text":"Building Gadgets可把空窍/仙窍物品作为复制粘贴材料来源，模拟检查不会扣除资源；Create蓝图大炮可把仙窍管理器当作标准NeoForge方块物品仓库读取。Beyond Dimensions不会替换或迁移仙藏自有存储，两套后端保持独立。"},
+    {"type":"patchouli:text","text":"普通村民交易也可从当前个人存储补充精确付款物品，但不会自动把仙元替代为真元。所有可选联动都位于独立加载边界，未安装目标模组时不会因为缺少其类而阻止游戏启动。"}
   ]
 }

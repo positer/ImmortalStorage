@@ -86,9 +86,13 @@ final class PatchouliBundledHandbookContractTest {
                         "advanced_entangled_stabilized_miniature_immortal_ruin"},
                 {"entries/automation/sources.json", "echo_shard_vein", "72"},
                 {"entries/automation/advanced_interface.json", "advanced_xianqiao_interface"},
+                {"entries/storage/xianqiao_manager.json", "xianqiao_manager", "Create", "Building Gadgets"},
                 {"entries/storage/spirit_drive.json", "spirit_drive", "UUID"},
                 {"entries/storage/furnace_realm.json", "immortal_furnace", "0.0.8", "UUID"},
-                {"entries/compat/viewers_storage.json", "AE2", "RS", "ExtraStorage"}
+                {"entries/automation/miner_basin.json", "world_shard_miner", "world_shard_loot", "2400"},
+                {"entries/compat/viewers_storage.json", "AE2", "RS", "ExtraStorage", "Building Gadgets", "Create", "Beyond Dimensions"},
+                {"entries/equipment/sword.json", "0%", "1.5%"},
+                {"entries/equipment/one_qi_returning_origin_sword.json", "0%", "10"}
         };
         for (String locale : new String[]{"zh_cn", "en_us"}) {
             for (String[] contract : coverage) {

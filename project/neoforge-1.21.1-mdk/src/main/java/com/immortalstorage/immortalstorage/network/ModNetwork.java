@@ -45,6 +45,9 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.TerminalEntryAction.TYPE, ModPayloads.TerminalEntryAction.STREAM_CODEC, ModNetwork::handleTerminalEntryAction);
         registrar.playToServer(ModPayloads.SetTerminalChannel.TYPE, ModPayloads.SetTerminalChannel.STREAM_CODEC, ModNetwork::handleSetTerminalChannel);
         registrar.playToServer(ModPayloads.TerminalFluidEntryAction.TYPE, ModPayloads.TerminalFluidEntryAction.STREAM_CODEC, ModNetwork::handleTerminalFluidEntryAction);
+        registrar.playToServer(ModPayloads.TerminalExternalResourceEntryAction.TYPE,
+                ModPayloads.TerminalExternalResourceEntryAction.STREAM_CODEC,
+                ModNetwork::handleTerminalExternalResourceEntryAction);
         registrar.playToServer(ModPayloads.TransferTerminalRecipe.TYPE, ModPayloads.TransferTerminalRecipe.STREAM_CODEC, ModNetwork::handleTransferTerminalRecipe);
         registrar.playToServer(ModPayloads.ToggleRealm.TYPE, ModPayloads.ToggleRealm.STREAM_CODEC, ModNetwork::handleToggleRealm);
         registrar.playToServer(ModPayloads.CycleStaffMode.TYPE, ModPayloads.CycleStaffMode.STREAM_CODEC, ModNetwork::handleCycleStaffMode);
@@ -349,6 +352,26 @@ public final class ModNetwork {
                 return;
             }
             if (!menu.handleFluidContainerAction(player, payload.revision(), payload.entryId(), payload.deposit())) {
+                sendTerminalSnapshot(player, menu);
+            }
+        });
+    }
+
+    private static void handleTerminalExternalResourceEntryAction(
+            ModPayloads.TerminalExternalResourceEntryAction payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || player.containerMenu.containerId != payload.containerId()
+                    || !(player.containerMenu instanceof XianqiaoStorageMenu menu)
+                    || !hasLiveXianqiaoMenu(player, menu)
+                    || !menu.hasLiveExternalAccess(player)) {
+                if (player != null && player.containerMenu instanceof XianqiaoStorageMenu openMenu) {
+                    sendTerminalSnapshot(player, openMenu);
+                }
+                return;
+            }
+            if (!menu.handleExternalResourceContainerAction(
+                    player, payload.revision(), payload.entryId(), payload.deposit())) {
                 sendTerminalSnapshot(player, menu);
             }
         });

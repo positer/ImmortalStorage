@@ -1,6 +1,8 @@
 package com.immortalstorage.immortalstorage.item;
 
 import com.immortalstorage.immortalstorage.item.custom.SpiritSwordTempering;
+import net.minecraft.server.Bootstrap;
+import net.minecraft.world.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -14,6 +16,24 @@ final class SpiritSwordTemperingContractTest {
     void damageBonusAndDecayUseExactOnePercentAndFloorHalfRules() {
         assertEquals(5.0F, SpiritSwordTempering.bonusDamage(10.0F, 50L));
         assertEquals(0.0F, SpiritSwordTempering.bonusDamage(10.0F, 0L));
+    }
+
+    @Test
+    void swordSpecificTemperingRatesMatchCombatAndTooltipRules() throws Exception {
+        Bootstrap.bootStrap();
+        ItemStack oneQi = new ItemStack(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get());
+        ItemStack immortalRuin = new ItemStack(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get());
+        ItemStack ordinary = new ItemStack(ModItems.SPIRIT_SWORD.get());
+
+        assertEquals(0.0D, SpiritSwordTempering.temperingMultiplier(oneQi));
+        assertEquals(0.015D, SpiritSwordTempering.temperingMultiplier(immortalRuin), 1.0E-6D);
+        assertEquals(0.01D, SpiritSwordTempering.temperingMultiplier(ordinary));
+        assertEquals(0.0F, SpiritSwordTempering.bonusDamage(oneQi, 10.0F, 1L));
+        assertEquals(0.15F, SpiritSwordTempering.bonusDamage(immortalRuin, 10.0F, 1L), 1.0E-6F);
+
+        String tooltip = Files.readString(locateMain().resolve("client/ClientItemTooltips.java"));
+        assertTrue(tooltip.contains("temperingMultiplier(stack)"));
+        assertTrue(tooltip.contains("bonusDamage(\n                stack"));
     }
 
     @Test

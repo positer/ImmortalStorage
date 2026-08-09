@@ -1,8 +1,11 @@
 {
   "name":"开采器与聚宝盆","icon":"immortalstorage:world_shard_miner","category":"immortalstorage:automation","sortnum":20,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:world_shard_miner","text":"世界碎片开采器使用完整同种底座：钻石块为主世界、下界残骸为下界、紫颂砖为末地。底座一至四级控制速度；可在任何维度激活。"},
-    {"type":"patchouli:text","text":"默认从当前世界实际矿物生成规则计算权重，也可由整合包固定表覆盖。在仙窍中产物直入存储；其他维度进入一个木桶容量的内部缓存，满后停机。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:treasure_basin","text":"聚宝盆只观察正下方已激活开采器的状态来选择战利品模式，双方没有主动通信。聚宝盆拥有独立缓存并能遮挡信标光束。"}
+    {"type":"patchouli:crafting","recipe":"immortalstorage:world_shard_miner","text":"世界碎片开采器使用与信标相同的完整同种底座：钻石块为主世界、下界残骸为下界、紫颂砖为末地。底座一至四级控制工作速度；结构可在任何维度激活。"},
+    {"type":"patchouli:text","text":"三个内置模式会按目标维度/生物群系选择主世界、下界或末地矿物。默认从当前服务器最终生效的世界生成规则扫描矿物权重，因此数据包和其他模组的矿脉也会参与；可用data/*/world_shard_miner/*.json定义或覆盖模式。"},
+    {"type":"patchouli:text","text":"在自己的仙窍内，产物经过所有者的个人存储事务直接入库；在其他维度则进入开采器独立的27格缓存，缓存满会显示“缓存满·停机”。物主离线或仙窍不可用时停止向仙窍输出，清空缓存后会自动恢复。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:treasure_basin","text":"聚宝盆只观察正下方已激活开采器的状态来选择战利品模式，双方没有主动通信。它只继承模式与不可变物主快照，拥有自己的27格缓存和独立运行状态，并能遮挡信标光束。"},
+    {"type":"patchouli:text","text":"聚宝盆每2400刻生成一轮当前模式战利品，使用服务器实际LootTable与物主幸运值；data/*/world_shard_loot/*.json可增加或覆盖按模式选择的战利品定义。没有可选择战利品时显示“校准中”，而不是生成空掉落。"},
+    {"type":"patchouli:text","text":"开采器与聚宝盆的缓存、满载停机、仙窍离线状态互不污染。仙窍物主维度中使用带容量上限的原子入库事务，其他维度只写入各自缓存；失败的一整轮会被拒绝而不会丢失或拆分掉落。"}
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name":"Spirit Sword Tempering","icon":"immortalstorage:spirit_sword","category":"immortalstorage:equipment","sortnum":10,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_sword","text":"Tooltip and combat share one damage model and show stage, payment, and tempering bonus. Anvils accept the current Netherite Sword enchantment set."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_sword","text":"Tooltip and combat share one damage model and show stage, payment, and tempering bonus. Anvils accept the current Netherite Sword enchantment set. Each tempering point adds 1% to a Spirit Sword, 0% to a One-Qi Returning Origin Sword, and 1.5% to an Immortal-Ruin-Forged Spirit Sword."},
     {"type":"patchouli:text","text":"Repeatedly smelt the sword in furnaces, blast furnaces, placed Immortal Furnaces, or the terminal furnace. Each completion adds one tempering point, grants no experience, and returns the sword to input for continuous processing. Each point adds 1% damage."},
     {"type":"patchouli:text","text":"After each hit, tempering points halve and round down. Aura repair spends the matching Yuan to restore durability; without enough balance, the hit still lands but deals only base weapon damage. Later, upgrade it into the Immortal-Ruin-Forged Spirit Sword, or forge the One-Qi Returning Origin Sword with a Spirit Core template and Primordial Qi. Each branch has its own chapter."}
   ]

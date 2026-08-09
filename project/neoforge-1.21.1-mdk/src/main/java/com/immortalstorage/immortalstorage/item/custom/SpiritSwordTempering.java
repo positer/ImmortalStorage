@@ -37,10 +37,18 @@ public final class SpiritSwordTempering {
 
     public static float bonusDamage(ItemStack stack, float ordinaryDamage, long points) {
         if (ordinaryDamage <= 0.0F || points <= 0L) return 0.0F;
-        double rate = stack != null && stack.getItem() instanceof ImmortalRuinForgedSpiritSwordItem
-                ? ImmortalRuinForgedSpiritSwordItem.temperingMultiplier() : 0.01D;
+        double rate = temperingMultiplier(stack);
         double bonus = ordinaryDamage * Math.min(points, 1_000_000_000L) * rate;
         return (float) Math.min(Float.MAX_VALUE, bonus);
+    }
+
+    /** Returns the damage growth applied by one tempering point for this sword type. */
+    public static double temperingMultiplier(ItemStack stack) {
+        if (stack != null && stack.getItem() instanceof OneQiReturningOriginSwordItem) return 0.0D;
+        if (stack != null && stack.getItem() instanceof ImmortalRuinForgedSpiritSwordItem) {
+            return ImmortalRuinForgedSpiritSwordItem.temperingMultiplier();
+        }
+        return 0.01D;
     }
 
     public static void setPoints(ItemStack stack, long points) {

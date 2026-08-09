@@ -20,7 +20,8 @@ final class XianqiaoAccessBoundaryTest {
         for (String method : List.of(
                 "handleTriggerTribulation", "handleTimeFlow", "handleSetStorageModule",
                 "handleSetTerminalViewport", "handleSetTerminalQuery", "handleTerminalEntryAction",
-                "handleSetTerminalChannel", "handleTerminalFluidEntryAction", "handleTransferTerminalRecipe")) {
+                "handleSetTerminalChannel", "handleTerminalFluidEntryAction",
+                "handleTerminalExternalResourceEntryAction", "handleTransferTerminalRecipe")) {
             assertTrue(methodBody(network, "private static void " + method + "(").contains("hasLiveXianqiaoMenu"),
                     () -> method + " must reject a stale or debug-downgraded Xianqiao menu");
         }
@@ -33,8 +34,10 @@ final class XianqiaoAccessBoundaryTest {
         for (String signature : List.of(
                 "public ItemStack quickMoveStack(", "public void clicked(",
                 "public boolean handleEntryAction(", "public boolean clickMenuButton(",
-                "public boolean transferCraftingRecipe(")) {
-            assertTrue(methodBody(menu, signature).contains("hasLiveTerminalAccess"),
+                "public boolean transferCraftingRecipe(",
+                "public boolean handleExternalResourceContainerAction(")) {
+            String body = methodBody(menu, signature);
+            assertTrue(body.contains("hasLiveTerminalAccess") || body.contains("hasLiveExternalAccess"),
                     () -> signature + " must reject item mutation after a debug downgrade");
         }
     }
@@ -75,6 +78,7 @@ final class XianqiaoAccessBoundaryTest {
     void fluidUnlockBoundaryIsStageSevenAcrossDataMenuAndStandardEndpoints() throws IOException {
         String data = source("player", "ImmortalStoragePlayerData.java");
         assertTrue(data.contains("public static final int XIANQIAO_FLUID_UNLOCK_STAGE = 7;"));
+        assertTrue(data.contains("public static final int XIANQIAO_EXTERNAL_UNLOCK_STAGE = 8;"));
         assertTrue(methodBody(data, "public long insertXianqiaoFluid(")
                 .contains("XIANQIAO_FLUID_UNLOCK_STAGE"));
         assertTrue(methodBody(data, "public long extractXianqiaoFluid(")
@@ -108,6 +112,11 @@ final class XianqiaoAccessBoundaryTest {
         assertTrue(methodBody(payloads, "private static void handleTerminalFluidEntryAction(")
                 .contains("hasLiveFluidAccess"),
                 "the fluid payload must reject a stale stage-seven menu before revision or container work");
+        assertTrue(methodBody(payloads, "private static void handleTerminalExternalResourceEntryAction(")
+                .contains("hasLiveExternalAccess"),
+                "the external-resource payload must reject a stale stage-eight menu before container work");
+        assertTrue(methodBody(menu, "public boolean hasLiveExternalAccess(")
+                .contains("XIANQIAO_EXTERNAL_UNLOCK_STAGE"));
     }
 
     @Test

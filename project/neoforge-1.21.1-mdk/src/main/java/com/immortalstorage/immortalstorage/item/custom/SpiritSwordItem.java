@@ -80,9 +80,7 @@ public class SpiritSwordItem extends SwordItem {
             case TRUE -> data.getTrueYuan() >= profile.costAmount();
             case IMMORTAL -> data.getImmortalYuan() >= profile.costAmount();
         };
-        double temperingRate = stack.getItem() instanceof OneQiReturningOriginSwordItem
-                ? 0.0D : stack.getItem() instanceof ImmortalRuinForgedSpiritSwordItem
-                ? ImmortalRuinForgedSpiritSwordItem.temperingMultiplier() : 0.01D;
+        double temperingRate = SpiritSwordTempering.temperingMultiplier(stack);
         float attackDamage = SpiritSwordCombatModel.projectedAttackDamage(
                 profile, canPay, SpiritSwordTempering.points(stack), temperingRate);
         ModWeaponAttackProjection.applySword(

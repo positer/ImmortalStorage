@@ -1,0 +1,10 @@
+{
+  "name":"Xianqiao Manager","icon":"immortalstorage:xianqiao_manager","category":"immortalstorage:storage","sortnum":5,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_manager","text":"The Xianqiao Manager is crafted from Spirit Cores and a Nether Star. It connects nearby automation to a personal Xianqiao storage and can be claimed only by a stage-six-or-later player."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:xianqiao_manager","title":"First-claim ownership","text":"The first qualified player to open an unowned manager claims it; an owned manager never silently rebinds when another player opens it. Ownership uses the ImmortalStorage persistent identity rather than the launcher's session UUID."},
+    {"type":"patchouli:text","text":"The manager may be placed only inside its owner's personal Xianqiao realm. It exposes the owner's item capability to adjacent automation and adds fluid capability at stage seven; external pipes use standard NeoForge capabilities rather than internal menu classes."},
+    {"type":"patchouli:text","text":"Create's Schematicannon can read the manager as a standard NeoForge block-item inventory, and Building Gadgets copy-paste can use the owner's Kongqiao/Xianqiao items as materials. Simulation does not consume anything; a real build commits extraction."},
+    {"type":"patchouli:text","text":"When the owner is offline, below the required stage, or the personal realm cannot be resolved, the capability becomes unavailable instead of routing to another player's storage. The manager contains no external HTTP or debug endpoint; identity and storage resolution stay server-authoritative."}
+  ]
+}

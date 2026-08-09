@@ -96,6 +96,8 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     public static final int XIANQIAO_PAGE_SIZE = XIANQIAO_PAGE_ROWS * XIANQIAO_PAGE_COLS;
     /** Xianqiao items unlock at stage six; its independent fluid namespace starts at stage seven. */
     public static final int XIANQIAO_FLUID_UNLOCK_STAGE = 7;
+    /** Optional energy, chemical, mana and similar external channels start at stage eight. */
+    public static final int XIANQIAO_EXTERNAL_UNLOCK_STAGE = 8;
 
     private int stage = 0;
     private int lingqiProgress = 0;
@@ -556,7 +558,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     /** Stage-eight gate for optional energy, chemical, mana and similar channels. */
     public long getExternalResourceAmount(ResourceChannelKey key) {
         Objects.requireNonNull(key, "key");
-        return stage >= 8 ? externalResourceLedger.amount(key) : 0L;
+        return stage >= XIANQIAO_EXTERNAL_UNLOCK_STAGE ? externalResourceLedger.amount(key) : 0L;
     }
 
     public long getExternalResourceRevision() {
@@ -572,14 +574,14 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
             ResourceChannelKey key, long amount, ResourceTransferAction action) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(action, "action");
-        return stage >= 8 ? externalResourceLedger.insert(key, amount, action) : 0L;
+        return stage >= XIANQIAO_EXTERNAL_UNLOCK_STAGE ? externalResourceLedger.insert(key, amount, action) : 0L;
     }
 
     public long extractExternalResource(
             ResourceChannelKey key, long amount, ResourceTransferAction action) {
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(action, "action");
-        return stage >= 8 ? externalResourceLedger.extract(key, amount, action) : 0L;
+        return stage >= XIANQIAO_EXTERNAL_UNLOCK_STAGE ? externalResourceLedger.extract(key, amount, action) : 0L;
     }
 
     /**

@@ -6,19 +6,24 @@ import com.immortalstorage.immortalstorage.item.custom.SpiritSwordTempering;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 final class ClientItemTooltips {
     static void onTooltip(ItemTooltipEvent event) {
         if (!(event.getItemStack().getItem() instanceof com.immortalstorage.immortalstorage.item.custom.SpiritSwordItem)) return;
+        ItemStack stack = event.getItemStack();
         int stage = event.getEntity() == null ? 0 : ImmortalStoragePlayerData.get(event.getEntity()).getStage();
         SpiritSwordCombatModel.Profile profile = SpiritSwordCombatModel.forStage(stage);
-        long tempering = SpiritSwordTempering.points(event.getItemStack());
-        long percent = tempering > Long.MAX_VALUE / 1L ? Long.MAX_VALUE : tempering;
+        long tempering = SpiritSwordTempering.points(stack);
+        String percent = formatTemperingPercent(SpiritSwordTempering.temperingMultiplier(stack));
         float unpaidTemperingDamage = SpiritSwordTempering.bonusDamage(
-                SpiritSwordCombatModel.BASE_DAMAGE, tempering);
+                stack, SpiritSwordCombatModel.BASE_DAMAGE, tempering);
         float paidTemperingDamage = SpiritSwordTempering.bonusDamage(
-                profile.successfulHitDamage(), tempering);
+                stack, profile.successfulHitDamage(), tempering);
         event.getToolTip().add(Component.translatable("tooltip.immortalstorage.spirit_sword.formula",
                 SpiritSwordCombatModel.BASE_DAMAGE, profile.stage(), profile.bonusDamage())
                 .withStyle(ChatFormatting.AQUA));
@@ -38,6 +43,12 @@ final class ClientItemTooltips {
                 .withStyle(ChatFormatting.DARK_GRAY));
         event.getToolTip().add(Component.translatable("tooltip.immortalstorage.spirit_sword.server_rule")
                 .withStyle(ChatFormatting.DARK_GRAY));
+    }
+
+    static String formatTemperingPercent(double multiplier) {
+        return BigDecimal.valueOf(multiplier * 100.0D)
+                .setScale(2, RoundingMode.HALF_UP)
+                .stripTrailingZeros().toPlainString();
     }
 
     private ClientItemTooltips() {}

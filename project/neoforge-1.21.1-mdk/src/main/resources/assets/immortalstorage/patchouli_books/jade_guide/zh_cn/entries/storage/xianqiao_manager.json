@@ -1,0 +1,10 @@
+{
+  "name":"仙窍管理器","icon":"immortalstorage:xianqiao_manager","category":"immortalstorage:storage","sortnum":5,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_manager","text":"仙窍管理器用灵核与下界之星合成，是把世界中的自动化设备接入个人仙窍存储的方块。只有六阶及以上玩家可以认领。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:xianqiao_manager","title":"首次认主","text":"管理器第一次被合格玩家打开时认主，先到先得；已经有物主的管理器不会因为其他玩家打开而静默改绑。物主使用仙藏持久身份保存，不依赖启动器本次会话UUID。"},
+    {"type":"patchouli:text","text":"管理器只能放在物主自己的个人仙窍维度。它把物主仙窍的物品能力提供给相邻自动化，并在达到七阶后提供流体能力；外部管道读取的是标准NeoForge能力，不需要依赖仙藏内部菜单类。"},
+    {"type":"patchouli:text","text":"仙窍管理器可被Create蓝图大炮作为标准方块物品仓库读取，Building Gadgets复制粘贴时也能把物主的空窍/仙窍内容作为材料来源。模拟检查不会扣除资源，真正施工才执行抽取。"},
+    {"type":"patchouli:text","text":"物主离线、阶段不满足或个人仙窍不可解析时，外部能力会暂时不可用而不是指向其他玩家存储。管理器本身不包含外部 HTTP 或调试接口；所有身份和存储解析都由服务端完成。"}
+  ]
+}
