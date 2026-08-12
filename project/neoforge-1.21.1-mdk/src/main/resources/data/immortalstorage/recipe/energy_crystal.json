@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {"item": "immortalstorage:nurturing_crystal"},
+    "N": {"item": "immortalstorage:spirit_iron_nugget"},
+    "Y": {"item": "immortalstorage:immortal_yuan"}
+  },
+  "pattern": [
+    "CN",
+    "NY"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:energy_crystal"
+  }
+}

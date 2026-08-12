@@ -56,10 +56,6 @@ public class CommonEvents {
         event.getLevel().setBlockAndUpdate(event.getPos(),
                 com.immortalstorage.immortalstorage.block.ModBlocks.SIMULATED_REINCARNATION_FURNACE.get()
                         .defaultBlockState());
-        if (event.getLevel().getBlockEntity(event.getPos()) instanceof
-                com.immortalstorage.immortalstorage.block.entity.SimulatedReincarnationFurnaceBlockEntity furnace) {
-            furnace.setOwner(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
-        }
         if (!player.getAbilities().instabuild) {
             main.shrink(1);
         }

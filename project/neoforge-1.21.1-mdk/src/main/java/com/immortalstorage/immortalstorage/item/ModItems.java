@@ -40,7 +40,8 @@ public final class ModItems {
                     "soul_catcher",
                     "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
                     "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
-                    "diamond_vein", "emerald_vein", "echo_shard_vein" -> Rarity.RARE;
+                    "diamond_vein", "emerald_vein", "echo_shard_vein",
+                    "energy_crystal", "mana_crystal", "source_crystal" -> Rarity.RARE;
             case "jade_guide", "true_yuan", "refined_pill_embryo", "refined_pill",
                     "disposable_qi_collecting_bottle",
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    "immortalstorage:stabilized_miniature_immortal_ruin"
+  ],
+  "result": {
+    "id": "immortalstorage:stabilized_miniature_immortal_ruin",
+    "count": 1
+  }
+}

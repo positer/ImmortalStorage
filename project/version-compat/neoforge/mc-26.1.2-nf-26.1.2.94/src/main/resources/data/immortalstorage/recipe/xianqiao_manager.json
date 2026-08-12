@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "immortalstorage:spirit_core",
+    "N": "minecraft:nether_star"
+  },
+  "pattern": [
+    " C ",
+    "CNC",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:xianqiao_manager"
+  }
+}

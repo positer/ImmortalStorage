@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "immortalstorage:spirit_core",
+  "base": "minecraft:lead",
+  "addition": "immortalstorage:primordial_qi",
+  "result": {
+    "id": "immortalstorage:soul_catcher"
+  }
+}

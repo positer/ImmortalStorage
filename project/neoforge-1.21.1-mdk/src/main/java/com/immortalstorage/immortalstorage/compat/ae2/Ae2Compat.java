@@ -30,6 +30,17 @@ public final class Ae2Compat {
     public static synchronized void initialize() {
         registerExternalResourceKeyType();
         InstalledAddonExternalKeyBridges.registerPresent();
+        Ae2StorageApiDescriptor.Probe amountProbe =
+                Ae2StorageApiDescriptor.probe(Ae2Compat.class.getClassLoader());
+        XianqiaoExchangeStorageCell.setLongAmountApiSupported(amountProbe.supportsLongAmounts());
+        if (amountProbe.compatible()) {
+            ImmortalStorageMod.LOG.info(
+                    "[Compat/AE2] ME storage amount probe passed: long insert/extract and KeyCounter path are active");
+        } else {
+            ImmortalStorageMod.LOG.warn(
+                    "[Compat/AE2] ME storage amount probe failed ({}); using the confirmed int-safe display fallback",
+                    amountProbe.summary());
+        }
         boolean changed = false;
         if (!gridServiceRegistered) {
             GridServices.register(XianqiaoExchangeGridService.class, XianqiaoExchangeGridService.class);

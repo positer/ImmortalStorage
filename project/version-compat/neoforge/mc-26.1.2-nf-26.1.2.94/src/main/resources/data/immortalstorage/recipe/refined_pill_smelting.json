@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "cookingtime": 25,
+  "experience": 0,
+  "ingredient": "immortalstorage:refined_pill_embryo",
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:refined_pill"
+  }
+}

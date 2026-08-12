@@ -13,7 +13,6 @@ import com.immortalstorage.immortalstorage.menu.custom.XianqiaoInterfaceMenu;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity;
 import com.immortalstorage.immortalstorage.compat.XianqiaoInterfaceCompatHooks;
-import com.immortalstorage.immortalstorage.config.ImmortalStorageConfig;
 import com.immortalstorage.core.resource.AtomicEnergyRefill;
 import com.immortalstorage.core.resource.ExternalResourceChannels;
 import com.immortalstorage.core.resource.ResourceChannelKey;
@@ -47,7 +46,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -110,7 +108,6 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
     private long endpointCacheTick = Long.MIN_VALUE;
     private @Nullable UUID endpointCacheOwner;
     private @Nullable PersonalStorageEndpoint endpointCache;
-    private final Map<ResourceChannelKey, ConversionBudget> conversionBudgets = new HashMap<>();
 
     public XianqiaoInterfaceBlockEntity(BlockPos pos, BlockState state) {
         this(ModBlockEntities.XIANQIAO_INTERFACE.get(), pos, state);
@@ -293,41 +290,9 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
 
     private AtomicEnergyRefill.ResourceStore withConfiguredConversion(
             ResourceChannelKey channel, AtomicEnergyRefill.ResourceStore cache) {
-        ImmortalStorageConfig.ConversionPolicy policy = ImmortalStorageConfig.conversionPolicy(channel);
-        return !policy.enabled() ? cache : new ConvertingCacheStore(channel, cache, policy);
-    }
-
-    private @Nullable ImmortalStoragePlayerData conversionOwnerData() {
-        if (!(level instanceof ServerLevel serverLevel)) return null;
-        UUID owner = ownerBinding.owner();
-        if (owner == null) return null;
-        ServerPlayer player = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
-        if (player == null) return null;
-        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
-        return data.getStage() >= 8 ? data : null;
-    }
-
-    private long remainingConversionBudget(ResourceChannelKey channel, long maximum) {
-        if (level == null || maximum <= 0L) return 0L;
-        long tick = level.getGameTime();
-        ConversionBudget budget = conversionBudgets.computeIfAbsent(
-                channel, ignored -> new ConversionBudget(tick, 0L));
-        if (budget.tick != tick) {
-            budget.tick = tick;
-            budget.used = 0L;
-        }
-        return Math.max(0L, maximum - Math.min(maximum, budget.used));
-    }
-
-    private void useConversionBudget(ResourceChannelKey channel, long amount) {
-        if (amount <= 0L || level == null) return;
-        ConversionBudget budget = conversionBudgets.computeIfAbsent(
-                channel, ignored -> new ConversionBudget(level.getGameTime(), 0L));
-        if (budget.tick != level.getGameTime()) {
-            budget.tick = level.getGameTime();
-            budget.used = 0L;
-        }
-        budget.used = budget.used > Long.MAX_VALUE - amount ? Long.MAX_VALUE : budget.used + amount;
+        // Legacy conversion settings remain loadable for old TOML files, but
+        // external namespaces are never backed by Immortal Yuan anymore.
+        return cache;
     }
 
     public SideMode getSideMode(@Nullable Direction side) {
@@ -400,7 +365,7 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
         AtomicEnergyRefill.ResourceStore energy =
                 resolveExternalResourceFaceStore(ExternalResourceChannels.FE, side);
         if (energyTarget != null && energy != null) {
-            XianqiaoInterfaceEnergyTransfer.push(energy, energyTarget);
+            XianqiaoInterfaceEnergyTransfer.pushAll(energy, energyTarget);
         }
     }
 
@@ -446,7 +411,7 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
         AtomicEnergyRefill.ResourceStore energy =
                 resolveExternalResourceFaceStore(ExternalResourceChannels.FE, side);
         if (energySource != null && energy != null) {
-            XianqiaoInterfaceEnergyTransfer.pull(energySource, energy);
+            XianqiaoInterfaceEnergyTransfer.pullAll(energySource, energy);
         }
     }
 
@@ -656,118 +621,6 @@ public class XianqiaoInterfaceBlockEntity extends BlockEntity implements MenuPro
         endpointCache = null;
         endpointCacheOwner = null;
         endpointCacheTick = Long.MIN_VALUE;
-    }
-
-    /**
-     * Extraction view that consumes the real interface cache first and converts
-     * Immortal Yuan only for the remaining request. Conversion output left over
-     * from a whole Yuan is retained in the cache or the owner's shared ledger.
-     */
-    private final class ConvertingCacheStore implements AtomicEnergyRefill.ResourceStore {
-        private final ResourceChannelKey channel;
-        private final AtomicEnergyRefill.ResourceStore cache;
-        private final ImmortalStorageConfig.ConversionPolicy policy;
-
-        private ConvertingCacheStore(
-                ResourceChannelKey channel,
-                AtomicEnergyRefill.ResourceStore cache,
-                ImmortalStorageConfig.ConversionPolicy policy) {
-            this.channel = channel;
-            this.cache = cache;
-            this.policy = policy;
-        }
-
-        @Override
-        public long amount() {
-            return cache.amount();
-        }
-
-        @Override
-        public long extract(long requested, ResourceTransferAction action) {
-            if (requested <= 0L) return 0L;
-            long cached = cache.extract(requested, action);
-            long missing = requested - cached;
-            if (missing <= 0L) return cached;
-            ImmortalStoragePlayerData ownerData = conversionOwnerData();
-            long budget = remainingConversionBudget(channel, policy.maximumConversionPerTick());
-            long conversionUnits = budget / policy.resourcePerImmortalYuan();
-            if (ownerData == null || conversionUnits <= 0L || ownerData.getImmortalYuan() <= 0L) return cached;
-            long convertible = conversionUnits > Long.MAX_VALUE / policy.resourcePerImmortalYuan()
-                    ? Long.MAX_VALUE : conversionUnits * policy.resourcePerImmortalYuan();
-
-            AtomicEnergyRefill.Result converted = AtomicEnergyRefill.transfer(
-                    missing,
-                    convertible,
-                    policy.resourcePerImmortalYuan(),
-                    conversionRemainderStore(cache, channel),
-                    immortalYuanChargeSource(ownerData),
-                    (offered, transferAction) -> offered,
-                    action);
-            if (action.executes()) {
-                long generated = converted.chargeUnitsConsumed() > Long.MAX_VALUE / policy.resourcePerImmortalYuan()
-                        ? Long.MAX_VALUE
-                        : converted.chargeUnitsConsumed() * policy.resourcePerImmortalYuan();
-                useConversionBudget(channel, generated);
-            }
-            return cached + converted.delivered();
-        }
-
-        @Override
-        public long insert(long offered, ResourceTransferAction action) {
-            return cache.insert(offered, action);
-        }
-    }
-
-    private AtomicEnergyRefill.ResourceStore conversionRemainderStore(
-            AtomicEnergyRefill.ResourceStore cache, ResourceChannelKey channel) {
-        return new AtomicEnergyRefill.ResourceStore() {
-            @Override
-            public long amount() {
-                return 0L;
-            }
-
-            @Override
-            public long extract(long requested, ResourceTransferAction action) {
-                return 0L;
-            }
-
-            @Override
-            public long insert(long offered, ResourceTransferAction action) {
-                if (offered <= 0L) return 0L;
-                long cached = cache.insert(offered, action);
-                long remainder = offered - cached;
-                if (remainder <= 0L) return cached;
-                AtomicEnergyRefill.ResourceStore ledger = resolveExternalResourceStore(channel);
-                return cached + (ledger == null ? 0L : ledger.insert(remainder, action));
-            }
-        };
-    }
-
-    private static AtomicEnergyRefill.ChargeSource immortalYuanChargeSource(
-            ImmortalStoragePlayerData ownerData) {
-        return new AtomicEnergyRefill.ChargeSource() {
-            @Override
-            public long availableUnits() {
-                return ownerData.getImmortalYuan();
-            }
-
-            @Override
-            public long consume(long requestedUnits, ResourceTransferAction action) {
-                long accepted = Math.min(Math.max(0L, requestedUnits), ownerData.getImmortalYuan());
-                if (!action.executes() || accepted == 0L) return accepted;
-                return ownerData.consumeImmortalYuan(accepted) ? accepted : 0L;
-            }
-        };
-    }
-
-    private static final class ConversionBudget {
-        private long tick;
-        private long used;
-
-        private ConversionBudget(long tick, long used) {
-            this.tick = tick;
-            this.used = used;
-        }
     }
 
     @Override

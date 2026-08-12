@@ -1,0 +1,7 @@
+{
+  "neoforge:conditions": [{"type":"neoforge:mod_loaded","modid":"ars_nouveau"}],
+  "type": "minecraft:stonecutting",
+  "group": "immortalstorage:crystal_group",
+  "ingredient": {"item":"immortalstorage:energy_crystal"},
+  "result": {"id":"immortalstorage:source_crystal", "count":1}
+}

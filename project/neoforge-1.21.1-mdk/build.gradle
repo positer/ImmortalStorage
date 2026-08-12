@@ -5,8 +5,28 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.141'
+    id 'net.neoforged.moddev' version '2.0.143'
 }
+
+def javaToolchainVersion = providers.gradleProperty('java_toolchain_version').getOrElse('21').toInteger()
+def compatibilityModMatrixFile = file('../version-compat/compatibility-mod-matrix.json')
+if (!compatibilityModMatrixFile.isFile()) {
+    throw new GradleException("Missing compatibility-mod matrix: ${compatibilityModMatrixFile}")
+}
+def compatibilityModMatrix = new JsonSlurper().parse(compatibilityModMatrixFile)
+def compatibilityProfile = compatibilityModMatrix.profiles.find { profile ->
+    profile.minecraft_versions.contains(minecraft_version)
+}
+if (compatibilityProfile == null) {
+    throw new GradleException("No compatibility-mod profile audited for Minecraft ${minecraft_version}; refusing to reuse another version's API jars")
+}
+def compatibilityApiProbe = providers.gradleProperty('compatibility_api_probe')
+        .map(String::toBoolean)
+        .getOrElse(false)
+def compatibilityMigration = providers.gradleProperty('compatibility_migration')
+        .map(String::toBoolean)
+        .getOrElse(false)
+def target2612 = minecraft_version == '26.1.2'
 
 version = mod_version
 group = mod_group_id
@@ -15,7 +35,7 @@ base {
     archivesName = "${mod_id}-neoforge-mc${minecraft_version}-nf${neo_version}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(javaToolchainVersion)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
@@ -102,12 +122,53 @@ neoForge {
     }
 }
 
+def applicationSourceDir = providers.gradleProperty('application_source_dir')
+        .map { file(it) }
+        .orElse(file('src/main/java'))
+        .get()
+def compatibilityTestSourceDir = providers.gradleProperty('compatibility_test_source_dir')
+        .map { file(it) }
+        .orElse(file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/test/generated-java'))
+        .get()
+
 sourceSets.main {
     java {
-        srcDir file(core_source_dir)
-        srcDir file(compatibility_source_dir)
+        // 1.21.1 remains the canonical feature source. Later Minecraft lines
+        // compile a generated/synchronised source tree selected by the matrix;
+        // this keeps version migration explicit without replacing the proven
+        // 1.21.1 implementation in-place.
+        setSrcDirs([applicationSourceDir, file(core_source_dir), file(compatibility_source_dir)])
+        if (target2612) {
+            // These integrations are deliberately not compiled for 26.1.2
+            // until their official target API artifacts are published.  The
+            // 26.1 Mekanism branch is a different transfer API, so excluding
+            // the old IChemicalHandler adapter is required for correctness.
+            exclude 'com/immortalstorage/immortalstorage/compat/mekanism/**'
+            exclude 'com/immortalstorage/immortalstorage/compat/emi/**'
+            exclude 'com/immortalstorage/immortalstorage/compat/botania/**'
+            exclude 'com/immortalstorage/immortalstorage/compat/arsnouveau/**'
+            exclude 'com/immortalstorage/immortalstorage/compat/ifsouls/**'
+            exclude 'com/immortalstorage/immortalstorage/mixin/appliedbotanics/**'
+            exclude 'com/immortalstorage/immortalstorage/mixin/arsnouveau/**'
+            exclude 'com/immortalstorage/immortalstorage/mixin/buildinggadgets/**'
+        }
     }
-    resources { srcDir 'src/generated/resources' }
+    resources {
+        srcDir 'src/generated/resources'
+        if (target2612) {
+            // The target has a dedicated core mixin manifest because 26.1
+            // removed the old client ItemRenderer target and changed furnace
+            // helper descriptors.  Do not let the 1.21.1 manifest bootstrap
+            // against the 26.1 runtime.
+            exclude 'immortalstorage.core.mixins.json'
+            exclude 'immortalstorage.appliedbotanics.mixins.json'
+            exclude 'immortalstorage.arsnouveau.mixins.json'
+            exclude 'immortalstorage.buildinggadgets.mixins.json'
+            // NeoForge 26.1 loads each loot modifier file directly.  The
+            // canonical 1.21.1 global index is an invalid modifier in 26.1.
+            exclude 'data/neoforge/loot_modifiers/global_loot_modifiers.json'
+        }
+    }
 }
 
 // ModDevGradle wires the mapped Minecraft/NeoForge classpath directly to the
@@ -115,6 +176,15 @@ sourceSets.main {
 sourceSets.test {
     compileClasspath += sourceSets.main.compileClasspath
     runtimeClasspath += sourceSets.main.runtimeClasspath
+    if (target2612) {
+        // Compile the migrated 1.21.1 test corpus together with target-only
+        // API probes.  The generated tree is separate from the canonical
+        // tests so the two loader lines cannot overwrite one another.
+        java.setSrcDirs([
+                compatibilityTestSourceDir,
+                file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/test/java')
+        ])
+    }
 }
 
 configurations {
@@ -122,62 +192,95 @@ configurations {
     rsAddonProbe
 }
 
+def compatibilitySlot = { String module, String slot ->
+    def entry = compatibilityProfile.mods[module]
+    if (entry == null) {
+        throw new GradleException("Compatibility-mod matrix is missing module '${module}' for ${compatibilityProfile.id}")
+    }
+    if (compatibilityApiProbe && entry.status != 'available') {
+        return entry["probe_${slot}"]
+    }
+    return entry[slot]
+}
+
+def addCompatDependency = { String configurationName, String module, String slot ->
+    def coordinate = compatibilitySlot(module, slot)
+    if (coordinate != null && coordinate != 'unavailable') {
+        project.dependencies.add(configurationName, coordinate.toString())
+    }
+}
+
+def addCompatNoTransitive = { String configurationName, String module, String slot ->
+    def coordinate = compatibilitySlot(module, slot)
+    if (coordinate != null && coordinate != 'unavailable') {
+        def dependency = project.dependencies.add(configurationName, coordinate.toString())
+        dependency.transitive = false
+    }
+}
+
+// The remaining optional integrations in this project are pinned to the
+// released 1.21.1 ecosystem. They are intentionally excluded from the 26.1.2
+// target until that ecosystem publishes matching APIs. A migration build may
+// bypass the release-ready assertion, but it must still use only the selected
+// target's available dependencies.
+def legacyOptionalIntegrations = minecraft_version == '1.21.1'
+
 dependencies {
-    compileOnly "mezz.jei:jei-1.21.1-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
-    compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'
-    compileOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'
-    compileOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
-        transitive = false
-    }
-    compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') {
-        transitive = false
-    }
-    compileOnly('mekanism:Mekanism:1.21.1-10.7.19.85:api') {
-        transitive = false
-    }
-    compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') {
-        transitive = false
-    }
-    compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
-        transitive = false
-    }
-    compileOnly('curse.maven:ars-nouveau-401955:6640732') {
-        transitive = false
-    }
-    compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
-    implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
-        transitive = false
-    }
-    jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
-        transitive = false
+    addCompatDependency('compileOnly', 'jei', 'common_api')
+    addCompatDependency('compileOnly', 'jei', 'neoforge_api')
+    addCompatDependency('compileOnly', 'emi', 'compile')
+    addCompatDependency('compileOnly', 'ae2', 'compile')
+    addCompatNoTransitive('compileOnly', 'refinedstorage', 'compile')
+    addCompatNoTransitive('compileOnly', 'mekanism', 'compile')
+
+    if (legacyOptionalIntegrations) {
+        addCompatNoTransitive('compileOnly', 'refined_types', 'compile')
+        addCompatNoTransitive('compileOnly', 'rs_mekanism_integration', 'compile')
+        compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') {
+            transitive = false
+        }
+        compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') {
+            transitive = false
+        }
+        compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
+            transitive = false
+        }
+        compileOnly('curse.maven:ars-nouveau-401955:6640732') {
+            transitive = false
+        }
+        compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
+        implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
+            transitive = false
+        }
+        jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
+            transitive = false
+        }
     }
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testRuntimeOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'
-    testRuntimeOnly('com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9') {
-        transitive = false
-    }
-    rsAddonProbe('maven.modrinth:refined-types:1.21.1-0.3.2') {
-        transitive = false
-    }
-    rsAddonProbe('maven.modrinth:refined-storage-mekanism-integration:1.1.1') {
-        transitive = false
-    }
-    testRuntimeOnly('mekanism:Mekanism:1.21.1-10.7.19.85:api') {
-        transitive = false
-    }
-    testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
-        transitive = false
-    }
-    arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
-        transitive = false
+    addCompatDependency('testRuntimeOnly', 'ae2', 'runtime')
+    addCompatNoTransitive('testRuntimeOnly', 'refinedstorage', 'runtime')
+    addCompatNoTransitive('testRuntimeOnly', 'mekanism', 'runtime')
+
+    if (legacyOptionalIntegrations) {
+        rsAddonProbe('maven.modrinth:refined-types:1.21.1-0.3.2') {
+            transitive = false
+        }
+        rsAddonProbe('maven.modrinth:refined-storage-mekanism-integration:1.1.1') {
+            transitive = false
+        }
+        testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
+            transitive = false
+        }
+        arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
+            transitive = false
+        }
     }
 
     if (providers.gradleProperty('enableRecipeViewerRuntime').map(String::toBoolean).getOrElse(false)) {
-        runtimeOnly "mezz.jei:jei-1.21.1-neoforge:${jei_version}@jar"
-        runtimeOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1@jar'
+        addCompatDependency('runtimeOnly', 'jei', 'runtime')
+        addCompatDependency('runtimeOnly', 'emi', 'runtime')
     }
 }
 
@@ -194,6 +297,9 @@ tasks.named('test', Test).configure {
 tasks.register('verifyWithoutAe2Runtime', JavaExec) {
     dependsOn tasks.named('testClasses')
     mainClass = 'com.immortalstorage.immortalstorage.compat.NoAe2RuntimeProbe'
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(javaToolchainVersion)
+    }
     classpath = sourceSets.test.runtimeClasspath.filter { file ->
         !file.name.toLowerCase(java.util.Locale.ROOT).startsWith('appliedenergistics2-')
     }
@@ -201,11 +307,86 @@ tasks.register('verifyWithoutAe2Runtime', JavaExec) {
 
 tasks.register('verifyArsSourceAdapter', JavaExec) {
     dependsOn tasks.named('testClasses')
+    onlyIf { legacyOptionalIntegrations }
     mainClass = 'com.immortalstorage.immortalstorage.compat.arsnouveau.XianqiaoArsSourceAdapterProbe'
     classpath = sourceSets.test.runtimeClasspath + configurations.arsNouveauProbe
 }
 
+tasks.register('verifyCompatibilityModMatrix') {
+    doLast {
+        def profile = compatibilityProfile
+        def requiredModules = compatibilityModMatrix.policy.required_integration_interfaces
+        def missingProfiles = requiredModules.findAll { !profile.mods.containsKey(it) }
+        if (!missingProfiles.empty) {
+            throw new GradleException("Compatibility-mod profile ${profile.id} is missing required modules: ${missingProfiles}")
+        }
+
+        if (!compatibilityApiProbe && !compatibilityMigration && !profile.release_ready) {
+            throw new GradleException(
+                    "${profile.id} is not release-ready. Target compatibility-mod artifacts/interfaces are unavailable or unverified: " +
+                            (profile.blockers ?: ['see compatibility-mod-matrix.json']))
+        }
+        if (compatibilityMigration) {
+            logger.lifecycle("Compatibility migration build enabled for ${profile.id}; release status remains controlled by the version manifest")
+        }
+        if (compatibilityApiProbe) {
+            logger.lifecycle("Compatibility API probe enabled for ${profile.id}; this build cannot be published as a target-compatible release")
+        }
+
+        def resolvedCoordinates = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.collect { artifact ->
+            def id = artifact.moduleVersion.id
+            "${id.group}:${id.name}:${id.version}"
+        } as Set
+        def classpathJars = configurations.compileClasspath.files.findAll { candidate ->
+            candidate.isFile() && candidate.name.toLowerCase(java.util.Locale.ROOT).endsWith('.jar')
+        }
+        def jarContains = { String entryName ->
+            classpathJars.any { jarFile ->
+                new java.util.zip.ZipFile(jarFile).withCloseable { zip -> zip.getEntry(entryName) != null }
+            }
+        }
+        def normalizedCoordinate = { String coordinate ->
+            def parts = coordinate.split(':')
+            parts.length >= 3 ? parts[0..2].join(':') : coordinate
+        }
+
+        profile.mods.each { moduleName, module ->
+            if (module.status == 'available') {
+                ['compile', 'common_api', 'neoforge_api'].each { slot ->
+                    def coordinate = compatibilitySlot(moduleName, slot)
+                    if (coordinate != null && coordinate != 'unavailable') {
+                        def normalized = normalizedCoordinate(coordinate.toString())
+                        if (!resolvedCoordinates.any { resolved ->
+                            resolved.toString() == normalized || resolved.toString().startsWith(normalized + ':')
+                        }) {
+                            throw new GradleException("${profile.id} ${moduleName} ${slot} did not resolve the declared target coordinate ${coordinate} (normalized=${normalized}); resolved=${resolvedCoordinates.findAll { it.startsWith(normalized.split(':')[0] + ':') }}")
+                        }
+                    }
+                }
+                (module.api_classes ?: []).each { classEntry ->
+                    if (!jarContains(classEntry.toString())) {
+                        throw new GradleException("${profile.id} ${moduleName} API surface is missing ${classEntry}; target interface jar was not actually inspected")
+                    }
+                }
+            } else if (compatibilityApiProbe) {
+                def probeSlots = ['probe_compile', 'probe_common_api', 'probe_neoforge_api']
+                def missingProbeSlots = probeSlots.findAll { slot ->
+                    module[slot] != null && compatibilitySlot(moduleName, slot.replaceFirst('^probe_', '')) == null
+                }
+                if (!missingProbeSlots.empty) {
+                    throw new GradleException("${profile.id} ${moduleName} probe is incomplete: ${missingProbeSlots}")
+                }
+            }
+        }
+
+        logger.lifecycle("Compatibility-mod matrix verified: ${profile.id}; target artifacts checked=${profile.mods.findAll { it.value.status == 'available' }.keySet()}")
+    }
+}
+
 tasks.named('processResources', ProcessResources).configure {
+    def targetDependencyRange = { String legacyRange, String targetRange ->
+        target2612 ? targetRange : legacyRange
+    }
     var replaceProperties = [
             minecraft_version: minecraft_version,
             minecraft_version_range: minecraft_version_range,
@@ -219,6 +400,18 @@ tasks.named('processResources', ProcessResources).configure {
             mod_version: mod_version,
             mod_authors: mod_authors,
             mod_description: mod_description,
+            emi_version_range: targetDependencyRange('[1.1.24,)', '[0,)'),
+            ae2_version_range: targetDependencyRange('[19.2.17,19.3)', '[26.1.10-beta,)'),
+            refinedstorage_version_range: targetDependencyRange('[2.0.9,2.0.10)', '[3.2.1,3.2.2)'),
+            refinedtypes_version_range: targetDependencyRange('[0.3.0,0.4),[1.21.1-0.3.0,1.21.1-0.4)', '[0,)'),
+            rs_mekanism_version_range: targetDependencyRange('[1.0.0,2)', '[0,)'),
+            botania_version_range: targetDependencyRange('[454-SNAPSHOT,456)', '[0,)'),
+            mekanism_version_range: targetDependencyRange('[10.7.19,10.8)', '[0,)'),
+            industrialforegoingsouls_version_range: targetDependencyRange('[1.10.7,1.11)', '[0,)'),
+            beyonddimensions_version_range: targetDependencyRange('[0.7.24]', '[0,)'),
+            ars_nouveau_version_range: targetDependencyRange('[5.8.4,6)', '[0,)'),
+            patchouli_dependency_type: target2612 ? 'optional' : 'required',
+            patchouli_version_range: targetDependencyRange('[1.21.1-93,)', '[0,)'),
     ]
     inputs.properties replaceProperties
 
@@ -232,6 +425,33 @@ tasks.named('processResources', ProcessResources).configure {
     from(file(compatibility_descriptor_file)) {
         into 'META-INF/immortalstorage'
         rename { 'version-adapter.json' }
+    }
+
+    if (target2612) {
+        // A duplicate resource name is intentionally resolved after the
+        // canonical source set has been processed.  This makes the target
+        // manifest deterministic even when Gradle's source-set merge order
+        // changes between ModDevGradle versions.
+        doLast {
+            copy {
+                duplicatesStrategy = DuplicatesStrategy.INCLUDE
+                from file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources/immortalstorage.core.mixins.json')
+                into destinationDir
+                from(project.file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources/META-INF/neoforge.mods.toml')) {
+                    into 'META-INF'
+                    expand replaceProperties
+                }
+                from(project.file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources/assets')) {
+                    into 'assets'
+                }
+                // 26.1 has a new dimension/biome data shape.  Keep those
+                // target-only resources out of the canonical 1.21.1 source
+                // set and overlay them after the canonical data resources.
+                from(project.file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources/data')) {
+                    into 'data'
+                }
+            }
+        }
     }
 }
 
@@ -438,16 +658,31 @@ tasks.register('verifyVersionArtifact') {
             if (!modsText.contains("modId=\"neoforge\"\ntype=\"required\"\nversionRange=\"${neo_version_range}\"")) {
                 throw new GradleException("Artifact NeoForge dependency range does not match ${neo_version_range}")
             }
+            if (target2612) {
+                ['water_vein.json', 'custom_source_vein.json', 'source_vein_manager.json',
+                 'stabilized_miniature_immortal_ruin.json', 'xianqiao_manager.json',
+                 'spirit_staff.json'].each { itemDefinition ->
+                    String resourcePath = "assets/immortalstorage/items/${itemDefinition}"
+                    if (zip.getEntry(resourcePath) == null) {
+                        throw new GradleException("Target artifact is missing client item definition: ${resourcePath}")
+                    }
+                }
+            }
         }
     }
 }
 
 tasks.named('check').configure {
+    dependsOn tasks.named('verifyCompatibilityModMatrix')
     dependsOn tasks.named('verifyWithoutAe2Runtime')
     dependsOn tasks.named('verifyArsSourceAdapter')
     dependsOn tasks.named('verifyProductionJarBoundary')
     dependsOn tasks.named('verifyVersionComposition')
     dependsOn tasks.named('verifyVersionArtifact')
+}
+
+tasks.named('compileJava').configure {
+    dependsOn tasks.named('verifyCompatibilityModMatrix')
 }
 
 publishing {
@@ -465,6 +700,7 @@ publishing {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xmaxerrs', providers.gradleProperty('max_compiler_errors').getOrElse('1000')])
 }
 
 tasks.matching { it.name == 'downloadAssets' }.configureEach {

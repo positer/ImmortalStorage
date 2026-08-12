@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ANC",
+    "NTN",
+    "CNA"
+  ],
+  "key": {
+    "A": "minecraft:echo_shard",
+    "N": "immortalstorage:nurturing_crystal",
+    "C": "immortalstorage:spirit_iron_nugget",
+    "T": "minecraft:totem_of_undying"
+  },
+  "result": {
+    "id": "immortalstorage:substitute_puppet",
+    "count": 1
+  }
+}

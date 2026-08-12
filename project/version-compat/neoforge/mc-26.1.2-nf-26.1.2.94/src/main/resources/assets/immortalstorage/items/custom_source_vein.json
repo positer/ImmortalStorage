@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/custom_source_vein",
+    "model": {
+      "type": "immortalstorage:source_vein"
+    }
+  }
+}

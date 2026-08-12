@@ -1,0 +1,11 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "blocks",
+  "cookingtime": 50,
+  "experience": 1.0,
+  "ingredient": "immortalstorage:spirit_crystal_block",
+  "result": {
+    "id": "immortalstorage:inactive_nurturing_crystal_bedrock",
+    "count": 1
+  }
+}

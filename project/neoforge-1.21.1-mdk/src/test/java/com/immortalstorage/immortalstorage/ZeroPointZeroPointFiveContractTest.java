@@ -42,7 +42,9 @@ final class ZeroPointZeroPointFiveContractTest {
         String muzzle = read("java/com/immortalstorage/immortalstorage/client/render/OneQiHeldItemMuzzle.java");
         assertTrue(muzzle.contains("new Vector4f(0.5F, 0.5F, 0.5F, 1.0F)"));
         assertTrue(beam.contains("renderDistance().get()") && !beam.contains("pick("));
-        assertTrue(menu.contains("blockEntity, new SimpleContainerData(10)"));
+        assertTrue(menu.contains("blockEntity == null")
+                && menu.contains("blockEntity.dataAccess()"),
+                "the client menu must use the block entity's synchronized switch data");
     }
 
     @Test void recolorSourcesAndTexturesExist() {
@@ -101,7 +103,8 @@ final class ZeroPointZeroPointFiveContractTest {
         String entity = read("java/com/immortalstorage/immortalstorage/block/entity/SimulatedReincarnationFurnaceBlockEntity.java");
         String renderer = read("java/com/immortalstorage/immortalstorage/client/render/SimulatedReincarnationFurnaceRenderer.java");
         String screen = read("java/com/immortalstorage/immortalstorage/client/screen/SimulatedReincarnationFurnaceScreen.java");
-        assertTrue(entity.contains("killer.giveExperiencePoints(xp)") && entity.contains("effectiveOutputOwner"));
+        assertTrue(entity.contains("killer.giveExperiencePoints(xp")
+                && entity.contains("effectiveXianqiaoOwner"));
         assertTrue(renderer.contains("SOURCE_SLOT") && renderer.contains("Axis.YP.rotationDegrees"));
         assertTrue(screen.contains("FacePreviewButton") && screen.contains("adjacentBlockPreview"));
     }

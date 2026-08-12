@@ -7,6 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,17 +17,28 @@ final class XianqiaoManagerAssetTest {
     private static final Path RESOURCES = locateResources();
 
     @Test
-    void managerFrameUsesExactlyOneOpaquePureGrayMaterial() throws IOException {
+    void managerFrameUsesLayeredOpaqueBorderTexture() throws IOException {
         BufferedImage image = ImageIO.read(RESOURCES.resolve(Path.of(
                 "assets", "immortalstorage", "textures", "block", "xianqiao_manager_frame.png")).toFile());
 
         assertEquals(16, image.getWidth());
         assertEquals(16, image.getHeight());
+        Set<Integer> colours = new HashSet<>();
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int argb = image.getRGB(x, y);
-                assertEquals(0xFF808080, argb,
-                        "the manager border must be uniform pure gray, without a custom metal ramp");
+                assertEquals(255, argb >>> 24,
+                        "the manager border must remain an opaque Minecraft-style frame");
+                colours.add(argb);
+            }
+        }
+        assertTrue(colours.size() >= 3, "the manager border must contain layered pixel colours");
+        assertTrue(colours.stream().anyMatch(argb -> argb != 0xFF808080),
+                "the manager border must no longer be a flat gray placeholder");
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                assertEquals(image.getRGB(x, y), image.getRGB(image.getHeight() - 1 - y, x),
+                        "the manager border must be 90-degree centre-symmetric");
             }
         }
     }

@@ -35,6 +35,7 @@ import com.immortalstorage.immortalstorage.client.screen.AdvancedStabilizedMinia
 import com.immortalstorage.immortalstorage.client.screen.AdvancedEntangledMiniatureRuinScreen;
 import com.immortalstorage.immortalstorage.client.screen.SimulatedReincarnationFurnaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.SimulatedSpiritFieldScreen;
+import com.immortalstorage.immortalstorage.client.screen.EnergyCrystalScreen;
 import com.immortalstorage.immortalstorage.client.render.SimulatedSpiritFieldRenderer;
 import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.item.ModItems;
@@ -70,6 +71,16 @@ public final class ClientSetup {
 
     private static void clientSetup(final FMLClientSetupEvent e) {
         e.enqueueWork(() -> {
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(
+                    ModBlocks.ENERGY_CRYSTAL.get(), net.minecraft.client.renderer.RenderType.translucent());
+            if (ModBlocks.MANA_CRYSTAL != null) {
+                net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(
+                        ModBlocks.MANA_CRYSTAL.get(), net.minecraft.client.renderer.RenderType.translucent());
+            }
+            if (ModBlocks.SOURCE_CRYSTAL != null) {
+                net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(
+                        ModBlocks.SOURCE_CRYSTAL.get(), net.minecraft.client.renderer.RenderType.translucent());
+            }
             ItemProperties.register(
                     ModItems.SPIRIT_STAFF.get(),
                     ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),
@@ -86,6 +97,7 @@ public final class ClientSetup {
         e.register(ModMenus.IMMORTAL_FURNACE.get(), ImmortalFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_REINCARNATION_FURNACE.get(), SimulatedReincarnationFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_SPIRIT_FIELD.get(), SimulatedSpiritFieldScreen::new);
+        e.register(ModMenus.ENERGY_CRYSTAL.get(), EnergyCrystalScreen::new);
         e.register(ModMenus.SOURCE_VEIN.get(), SourceVeinScreen::new);
         e.register(ModMenus.TREASURE_BASIN.get(), TreasureBasinScreen::new);
         e.register(ModMenus.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerScreen::new);

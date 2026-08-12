@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "minecraft:diamond_block",
+    "C": "immortalstorage:spirit_crystal_block",
+    "D": "minecraft:dragon_egg",
+    "E": "minecraft:beacon",
+    "I": "immortalstorage:spirit_iron_block",
+    "N": "minecraft:netherite_ingot"
+  },
+  "pattern": [
+    "NDN",
+    "BEB",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:world_shard_miner"
+  }
+}

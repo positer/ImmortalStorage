@@ -62,21 +62,25 @@ final class RecipeViewerOptionalBoundaryTest {
         Path root = projectRoot();
         String gradle = Files.readString(root.resolve("build.gradle"));
         assertTrue(gradle.contains(
-                "compileOnly \"mezz.jei:jei-1.21.1-common-api:${jei_version}\""));
+                "addCompatDependency('compileOnly', 'jei', 'common_api')"));
         assertTrue(gradle.contains(
-                "compileOnly \"mezz.jei:jei-1.21.1-neoforge-api:${jei_version}\""));
+                "addCompatDependency('compileOnly', 'jei', 'neoforge_api')"));
         assertTrue(gradle.contains(
-                "compileOnly 'dev.emi:emi-neoforge:1.1.24+1.21.1:api'"));
+                "addCompatDependency('compileOnly', 'emi', 'compile')"));
+        String matrix = Files.readString(root.resolve(Path.of(
+                "..", "version-compat", "compatibility-mod-matrix.json")).normalize());
+        assertTrue(matrix.contains("mezz.jei:jei-1.21.1-common-api:19.27.0.343"));
+        assertTrue(matrix.contains("dev.emi:emi-neoforge:1.1.24+1.21.1:api"));
         assertFalse(Pattern.compile(
                         "(?m)^\\s*(?:implementation|api)\\s*['\"](?:mezz\\.jei|dev\\.emi)")
                 .matcher(gradle).find(),
                 "viewer APIs must not become shipped compile dependencies");
 
         String modsToml = Files.readString(root.resolve(
-                "src/main/resources/META-INF/neoforge.mods.toml"));
+                "build/resources/main/META-INF/neoforge.mods.toml"));
         assertOptionalClientDependency(modsToml, "jei");
         assertOptionalClientDependency(modsToml, "emi");
-        assertTrue(modsToml.contains("versionRange=\"[${jei_version},)\""));
+        assertTrue(modsToml.contains("versionRange=\"[19.27.0.343,)\""));
 
         String properties = Files.readString(root.resolve("gradle.properties"));
         assertTrue(properties.contains("jei_version=19.27.0.343"));

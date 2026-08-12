@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "immortalstorage:spirit_iron",
+    "S": "immortalstorage:spirit_crystal",
+    "T": "minecraft:stick"
+  },
+  "pattern": [
+    " I ",
+    " I ",
+    "ST "
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_sword",
+    "components": {
+      "minecraft:enchantments": {
+        "immortalstorage:spirit_repair": 1
+      }
+    }
+  }
+}

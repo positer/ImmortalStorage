@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.block.entity;
 
 import com.immortalstorage.immortalstorage.block.custom.MiniatureImmortalRuinBlock;
+import com.immortalstorage.immortalstorage.item.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,11 +37,11 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
         if (!(level instanceof ServerLevel serverLevel)) return;
         boolean reversed = getBlockState().getValue(MiniatureImmortalRuinBlock.REVERSED);
         Vec3 center = Vec3.atCenterOf(worldPosition);
-        AABB area = new AABB(worldPosition).inflate(6.0D);
+        AABB area = MiniatureImmortalRuinEffectPolicy.effectArea(worldPosition);
         AABB centerArea = new AABB(worldPosition);
         if (reversed && forceMode == 4) forceMode = 0;
         for (LivingEntity entity : serverLevel.getEntitiesOfClass(LivingEntity.class, area,
-                entity -> entity.isAlive() && (affectPlayers || !(entity instanceof Player)))) {
+                entity -> entity.isAlive() && canAffect(entity))) {
             Vec3 horizontal = center.subtract(entity.position()).multiply(1.0D, 0.0D, 1.0D);
             if (horizontal.lengthSqr() > 0.01D) {
                 if (!reversed && forceMode == 4) {
@@ -66,10 +67,22 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
         Vec3 target = Vec3.atCenterOf(linkedPos);
         for (Entity entity : serverLevel.getEntities((Entity) null, area, entity -> entity.isAlive()
                 && (entity instanceof ItemEntity
-                || entity instanceof LivingEntity && (affectPlayers || !(entity instanceof Player))))) {
+                || entity instanceof LivingEntity living && canAffect(living)))) {
             entity.teleportTo(target.x, target.y + 0.5D, target.z);
             entity.setDeltaMovement(Vec3.ZERO);
         }
+    }
+
+    private boolean canAffect(LivingEntity entity) {
+        boolean isPlayer = entity instanceof Player;
+        boolean holdingMiniatureRuin = isPlayer && isHoldingMiniatureRuin((Player) entity);
+        return MiniatureImmortalRuinEffectPolicy.shouldAffectLivingEntity(
+                isPlayer, affectPlayers, holdingMiniatureRuin);
+    }
+
+    private static boolean isHoldingMiniatureRuin(Player player) {
+        return player.getMainHandItem().is(ModItems.MINIATURE_IMMORTAL_RUIN.get())
+                || player.getOffhandItem().is(ModItems.MINIATURE_IMMORTAL_RUIN.get());
     }
 
     public boolean isReversed() { return getBlockState().getValue(MiniatureImmortalRuinBlock.REVERSED); }

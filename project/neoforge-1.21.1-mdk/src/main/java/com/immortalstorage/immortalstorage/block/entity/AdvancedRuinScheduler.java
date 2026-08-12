@@ -130,16 +130,17 @@ final class AdvancedRuinScheduler {
     static void eject(ItemStackHandler buffer,
                       List<Target> targets, boolean forcePoll, boolean itemByItem,
                       Predicate<ItemStack> allows, int[] groupCursor) {
-        distribute(buffer, targets, forcePoll, itemByItem, groupCursor);
+        distribute(buffer, targets, forcePoll, itemByItem, allows, groupCursor);
     }
 
     private static void distribute(ItemStackHandler buffer, List<Target> targets,
-                                   boolean forcePoll, boolean itemByItem, int[] groupCursor) {
+                                   boolean forcePoll, boolean itemByItem,
+                                   Predicate<ItemStack> allows, int[] groupCursor) {
         if (targets.isEmpty()) return;
         if (itemByItem) {
             for (int slot = 0; slot < buffer.getSlots(); slot++) {
                 ItemStack stack = buffer.getStackInSlot(slot);
-                if (stack.isEmpty()) continue;
+                if (stack.isEmpty() || !allows.test(stack)) continue;
                 ItemStack remaining = distributeOneRotating(stack, targets, forcePoll, groupCursor);
                 buffer.setStackInSlot(slot, remaining);
             }
@@ -148,7 +149,7 @@ final class AdvancedRuinScheduler {
             if (target == null || target.handler() == null) return;
             for (int slot = 0; slot < buffer.getSlots(); slot++) {
                 ItemStack stack = buffer.getStackInSlot(slot);
-                if (stack.isEmpty()) continue;
+                if (stack.isEmpty() || !allows.test(stack)) continue;
                 ItemStack remaining = insertInto(target.handler(), stack);
                 buffer.setStackInSlot(slot, remaining);
                 if (!remaining.isEmpty() && forcePoll) break;

@@ -14,18 +14,25 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Renders the manager's eight-segment source core as one rigid body that
  * slowly spins around the block centre [8,8,8].  Each 3x3x3 segment samples
  * the solid empty/used/full textures selected by the eight-state ladder.  The
- * static block model carries only the black edge cage; the same core geometry
- * is shared with the inventory/hand BEWLR through {@link #drawCore}.
+ * static block model inherits the source vein frame directly; this renderer
+ * owns only the manager's eight-segment core. The same core geometry is shared
+ * with the inventory/hand BEWLR through {@link #drawCore}.
  */
 public final class SourceVeinManagerRenderer implements BlockEntityRenderer<SourceVeinManagerBlockEntity> {
     static final float DEGREES_PER_TICK = 4.0F;
+    /** Keep the eight core cubes translucent while preserving their 3x3x3 layout. */
+    private static final int CORE_ALPHA = 208;
     private static final RenderType TYPE_EMPTY = materialType("source_vein_manager_core_empty");
     private static final RenderType TYPE_USED = materialType("source_vein_manager_core_used");
     private static final RenderType TYPE_FULL = materialType("source_vein_manager_core_full");
+    private final Map<Long, SourceVeinAnimation.Clock> animationClocks = new HashMap<>();
 
     public SourceVeinManagerRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -37,11 +44,13 @@ public final class SourceVeinManagerRenderer implements BlockEntityRenderer<Sour
                        MultiBufferSource buffers,
                        int packedLight,
                        int packedOverlay) {
-        float worldTime = manager.getLevel() == null
-                ? partialTick
-                : manager.getLevel().getGameTime() + partialTick;
+        double logicalTime = manager.getLevel() == null
+                ? SourceVeinAnimation.continuousTime(0L, partialTick)
+                : SourceVeinAnimation.continuousTime(manager.getLevel().getGameTime(), partialTick);
+        double animationTime = clockFor(manager.getBlockPos().asLong()).sample(logicalTime);
 
-        drawCore(poseStack, buffers, manager.displayState(), worldTime * DEGREES_PER_TICK);
+        drawCore(poseStack, buffers, manager.displayState(),
+                SourceVeinAnimation.rotationDegrees(animationTime, DEGREES_PER_TICK));
     }
 
     /**
@@ -75,6 +84,13 @@ public final class SourceVeinManagerRenderer implements BlockEntityRenderer<Sour
     @Override
     public AABB getRenderBoundingBox(SourceVeinManagerBlockEntity manager) {
         return new AABB(manager.getBlockPos()).inflate(0.01D);
+    }
+
+    private SourceVeinAnimation.Clock clockFor(long key) {
+        if (animationClocks.size() >= 512 && !animationClocks.containsKey(key)) {
+            animationClocks.clear();
+        }
+        return animationClocks.computeIfAbsent(key, ignored -> new SourceVeinAnimation.Clock());
     }
 
     private static RenderType renderTypeFor(SourceVeinCoreLayout.Material material) {
@@ -154,7 +170,7 @@ public final class SourceVeinManagerRenderer implements BlockEntityRenderer<Sour
                                float normalX, float normalY, float normalZ,
                                int light) {
         vertices.addVertex(pose, x, y, z)
-                .setColor(light, light, light, 255)
+                .setColor(light, light, light, CORE_ALPHA)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(LightTexture.FULL_BRIGHT)

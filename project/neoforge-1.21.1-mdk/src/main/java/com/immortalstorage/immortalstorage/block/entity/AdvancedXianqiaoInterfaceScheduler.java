@@ -62,17 +62,20 @@ final class AdvancedXianqiaoInterfaceScheduler {
         boolean forcePoll = be.accessMode() == AdvancedXianqiaoInterfaceBlockEntity.ACCESS_FORCE_POLL;
         boolean itemByItem = be.splitMode() == AdvancedXianqiaoInterfaceBlockEntity.SPLIT_ITEM_BY_ITEM;
         for (BlockPos pos : positions(be)) {
-            pullItems(be, level, pos, face, forcePoll, itemByItem);
+            if (!pullItems(be, level, pos, face, forcePoll, itemByItem)) return;
+            // A valid item container is not required to expose fluid or energy.
+            // Force-poll applies to the primary item route; optional channels
+            // must not suppress later item/chemical work for the same range.
             pullFluids(be, level, pos, face);
             pullEnergy(be, level, pos, face);
             XianqiaoInterfaceCompatHooks.scheduledChemicalTransfer(be, level, pos, face, true);
         }
     }
 
-    private static void pullItems(AdvancedXianqiaoInterfaceBlockEntity be, ServerLevel level,
+    private static boolean pullItems(AdvancedXianqiaoInterfaceBlockEntity be, ServerLevel level,
                                   BlockPos pos, Direction face, boolean forcePoll, boolean itemByItem) {
         IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, face);
-        if (handler == null) return;
+        if (handler == null) return !forcePoll;
         int slots = Math.min(handler.getSlots(), MAX_SLOT_SCAN);
         for (int slot = 0; slot < slots; slot++) {
             ItemStack stored = handler.getStackInSlot(slot);
@@ -86,6 +89,7 @@ final class AdvancedXianqiaoInterfaceScheduler {
                 handler.insertItem(slot, removed.copyWithCount((int) remainder), false);
             }
         }
+        return true;
     }
 
     private static void pullFluids(AdvancedXianqiaoInterfaceBlockEntity be, ServerLevel level,
@@ -105,7 +109,11 @@ final class AdvancedXianqiaoInterfaceScheduler {
                     ? simulated.copyWithAmount((int) accepted) : simulated;
             FluidStack extracted = source.drain(toExtract, IFluidHandler.FluidAction.EXECUTE);
             if (extracted.isEmpty()) continue;
-            be.getInventory().insertFluidBulk(extracted, extracted.getAmount(), false);
+            long committed = be.getInventory().insertFluidBulk(extracted, extracted.getAmount(), false);
+            if (committed < extracted.getAmount()) {
+                source.fill(extracted.copyWithAmount((int) (extracted.getAmount() - committed)),
+                        IFluidHandler.FluidAction.EXECUTE);
+            }
         }
     }
 
@@ -124,7 +132,10 @@ final class AdvancedXianqiaoInterfaceScheduler {
         if (accepted <= 0) return;
         int extracted = source.extractEnergy(accepted, false);
         if (extracted > 0) {
-            ledger.insert(extracted, ResourceTransferAction.EXECUTE);
+            long committed = ledger.insert(extracted, ResourceTransferAction.EXECUTE);
+            if (committed < extracted) {
+                source.receiveEnergy(extracted - (int) committed, false);
+            }
         }
     }
 
@@ -132,7 +143,9 @@ final class AdvancedXianqiaoInterfaceScheduler {
                                   Direction face) {
         List<BlockPos> targets = positions(be);
         if (targets.isEmpty()) return;
-        pushItems(be, level, targets, face);
+        boolean forcePoll = be.accessMode() == AdvancedXianqiaoInterfaceBlockEntity.ACCESS_FORCE_POLL;
+        boolean itemByItem = be.splitMode() == AdvancedXianqiaoInterfaceBlockEntity.SPLIT_ITEM_BY_ITEM;
+        if (!pushItems(be, level, targets, face, forcePoll, itemByItem)) return;
         pushFluids(be, level, targets, face);
         pushEnergy(be, level, targets, face);
         for (BlockPos pos : targets) {
@@ -140,8 +153,9 @@ final class AdvancedXianqiaoInterfaceScheduler {
         }
     }
 
-    private static void pushItems(AdvancedXianqiaoInterfaceBlockEntity be, ServerLevel level,
-                                  List<BlockPos> targets, Direction face) {
+    private static boolean pushItems(AdvancedXianqiaoInterfaceBlockEntity be, ServerLevel level,
+                                     List<BlockPos> targets, Direction face,
+                                     boolean forcePoll, boolean itemByItem) {
         XianqiaoInterfaceInventory inventory = be.getInventory();
         int[] cursor = be.groupCursor();
         for (int slot = 0; slot < XianqiaoInterfaceInventory.SLOT_COUNT; slot++) {
@@ -150,7 +164,8 @@ final class AdvancedXianqiaoInterfaceScheduler {
             if (buffered.isEmpty()) continue;
             ItemStack removed = inventory.extractItem(slot, buffered.getCount(), false);
             if (removed.isEmpty()) continue;
-            ItemStack remaining = distributeItem(removed, level, targets, face, cursor);
+            ItemStack remaining = distributeItem(removed, level, targets, face, cursor,
+                    forcePoll, itemByItem);
             if (!remaining.isEmpty()) {
                 ItemStack leftover = inventory.restoreExtractedItem(slot, remaining);
                 if (!leftover.isEmpty()) {
@@ -158,13 +173,29 @@ final class AdvancedXianqiaoInterfaceScheduler {
                 }
             }
         }
+        return true;
     }
 
     private static ItemStack distributeItem(ItemStack stack, ServerLevel level,
-                                            List<BlockPos> targets, Direction face, int[] cursor) {
+                                             List<BlockPos> targets, Direction face, int[] cursor,
+                                             boolean forcePoll, boolean itemByItem) {
         ItemStack remaining = stack.copy();
         if (targets.isEmpty()) return remaining;
         int count = targets.size();
+        if (!itemByItem) {
+            for (int i = 0; i < count; i++) {
+                BlockPos pos = targets.get(cursor[0] % count);
+                cursor[0] = (cursor[0] + 1) % count;
+                IItemHandler handler = level.getCapability(
+                        Capabilities.ItemHandler.BLOCK, pos, face);
+                if (handler == null) {
+                    if (forcePoll) return remaining;
+                    continue;
+                }
+                return insertInto(handler, remaining);
+            }
+            return remaining;
+        }
         while (!remaining.isEmpty()) {
             boolean anyAccepted = false;
             for (int i = 0; i < count && !remaining.isEmpty(); i++) {
@@ -172,9 +203,12 @@ final class AdvancedXianqiaoInterfaceScheduler {
                 cursor[0] = (cursor[0] + 1) % count;
                 IItemHandler handler = level.getCapability(
                         Capabilities.ItemHandler.BLOCK, pos, face);
-                if (handler == null) continue;
+                if (handler == null) {
+                    if (forcePoll) return remaining;
+                    continue;
+                }
                 ItemStack one = remaining.copyWithCount(1);
-                ItemStack leftover = handler.insertItem(0, one, false);
+                ItemStack leftover = insertInto(handler, one);
                 if (leftover.isEmpty()) {
                     remaining.shrink(1);
                     anyAccepted = true;
@@ -206,7 +240,7 @@ final class AdvancedXianqiaoInterfaceScheduler {
     }
 
     private static FluidStack distributeFluid(FluidStack stack, ServerLevel level,
-                                              List<BlockPos> targets, Direction face) {
+                                               List<BlockPos> targets, Direction face) {
         FluidStack remaining = stack.copy();
         for (BlockPos pos : targets) {
             if (remaining.isEmpty()) break;
@@ -234,7 +268,8 @@ final class AdvancedXianqiaoInterfaceScheduler {
             if (remaining <= 0L) break;
             IEnergyStorage target = level.getCapability(
                     Capabilities.EnergyStorage.BLOCK, pos, face);
-            if (target == null || !target.canReceive()) continue;
+            if (target == null) continue;
+            if (!target.canReceive()) continue;
             int toSend = (int) Math.min(Integer.MAX_VALUE, remaining);
             long extracted = cache.extract(toSend, ResourceTransferAction.SIMULATE);
             if (extracted <= 0L) continue;
@@ -244,6 +279,15 @@ final class AdvancedXianqiaoInterfaceScheduler {
                 remaining -= committed;
             }
         }
+    }
+
+    private static ItemStack insertInto(IItemHandler handler, ItemStack stack) {
+        ItemStack remaining = stack.copy();
+        int slots = Math.min(handler.getSlots(), MAX_SLOT_SCAN);
+        for (int slot = 0; slot < slots && !remaining.isEmpty(); slot++) {
+            remaining = handler.insertItem(slot, remaining, false);
+        }
+        return remaining;
     }
 
     private static int manhattan(BlockPos a, BlockPos b) {

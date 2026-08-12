@@ -1,0 +1,12 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "group": "immortalstorage:spirit_crystal_ores",
+  "cookingtime": 50,
+  "experience": 0.7,
+  "ingredient": "immortalstorage:deepslate_spirit_crystal_ore",
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_crystal"
+  }
+}

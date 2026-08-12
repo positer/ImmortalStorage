@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.block.ModBlocks;
+import com.immortalstorage.immortalstorage.compat.CompatManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -14,6 +15,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 public final class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
@@ -31,6 +33,32 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("simulated_spirit_field", () ->
                     BlockEntityType.Builder.of(SimulatedSpiritFieldBlockEntity::new,
                             ModBlocks.SIMULATED_SPIRIT_FIELD.get()).build(null));
+    public static final Supplier<BlockEntityType<EnergyCrystalBlockEntity>> ENERGY_CRYSTAL =
+            BLOCK_ENTITIES.register("energy_crystal", () ->
+                    BlockEntityType.Builder.of(EnergyCrystalBlockEntity::new,
+                            ModBlocks.ENERGY_CRYSTAL.get()).build(null));
+    public static final @Nullable Supplier<BlockEntityType<EnergyCrystalBlockEntity>> MANA_CRYSTAL =
+            CompatManager.BOTANIA_LOADED
+                    ? BLOCK_ENTITIES.register("mana_crystal", () ->
+                    BlockEntityType.Builder.of(
+                            (p, s) -> new EnergyCrystalBlockEntity(p, s, CrystalKind.MANA),
+                            ModBlocks.MANA_CRYSTAL.get()).build(null))
+                    : null;
+    public static final @Nullable Supplier<BlockEntityType<EnergyCrystalBlockEntity>> SOURCE_CRYSTAL =
+            CompatManager.ARS_NOUVEAU_LOADED
+                    ? BLOCK_ENTITIES.register("source_crystal", () ->
+                    BlockEntityType.Builder.of(
+                            (p, s) -> new EnergyCrystalBlockEntity(p, s, CrystalKind.SOURCE),
+                            ModBlocks.SOURCE_CRYSTAL.get()).build(null))
+                    : null;
+
+    public static Supplier<BlockEntityType<EnergyCrystalBlockEntity>> typeFor(CrystalKind kind) {
+        return switch (kind) {
+            case ELECTRIC -> ENERGY_CRYSTAL;
+            case MANA -> MANA_CRYSTAL;
+            case SOURCE -> SOURCE_CRYSTAL;
+        };
+    }
 
     public static final Supplier<BlockEntityType<MiniatureImmortalRuinBlockEntity>> MINIATURE_IMMORTAL_RUIN =
             BLOCK_ENTITIES.register("miniature_immortal_ruin", () ->
@@ -120,12 +148,24 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_REINCARNATION_FURNACE.get(),
-                (be, side) -> side == null || !be.outputFace(side) ? null
+                (be, side) -> side == null || !be.automaticOutput() || !be.outputFace(side) ? null
                         : new net.neoforged.neoforge.items.wrapper.RangedWrapper(
                                 be.itemHandler(), SimulatedReincarnationFurnaceBlockEntity.OUTPUT_START,
                                 SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_SPIRIT_FIELD.get(),
                 SimulatedSpiritFieldBlockEntity::getItemHandler);
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ENERGY_CRYSTAL.get(),
+                (be, side) -> be.getItemHandler(side));
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ENERGY_CRYSTAL.get(),
+                EnergyCrystalBlockEntity::getEnergyHandler);
+        if (MANA_CRYSTAL != null) {
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MANA_CRYSTAL.get(),
+                    (be, side) -> be.getItemHandler(side));
+        }
+        if (SOURCE_CRYSTAL != null) {
+            event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SOURCE_CRYSTAL.get(),
+                    (be, side) -> be.getItemHandler(side));
+        }
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> be.getItemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, XIANQIAO_INTERFACE.get(),

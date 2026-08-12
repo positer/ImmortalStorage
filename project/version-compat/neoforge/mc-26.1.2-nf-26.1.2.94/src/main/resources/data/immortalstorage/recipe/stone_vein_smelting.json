@@ -1,0 +1,10 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "building",
+  "cookingtime": 100,
+  "experience": 0,
+  "ingredient": "immortalstorage:cobblestone_vein",
+  "result": {
+    "id": "immortalstorage:stone_vein"
+  }
+}

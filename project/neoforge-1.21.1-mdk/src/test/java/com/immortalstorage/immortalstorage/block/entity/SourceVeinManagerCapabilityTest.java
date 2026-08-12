@@ -165,6 +165,8 @@ final class SourceVeinManagerCapabilityTest {
                 "definition reloads must invalidate cached item/fluid/null capabilities");
         assertTrue(manager.contains("SourceVeinStorageIndex.changed(this, itemChanged, fluidChanged)"),
                 "amount-only changes must publish revisions without rebuilding member capabilities");
+        assertTrue(manager.contains("if (level instanceof ServerLevel) displayState.refreshFrom(this)"),
+                "client world reload must retain the server-sent display state instead of refreshing from empty private members");
     }
 
     private static SourceVeinManagerBlockEntity manager() {

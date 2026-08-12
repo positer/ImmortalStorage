@@ -21,6 +21,7 @@ import com.refinedmods.refinedstorage.common.support.resource.FluidResource;
 import com.refinedmods.refinedstorage.common.support.resource.ItemResource;
 import com.immortalstorage.core.resource.ResourceTransferAction;
 import com.immortalstorage.core.resource.ResourceChannelKey;
+import com.immortalstorage.core.resource.RevisionedReadCache;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -44,12 +45,21 @@ import java.util.UUID;
 final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChild {
     private final UUID owner;
     private final UUID diskId;
+    private final EndpointResolver endpointResolver;
+    private final RevisionedReadCache<RevisionStamp, ReadSnapshot> readCache =
+            new RevisionedReadCache<>();
     private volatile boolean networkPrimary = true;
     private volatile ParentComposite directParent;
 
     XianqiaoRsStorage(UUID owner, UUID diskId) {
+        this(owner, diskId, (server, requestedOwner) ->
+                server == null ? null : PersonalStorageApi.resolveXianqiao(server, requestedOwner));
+    }
+
+    XianqiaoRsStorage(UUID owner, UUID diskId, EndpointResolver endpointResolver) {
         this.owner = Objects.requireNonNull(owner, "owner");
         this.diskId = Objects.requireNonNull(diskId, "diskId");
+        this.endpointResolver = Objects.requireNonNull(endpointResolver, "endpointResolver");
     }
 
     UUID owner() {
@@ -63,12 +73,18 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
     @Override
     public Collection<ResourceAmount> getAll() {
         if (!networkPrimary) return List.of();
-        return getAllFromEndpoint();
+        return readSnapshot().entries();
     }
 
-    private Collection<ResourceAmount> getAllFromEndpoint() {
+    private ReadSnapshot readSnapshot() {
         EndpointAccess access = resolveAccess();
-        if (access == null) return List.of();
+        RevisionStamp stamp = access == null ? OFFLINE_STAMP : access.stamp();
+        return readCache.get(stamp, () -> buildReadSnapshot(access, stamp));
+    }
+
+    private ReadSnapshot buildReadSnapshot(
+            @Nullable EndpointAccess access, RevisionStamp stamp) {
+        if (access == null) return new ReadSnapshot(stamp, List.of(), 0L);
 
         List<ResourceAmount> result = new ArrayList<>();
         for (StorageItemSummary entry : access.items().snapshot()) {
@@ -95,17 +111,20 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
                 }
             });
         }
-        return List.copyOf(result);
+        // ResourceAmount is immutable, but the fluid and external callbacks
+        // above keep their local amount. Recompute the total from the final
+        // immutable list so getAll() and getStored() share one exact view.
+        long total = 0L;
+        for (ResourceAmount entry : result) {
+            total = RsAmountPolicy.saturatedSum(total, entry.amount());
+        }
+        return new ReadSnapshot(stamp, List.copyOf(result), total);
     }
 
     @Override
     public long getStored() {
         if (!networkPrimary) return 0L;
-        long total = 0L;
-        for (ResourceAmount entry : getAllFromEndpoint()) {
-            total = RsAmountPolicy.saturatedSum(total, entry.amount());
-        }
-        return total;
+        return readSnapshot().total();
     }
 
     @Override
@@ -134,7 +153,9 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
         } else {
             return 0L;
         }
-        return RsAmountPolicy.boundedTransfer(inserted, amount);
+        long bounded = RsAmountPolicy.boundedTransfer(inserted, amount);
+        if (bounded > 0L && action == Action.EXECUTE) readCache.invalidate();
+        return bounded;
     }
 
     @Override
@@ -163,7 +184,9 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
         } else {
             return 0L;
         }
-        return RsAmountPolicy.boundedTransfer(extracted, amount);
+        long bounded = RsAmountPolicy.boundedTransfer(extracted, amount);
+        if (bounded > 0L && action == Action.EXECUTE) readCache.invalidate();
+        return bounded;
     }
 
     @Override
@@ -181,7 +204,7 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
     public void onRemovedFromComposite(ParentComposite parentComposite) {
         RsNetworkDeduplicator.rebalanceFrom(parentComposite);
         directParent = null;
-        networkPrimary = true;
+        setNetworkPrimary(true);
     }
 
     @Override
@@ -208,7 +231,9 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
     }
 
     void setNetworkPrimary(boolean networkPrimary) {
+        if (this.networkPrimary == networkPrimary) return;
         this.networkPrimary = networkPrimary;
+        readCache.invalidate();
     }
 
     ParentComposite directParent() {
@@ -217,12 +242,20 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
 
     private @Nullable EndpointAccess resolveAccess() {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return null;
-        PersonalStorageEndpoint endpoint = PersonalStorageApi.resolveXianqiao(server, owner);
+        PersonalStorageEndpoint endpoint = endpointResolver.resolve(server, owner);
         if (endpoint == null || !endpoint.online() || !owner.equals(endpoint.owner())) return null;
         TerminalItemStorage items = endpoint.itemStorage();
         if (items == null) return null;
-        return new EndpointAccess(items, endpoint.fluidStorage(), endpoint.externalResourceStorage());
+        TerminalFluidStorage fluids = endpoint.fluidStorage();
+        ExternalResourceStorage externalResources = endpoint.externalResourceStorage();
+        return new EndpointAccess(items, fluids, externalResources, new RevisionStamp(
+                true,
+                endpoint.stage(),
+                items.revision(),
+                fluids != null,
+                fluids == null ? 0L : fluids.revision(),
+                externalResources != null,
+                externalResources == null ? 0L : externalResources.revision()));
     }
 
     private static TerminalStorageAction terminalAction(Action action) {
@@ -240,6 +273,31 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
     private record EndpointAccess(
             TerminalItemStorage items,
             @Nullable TerminalFluidStorage fluids,
-            @Nullable ExternalResourceStorage externalResources) {
+            @Nullable ExternalResourceStorage externalResources,
+            RevisionStamp stamp) {
+    }
+
+    private static final RevisionStamp OFFLINE_STAMP =
+            new RevisionStamp(false, 0, 0L, false, 0L, false, 0L);
+
+    private record RevisionStamp(
+            boolean online,
+            int stage,
+            long itemRevision,
+            boolean fluidsAvailable,
+            long fluidRevision,
+            boolean externalResourcesAvailable,
+            long externalResourceRevision) {
+    }
+
+    private record ReadSnapshot(
+            RevisionStamp stamp,
+            List<ResourceAmount> entries,
+            long total) {
+    }
+
+    @FunctionalInterface
+    interface EndpointResolver {
+        @Nullable PersonalStorageEndpoint resolve(@Nullable MinecraftServer server, UUID owner);
     }
 }

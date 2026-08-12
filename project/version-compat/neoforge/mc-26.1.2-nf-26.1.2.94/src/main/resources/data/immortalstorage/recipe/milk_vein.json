@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": "immortalstorage:spirit_iron",
+    "M": "minecraft:milk_bucket",
+    "C": "immortalstorage:spirit_crystal"
+  },
+  "pattern": [
+    "IM",
+    "MC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:milk_vein"
+  }
+}

@@ -1,0 +1,44 @@
+package com.immortalstorage.immortalstorage.item.custom;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+final class SpiritSwordCombatModelTest {
+    @org.junit.jupiter.api.BeforeAll
+    static void immortalStorageTargetBootstrap() {
+        com.immortalstorage.immortalstorage.compat.CompatTestBootstrap.bootstrap();
+    }
+
+    @Test
+    void stageProfilesMatchCombatAndTooltipContract() {
+        var mortal = SpiritSwordCombatModel.forStage(0);
+        assertEquals(SpiritSwordCombatModel.YuanCost.NONE, mortal.cost());
+        assertEquals(0.0F, mortal.bonusDamage());
+
+        var fifth = SpiritSwordCombatModel.forStage(5);
+        assertEquals(SpiritSwordCombatModel.YuanCost.TRUE, fifth.cost());
+        assertEquals(5L, fifth.costAmount());
+        assertEquals(32.0F, fifth.bonusDamage());
+        assertEquals(37.0F, fifth.successfulHitDamage());
+
+        var ninth = SpiritSwordCombatModel.forStage(9);
+        assertEquals(SpiritSwordCombatModel.YuanCost.IMMORTAL, ninth.cost());
+        assertEquals(9L, ninth.costAmount());
+        assertEquals(512.0F, ninth.bonusDamage());
+
+        var tenth = SpiritSwordCombatModel.forStage(10);
+        assertEquals(SpiritSwordCombatModel.YuanCost.NONE, tenth.cost());
+        assertEquals(0L, tenth.costAmount());
+        assertEquals(1024.0F, tenth.bonusDamage());
+    }
+
+    @Test
+    void paidStageAndTemperingBecomeOneReadableWeaponDamage() {
+        var ninth = SpiritSwordCombatModel.forStage(9);
+
+        assertEquals(517.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, true, 0L, 0.01D));
+        assertEquals(1034.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, true, 100L, 0.01D));
+        assertEquals(10.0F, SpiritSwordCombatModel.projectedAttackDamage(ninth, false, 100L, 0.01D));
+    }
+}

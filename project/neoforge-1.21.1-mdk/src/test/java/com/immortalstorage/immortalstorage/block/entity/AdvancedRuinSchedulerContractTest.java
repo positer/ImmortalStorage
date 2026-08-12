@@ -134,4 +134,33 @@ final class AdvancedRuinSchedulerContractTest {
         AdvancedRuinScheduler.eject(own, List.of(t), false, false, stack -> true, cursor);
         assertFalse(own.getStackInSlot(0).isEmpty(), "leftover stays in own inventory");
     }
+
+    @Test
+    void ejectHonorsTheConfiguredFilter() {
+        ItemStackHandler own = new ItemStackHandler(54);
+        own.setStackInSlot(0, new ItemStack(Items.EMERALD, 2));
+        ItemStackHandler target = new ItemStackHandler(9);
+
+        AdvancedRuinScheduler.eject(own,
+                List.of(new AdvancedRuinScheduler.Target(new BlockPos(1, 0, 0), target)),
+                false, true, stack -> stack.is(Items.DIAMOND), new int[]{0});
+
+        assertEquals(2, own.getStackInSlot(0).getCount(), "filtered stack remains in the ruin");
+        assertTrue(target.getStackInSlot(0).isEmpty(), "filtered stack is not exported");
+    }
+
+    @Test
+    void ejectUsesAllTargetSlotsInsteadOfOnlySlotZero() {
+        ItemStackHandler own = new ItemStackHandler(54);
+        own.setStackInSlot(0, new ItemStack(Items.EMERALD, 1));
+        ItemStackHandler target = new ItemStackHandler(2);
+        target.setStackInSlot(0, new ItemStack(Items.STONE, 64));
+
+        AdvancedRuinScheduler.eject(own,
+                List.of(new AdvancedRuinScheduler.Target(new BlockPos(1, 0, 0), target)),
+                false, false, stack -> true, new int[]{0});
+
+        assertTrue(own.getStackInSlot(0).isEmpty(), "item reaches a later target slot");
+        assertEquals(Items.EMERALD, target.getStackInSlot(1).getItem());
+    }
 }

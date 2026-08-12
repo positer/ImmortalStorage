@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": "immortalstorage:immortal_yuan",
+    "C": "immortalstorage:spirit_crystal",
+    "M": "minecraft:diamond",
+    "B": "minecraft:diamond_block",
+    "K": "immortalstorage:spirit_core"
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:diamond_vein"
+  }
+}

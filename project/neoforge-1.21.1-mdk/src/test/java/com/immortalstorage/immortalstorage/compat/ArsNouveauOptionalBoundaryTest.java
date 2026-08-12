@@ -35,7 +35,7 @@ final class ArsNouveauOptionalBoundaryTest {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
         assertTrue(build.contains("compileOnly('curse.maven:ars-nouveau-401955:6640732')"));
         String mods = Files.readString(PROJECT.resolve(Path.of(
-                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+                "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         int dependency = mods.indexOf("modId=\"ars_nouveau\"");
         assertTrue(dependency >= 0);
         String section = mods.substring(dependency);

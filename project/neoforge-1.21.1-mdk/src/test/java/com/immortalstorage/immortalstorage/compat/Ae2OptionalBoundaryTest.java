@@ -56,11 +56,15 @@ final class Ae2OptionalBoundaryTest {
     void dependencyAndRecipeRemainOptionalAndPinnedForThisAdapter() throws IOException {
         String gradle = Files.readString(PROJECT.resolve("build.gradle"));
         assertTrue(gradle.contains(
-                "compileOnly 'org.appliedenergistics:appliedenergistics2:19.2.17'"));
+                "addCompatDependency('compileOnly', 'ae2', 'compile')"));
+        String matrix = Files.readString(PROJECT.resolve(Path.of(
+                "..", "version-compat", "compatibility-mod-matrix.json")).normalize());
+        assertTrue(matrix.contains(
+                "org.appliedenergistics:appliedenergistics2:19.2.17"));
         assertFalse(gradle.contains(
                 "implementation 'org.appliedenergistics:appliedenergistics2"));
 
-        String mods = Files.readString(PROJECT.resolve("src/main/resources/META-INF/neoforge.mods.toml"));
+        String mods = Files.readString(PROJECT.resolve("build/resources/main/META-INF/neoforge.mods.toml"));
         int dependency = mods.indexOf("modId=\"ae2\"");
         assertTrue(dependency >= 0);
         String ae2Section = mods.substring(dependency);

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "NCN",
+    "CRC",
+    "NCN"
+  ],
+  "key": {
+    "N": "immortalstorage:nurturing_crystal",
+    "C": "minecraft:crying_obsidian",
+    "R": "immortalstorage:miniature_immortal_ruin"
+  },
+  "result": {
+    "id": "immortalstorage:stabilized_miniature_immortal_ruin",
+    "count": 1
+  }
+}

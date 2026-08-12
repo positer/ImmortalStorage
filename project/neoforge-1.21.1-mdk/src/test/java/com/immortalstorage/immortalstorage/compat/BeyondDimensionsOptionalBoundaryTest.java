@@ -40,7 +40,7 @@ final class BeyondDimensionsOptionalBoundaryTest {
                 "implementation 'maven.modrinth:beyonddimensions"));
 
         String mods = Files.readString(PROJECT.resolve(Path.of(
-                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+                "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         int dependency = mods.indexOf("modId=\"beyonddimensions\"");
         assertTrue(dependency >= 0);
         String section = mods.substring(dependency);

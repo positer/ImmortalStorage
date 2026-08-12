@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": "immortalstorage:immortal_yuan",
+    "C": "immortalstorage:spirit_crystal",
+    "M": "minecraft:netherite_scrap",
+    "B": "minecraft:netherite_block",
+    "K": "immortalstorage:spirit_core"
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:ancient_debris_vein"
+  }
+}

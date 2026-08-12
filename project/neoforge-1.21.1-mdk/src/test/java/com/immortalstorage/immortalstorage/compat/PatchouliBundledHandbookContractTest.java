@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,7 +24,8 @@ final class PatchouliBundledHandbookContractTest {
     @Test
     void patchouliIsRequiredAndBundled() throws Exception {
         String build = Files.readString(PROJECT_ROOT.resolve("build.gradle"));
-        String mods = Files.readString(ROOT.resolve("resources/META-INF/neoforge.mods.toml"));
+        String mods = Files.readString(PROJECT_ROOT.resolve(
+                "build/resources/main/META-INF/neoforge.mods.toml"));
         assertTrue(build.contains("jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE')"));
         assertTrue(mods.contains("modId=\"patchouli\"\ntype=\"required\""));
     }
@@ -56,6 +58,7 @@ final class PatchouliBundledHandbookContractTest {
                 "entries/equipment/soul_catcher.json",
                 "entries/automation/immortal_ruins.json",
                 "entries/automation/simulated_machines.json",
+                "entries/automation/machine_binding_output.json",
                 "entries/storage/spirit_drive.json"}) {
             assertNotNull(PatchouliBundledHandbookContractTest.class.getClassLoader().getResource(
                     "assets/immortalstorage/patchouli_books/jade_guide/zh_cn/" + entry));
@@ -80,10 +83,13 @@ final class PatchouliBundledHandbookContractTest {
                 {"entries/equipment/soul_catcher.json", "soul_catcher"},
                 {"entries/automation/simulated_machines.json",
                         "simulated_reincarnation_furnace", "simulated_spirit_field"},
+                {"entries/automation/machine_binding_output.json",
+                        "energy_crystal", "800", "FE"},
                 {"entries/automation/immortal_ruins.json",
                         "entangled_stabilized_miniature_immortal_ruin",
                         "advanced_stabilized_miniature_immortal_ruin",
-                        "advanced_entangled_stabilized_miniature_immortal_ruin"},
+                        "advanced_entangled_stabilized_miniature_immortal_ruin",
+                        "13×1×13"},
                 {"entries/automation/sources.json", "echo_shard_vein", "72"},
                 {"entries/automation/advanced_interface.json", "advanced_xianqiao_interface"},
                 {"entries/storage/xianqiao_manager.json", "xianqiao_manager", "Create", "Building Gadgets"},
@@ -103,6 +109,36 @@ final class PatchouliBundledHandbookContractTest {
                             locale + "/" + contract[0] + " missing " + contract[i]);
                 }
             }
+            String ruinText = resourceText("assets/immortalstorage/patchouli_books/jade_guide/"
+                    + locale + "/entries/automation/immortal_ruins.json");
+            assertFalse(ruinText.contains("13×13×13"));
+            if ("zh_cn".equals(locale)) {
+                assertTrue(ruinText.contains("主手或副手"));
+            } else {
+                assertTrue(ruinText.contains("main or off hand"));
+            }
+        }
+    }
+
+    @Test
+    void handbookExplainsAllMachineBindingAndOutputBoundaries() throws Exception {
+        for (String locale : new String[]{"zh_cn", "en_us"}) {
+            String overview = resourceText("assets/immortalstorage/patchouli_books/jade_guide/"
+                    + locale + "/entries/automation/machine_binding_output.json");
+            assertTrue(overview.contains(locale.equals("zh_cn") ? "仙窍维度" : "personal realm"));
+            assertTrue(overview.contains(locale.equals("zh_cn") ? "仙灵驱动器" : "Spirit Drive"));
+            assertTrue(overview.contains(locale.equals("zh_cn") ? "独立" : "independent"));
+            assertTrue(overview.contains(locale.equals("zh_cn") ? "额外槽" : "extra slot"));
+            assertTrue(overview.contains("800"));
+            assertTrue(overview.contains(locale.equals("zh_cn") ? "一组" : "complete item stack")
+                    || overview.contains(locale.equals("zh_cn") ? "逐件" : "one item at a time"));
+
+            String viewer = resourceText("assets/immortalstorage/patchouli_books/jade_guide/"
+                    + locale + "/entries/compat/viewers_storage.json");
+            assertTrue(viewer.contains("AE2"));
+            assertTrue(viewer.contains("RS"));
+            assertTrue(viewer.contains(locale.equals("zh_cn") ? "长整型" : "long-valued"));
+            assertTrue(viewer.contains(locale.equals("zh_cn") ? "不再执行仙元转化" : "no longer performs that conversion"));
         }
     }
 

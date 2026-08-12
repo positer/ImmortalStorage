@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -18,12 +17,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
 
 /** Draws the source base model and output identity outside slot-based GUI viewers. */
 public final class SourceVeinItemRenderer extends BlockEntityWithoutLevelRenderer {
     public static final SourceVeinItemRenderer INSTANCE = new SourceVeinItemRenderer();
+    private final SourceVeinAnimation.Clock animationClock = new SourceVeinAnimation.Clock();
 
     private SourceVeinItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -45,37 +43,22 @@ public final class SourceVeinItemRenderer extends BlockEntityWithoutLevelRendere
         minecraft.getItemRenderer().renderModelLists(
                 base, source, packedLight, packedOverlay, poseStack, baseConsumer);
 
-        ItemStack output = outputStack(definition(source));
-        if (output.isEmpty()) return;
-        if (context == ItemDisplayContext.GUI) return;
-        poseStack.pushPose();
-        poseStack.translate(0.58F, 0.58F, 0.58F);
-        poseStack.scale(0.32F, 0.32F, 0.32F);
-        BakedModel outputModel = minecraft.getItemRenderer().getModel(
-                output, minecraft.level, null, 0);
-        minecraft.getItemRenderer().render(
-                output, ItemDisplayContext.NONE, false, poseStack, buffers, packedLight,
-                OverlayTexture.NO_OVERLAY, outputModel);
-        poseStack.popPose();
+        SourceDefinition definition = definition(source);
+        if (definition == null) return;
+        double logicalTime = minecraft.level == null
+                ? SourceVeinAnimation.realTime()
+                : SourceVeinAnimation.continuousTime(
+                        minecraft.level.getGameTime(), minecraft.getTimer().getGameTimeDeltaPartialTick(true));
+        double animation = animationClock.sample(logicalTime);
+        SourceVeinDisplayRenderer.renderForItem(definition, animation,
+                poseStack, buffers, packedLight, packedOverlay,
+                orientationSeed(source, definition));
     }
 
     private static ResourceLocation baseModel(ItemStack source) {
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(source.getItem());
         return ResourceLocation.fromNamespaceAndPath(
                 itemId.getNamespace(), "item/" + itemId.getPath() + "_base");
-    }
-
-    private static ItemStack outputStack(SourceDefinition definition) {
-        if (definition == null) return ItemStack.EMPTY;
-        if (definition.fluid()) {
-            var fluid = BuiltInRegistries.FLUID.get(definition.outputId());
-            if (fluid == null || fluid == net.minecraft.world.level.material.Fluids.EMPTY) {
-                return ItemStack.EMPTY;
-            }
-            return FluidUtil.getFilledBucket(new FluidStack(fluid, 1_000));
-        }
-        var item = BuiltInRegistries.ITEM.get(definition.outputId());
-        return item == null ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     private static SourceDefinition definition(ItemStack stack) {
@@ -86,4 +69,10 @@ public final class SourceVeinItemRenderer extends BlockEntityWithoutLevelRendere
                 : SourceDefinitions.legacyId(block.getKind());
         return SourceDefinitions.find(id).orElse(null);
     }
+
+    private static long orientationSeed(ItemStack source, SourceDefinition definition) {
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(source.getItem());
+        return 31L * itemId.hashCode() + definition.outputId().hashCode();
+    }
+
 }

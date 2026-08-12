@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "immortalstorage:spirit_crystal",
+    "Q": "immortalstorage:primordial_qi",
+    "N": "immortalstorage:spirit_iron_nugget",
+    "G": "minecraft:grass_block",
+    "U": "immortalstorage:nurturing_crystal"
+  },
+  "pattern": [
+    "CQC",
+    "NGN",
+    "CUC"
+  ],
+  "result": {
+    "count": 4,
+    "id": "immortalstorage:simulated_spirit_field"
+  }
+}

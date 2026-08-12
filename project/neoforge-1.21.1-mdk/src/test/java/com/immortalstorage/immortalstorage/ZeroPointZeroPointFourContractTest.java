@@ -68,7 +68,11 @@ final class ZeroPointZeroPointFourContractTest {
         assertTrue(mini.contains("warpLinkedEntities"));
         assertTrue(mini.contains("entity.getBoundingBox().intersects(centerArea)"));
         assertTrue(mini.contains("warpLinkedEntities(serverLevel, centerArea)"));
-        assertTrue(mini.contains("affectPlayers || !(entity instanceof Player)"));
+        assertTrue(mini.contains("MiniatureImmortalRuinEffectPolicy.effectArea(worldPosition)"));
+        assertTrue(mini.contains("canAffect(entity)"));
+        assertTrue(mini.contains("getMainHandItem()"));
+        assertTrue(mini.contains("getOffhandItem()"));
+        assertFalse(mini.contains("affectPlayers || !(entity instanceof Player)"));
         assertTrue(source("entity/AbsoluteRestraint.java").contains("entity.noPhysics = true"));
     }
 

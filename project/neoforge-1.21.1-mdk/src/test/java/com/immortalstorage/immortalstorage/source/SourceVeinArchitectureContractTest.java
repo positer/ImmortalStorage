@@ -184,7 +184,7 @@ final class SourceVeinArchitectureContractTest {
     }
 
     @Test
-    void sourceItemsShowACompactOutputIdentityWithoutChangingTheirBaseModel() throws IOException {
+    void sourceItemsUseTheSharedDynamicOutputRuleWithoutChangingTheirBaseModel() throws IOException {
         String setup = source("client", "ClientSetup.java");
         String renderer = source("client", "render", "SourceVeinItemRenderer.java");
         String decorator = source("client", "render", "SourceVeinOutputDecorator.java");
@@ -195,12 +195,24 @@ final class SourceVeinArchitectureContractTest {
         assertTrue(blockItem.contains("getCustomRenderer()"));
         assertTrue(blockItem.contains("SourceVeinItemRenderer.INSTANCE"));
         assertTrue(renderer.contains("extends BlockEntityWithoutLevelRenderer"));
-        assertTrue(renderer.contains("context == ItemDisplayContext.GUI"));
-        assertTrue(renderer.contains("if (context == ItemDisplayContext.GUI) return;"),
-                "slot viewers use the scoped GUI decorator instead of a global BEWLR transform");
-        assertTrue(renderer.contains("FluidUtil.getFilledBucket(new FluidStack(fluid, 1_000))"),
-                "fluid sources must prefer the corresponding filled bucket");
-        assertTrue(renderer.contains("renderModelLists("));
+        assertTrue(renderer.contains("SourceVeinDisplayRenderer.renderForItem(")
+                        || renderer.contains("SourceVeinDisplayRenderer.submit("),
+                "source items must share the world dynamic-output rule renderer");
+        assertFalse(renderer.contains("GUI_ITEM_SCALE")
+                        || renderer.contains("ITEM_PREVIEW_SCALE"),
+                "the source vein item's established preview size must remain unchanged");
+        assertFalse(renderer.contains("FluidUtil.getFilledBucket(new FluidStack(fluid, 1_000))"),
+                "fluid sources must render their dynamic fluid material instead of a bucket proxy");
+        assertTrue(renderer.contains("renderModelLists("),
+                "the source item must retain its normal base model");
+        String displayRenderer = source("client", "render", "SourceVeinDisplayRenderer.java");
+        assertTrue(displayRenderer.contains("IClientFluidTypeExtensions")
+                        || displayRenderer.contains("FluidModel"));
+        assertTrue(displayRenderer.contains("BlockItem"));
+        assertTrue(displayRenderer.contains("renderItem(")
+                        || displayRenderer.contains("renderOutputItem(")
+                        || displayRenderer.contains("submitItem(")
+                        || displayRenderer.contains("submitNestedItem"));
         assertFalse(renderer.contains("base.getTransforms().getTransform(context).apply"),
                 "ItemRenderer already applies the custom model transform before entering the BEWLR");
         assertFalse(renderer.contains("poseStack.translate(-0.5F, -0.5F, -0.5F)"),

@@ -467,7 +467,12 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
     @Override public void onLoad() {
         super.onLoad();
         observedDefinitionGeneration = SourceDefinitions.generation();
-        displayState.refreshFrom(this);
+        // Client chunks receive only the compact DisplayState update packet;
+        // their private member inventory is intentionally absent. Recomputing
+        // from that empty client inventory here erased the real occupancy on
+        // every world reload until the menu was opened. The server owns the
+        // members, so only it may derive the state from the source inventory.
+        if (level instanceof ServerLevel) displayState.refreshFrom(this);
         SourceVeinStorageIndex.register(this);
     }
     @Override public void setRemoved() { SourceVeinStorageIndex.unregister(this); super.setRemoved(); }

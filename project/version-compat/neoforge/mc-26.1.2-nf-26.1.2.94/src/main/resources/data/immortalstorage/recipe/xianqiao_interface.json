@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ICI",
+    "CSC",
+    "ICI"
+  ],
+  "key": {
+    "I": "immortalstorage:spirit_iron_block",
+    "C": "immortalstorage:spirit_crystal",
+    "S": "immortalstorage:spirit_core"
+  },
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:xianqiao_interface"
+  }
+}

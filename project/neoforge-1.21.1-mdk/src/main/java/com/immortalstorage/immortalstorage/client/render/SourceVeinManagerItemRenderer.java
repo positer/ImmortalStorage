@@ -20,13 +20,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 
 /**
- * Draws the manager's black edge cage plus its eight-segment rotating source
- * core for the inventory and held item.  The core reuses the exact geometry of
- * the world {@link SourceVeinManagerRenderer}; the occupancy state is derived
- * from the item's persisted {@code BLOCK_ENTITY_DATA} members when present.
+ * Draws the source vein frame inherited by the manager model plus its
+ * eight-segment rotating source core for the inventory and held item. The core
+ * reuses the exact geometry of the world {@link SourceVeinManagerRenderer};
+ * the occupancy state is derived from the item's persisted
+ * {@code BLOCK_ENTITY_DATA} members when present.
  */
 public final class SourceVeinManagerItemRenderer extends BlockEntityWithoutLevelRenderer {
     public static final SourceVeinManagerItemRenderer INSTANCE = new SourceVeinManagerItemRenderer();
+    private final SourceVeinAnimation.Clock animationClock = new SourceVeinAnimation.Clock();
 
     private SourceVeinManagerItemRenderer() {
         super(Minecraft.getInstance().getBlockEntityRenderDispatcher(),
@@ -47,11 +49,14 @@ public final class SourceVeinManagerItemRenderer extends BlockEntityWithoutLevel
         minecraft.getItemRenderer().renderModelLists(
                 base, stack, packedLight, packedOverlay, poseStack, baseConsumer);
 
-        float ticks = minecraft.level == null
-                ? (System.currentTimeMillis() % 100_000L) / 50.0F
-                : minecraft.level.getGameTime() + minecraft.getTimer().getGameTimeDeltaPartialTick(true);
+        double logicalTime = minecraft.level == null
+                ? SourceVeinAnimation.realTime()
+                : SourceVeinAnimation.continuousTime(
+                        minecraft.level.getGameTime(), minecraft.getTimer().getGameTimeDeltaPartialTick(true));
+        double animationTime = animationClock.sample(logicalTime);
         SourceVeinManagerRenderer.drawCore(poseStack, buffers,
-                itemDisplayState(stack), ticks * SourceVeinManagerRenderer.DEGREES_PER_TICK);
+                itemDisplayState(stack), SourceVeinAnimation.rotationDegrees(
+                        animationTime, SourceVeinManagerRenderer.DEGREES_PER_TICK));
     }
 
     private static int itemDisplayState(ItemStack stack) {

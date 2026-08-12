@@ -1,0 +1,29 @@
+package com.immortalstorage.immortalstorage.item.custom;
+
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.item.crafting.RecipeType;
+import org.jetbrains.annotations.Nullable;
+
+/** A normal inventory item representing immortal yuan. */
+public class ImmortalYuanItem extends com.immortalstorage.immortalstorage.compat.mc2612.CompatBlockItem {
+    public static final int VANILLA_BURN_TICKS = 100_000;
+    public ImmortalYuanItem(Block block, Properties props) {
+        super(block, props);
+    }
+
+    /** Detached-test constructor; production registration uses the real light block. */
+    public ImmortalYuanItem(Properties props) { this(net.minecraft.world.level.block.Blocks.AIR, props); }
+public int getBurnTime(ItemStack stack, @Nullable RecipeType<?> recipeType) {
+        return VANILLA_BURN_TICKS;
+    }
+
+    @Override public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        return YuanLightPlacement.use(level, player, hand, true);
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "immortalstorage:spirit_iron",
+    "C": "immortalstorage:spirit_crystal",
+    "A": "minecraft:amethyst_shard"
+  },
+  "pattern": [
+    "CIC",
+    "IAI",
+    "CIC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_core"
+  }
+}

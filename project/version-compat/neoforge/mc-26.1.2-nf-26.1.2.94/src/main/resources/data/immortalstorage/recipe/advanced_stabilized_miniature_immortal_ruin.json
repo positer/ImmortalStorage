@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "SC",
+    "CV"
+  ],
+  "key": {
+    "S": "immortalstorage:stabilized_miniature_immortal_ruin",
+    "C": "immortalstorage:nurturing_crystal",
+    "V": "minecraft:villager_spawn_egg"
+  },
+  "result": {
+    "id": "immortalstorage:advanced_stabilized_miniature_immortal_ruin",
+    "count": 1
+  }
+}

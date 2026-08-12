@@ -14,6 +14,17 @@ public final class RsCompat {
 
     public static synchronized void initialize() {
         if (initialized) return;
+        RefinedStorageApiDescriptor.Probe amountProbe =
+                RefinedStorageApiDescriptor.probe(RsCompat.class.getClassLoader());
+        RsAmountPolicy.setLongAmountApiSupported(amountProbe.supportsLongAmounts());
+        if (amountProbe.compatible()) {
+            ImmortalStorageMod.LOG.info(
+                    "[Compat/RS] storage amount probe passed: long insert/extract paths are active");
+        } else {
+            ImmortalStorageMod.LOG.warn(
+                    "[Compat/RS] storage amount probe failed ({}); using the confirmed int-safe display fallback",
+                    amountProbe.summary());
+        }
         RsExternalResourceKeyBridges.register(ImmortalStorageRsExternalResourceKeyBridge.INSTANCE);
         InstalledAddonRsExternalResourceKeyBridges.registerPresent();
         RefinedStorageApi.INSTANCE.addGridResourceRepositoryMapper(

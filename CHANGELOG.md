@@ -1,6 +1,104 @@
 # Changelog
 
-## [0.0.10] - 2026-08-09
+## [0.0.11]
+
+本节完整列出 `0.0.10` → `0.0.11` 的用户可见变化，不包含内部调试过程、失败复现记录或构建过程。
+
+### 简体中文
+
+#### 新增
+
+##### 仙能水晶系列
+
+- 将原仙能水晶的用户可见名称改为“仙能电力水晶”，并新增条件注册的“仙能魔力水晶”和“仙能魔源水晶”。三种水晶共用同一套 Blockbench 结构、按水晶模型范围确定的碰撞箱、菜单、燃料规则、处理槽、额外槽、缓存和输出调度。
+- 仙能电力水晶始终注册，不依赖 Mekanism 或其他用电模组即可声明和存储 FE；AE2、Refined Storage 与 NeoForge FE 能力读取同一份长整型 FE 账本。
+- 安装 Botania 时注册绿色的仙能魔力水晶，支持魔力容器处理、魔力池等魔力容器的六面交互和火花联动；火花绑定在世界重载后保持，不重复挂载或掉落。
+- 安装 Ars Nouveau 时注册紫色的仙能魔源水晶，支持魔源容器处理、魔源罐等魔源容器的六面交互和支配之杖指定魔源起始/重点；指定状态在世界重载后保持。
+- 三种水晶共享默认 `800,000,000` 资源容量、燃烧时每 tick 产生 `1,000` FE/Mana/Source、相同燃料 tick 规则和可外部调整的容量/产出配置。仙元仅作为燃料使用；无源方块的旧额外资源仙元转化停用，源方块自身的仙元转化保持不变。
+- 新增水晶组配方：已存在的变体之间可通过切石互转，也可在合成台用单个无序配方转换为顺序中的下一个已存在变体；Botania、Ars Nouveau 不存在时，对应水晶和配方不会注册。
+
+##### 仙能水晶界面、充电和面向规则
+
+- 仙能水晶界面复用模拟灵田/模拟轮回炼化炉的左侧三槽布局；右侧改为整块的大型资源仪表，按资源量从下向上填充，悬停显示当前量/上限，FE 读取使用长整型数值。处理箭头为静态指示，不把充电进度绘制到箭头中；运行时亮度为 15，停止时不发光。
+- 处理槽支持可充电物品、类赛特斯石英以及 Botania/Ars Nouveau 对应的魔力/魔源容器；支持一组物品连续处理。完成的充电结果进入额外槽并同步显示，额外槽不允许主动放入。
+- 额外槽中的充能结果不论仙窍输出是否开启都不会写入仙窍，也不会被六面自动输出到其他面；自动化只能从底面抽出。统一面向规则为顶部输入处理物，四个水平侧面输入燃料，底面不接受输入。
+- 资源处理优先级统一为处理/充电、六面自动输出、仙窍输出；每个逻辑 tick 都会尝试把允许路径上的缓存全部传输，不再人为限制面输出、仙窍输出或充电输出速率。水晶可被存储管线、AE2、RS 和标准资源能力读取，绑定的仙窍缓存只按一个账本去重。
+
+#### 变更与修复
+
+##### 绑定、缓存和自动输出
+
+- 仙能水晶、模拟灵田和模拟轮回炼化炉统一使用“个人仙窍维度优先，匹配仙灵驱动器回退”的绑定规则；不再使用放置者、最近玩家或不匹配启动器作为绑定对象。位于个人仙窍维度的仙能水晶优先绑定该仙窍所属玩家。
+- 仙窍输出开关与六面自动输出开关完全独立。仙窍输出只控制向所属玩家仙窍输出，自动输出只控制向临近方块六面输出；三个机器的开关状态、设置界面文字和打开中的菜单同步更新。
+- 仙窍输出只能在存在有效绑定对象和对应外部资源端点时开启。开启时先把本地资源缓存全部发送到所属仙窍并清零，再将资源容器读取绑定到仙窍账本；关闭时解除绑定并从归零的内部缓存重新累积，不把仙窍资源拉回机器。
+- 仙窍输出开启后，界面和 FE/Mana/Source 能力显示绑定仙窍的实际资源量；超过水晶容量时按满槽显示。处理物充电优先使用本地缓存，剩余需求再使用已绑定的仙窍账本。
+- 个人仙窍维度绑定的水晶关闭仙窍输出后，在燃料槽为空时停止自动仙元补货；仙灵驱动器绑定的水晶关闭仙窍输出不影响驱动器燃料替代和补货行为。直接放入的仙元/真元燃料仍按物品燃料规则工作。
+- 六面输出、仙窍接口和三台模拟机器均改为每 tick 尝试向所有允许的面输出全部缓存，不限制单面输入输出速率；高倍速环境下仍按外部加速模组的实际倍速推进，不使用慢速追赶或跳帧补偿。
+
+##### 源方块、源方块管理器和动态渲染
+
+- 源方块管理器的边框从建模到渲染直接复用源方块边框，只保留动态 core 与其相关渲染；原有八核、UV 分区、方块结构和六面中心对称关系不变。管理器的物品栏预览尺寸与源方块一致，并显示动态核心状态。
+- 源方块管理器在世界/区块重载后继续显示服务端保存的成员进度，不再因客户端临时空成员数据而清零；源方块输出角标和动态物品栏结构在物品、创造栏、JEI/EMI 等标准预览路径保持一致。
+- 方块和流体源方块悬浮核心先按目标方块/流体真实几何中心锁定，再进行缩放、浮动和缓慢转动；方块与流体保持半透明，流体每个面读取对应流体的动态材质。物品源方块使用目标物品真实几何中心，保持更大的不透明渲染，并固定竖直绕中心 Y 轴旋转。
+- 源方块悬浮动画改为连续客户端时钟和稳定随机姿态，在其他模组加速时按倍速播放，避免加速后缓慢追赶、半秒跳帧、偏心和旋转漂移；外部注入的资源源方块使用同一套中心、透明度、材质和动画兼容规则。
+- 源方块、源方块管理器和仙窍管理器的框架贴图增加符合原版风格的像素层次，保留黑色源方块/管理器框架、灰色仙窍管理器框架、原有模型结构和 UV 点对点映射；源方块管理器八个内部 core 保持半透明并增加层次；水晶晶体纹理增加分区切面层次，保留原色调、结构和 `80%` 半透明度。
+
+##### 迷你仙墟、灵器与手册
+
+- 迷你仙墟的作用范围固定为以方块为中心的 `13×1×13` 单层区域：水平方向各向外 6 格，垂直方向只覆盖所在方块层；上下相邻层不再受到吸引、排斥、传送或伤害。
+- 主手或副手持有迷你仙墟的玩家始终不受其作用，无论玩家作用开关状态如何；该规则同时适用于普通作用和链接传送筛选。物品 Tooltip 与双语帕秋莉手册同步说明范围、持有者保护、玩家开关、吸引/排斥和链接传送用法。
+- 灵器用户可见的“镐子模式”统一改名为“挖掘模式”；内部模式编号和资源键保持兼容，既有物品无需迁移，双语提示和古玉手册同步更新。
+- 帕秋莉手册新增双语“仙能电力水晶行为”和“水晶联动”章节，完整说明三槽界面、绑定优先级、两种输出开关、缓存迁移、面向规则、充电/输出优先级、长整型资源读取，以及 Botania 魔力水晶、Ars Nouveau 魔源水晶、火花、支配之杖和条件配方。
+
+### English
+
+This section is the complete user-visible delta from `0.0.10` to `0.0.11`. It intentionally omits internal debugging, failure-reproduction, and build-process history.
+
+#### Added
+
+##### Xianeng crystal family
+
+- Renamed the existing Xianeng Crystal to **Xianeng Electricity Crystal** and added conditionally registered **Xianeng Mana Crystal** and **Xianeng Source Crystal**. All three share the same Blockbench structure, model-bounded collision box, menu, fuel rules, processing slot, extra slot, cache model, and output scheduler.
+- Xianeng Electricity Crystal is always registered and declares/stores FE without Mekanism or any other power mod. NeoForge FE, Applied Energistics 2, and Refined Storage read the same long-valued FE ledger.
+- When Botania is installed, the green Xianeng Mana Crystal supports mana containers, mana pools and other registered mana containers on its faces, plus Spark integration. Spark attachment persists across reloads without duplicate attachment or item drops.
+- When Ars Nouveau is installed, the purple Xianeng Source Crystal supports source containers and source jars on its faces, plus Dominion Wand source-start/priority selection. Those selections persist across reloads.
+- All three crystals share a default capacity of `800,000,000`, produce `1,000` FE/Mana/Source per server tick while burning, use the same fuel-tick rules, and expose configurable capacity/output values. Immortal Yuan is fuel only; the old extra-resource Yuan conversion for non-source blocks is disabled while the Source Vein's own Yuan conversion remains active.
+- Added crystal-family recipes: stonecutting converts between variants that exist, and a single shapeless recipe converts to the next existing variant in the family order. Botania- and Ars-dependent crystals and recipes are absent when their addons are absent.
+
+##### Crystal UI, charging, and face rules
+
+- The crystal screen reuses the left three-slot layout of the Simulated Spirit Field and Simulated Reincarnation Furnace. The right side is a single large resource meter filled from bottom to top, with a current/maximum long-value tooltip. The processing arrow is static, the running light level is 15, and an idle crystal is dark.
+- The processing slot accepts rechargeable items, Certus-Quartz-like items, and the corresponding Botania/Ars Nouveau resource containers, and can process a full input stack continuously. Completed charges appear in the extra slot and synchronize to the open menu; the extra slot cannot be manually filled.
+- Charged results in the extra slot never enter Xianqiao, regardless of the Xianqiao Output switch, and are never pushed through other faces. Automation may extract them only from the bottom. The common face rule is top processing input, four horizontal sides fuel input, and no bottom input.
+- Processing/charging has priority over six-face automation, which has priority over Xianqiao output. Every logical tick attempts to transfer all available cache through every permitted path without an artificial face, Xianqiao, or charging rate cap. Storage pipes, AE2, RS, and standard resource capabilities can read the crystals, while bound Xianqiao caches are deduplicated to one ledger.
+
+#### Changed and fixed
+
+##### Binding, caches, and automation
+
+- Xianeng crystals, Simulated Spirit Fields, and Simulated Reincarnation Furnaces now share the binding priority **personal Xianqiao realm first, matching Spirit Drive second**. Placement player, nearest player, and mismatched drives are not binding sources. A crystal placed in a personal realm binds that realm's owner first.
+- Xianqiao Output and Automatic Output are independent switches. Xianqiao Output controls only transfer to the bound owner's personal realm; Automatic Output controls only six-face transfer to adjacent blocks. Switch state, settings labels, and open-menu data remain synchronized for all three machines.
+- Xianqiao Output can be enabled only with a valid bound owner and external resource endpoint. Enabling flushes the local resource cache into the owner's Xianqiao and clears it before binding the resource container to the Xianqiao ledger. Disabling unbinds the external container and resumes accumulation from the zeroed local cache; it does not pull Xianqiao resources back into the machine.
+- While bound, the crystal screen and FE/Mana/Source capabilities expose the owner's actual Xianqiao ledger, rendering full when it exceeds the crystal capacity. Charging consumes local cache first and then the bound Xianqiao ledger.
+- For a realm-bound crystal, disabling Xianqiao Output stops automatic Immortal Yuan refilling when the fuel slot is empty. A Spirit-Drive-bound crystal keeps its drive-based fuel replacement behavior when Xianqiao Output is disabled. Direct True Yuan and Immortal Yuan item fuel remains independent of that switch.
+- Six-face output, Xianqiao Interfaces, and the two simulated machines now attempt to output all available cache on every tick through every allowed face without an artificial per-face rate limit. Under high-speed acceleration, animation and machine work advance at the actual multiplier instead of slowly catching up or jumping frames.
+
+##### Source Veins, Manager, and dynamic rendering
+
+- Source Vein Manager now reuses the Source Vein frame directly in both model and rendering, retaining only the dynamic core renderer. The existing eight-core layout, UV islands, block structure, and six-face rotational symmetry are unchanged. Its inventory preview matches the Source Vein preview size and displays the dynamic core state.
+- Source Vein Manager progress remains visible after a world or chunk reload from server-persisted member data; it no longer resets from empty client-side member data. Source output badges and dynamic item previews follow the same standard path in inventory, creative, JEI, and EMI.
+- Block and fluid Source Vein floating cores are centered from the target block/fluid's real geometry before scaling, floating, or rotating. Blocks and fluids remain translucent, and fluids use the corresponding dynamic texture on every face. Item Source Veins use the target item's real geometry centre, a larger opaque preview, and fixed upright rotation around the Y axis.
+- Source Vein animation uses a continuous client clock and stable random orientation, respecting external acceleration as a true multiplier instead of slowly catching up or jumping. Externally injected source resources use the same centre, alpha, texture, and animation compatibility rules.
+- Source Vein, Source Vein Manager, and Xianqiao Manager frame textures gain vanilla-style pixel depth while preserving the black Source/Manager palette, grey Xianqiao Manager palette, original geometry, and point-to-point UV mapping; the Manager's eight internal cores remain translucent with layered shading. Crystal textures gain faceted section detail while preserving the original palette, structure, and `80%` alpha.
+
+##### Miniature Immortal Ruin, Spirit Instrument, and handbook
+
+- Miniature Immortal Ruin influence is now an exact single-layer `13×1×13` area: six blocks outward horizontally and only the ruin's own block layer vertically. Adjacent Y layers are no longer pulled, repelled, teleported, or damaged.
+- Players holding a Miniature Immortal Ruin in either hand are always excluded from its effects, regardless of the player-affect switch. The rule also applies to ordinary effects and linked-teleport filtering. The item tooltip and bilingual Patchouli handbook document the range, holder protection, player switch, attraction/repulsion, and linked-teleport usage.
+- Renamed the user-facing Spirit Instrument “Pick Mode” to **Mining Mode**. Internal mode ids and resource keys remain compatible, so existing items need no migration; bilingual prompts and the Ancient Jade handbook are synchronized.
+- Added bilingual Patchouli chapters for **Xianeng Electricity Crystal Behavior** and **Crystal Integrations**, covering the three-slot UI, binding priority, independent output switches, cache migration, face rules, charging/output priority, long-valued resource access, Botania Mana Crystal, Ars Nouveau Source Crystal, Spark, Dominion Wand, and conditional recipes.
+
+## [0.0.10]
 
 本节完整列出 `0.0.9` → `0.0.10` 的用户可见变化。
 
@@ -34,7 +132,9 @@
 - 已采纳并合并 PR #2 与 PR #3：JEI 基线为 `19.27.0.343`，Refined Types 接受 `0.3.x`/`1.21.1-0.3.x`，并以 `[21.1.235,21.2)` 关闭 Issue #1；对应版本清单、适配器描述和 JAR 元数据保持一致。
 - 兼容范围在 NeoForge `21.1.236` 与 `21.1.248` 上分别执行 `clean test`，每次均为 **724 tests / 0 failures / 0 errors / 0 skipped**；正式 21.1.235 基线完整门禁同样通过。
 - 以合并后 0.0.10 JAR 在 35 模组临时客户端中分别启动 Sodium `0.8.12-alpha.4` 与 Embeddium `1.0.15` 栈，并加入 ModernFix `5.27.20`、FerriteCore `7.0.3`、ImmediatelyFast `1.6.11`、Entity Culling `1.10.5`；两次均完成 NeoForge 客户端启动、资源重载、声音引擎初始化和 ImmortalStorage 可选联动注册，无优化模组或仙藏崩溃。
-- 重新发布的 `0.0.10` JAR 使用 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`；发布哈希、Git 提交、标签、GitHub Release 和远端回下载校验以本次重发结果为准。
+- Sodium 与 Embeddium 分别作为二选一渲染后端验证，不能同时安装；生产 JAR 静态检查未发现 Sodium、Embeddium、Rubidium、Lithium、FerriteCore、ModernFix、ImmediatelyFast、Entity Culling、Iris、Oculus、Starlight 或相关优化 Mixin 的类名、引用或目标，仙藏继续只依赖标准 Minecraft/NeoForge 渲染入口。上述为启动、资源重载、声音引擎和联动注册烟测，不替代逐项玩法/UI 实机回归。
+- 合并来源为 [PR #2](https://github.com/positer/ImmortalStorage/pull/2)（合并提交 `310a857ee624ed29b3f9f5fa75a08ca0d9431e72`）与 [PR #3](https://github.com/positer/ImmortalStorage/pull/3)（合并提交 `670b0968e00c951272418f1f0904c45e262bc8ec`）；[Issue #1](https://github.com/positer/ImmortalStorage/issues/1) 已关闭并标记为完成。
+- 最终重发状态为提交 `13f896c85a45ca55fc9ac846fda6ac2a9aefd5da`、标签 `0.0.10` 和 [GitHub Release 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)。制品 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 大小为 `5,163,055` 字节，SHA-256 为 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`；远端重新下载哈希与本地干净构建完全一致。
 - 完整门禁包含 `test`、`build`、Ars Source API、无 AE2 运行时、生产 JAR 边界、版本组成和精确版本产物检查，结果为 **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**。
 
 ### English
@@ -69,10 +169,12 @@ This section is the complete user-visible delta from `0.0.9` to `0.0.10`.
 - Accepted and merged PR #2 and PR #3: JEI is based on `19.27.0.343`, Refined Types accepts `0.3.x`/`1.21.1-0.3.x`, and `[21.1.235,21.2)` closes Issue #1; the supported-version manifest, adapter descriptor, and JAR metadata stay aligned.
 - The compatibility range passed `clean test` separately on NeoForge `21.1.236` and `21.1.248`, with **724 tests / 0 failures / 0 errors / 0 skipped** each time; the formal 21.1.235 baseline also passed the complete gate.
 - The merged 0.0.10 JAR started in two 35-mod temporary clients: a Sodium `0.8.12-alpha.4` stack and an Embeddium `1.0.15` stack, each also using ModernFix `5.27.20`, FerriteCore `7.0.3`, ImmediatelyFast `1.6.11`, and Entity Culling `1.10.5`. Both reached NeoForge client startup, resource reload, sound-engine initialization, and ImmortalStorage optional-integration registration without an optimization-mod or ImmortalStorage crash.
-- The republished `0.0.10` JAR is `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`; the release hash, Git commit, tag, GitHub Release, and remote redownload audit are recorded in the final republish state.
+- Sodium and Embeddium were tested as mutually exclusive renderer backends; they must not be installed together. Static inspection of the production JAR found no Sodium, Embeddium, Rubidium, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, Iris, Oculus, Starlight, or related optimization-mixin class names, references, or targets. ImmortalStorage continues to use standard Minecraft/NeoForge rendering entry points. This covers startup, resource reload, sound-engine, and integration-registration smoke checks rather than every gameplay/UI path.
+- The merged sources are [PR #2](https://github.com/positer/ImmortalStorage/pull/2), merge commit `310a857ee624ed29b3f9f5fa75a08ca0d9431e72`, and [PR #3](https://github.com/positer/ImmortalStorage/pull/3), merge commit `670b0968e00c951272418f1f0904c45e262bc8ec`; [Issue #1](https://github.com/positer/ImmortalStorage/issues/1) is closed as completed.
+- The final republish is commit `13f896c85a45ca55fc9ac846fda6ac2a9aefd5da`, tag `0.0.10`, and [GitHub Release 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10). The artifact `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` is `5,163,055` bytes with SHA-256 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`; a fresh remote download matches the local clean build exactly.
 - The complete gate includes `test`, `build`, the Ars Source API check, no-AE2 runtime verification, production-JAR boundary, version composition, and exact-version-artifact checks. It passes **199 suites / 724 tests / 0 failures / 0 errors / 0 skipped**.
 
-## [0.0.9] - 2026-08-08
+## [0.0.9]
 
 本节完整列出相对正式版 `0.0.8` 的全部用户可见变化。
 
@@ -111,6 +213,7 @@ This section is the complete user-visible delta from `0.0.9` to `0.0.10`.
 - 正式支持范围保持 Minecraft 1.21.1、NeoForge 21.1.235、Java 21；网络协议保持 8。
 - 完整门禁通过 **196 suites / 717 tests / 0 failures / 0 errors / 0 skipped**，并通过生产 JAR 边界、版本组成、精确版本制品、Ars Source API 与无 AE2 运行时验证；新增手册契约会检查中英条目树一致及后续版本主要系统覆盖。
 - 30-JAR PCL2 全模组实例完成 JDK 21、`zh_cn` 实机验证：绑定旧 AE2/RS 磁盘可打开终端，RS 化学品取样颜色正确，`Missing render handler`、`No factory for class`、高级屏幕处理失败和仙藏外部资源纹理加载失败均为 0。
+- 0.0.9 最终制品为 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.9.jar`，大小 `5,137,573` 字节，SHA-256 为 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`。
 - 版本更新为 `0.0.9`。
 
 ### English
@@ -150,9 +253,10 @@ This section is the complete user-visible delta from release `0.0.8`.
 - Official support remains Minecraft 1.21.1, NeoForge 21.1.235, and Java 21; network protocol remains 8.
 - The full gate passes **196 suites / 717 tests / 0 failures / 0 errors / 0 skipped**, plus production-JAR boundary, version composition, exact-version artifact, Ars Source API, and no-AE2 runtime verification. New handbook contracts enforce bilingual entry-tree parity and later-version major-system coverage.
 - A 30-JAR full-mod PCL2 client passed JDK 21 / `zh_cn` live validation: bound legacy AE2/RS disks open their terminals, RS chemicals use the correct sampled colors, and there are zero `Missing render handler`, `No factory for class`, advanced-screen handling, or ImmortalStorage external-texture load failures.
+- The final 0.0.9 artifact is `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.9.jar`, `5,137,573` bytes, with SHA-256 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`.
 - Bumped the version to `0.0.9`.
 
-## [0.0.8] - 2026-08-07
+## [0.0.8]
 
 本节完整列出相对正式版 `0.0.7` 的全部用户可见变化。
 
@@ -222,7 +326,7 @@ This section is the complete user-visible delta from release `0.0.7`.
 - 0.0.8 was validated in the 30-JAR full-mod PCL2 setup (incl. Create 6.0.10) with JDK 21 and `zh_cn` at 2560×1504, entering the personal Xianqiao realm with no ImmortalStorage fatal error.
 - The Ancient Jade handbook gained an Advanced Xianqiao Interface entry and expanded bilingual Push (export) and Release (cache-return) coverage.
 
-## [0.0.7] - 2026-08-06
+## [0.0.7]
 
 本节完整列出相对正式版 `0.0.6` 的全部用户可见变化。
 
@@ -316,7 +420,7 @@ This section is the complete user-visible delta from release `0.0.6`.
 - Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, and no-AE2-runtime checks passed.
 - Version 0.0.7 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile (including Create 6.0.10 with ponder/flywheel) and passed single-player QA, entering the personal realm with no ImmortalStorage fatal errors; the instance later resumed the existing `Test` save with Create 6.0.10 confirmed loading.
 
-## [0.0.6] - 2026-08-01
+## [0.0.6]
 
 本节完整列出相对正式版 `0.0.5` 的用户可见变化。
 
@@ -396,7 +500,7 @@ This section is the complete user-visible delta from release `0.0.5`.
 - All 691 automated tests passed with zero failures, errors, or skips. Production-JAR boundary, version-composition, exact-version artifact, Ars Source API, no-AE2-runtime, and dedicated-server startup checks passed.
 - Version 0.0.6 launched under JDK 21 and `zh_cn` in the 30-JAR full-mod PCL2 profile and passed Numen single-player QA, including a Night → Day → Night round trip with the midnight sky confirmed.
 
-## [0.0.5] - 2026-07-25
+## [0.0.5]
 
 本节列出相对已发布 `0.0.4` 的完整用户可见变更。
 
@@ -492,7 +596,7 @@ This section contains the complete user-visible change set from the published `0
 - The real client completed resource reload, OpenAL, sound-engine, and texture-atlas startup with no `MixinApplyError`, `InvalidInjection`, `ModLoadingException`, or fatal loading error.
 - Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.5.jar`, 4,882,189 bytes, SHA256 `679B49B184561F0D06F17F209EFBAF9EC672D4BCBDE2AAAEDC23C7A47B6FE532`.
 
-## [0.0.4] - 2026-07-22
+## [0.0.4]
 
 本节列出相对已发布 `0.0.3` 的完整用户可见变更。
 
@@ -620,7 +724,7 @@ This section contains the complete user-visible change set from the published `0
 - Release artifact: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.4.jar`.
 - SHA256: `2126107A6935EF55A97FB86F5F472ED4D3F33FAAEEF9E7703390B42DDB4A4A49`.
 
-## [0.0.3] - 2026-07-21
+## [0.0.3]
 
 This section describes user-visible changes from the published `0.0.2` tag to `0.0.3`.
 
@@ -683,7 +787,7 @@ This section describes user-visible changes from the published `0.0.2` tag to `0
 
 All notable user-facing changes are documented here.
 
-## [0.0.2] - 2026-07-20
+## [0.0.2]
 
 ### Added
 
@@ -719,7 +823,7 @@ All notable user-facing changes are documented here.
 - Tests: 658 passed
 - Release JAR SHA256: `AD20A285B5F25942845642F3E49B472E8FB29CDF427D91E137144DECD468D297`
 
-## [0.0.1] - 2026-07-18
+## [0.0.1]
 
 ### Added
 

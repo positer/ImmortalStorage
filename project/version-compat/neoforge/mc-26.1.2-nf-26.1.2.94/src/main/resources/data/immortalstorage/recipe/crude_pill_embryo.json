@@ -1,0 +1,12 @@
+{
+  "type": "immortalstorage:yuan_substitution_shapeless",
+  "category": "food",
+  "ingredients": [
+    "#immortalstorage:yuan_crafting_materials",
+    "minecraft:wheat"
+  ],
+  "result": {
+    "count": 8,
+    "id": "immortalstorage:crude_pill_embryo"
+  }
+}

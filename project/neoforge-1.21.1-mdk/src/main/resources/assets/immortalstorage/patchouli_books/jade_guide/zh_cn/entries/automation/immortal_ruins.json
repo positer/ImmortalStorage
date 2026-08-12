@@ -1,7 +1,7 @@
 {
   "name":"迷你仙墟系列","icon":"immortalstorage:miniature_immortal_ruin","category":"immortalstorage:automation","sortnum":30,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"普通迷你仙墟默认在13×13×13范围吸引非玩家生物。空手Shift右键切换吸引/排斥；灵器扳手Shift右键拆卸。两个相反状态的同类仙墟可由扳手链接，吸引端的Warp会把中心碰撞箱内目标单向传送。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:miniature_immortal_ruin","text":"普通迷你仙墟以自身方块所在层为中心，作用范围为13×1×13：X/Z轴各延伸6格，Y轴仅覆盖仙墟所在的一层。非玩家生物会按当前状态被吸引或排斥；在界面开启玩家作用后，玩家也会受其影响。主手或副手持有迷你仙墟的玩家始终不在作用对象内。空手Shift右键切换吸引/排斥；灵器扳手Shift右键拆卸。两个相反状态的同类仙墟可由扳手链接，吸引端的Warp会把仙墟中心方块内目标单向传送。"},
     {"type":"patchouli:crafting","recipe":"immortalstorage:stabilized_miniature_immortal_ruin","text":"稳定化版本拥有54格内存，可设置区域、频率、预览、启用、六面交互及20格白/黑名单过滤。正常侧收集掉落物，反向侧向目标空气格投出或输入目标物品存储。链接的相反端共享同一库存。"},
     {"type":"patchouli:crafting","recipe":"immortalstorage:entangled_stabilized_miniature_immortal_ruin","text":"纠缠稳定化版本让正常/反向两侧每刻并行工作并共享54格缓冲。两侧各自保存范围、频率、预览、启用、六面掩码与20格过滤器；用◀/▶切换正在配置的侧。"},
     {"type":"patchouli:crafting","recipe":"immortalstorage:advanced_stabilized_miniature_immortal_ruin","text":"高级稳定化版本是独立54格容器，不绑定仙窍。正常模式从范围内每个容器逐格提取一个可接受堆栈；反向模式把自身库存均分到范围内容器。无法接收的余量留在本机，不生成世界掉落。"},

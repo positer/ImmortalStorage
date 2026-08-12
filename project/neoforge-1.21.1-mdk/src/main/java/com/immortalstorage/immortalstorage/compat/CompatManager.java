@@ -104,6 +104,7 @@ public final class CompatManager {
         if (ARS_NOUVEAU_LOADED) {
             installArsNouveauBridge();
             modBus.addListener(CompatManager::initializeArsNouveau);
+            modBus.addListener(CompatManager::registerArsNouveauCapabilities);
         }
     }
 
@@ -162,6 +163,14 @@ public final class CompatManager {
     private static void initializeArsNouveau(InterModEnqueueEvent event) {
         event.enqueueWork(() -> invokeOptionalBootstrap(
                 "com.immortalstorage.immortalstorage.compat.arsnouveau.ArsNouveauCompat"));
+    }
+
+    private static void registerArsNouveauCapabilities(RegisterCapabilitiesEvent event) {
+        invokeOptionalMethod(
+                "com.immortalstorage.immortalstorage.compat.arsnouveau.ArsNouveauCompat",
+                "registerCapabilities",
+                new Class<?>[]{RegisterCapabilitiesEvent.class},
+                event);
     }
 
     private static void installArsNouveauBridge() {

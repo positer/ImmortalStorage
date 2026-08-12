@@ -70,6 +70,9 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.IMMORTAL_FURNACE.get());
                         output.accept(ModBlocks.SIMULATED_REINCARNATION_FURNACE.get());
                         output.accept(ModBlocks.SIMULATED_SPIRIT_FIELD.get());
+                        output.accept(ModBlocks.ENERGY_CRYSTAL.get());
+                        if (ModBlocks.MANA_CRYSTAL != null) output.accept(ModBlocks.MANA_CRYSTAL.get());
+                        if (ModBlocks.SOURCE_CRYSTAL != null) output.accept(ModBlocks.SOURCE_CRYSTAL.get());
                         output.accept(ModBlocks.XIANQIAO_MANAGER.get());
                         output.accept(ModBlocks.XIANQIAO_INTERFACE.get());
                         output.accept(ModBlocks.ADVANCED_XIANQIAO_INTERFACE.get());

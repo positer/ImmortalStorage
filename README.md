@@ -2,7 +2,61 @@
 
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
 
-> 当前发布版本为 **0.0.10**：在 0.0.9 的持久玩家身份、AE2/RS 额外资源兼容和崩溃修复基础上，修复一气归元剑与仙墟锻灵剑的淬火点 tooltip 系数显示，将淬火百分比限制为最多两位小数，补齐扩展后的双语帕秋莉手册内容，新增 Mekanism 化学品容器与终端内储存化学品的双向交互，并将仙窍管理的时间流速控件重排为居中的 `- 数值 +` 对称布局，同时修复控件文字重影。
+> **0.0.11 正式发布（2026-08-12）：** Minecraft 1.21.1 / NeoForge 21.1.235 发行线已完成正式门禁并发布。制品 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.11.jar` 为 5,295,016 字节，SHA-256 为 `60F0314381D714708FA9C7F29EFC4D8F50653E8FB6DDD40B5A6ED64541B37DF3`。
+
+> **26.1.2 源码迁移基线已冻结（2026-08-12，本轮）：** 已将当前未提交工作树中的 26.1.2 迁移输入、共享核心、兼容生成器/矩阵、目标生成与覆盖源码、测试/资源和相关设计源文件保存为独立文件级 fork：[`archive/26.1.2-source-fork-20260812`](archive/26.1.2-source-fork-20260812)。该快照包含 2,680 个文件并通过逐文件 SHA-256 校验；后续 1.21.1 升级只作用于 live canonical 源码，重新迁移 26.1.2 时以该快照为输入，避免连带改动。由于当前工作树有未提交改动，本轮没有强行提交 Git 分支，也没有修改或安装 PCL2 实例。详情见 [`archive/2026-08-12-26.1.2-source-fork.md`](archive/2026-08-12-26.1.2-source-fork.md)。
+
+> **26.1.2 错误报告修复与资源迁移收口（2026-08-12，本轮）：** 针对 `错误报告-2026-8-12_0.36.29.zip` 修复退出世界时空维度键触发的 `ResourceKey.identifier()` 空指针；26.1.2 的配方、战利品修改器与 JEI 访问路径按目标接口迁移：配方 Ingredient 使用字符串/`#tag`，附魔组件使用直接等级映射，战利品修改器使用逐文件 `type` 与 `item.id`，旧全局 loot 索引不进入目标 JAR；JEI 改用 `OnDatapackSyncEvent#sendRecipes` → `RecipesReceivedEvent` 客户端缓存，不再强转 `ClientRecipeContainer` 为 `RecipeManager`。矿物范围按用户更正仅保留世界生成方式与采集器/聚宝盆读取，未添加任何 `minecraft:iron_ores`/`minecraft:diamond_ores` 标签。26.1.2 目标测试为 **199 XML suites / 729 tests / 0 failures / 0 errors / 0 skipped**；1.21.1 全量测试为 **210 XML suites / 764 tests / 0 failures / 0 errors / 0 skipped**；最终目标 JAR 为 4,655,177 字节，SHA-256 `8A40172D7CDCF42EB14C91D3ECEF47513E6DF2F9BF189FA81879009E246D91B7`，已替换 PCL2 全局 `mods` 与 `versions\\neoforge-26.1.2.94\\mods`，旧 JAR 备份在 `archive/pcl2-backups/2026-08-12-26.1.2-report-fix`。本轮未自动启动客户端。详情见 `archive/2026-08-12-26.1.2-error-report-fix.md`。
+
+> **范围更正（2026-08-12）：** 上一条世界生成记录中关于新增原版矿物标签的描述已被本条 supersede；当前实现只处理矿物生成方式，不改动矿物标签集合。该历史条目的旧标签描述仅保留为操作留痕，不代表最终源码或 JAR。
+
+> **测试计数复核（2026-08-12）：** 上方错误报告修复条目的 1.21.1 计数已由新增空维度键回归用例复核为 **210 XML suites / 764 tests / 0 failures / 0 errors / 0 skipped**；26.1.2 目标计数保持 **199 XML suites / 729 tests / 0 failures / 0 errors / 0 skipped**。
+
+> **历史条目说明（2026-08-12）：** 下方世界生成迁移条目保留旧操作留痕，其中曾出现的原版矿物标签扩展已撤销；最终实现仅保留矿物生成方式与既有采集读取路径。
+
+> **26.1.2 世界生成迁移、矿物生成方式与断言（2026-08-12，历史检查点；标签范围已撤销）：** 根据 PCL2 世界加载日志定位到 26.1.2 对旧 `dimension_type`/`biome` 数据形状的拒绝：旧 `bed_works`、维度 `effects`、`carvers: {}` 和生物群系 `mood_sound` 均不能直接沿用。目标资源新增 `attributes`、`default_clock`、`has_ender_dragon_fight`、`timelines`、`min_y=-64`/`height=384`，并将生物群系 carving 改为 12 段数组、环境音改到 attributes；Gradle 明确在 canonical 数据之后覆盖目标数据，避免两代格式串包。矿物范围在该历史检查点中曾误扩展到原版方块/物品标签，已按用户更正撤销；当前只保留原有 `minecraft:ore` configured/placed feature 生成目标。世界碎片采集器的 26.1.2 适配改为从最终 `PlacedFeature` Holder 的 `value().config()`、生物群系注册表 tag 读取矿物；聚宝盆继续通过 `WorldShardLootCatalog` 和 reloadable registry 的 `ResourceKey< LootTable >` 读取真实战利品表，不使用硬编码掉落。早期 `WorldgenMinerDictionaryTargetContractTest` 的标签断言已由当前制品的“无四个原版标签”反断言替代。1.21.1 全量测试为 **210 XML suites / 764 tests / 0 failures / 0 errors / 0 skipped**；该历史检查点的 26.1.2 门禁为 **197 XML suites / 726 tests / 0 failures / 0 errors / 0 skipped**。历史 JAR 为 4,654,727 字节，SHA-256 `A4470097EB723877567516F6DF0008F759830F29CDA98544E9559DADFE9B0DC0`，已由本轮错误报告修复后的目标制品替换；旧制品备份在 `archive/pcl2-backups/2026-08-12-26.1.2-worldgen-assertions`。适配依据记录于 [NeoForge 26.1 迁移说明](https://docs.neoforged.net/primer/docs/26.1/) 与 [NeoForge 生物群系修改器文档](https://docs.neoforged.net/docs/1.21.1/worldgen/biomemodifier/)。
+
+> **26.1.2 启动崩溃修复与实例更新（2026-08-11，本轮）：** 根据 23:23:51 与 23:24:18 两份错误报告，修复迁移生成器对同一按键分类重复 `KeyMapping.Category.register` 的问题；现在四个按键共享一个分类实例。新增目标回归测试，26.1.2 完整门禁通过 **196 XML suites / 722 tests / 0 failures / 0 errors / 0 skipped**。新 JAR 为 4,653,510 字节，SHA-256 `F2804449F489E2D1999DB1167474FCDE9D85F21BF08267F31D1B878BEDF5E21F`，已替换 PCL2 全局 `mods` 和 `versions\neoforge-26.1.2.94\mods`；两处各 13 个 JAR 且逐文件一致。旧 JAR 已备份到 `archive/pcl2-backups/2026-08-11-26.1.2-key-category-fix-20260811-233548`。本轮未自动启动游戏。详情见 `archive/2026-08-11-26.1.2-key-category-crash-fix.md`。
+
+> **26.1.2 构建与全模组 PCL2 实例更新（2026-08-11，本轮）：** 已从 canonical 源码重新生成兼容层并构建 `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.0.11.jar`；目标测试汇总为 **721 tests / 0 failures / 0 errors / 0 skipped**，生产 JAR 边界、版本组合、精确版本产物和无 AE2 运行时门禁通过。新 JAR 为 4,653,477 字节，SHA-256 `EDA336DD9454F1A70B37358EE546F527EAF3B46EE9AD0D97E61852739C44A6D7`，已替换 PCL2 全局 `mods` 与 `versions\neoforge-26.1.2.94\mods` 两处目标；两处各 13 个 JAR 且逐文件一致。替换前制品已备份到 `archive/pcl2-backups/2026-08-11-26.1.2-refresh-20260811-231519`。本轮未启动游戏，26.1.2 仍等待实机互操作测试。详情见 `archive/2026-08-11-26.1.2-build-and-pcl2-refresh.md`。
+
+> **0.0.10 → 0.0.11 Changelog（2026-08-11）：** 已将本版本用户可见变更整理到根目录 [`CHANGELOG.md`](CHANGELOG.md)，覆盖仙能水晶系列、FE/AE2/RS 长整型存储、仙窍绑定与输出、源方块动态渲染、26.1.2 兼容迁移、迷你仙墟、灵器名称和双语帕秋莉手册；该 changelog 不包含 0.0.11 内部调试过程。
+
+> **帕秋莉手册水晶章节更新（2026-08-11，本轮）：** 新增双语“仙能电力水晶行为”章节，完整说明三槽、绑定优先级、仙窍/六面独立开关、缓存迁移、顶部处理/侧面燃料/底面抽取、充电优先级、每刻全量输出、额外槽边界、FE长整型读取与配置。新增“水晶联动”章节，集中说明Botania仙能魔力水晶、Ars Nouveau仙能魔源水晶、火花/支配之杖持久化、条件注册及水晶组转换配方；机器绑定总则不再混写两种可选水晶的具体行为。67个手册JSON解析通过，双语条目树一致，1.21.1帕秋莉契约测试通过 **6 tests / 0 failures / 0 errors / 0 skipped**。26.1.2无独立手册资源覆盖，下一次目标构建会从canonical资源树同步；本轮未重建或替换目标JAR。详情见 `archive/2026-08-11-patchouli-crystal-behavior.md`。
+
+> **26.1.2 错误报告定位（2026-08-11，本轮）：** 分析 `C:\Users\12252\Desktop\Files\Minecraft\PCL\.minecraft\错误报告-2026-8-11_21.58.16.zip` 确认启动失败的第一原因是迁移生成器将四个 ImmortalStorage 按键分别展开为四次 `KeyMapping.Category.register(immortalstorage:immortalstorage)`；第二个按键在 `ImmortalStorageKeybinds.<clinit>` 抛出 `Category already registered`，后续 `NoClassDefFoundError` 均为连锁异常。根因位于 `project/version-compat/generate-compat-source.ps1:1289-1291`，不是仙能水晶、AE2/RS 或渲染逻辑。本轮只完成证据归档，未修改源码、未重编译、未替换实例；修复方案记录于 `archive/2026-08-11-26.1.2-error-report-key-category.md`。
+
+> **仙能水晶额外槽与面向规则收口（2026-08-11，本轮）：** 当前版本为 **0.0.11**。三类仙能水晶的充能结果永远留在额外槽，不论仙窍输出开关状态都不会写入所属仙窍；自动化只能从底面抽出，其他面不能抽取额外槽。统一面输入规则为：顶部仅输入处理物，四个水平侧面仅输入燃料，底面不接受输入。仙窍输出仍只处理 FE/Mana/Source 资源缓存，资源能力的既有六面输出和优先级不变。1.21.1 全量 `test` 通过 **763 tests / 0 failures / 0 errors / 0 skipped**；26.1.2 迁移 `test` 通过，两个 JAR 均构建成功。当前 JAR：1.21.1 为 5,287,603 字节、SHA-256 `AE33FCC52F85D6463BE46AB2C3DE9653CC6896783756C88C212604586C048E03`；26.1.2 为 4,646,106 字节、SHA-256 `4E4E90DC0B5A4D427C32ADF473D94AD5C62390E2DFEF4C600F5F09D12B245639`。PCL2 已同步：1.21.1 实例 30 个 JAR；26.1.2 全局 `mods` 与 `versions\neoforge-26.1.2.94\mods` 各 13 个 JAR，目标两处逐文件一致。替换前文件保存在 `archive/pcl2-backups/2026-08-11-extra-slot-output-rule`。本轮未启动游戏。
+
+> **1.21.1/26.1.2 管理器 GUI 预览收口（2026-08-11，本轮）：** 已排查“源方块管理器 GUI 物品栏表现没有丝毫变化”的根因：管理器 BEWLR 内部缩放并不是最终 GUI 尺寸，物品模型缺少独立 `display.gui` 时会沿父模型链继承 `arcane_machine_frame` 的 `0.82` 变换，因此此前只改渲染器不会改变槽内大小。现将 `source_vein_manager.json` 的 GUI 旋转、平移和缩放逐项设为与 `source_vein.json` 完全一致的 `[30,225,0]`、`[0,0,0]`、`[0.625,0.625,0.625]`；管理器方块模型仍继承 `custom_source_vein`，BEWLR 只追加动态 core，未重复缩放或改变结构。新增资源契约测试已在两代源码树验证，最终 1.21.1 `build` 与 26.1.2 `build` 均通过；当前目标测试结果为 **713 tests / 0 failures / 0 errors / 0 skipped**。1.21.1 最终制品 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.11.jar` 为 5,244,333 字节，SHA-256 `3FF9D35ED95815A3389C6AB3440584A9B0DECBC3354492787C0C88BFF0B7B0D8`，已替换到 PCL2 1.21.1 实例；26.1.2 制品为 4,617,509 字节，SHA-256 `DA97982B8E5BFE11F3925225B32797D07944D760104D683DED7DA3E14BD598C5`，并已与 AE2、Refined Storage、JEI 的目标矩阵文件一同布置到 PCL2 全局 `mods`。26.1.2 仍是 development 目标，尚未宣称正式发布：缺少目标客户端/服务端/Numen 与 AE2/RS 实机互操作证据，且没有可解析的官方 26.1.2 Mekanism、EMI、Refined Types、RS Mekanism Integration 制品。构建接口依据已核对 [NeoForge 26.1 迁移说明](https://docs.neoforged.net/primer/docs/26.1/)、[NeoForge 事务接口](https://docs.neoforged.net/docs/inventories/transactions/)、[AE2 API](https://github.com/AppliedEnergistics/Applied-Energistics-2/blob/main/API.md)、[Refined Storage Storage API](https://refinedmods.com/javadoc/refinedstorage2/com/refinedmods/refinedstorage/api/storage/Storage.html) 与 [Mekanism 26.1 ResourceHandler](https://github.com/mekanism/Mekanism/blob/26.1/src/api/java/mekanism/api/resource/IMekanismResourceHandler.java)。
+
+> **1.21.1 仙能水晶仙窍维度优先绑定与燃料补货修正（2026-08-11，本轮）：** 本轮只更新 canonical `project/neoforge-1.21.1-mdk`，26.1.2 目标与用户恢复的 `design/EnergyCristal-Half.bbmodel` 均未修改。仙能水晶放置在个人仙窍维度时直接优先绑定维度所属玩家，即使燃料槽没有仙灵驱动器也可正确解析仙窍 FE；只有不在仙窍维度时才回退到已绑定仙灵驱动器。仙窍来源使用精确的 owner-realm FE endpoint，因此开启仙窍输出后仪表、FE capability、AE2/RS 长整型读取可显示同一仙窍 FE。仙窍维度绑定的水晶关闭仙窍输出后停止自动仙元燃料补货；仙灵驱动器绑定的水晶关闭仙窍输出不影响其燃料补货，直接放入的仙元/真元燃料仍按物品燃料规则工作。1.21.1 全量测试通过 **752 tests / 0 failures / 0 errors / 0 skipped**，生产构建及兼容/版本/无 AE2 门禁通过。当前 0.0.11 构建与 PCL2 部署 JAR 均为 5,232,412 字节，SHA-256 `1CE9B010AD77976965E28E4C1F4E76EC5C532B5F8C8E15EF0584CF920FD2B6B9`；替换前 JAR 已备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-realm-priority-binding.jar`，SHA-256 `622C23CA4ACE0E0A20149A1E818DA154D0D07DD8A778DDD9E380AB3362F5E55E`。
+
+> **1.21.1 当前最终收口（2026-08-11，本轮）：** 本轮仍只更新 canonical `project/neoforge-1.21.1-mdk`，26.1.2 目标与用户恢复的 `design/EnergyCristal-Half.bbmodel` 均未修改。源方块管理器的方块/物品模型现在直接继承 `custom_source_vein`，边框不再保留第二套建模或渲染；管理器 BE renderer 只绘制 core，客户端世界重载不会再用空成员把显示进度清零。仙能水晶仙窍输出默认关闭且无有效绑定时禁止开启；开启前将内部 FE 缓存全量迁移并清零，开启后 FE capability 与右侧仪表读取绑定玩家仙窍 FE，超过 800M 按满槽显示；关闭时只解除外部绑定，不把仙窍 FE 拉回、不额外改写缓存，内部缓存从 0 重新累积。方块源方块悬浮核心为真实几何中心、`0.36` 半透明，流体为动态材质半透明，物品为真实中心、`0.48` 且不额外降 alpha。1.21.1 全量 `test` 通过 **752 tests / 0 failures / 0 errors / 0 skipped**，生产构建及兼容/版本/无 AE2 门禁通过。当前 0.0.11 构建与 PCL2 部署 JAR 均为 5,229,723 字节，SHA-256 `622C23CA4ACE0E0A20149A1E818DA154D0D07DD8A778DDD9E380AB3362F5E55E`；替换前 JAR 已备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-xianqiao-binding-manager-frame-fix.jar`，SHA-256 `27092E2726A3E4CF5E7306CE7A56D96AD795ABF23ED6D55E77E77A91A67CA9F7`。
+
+> 下方同日段落保留为历史检查点；其中与仙窍绑定来源、燃料补货、仙窍关闭动作或管理器边框模型有关的旧描述，以本段最新规则为准。
+
+> **1.21.1 源方块悬浮透明度与仙能水晶仙窍 FE 回灌修正（2026-08-11，本轮）：** 本轮只更新 canonical `project/neoforge-1.21.1-mdk`，没有写入 `project/version-compat/neoforge/mc-26.1.2-nf-26.1.2.94`，也没有读取或修改用户恢复的 `design/EnergyCristal-Half.bbmodel`。方块源方块悬浮核心改为按真实 BakedQuad 几何中心缩放到 `0.36` 并统一使用 alpha `166/255` 的半透明缓冲；流体源方块继续读取对应流体的动态静态材质并以同等半透明规则铺满六面；物品源方块改为真实几何中心、`0.48` 缩放和原生不额外降 alpha 渲染。仙能水晶的绑定策略改为通过统一 `PersistentPlayerIdentity` 解析个人仙窍 owner 与已绑定灵器，兼容稳定身份及迁移期旧 session UUID；FE 读写改经统一 `PersonalStorageApi.resolveXianqiao(...).externalResourceStorage()`，因此开启仙窍输出、处理槽优先取仙窍 FE、关闭开关/换绑/拆除时缓存回灌都使用同一个长整型 FE 账本，AE2/RS 仍读取同一账本。新增/更新渲染与绑定回归契约。源码强制编译、测试源码编译、生产 JAR 边界、版本组合、兼容矩阵、Ars Source 探针和无 AE2 运行时探针均通过；完整 NeoForge `test` 本轮未能进入用例阶段，因测试前置重复下载已存在的 Minecraft 资产索引，定向跳过下载又缺少 `minecraft_assets.properties`，因此不冒充完整测试通过。当前 0.0.11 构建与 PCL2 部署 JAR 均为 5,229,146 字节，SHA-256 `27092E2726A3E4CF5E7306CE7A56D96AD795ABF23ED6D55E77E77A91A67CA9F7`；替换前 JAR 已备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-source-render-xianqiao-cache-fix.jar`，SHA-256 `2CF75D0070FE0E2941F15FBBDC598FA2EC67772A61260F0B29C01BD0E1676E5F`。
+
+> **1.21.1 绑定规则、FE缓存、输出开关与渲染修正（2026-08-11，本轮）：** 本轮只更新 canonical `project/neoforge-1.21.1-mdk`，`project/version-compat/neoforge/mc-26.1.2-nf-26.1.2.94` 未写入，用户恢复的 `design/EnergyCristal-Half.bbmodel` 未读取、未写入。仙能水晶、模拟灵田、模拟轮回炼化炉现在统一只在“位于玩家个人仙窍维度 + 燃料槽为该玩家绑定的玩家仙灵启动器”时绑定玩家；放置者、最近玩家、旧存档 owner 或不匹配启动器都不会产生玩家绑定。仙能水晶开启仙窍输出后，内部 FE 缓存与绑定玩家的仙窍 FE 存储关联；关闭开关或拆除时先将缓存回灌仙窍，处理可充电物品时优先消耗本地缓存，再按开关状态读取仙窍 FE，剩余量保持在本地缓存中。三台机器的仙窍输出与六面自动输出是独立开关，`ContainerData`、打开中的菜单广播和设置面板文字均同步，输出开关标题不再与面按钮重叠。源方块物品显示改用原始 BakedQuad 列表渲染，避免原版 ItemRenderer 的二次半方块平移造成中心偏移；加速动画按实际逻辑 tick 倍速即时播放，不保留慢速追赶尾巴或跳帧。1.21.1 全量 `check` 为 **751 tests / 0 failures / 0 errors / 0 skipped**。当前构建与 PCL2 JAR 均为 5,225,674 字节，SHA-256 `2CF75D0070FE0E2941F15FBBDC598FA2EC67772A61260F0B29C01BD0E1676E5F`；部署前制品已备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-xianqiao-binding-cache-sync.jar`，SHA-256 `52222B4365547119819371AC8830B4D99C27F67EBB2D149A6CDF7A903DC87C13`。
+
+> **当前 1.21.1 修订状态（2026-08-11）：** 本轮只更新 canonical `project/neoforge-1.21.1-mdk`，26.1.2 目标目录未写入，用户恢复的 `design/EnergyCristal-Half.bbmodel` 未读取、未写入。源方块管理器模型的 `edge` 现在直接引用 `source_vein_frame`，旧 `source_vein_manager_edge.png` 仅作为像素一致的兼容别名；12 根梁、56 个面、UV 坐标和结构不变。源方块/流体世界显示以方块中心 `(0.5,0.5,0.5)` 固定旋转枢轴，按位置稳定随机姿态慢转；物品显示以物品原点为枢轴，仅保持竖直 Y 轴慢转，真实 BakedQuad 几何中心先归中。仙能水晶额外槽的客户端同步拦截已修复：仍禁止主动放入和非下方输出，但允许菜单同步包写入客户端只读槽位。全量 `check` 为 **749 tests / 0 failures / 0 errors / 0 skipped**。当前 PCL2 目标 JAR 为 5,223,233 字节，SHA-256 `52222B4365547119819371AC8830B4D99C27F67EBB2D149A6CDF7A903DC87C13`；部署前文件备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-direct-frame-orientation-slot-sync.jar`。纹理审计保留 6 项既有告警，未引入本轮结构性纹理问题。
+
+下方同日的 748-test 段落是本次修订前的检查点记录；当前状态以本段为准。
+
+> **1.21.1 源方块管理器/悬浮动画/仙能水晶显示修正（2026-08-11，本轮）：** 本轮只更新 canonical `project/neoforge-1.21.1-mdk`，不写入 26.1.2；用户手动恢复的 `design/EnergyCristal-Half.bbmodel` 保持原样。源方块与仙窍管理器框架贴图保持黑/灰主题，只做逐像素换色与层次纹理；源方块、源方块管理器、仙窍管理器的整张框架贴图均按 90° 旋转中心对称验收，源方块管理器模型实际采样的六组 2×2 UV 面岛也分别保持中心对称，避免梁面重叠采样造成材质爆炸。源方块/物品悬浮显示现在读取 BakedQuad 顶点包围盒，以目标方块或物品的真实几何中心旋转；加速世界使用单调时钟观测逻辑 tick 倍速并连续推进，不把多 tick 更新直接变成单帧跳跃。仙能水晶处理完成后直接写入额外槽的产物会广播到打开中的 `EnergyCrystalMenu`，因此槽位可见性与鼠标取出状态一致。新增回归契约覆盖真实模型中心、加速时钟、管理器 UV 映射、90° 对称与额外槽同步；1.21.1 全量 `check` 为 **748 tests / 0 failures / 0 errors / 0 skipped**。当前 PCL2 1.21.1 已部署 JAR（5,220,671 字节，SHA-256 `2C7BD2C9665403831A2750523C6F2A15913331B1DEF10D029F36BDEDFA3A7419`），部署前旧文件备份为 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-source-manager-animation-slot-fix.jar`；26.1.2 本轮不写入。
+
+> **1.21.1 仙能水晶与源方块显示修正（2026-08-11，本轮）：** 已手动恢复的 `design/EnergyCristal-Half.bbmodel` 保持原样，本轮不读取、不写入；仅更新运行时 `energy_crystal_crystal.png`，将参考水晶的多级三角切面像素结构换色到原青白/蓝青色调，并铺满现有 5 个晶体长方体的每个面；主晶体与交叉晶体的顶/底面按原分区 UV 岛的位置、方向和 2×2 尺寸适配，全部 16×16 像素为 alpha 204（80% 不透明）。源方块框架和源方块管理器框架保持黑/炭黑层次，仙窍管理器框架保持灰色层次；三者依据既有 Blockbench/模型 UV 采样位置逐像素换色，尺寸、透明布局、模型结构、8 个源核和未点名资源不变。源方块世界/物品的方块与物品显示先回到自身 `[0,1]` 模型中心再叠加浮动、旋转，动画改为双精度连续客户端时间并钳制 partial tick，修复偏心与周期性跳帧。1.21.1 全量 `check` 为 **746 tests / 0 failures / 0 errors / 0 skipped**；当前 PCL2 1.21.1 实例已部署该 JAR（5,212,495 字节，SHA-256 `B5B6921E14E6593D86E9B7E6F2A3463D8C6E3D70BA740E63771634042189D48D`），旧文件可从 `archive/2026-08-11-pcl2-backup-immortalstorage-0.0.11-pre-crystal-uv-fix.jar` 恢复。26.1.2 本轮不写入，继续等待 1.21.1 实机反馈。
+
+> 当前正式发布版本为 **0.0.11**。本版本在 0.0.10 基础上将迷你仙墟作用范围严格限定为 `13×1×13` 单层区域，并使主手或副手持有迷你仙墟的玩家始终排除在作用对象外；物品 Tooltip 与双语帕秋莉手册同步给出原生使用说明。
+>
+> **26.1.2 兼容迁移与同等发布门禁（2026-08-10）：** 1.21.1 的 190 份测试已迁移到 26.1.2 目标，目标全量为 **698 tests / 0 failures / 0 errors / 0 skipped**；两代均通过项目 `check` 门禁，覆盖 `test`、`jar`、生产 JAR 边界、版本组合、精确版本产物和无 AE2 运行时。1.21.1 全量为 **740 tests / 0 failures / 0 errors / 0 skipped**，并额外通过 Ars Source API 探针；26.1.2 的 Ars 探针因目标官方制品不可解析而按构建规则跳过。26.1.2 仍标记为 `development`、未发布：正式声明还需要目标客户端/服务端、Numen、AE2/RS 实机互操作证据，且官方 26.1.2 Mekanism/EMI/Refined Types/RS Mekanism Integration 目标制品仍无可解析版本。
+>
+> 26.1.2 FE 额外存储使用共享长整型账本，通过 `ExternalResourceKeyBridge`、AE2 `MEStorage`/`AEKeyRendering` 与 RS long 资源/`ResourceRendering` 访问和渲染；AE2/RS 读取按修订号复用不可变长整型快照，避免重复扫描并在外部账本变化、写入或端点替换后及时刷新。新增仙能水晶：默认 800M FE 容量、燃料运行时 1k FE/t，兼容 FE 能力且不依赖 Mekanism；其 UI 完全沿用模拟灵田/模拟轮回炼化炉左侧三格布局，右侧 3×4 区域替换为 72×54 的 MEK 风格整块 FE 仪表，悬停显示长整型当前值/上限。仅停用无源方块的旧额外资源仙元转化，`SourceVeinBlockEntity` 自身的 `SourceChargeRegistry.IMMORTAL_YUAN` 源方块转化保持不变。灵器用户可见的“镐子模式”已统一改名为“挖掘模式”，内部模式编号保持不变；高级机器的面向能力、存储持久化、掉落缓存、配方/世界碎片/仙窍状态与 1.21.1 测试均纳入目标测试树。目标客户端物品资源已补齐 105 份 26.1 item definitions：源方块及自定义源方块使用 `source_vein` special renderer，源方块管理器使用 `source_vein_manager`，稳定化仙墟与仙窍管理器复现动态物品栏预览，`RegisterItemDecorationsEvent` 保留源方块输出角标。1.21.1 产物 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.11.jar` 为 5,209,850 字节、SHA-256 `A601DFDDE59FC0AC41060B7D06C60FC82F789DCC31F44D078145196EDBF4D59F`；26.1.2 产物 `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.0.11.jar` 为 4,591,188 字节、SHA-256 `5FE08A575AD95E4D71C96328519ACB0CF0012041FCDF9032764C5E0715F476E1`。
+
+> **1.21.1 全模组 PCL2 实例配置（2026-08-10）：** 已更新 `C:\Users\12252\Desktop\Files\Minecraft\PCL\.minecraft\versions\1.21.1-NeoForge_21.1.235` 中的 ImmortalStorage 为当前 0.0.11 制品，实例保持 30 个 JAR；部署文件大小为 5,209,850 字节，SHA-256 为 `A601DFDDE59FC0AC41060B7D06C60FC82F789DCC31F44D078145196EDBF4D59F`。旧部署制品已保存到 `archive/2026-08-10-pcl2-backup-immortalstorage-0.0.11-pre-refresh.jar`。PCL 全局 Java 列表已登记 JDK 21；当前只完成实例配置，等待用户启动 1.21.1 实测后再配置 26.1.2。
+>
+> 0.0.10 在 0.0.9 的持久玩家身份、AE2/RS 额外资源兼容和崩溃修复基础上，修复一气归元剑与仙墟锻灵剑的淬火点 tooltip 系数显示，将淬火百分比限制为最多两位小数，补齐扩展后的双语帕秋莉手册内容，新增 Mekanism 化学品容器与终端内储存化学品的双向交互，并将仙窍管理的时间流速控件重排为居中的 `- 数值 +` 对称布局，同时修复控件文字重影。
 >
 > **0.0.9 RS 额外资源显示与附属兼容（2026-08-08）：** 仅安装 Refined Storage 2.0.9 时，仙窍交换磁盘会用仙藏自有 `xianqiao_external` 资源类型在 RS 网格中显示 FE、Mana、Source、Souls 与 Mekanism 化学品。安装 Refined Types 时 FE/Source/Souls 自动改用其原生键，安装官方 RS Mekanism Integration 时化学品自动改用其原生键；仙藏回退键继续可读写，避免升级、移除附属或网络缓存中的旧条目失效，并保证同一账本资源只枚举一次。ExtraStorage 等使用 RS 标准存储容器协议的扩容附属可与仙窍交换磁盘共存。详见 `archive/2026-08-08-rs-external-resource-display-and-addon-compat.md`。
 >
@@ -31,9 +85,9 @@
 
 > **破坏性品牌迁移：** 本次重发将模组 ID、资源命名空间、Java 包、网络 Payload、配置文件、命令和制品名全部改为 `immortalstorage`。不兼容旧 `cultivation` 世界或配置；测试旧世界必须删除后新建世界。不要同时安装任何旧 `cultivation-*.jar`。
 
-**最新已发布版本：**[仙藏 ImmortalStorage 0.0.10](https://github.com/positer/ImmortalStorage/releases/tag/0.0.10)
+**最新已发布版本：**[仙藏 ImmortalStorage 0.0.11](https://github.com/positer/ImmortalStorage/releases/tag/0.0.11)
 
-**发行 JAR SHA256：** `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`（5,163,055 字节）
+**发行 JAR SHA256：** `60F0314381D714708FA9C7F29EFC4D8F50653E8FB6DDD40B5A6ED64541B37DF3`（5,295,016 字节）
 
 ## 模组特色
 
@@ -42,9 +96,9 @@
 - 原版风格连续滚动终端，支持搜索、排序、合成、仙炉、装备、流体、Mekanism 化学品容器与磁铁管理。
 - 每位玩家独有的仙窍维度，空间边界和时间流速会随阶段成长。
 - 源方块、源方块管理器、仙窍管理器和仙窍接口组成的大宗资源自动化系统。
-- 探索、扳手、镐子、建筑、传送五模式灵器，以及可淬火成长的灵剑。
+- 探索、扳手、挖掘、建筑、传送五模式灵器，以及可淬火成长的灵剑。
 - 模组武器通过统一攻击投影将资源支付与成长增伤写入标准主手攻击属性，便于神化等属性系统读取并参与乘算。
-- 内置帕秋莉运行时的古玉手册，内含阶段流程、功能说明和真实配方图，无需另装手册模组。
+- 内置帕秋莉运行时的古玉手册，内含阶段流程、功能说明和真实配方图，无需另装手册模组；0.0.11 手册原生说明迷你仙墟的 `13×1×13` 单层作用范围与主/副手持有者排除规则。
 - 可选兼容 JEI、EMI、AE2、RS、通用机械、植物魔法、通量网络与工业先锋灵魂等模组；Iron's Spells 玩家魔力不接入仙窍存储。
 - 完整的简体中文与英文游戏文本、Tooltip 和模组配置说明。
 
@@ -55,7 +109,7 @@
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.235（构建基线）；支持范围：`[21.1.235,21.2)` |
 | Java | 21 |
-| 仙藏 ImmortalStorage | 0.0.10 |
+| 仙藏 ImmortalStorage | 0.0.11（正式发布） |
 
 JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会在目标模组实际安装时启用，未安装的联动不会造成类加载冲突。0.0.10 重发资产还在临时 35 模组客户端中分别通过了 Sodium 与 Embeddium 渲染栈启动烟测。
 
@@ -80,13 +134,13 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 - 仙窍日夜和天气由服务器持久锁定；Numen 实机完成“黑夜 → 白天 → 黑夜”往返并确认午夜天空盒、雨与四态天气切换。
 - 2026-08-01 全量 691 项测试、生产 JAR 边界、版本组成、精确版本产物、Ars Source API、无 AE2 运行时及专用服务端启动校验通过。
 - 发行包 SHA256 为 `21B27726DA0647A121A1E58CBF655AC2CA1B89DE4ADDE954FDE76C2F24C3DD89`。
-- `CHANGELOG.md` 与 GitHub Release 正文用中英文完整列出相对 0.0.9 的新增、行为变化、修复、兼容性和验证记录；0.0.10 当前门禁为 199 suites / 724 tests。
+- `CHANGELOG.md` 用中英文按版本列出 0.0.9 → 0.0.10 以及 0.0.10 → 0.0.11 的用户可见变化；0.0.11 只记录 Minecraft 1.21.1 发行线内容。0.0.11 正式门禁为 **210 XML suites / 764 tests / 0 failures / 0 errors / 0 skipped**，GitHub Release 仅上传 1.21.1 JAR。
 
 ## 安装方法
 
 1. 安装 Minecraft 1.21.1 与 NeoForge 21.1.235。
 2. 确认客户端与服务端均使用 Java 21。
-3. 使用重发后的 0.0.10 JAR（NeoForge 支持范围 `[21.1.235,21.2)`，构建基线 21.1.235），或从当前 main 源码构建 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar`。
+3. 使用当前本地验证的 0.0.11 JAR（NeoForge 支持范围 `[21.1.235,21.2)`，构建基线 21.1.235），或从当前 main 源码构建 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.11.jar`。
 4. 将 JAR 放入游戏实例或服务端的 `mods` 文件夹。
 5. 启动游戏。默认情况下，新玩家首次进入世界会获得一本古玉指导书。
 
@@ -109,7 +163,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 指导书以正常玩家的游玩顺序编写，不是开发计划或功能清单。即使没有安装 JEI/EMI，也应当能够依靠古玉完成基础到后期的正常流程。
 
-古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面，并覆盖 0.0.3–0.0.10 的主要玩法：新增独立的仙窍管理器、世界碎片开采器/聚宝盆数据包扩展、终端管理页、外部资源与可选联动边界，以及一气归元剑和仙墟锻灵剑的实际淬火系数；同时保留替死傀儡、拘灵器、仙灵驱动器、模拟生产设备、四类稳定化仙墟、源方块/管理器、个人仙窍天气与持久身份迁移说明。中英条目树与后续版本系统覆盖均由自动契约检查。
+古玉只维护一份双语帕秋莉手册。ImmortalStorage 发行 JAR 通过 NeoForge Jar-in-Jar 内置 Patchouli 1.21.1-93，玩家无需单独安装；古玉右键直接打开该手册，不再包含或维护旧独立指导界面。手册提供六类目录、真实配方页面，并覆盖 0.0.3–0.0.11 的主要玩法：新增独立的仙窍管理器、世界碎片开采器/聚宝盆数据包扩展、终端管理页、外部资源与可选联动边界，以及一气归元剑和仙墟锻灵剑的实际淬火系数；同时说明迷你仙墟的 `13×1×13` 单层作用边界与主/副手持有者排除规则，并保留替死傀儡、拘灵器、仙灵驱动器、模拟生产设备、四类稳定化仙墟、源方块/管理器、个人仙窍天气与持久身份迁移说明。中英条目树与后续版本系统覆盖均由自动契约检查。
 
 ## 修行阶段
 
@@ -308,7 +362,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 ## 灵器
 
-灵器拥有探索、扳手、镐子、建筑四种模式。
+灵器拥有探索、扳手、挖掘、建筑四种模式。
 
 ### 探索模式
 
@@ -318,7 +372,7 @@ JEI、EMI 和其他存储/科技模组均不是必需依赖。可选联动只会
 
 使用公开扳手语义兼容 ImmortalStorage、通用机械、AE2、RS、机械动力等机器。对属于玩家的 ImmortalStorage 功能方块 Shift 右键可完整拆下并获得掉落物。
 
-### 镐子模式
+### 挖掘模式
 
 拥有下界合金挖掘等级。普通左键挖掘会正常使用铁砧附魔并消耗耐久；六阶以后右键方块可消耗一个仙元执行灵器自带的精准采集，该右键能力不受灵器附魔影响。
 
@@ -469,7 +523,7 @@ project/neoforge-1.21.1-mdk/build/libs/immortalstorage-neoforge-mc1.21.1-nf21.1.
 
 0.0.9 正式制品已通过 **717 项测试（196 suites / 0 failures/errors/skips）**、生产边界、版本组成与精确制品检查；统一持久身份、旧 UUID 一次性迁移、AE2/RS 磁盘、RS 无附属额外资源显示、RS 网格 Mapper、Refined Types/官方 RS Mekanism Integration 原生键退让、仙灵驱动器、替死傀儡、绑定机器、AE2 `Missing render handler` 崩溃条件及古玉手册双语完整性均有回归覆盖。此前 SHA-256 为 `BE3F8C2A5283166513CA178DE5A9186651C3780C9DCD358B416BA849FE4C1228` 的实机验证制品已部署到 30-JAR 全模组 PCL2 实例；Numen 在绑定旧交换磁盘上实机打开 RS `CraftingGridScreen`，确认化学品与仙藏一致仅显示注册表取样纯色，非纯色资源继续使用目录纹理，且 `No factory`、高级屏幕处理失败与外部资源纹理加载失败均为 0。包含完整手册的最终发布 JAR SHA-256 为 `79EECB2B262C0FCC27C0AA0CC7A67BE89A79458D03A8F8C426F98ED94B74B870`。详细记录见 `archive/2026-08-08-rs-native-fallback-rendering.md`。
 
-0.0.10 重发制品已通过 **199 suites / 724 项测试 / 0 failures/errors/skips**、Ars Source API、无 AE2 运行时、生产边界、版本组成与精确版本产物检查。生成的 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 为 5,163,055 字节，SHA-256 为 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`；同时完成 NeoForge 21.1.236/21.1.248 源码验证与 Sodium/Embeddium 优化栈客户端启动烟测。本次变更覆盖剑系淬火系数、最多两位小数的淬火百分比 Tooltip、双语古玉手册条目树契约、Mekanism 化学品容器交互、仙窍管理时间流速居中排版及文字重影修复。该制品作为 GitHub Release 0.0.10 的唯一 JAR 资产。
+0.0.10 重发制品已通过 **199 suites / 724 项测试 / 0 failures/errors/skips**、Ars Source API、无 AE2 运行时、生产边界、版本组成与精确版本产物检查。生成的 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.10.jar` 为 5,163,055 字节，SHA-256 为 `EA09A8493367E4E05A4C04D520FCB6E74EBF6409DC103E5BE0A4AE2ACD6564B4`；同时完成 NeoForge 21.1.236/21.1.248 源码验证与 Sodium/Embeddium 优化栈客户端启动烟测。本次变更覆盖剑系淬火系数、最多两位小数的淬火百分比 Tooltip、双语古玉手册条目树契约、Mekanism 化学品容器交互、仙窍管理时间流速居中排版及文字重影修复。该制品作为 GitHub Release 0.0.10 的唯一 JAR 资产，并已与 PCL2 `1.21.1-NeoForge_21.1.235` 实例中的同名 JAR 完全一致。
 
 ## 仓库结构
 

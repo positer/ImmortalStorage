@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": "immortalstorage:immortal_yuan",
+    "C": "immortalstorage:spirit_crystal",
+    "I": "immortalstorage:spirit_iron",
+    "L": "#minecraft:logs",
+    "D": "minecraft:dirt"
+  },
+  "pattern": [
+    "XCX",
+    "ILI",
+    "XDX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:oak_log_vein"
+  }
+}

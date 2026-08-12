@@ -9,6 +9,8 @@ import vazkii.botania.api.mana.spark.ManaSpark;
 import vazkii.botania.api.mana.spark.SparkAttachable;
 
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -25,14 +27,27 @@ public final class XianqiaoBotaniaManaAdapter implements ManaPool, SparkAttachab
     private final Level level;
     private final BlockPos pos;
     private final Supplier<AtomicEnergyRefill.ResourceStore> storage;
+    private final BooleanSupplier sparkAttached;
+    private final Consumer<ManaSpark> sparkAttacher;
 
     public XianqiaoBotaniaManaAdapter(
             Level level,
             BlockPos pos,
             Supplier<AtomicEnergyRefill.ResourceStore> storage) {
+        this(level, pos, storage, () -> false, ignored -> {});
+    }
+
+    public XianqiaoBotaniaManaAdapter(
+            Level level,
+            BlockPos pos,
+            Supplier<AtomicEnergyRefill.ResourceStore> storage,
+            BooleanSupplier sparkAttached,
+            Consumer<ManaSpark> sparkAttacher) {
         this.level = Objects.requireNonNull(level, "level");
         this.pos = Objects.requireNonNull(pos, "pos").immutable();
         this.storage = Objects.requireNonNull(storage, "storage");
+        this.sparkAttached = Objects.requireNonNull(sparkAttached, "sparkAttached");
+        this.sparkAttacher = Objects.requireNonNull(sparkAttacher, "sparkAttacher");
     }
 
     @Override
@@ -81,12 +96,12 @@ public final class XianqiaoBotaniaManaAdapter implements ManaPool, SparkAttachab
 
     @Override
     public boolean canAttachSpark(ItemStack stack) {
-        return true;
+        return !sparkAttached.getAsBoolean();
     }
 
     @Override
     public void attachSpark(ManaSpark entity) {
-        // No local spark state is needed; Botania owns and queries the entity.
+        sparkAttacher.accept(entity);
     }
 
     @Override

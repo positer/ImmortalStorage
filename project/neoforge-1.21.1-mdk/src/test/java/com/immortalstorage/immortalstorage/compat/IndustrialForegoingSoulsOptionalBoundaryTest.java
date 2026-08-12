@@ -34,7 +34,7 @@ final class IndustrialForegoingSoulsOptionalBoundaryTest {
         assertTrue(build.contains(
                 "maven.modrinth:industrial-foregoing-souls:1.21-1.10.7"));
         String metadata = Files.readString(PROJECT.resolve(Path.of(
-                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+                "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         assertTrue(metadata.contains("modId=\"industrialforegoingsouls\""));
         assertTrue(metadata.contains("versionRange=\"[1.10.7,1.11)\""));
 

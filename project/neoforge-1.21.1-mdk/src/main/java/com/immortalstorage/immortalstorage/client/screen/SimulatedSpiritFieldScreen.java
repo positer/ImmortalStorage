@@ -29,6 +29,8 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
     private static final int SETTINGS_WIDTH = 112;
     private final Map<Direction, FacePreviewButton> faceButtons = new EnumMap<>(Direction.class);
     private final List<Button> settingsWidgets = new ArrayList<>();
+    private Button xianqiaoButton;
+    private Button automaticButton;
     private boolean settingsOpen;
 
     public SimulatedSpiritFieldScreen(SimulatedSpiritFieldMenu menu, Inventory inventory, Component title) {
@@ -62,12 +64,15 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
             faceButtons.put(side, button);
             settingsWidgets.add(addRenderableWidget(button));
         }
+        xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
+                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+        automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
+                .bounds(panelX + 12, topPos + 143, 89, 18).build());
+        settingsWidgets.add(xianqiaoButton);
+        settingsWidgets.add(automaticButton);
         settingsWidgets.add(addRenderableWidget(Button.builder(
-                Component.translatable("container.immortalstorage.reincarnation.auto"), clicked -> send(0))
-                .bounds(panelX + 12, topPos + 116, 89, 18).build()));
-        settingsWidgets.add(addRenderableWidget(Button.builder(
-                Component.translatable("container.immortalstorage.reincarnation.release_xp"), clicked -> send(1))
-                .bounds(panelX + 12, topPos + 139, 89, 18).build()));
+                Component.translatable("container.immortalstorage.reincarnation.release_xp"), clicked -> send(2))
+                .bounds(panelX + 12, topPos + 166, 89, 18).build()));
     }
 
     private ItemStack adjacentBlockPreview(Direction side) {
@@ -102,7 +107,19 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
         super.containerTick();
         faceButtons.forEach((side, button) -> button.setAlpha(
                 menu.outputFace(side.get3DDataValue()) ? 1.0F : 0.45F));
-        if (settingsWidgets.size() > 6) settingsWidgets.get(6).setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
+        refreshSwitchButtons();
+    }
+
+    private void refreshSwitchButtons() {
+        if (xianqiaoButton == null || automaticButton == null) return;
+        xianqiaoButton.setMessage(Component.translatable(menu.xianqiaoOutput()
+                ? "container.immortalstorage.reincarnation.xianqiao_on"
+                : "container.immortalstorage.reincarnation.xianqiao_off"));
+        automaticButton.setMessage(Component.translatable(menu.automaticOutput()
+                ? "container.immortalstorage.reincarnation.automatic_on"
+                : "container.immortalstorage.reincarnation.automatic_off"));
+        xianqiaoButton.setAlpha(menu.xianqiaoOutput() ? 1.0F : 0.45F);
+        automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
@@ -128,10 +145,9 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
                 "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 27, 0x404040, false);
-        graphics.drawString(font, Component.translatable(menu.automaticOutput()
-                        ? "container.immortalstorage.reincarnation.auto_on"
-                        : "container.immortalstorage.reincarnation.auto_off"),
-                panelX + 8, topPos + 165, menu.automaticOutput() ? 0x207050 : 0x705050, false);
+        graphics.drawString(font, Component.translatable(
+                "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
+                0x404040, false);
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);

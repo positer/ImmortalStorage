@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "X": "immortalstorage:immortal_yuan",
+    "C": "immortalstorage:spirit_crystal",
+    "M": "minecraft:coal",
+    "B": "minecraft:coal_block",
+    "K": "immortalstorage:spirit_core"
+  },
+  "pattern": [
+    "XCX",
+    "MBM",
+    "XKX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:coal_vein"
+  }
+}

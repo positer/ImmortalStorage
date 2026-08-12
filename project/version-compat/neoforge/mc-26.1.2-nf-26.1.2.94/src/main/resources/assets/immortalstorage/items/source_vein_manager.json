@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/source_vein_manager",
+    "model": {
+      "type": "immortalstorage:source_vein_manager"
+    }
+  }
+}

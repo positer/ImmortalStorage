@@ -38,7 +38,7 @@ final class BotaniaOptionalBoundaryTest {
         assertTrue(build.contains("transitive = false"));
 
         String mods = Files.readString(PROJECT.resolve(Path.of(
-                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+                "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         int dependency = mods.indexOf("modId=\"botania\"");
         assertTrue(dependency >= 0);
         String botaniaSection = mods.substring(dependency);
@@ -55,8 +55,8 @@ final class BotaniaOptionalBoundaryTest {
         assertTrue(adapter.contains("implements ManaPool, SparkAttachable"));
         assertTrue(adapter.contains("receiveMana(int delta)"));
         assertTrue(adapter.contains("canAttachSpark(ItemStack stack)"));
-        assertTrue(adapter.contains("return true;"),
-                "spark attachment must remain stable while the owner briefly disconnects");
+        assertTrue(adapter.contains("return !sparkAttached.getAsBoolean();"),
+                "a crystal may accept one spark and must persist that attachment state");
         assertFalse(adapter.contains("SideMode"),
                 "face settings must not gate Botania's directionless spark network");
         String window = Files.readString(JAVA.resolve(Path.of(

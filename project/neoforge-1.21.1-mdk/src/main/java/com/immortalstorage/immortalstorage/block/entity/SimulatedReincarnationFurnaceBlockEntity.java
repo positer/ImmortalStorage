@@ -23,11 +23,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +46,7 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
     public static final int OUTPUT_COUNT = 12;
     public static final int SLOT_COUNT = OUTPUT_START + OUTPUT_COUNT;
     public static final int PROCESS_TICKS = 50;
+    public static final int DATA_COUNT = 11;
 
     private final ItemStackHandler items = new ItemStackHandler(SLOT_COUNT) {
         @Override public boolean isItemValid(int slot, ItemStack stack) {
@@ -57,49 +60,155 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         @Override protected void onContentsChanged(int slot) {
             setChanged();
             if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+                setChangedAndMaybeSync(serverLevel);
             }
         }
     };
     private int progress;
     private int burnTicks;
     private int storedExperience;
+    private boolean xianqiaoOutput = true;
     private boolean automaticOutput = true;
     private final boolean[] outputFaces = new boolean[Direction.values().length];
-    private UUID owner;
     private long completedCycles;
+    private long lastSyncTick = Long.MIN_VALUE;
+    private long syncInvocationCount;
+    private long lastSyncInvocation = Long.MIN_VALUE;
+    private @Nullable PersonalStorageNetwork.Endpoint cachedOutputEndpoint;
+    private @Nullable UUID cachedEndpointOwner;
+    private @Nullable ServerPlayer cachedEndpointPlayer;
+    private @Nullable net.minecraft.server.MinecraftServer cachedEndpointServer;
+    private @Nullable net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> cachedEndpointDimension;
+    private final ContainerData data = new ContainerData() {
+        @Override public int get(int index) {
+            return switch (index) {
+                case 0 -> progress;
+                case 1 -> burnTicks;
+                case 2 -> storedExperience;
+                case 3 -> xianqiaoOutput ? 1 : 0;
+                case 4 -> automaticOutput ? 1 : 0;
+                case 5, 6, 7, 8, 9, 10 -> outputFaces[index - 5] ? 1 : 0;
+                default -> 0;
+            };
+        }
+
+        @Override public void set(int index, int value) {
+            switch (index) {
+                case 0 -> progress = Math.max(0, value);
+                case 1 -> burnTicks = Math.max(0, value);
+                case 2 -> storedExperience = Math.max(0, value);
+                case 3 -> xianqiaoOutput = value != 0;
+                case 4 -> automaticOutput = value != 0;
+                case 5, 6, 7, 8, 9, 10 -> outputFaces[index - 5] = value != 0;
+                default -> { }
+            }
+        }
+
+        @Override public int getCount() { return DATA_COUNT; }
+    };
 
     public SimulatedReincarnationFurnaceBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.SIMULATED_REINCARNATION_FURNACE.get(), pos, state);
     }
 
     public ItemStackHandler itemHandler() { return items; }
+    public ContainerData dataAccess() { return data; }
     public int progress() { return progress; }
     public int burnTicks() { return burnTicks; }
     public int storedExperience() { return storedExperience; }
+    public boolean xianqiaoOutput() { return xianqiaoOutput; }
     public boolean automaticOutput() { return automaticOutput; }
     public boolean outputFace(Direction side) { return side != null && outputFaces[side.ordinal()]; }
-    public void setOwner(UUID owner) { this.owner = owner; setChanged(); }
-    public void toggleAutomaticOutput() { automaticOutput = !automaticOutput; setChanged(); }
+    public void toggleXianqiaoOutput() {
+        xianqiaoOutput = !xianqiaoOutput;
+        if (xianqiaoOutput && level instanceof ServerLevel serverLevel) {
+            flushOutputCacheToXianqiao(outputEndpoint(serverLevel, effectiveXianqiaoOwner(serverLevel)));
+        }
+        setChangedAndSync();
+    }
+    public void toggleAutomaticOutput() { automaticOutput = !automaticOutput; setChangedAndSync(); }
     public void toggleOutputFace(Direction side) {
         if (side == null) return;
         outputFaces[side.ordinal()] = !outputFaces[side.ordinal()];
-        setChanged();
+        setChangedAndSync();
     }
 
     public static void serverTick(ServerLevel level, BlockPos pos, BlockState state,
                                   SimulatedReincarnationFurnaceBlockEntity furnace) {
-        LivingEntity specimen = furnace.createSpecimen(level);
-        if (specimen == null || !furnace.ensureFuel(level)) {
+        // Do not wait for another simulated kill: existing output buffers are
+        // drained to every configured face and then to the owner's Xianqiao.
+        boolean changed = furnace.pushCachedToFaces(level);
+        UUID outputOwner = furnace.effectiveXianqiaoOwner(level);
+        PersonalStorageNetwork.Endpoint endpoint = furnace.outputEndpoint(level, outputOwner);
+        changed |= furnace.flushOutputCacheToXianqiao(endpoint);
+        if (!furnace.hasSpecimenSource() || !furnace.ensureFuel(level)) {
             furnace.progress = 0;
             furnace.updateWorkingState(level, pos, state, false);
+            if (changed) furnace.setChangedAndMaybeSync(level);
             return;
         }
         furnace.updateWorkingState(level, pos, state, true);
         furnace.burnTicks--;
-        if (++furnace.progress < PROCESS_TICKS) return;
+        if (++furnace.progress < PROCESS_TICKS) {
+            if (changed) furnace.setChangedAndMaybeSync(level);
+            return;
+        }
         furnace.progress = 0;
-        furnace.produce(level, specimen);
+        LivingEntity specimen = furnace.createSpecimen(level);
+        if (specimen == null) {
+            furnace.updateWorkingState(level, pos, state, false);
+            furnace.setChangedAndMaybeSync(level);
+            return;
+        }
+        furnace.produce(level, specimen, outputOwner, endpoint);
+    }
+
+    private boolean pushCachedToFaces(ServerLevel level) {
+        return MachineOutputScheduler.pushItemsToFaces(
+                level, worldPosition, automaticOutput, outputFaces,
+                items, OUTPUT_START, SLOT_COUNT);
+    }
+
+    private boolean flushOutputCacheToXianqiao(@Nullable PersonalStorageNetwork.Endpoint endpoint) {
+        return MachineOutputScheduler.flushItemsToXianqiao(
+                items, OUTPUT_START, SLOT_COUNT, endpoint);
+    }
+
+    private @Nullable PersonalStorageNetwork.Endpoint outputEndpoint(
+            ServerLevel level, @Nullable UUID outputOwner) {
+        if (outputOwner == null) return null;
+        net.minecraft.server.MinecraftServer server = level.getServer();
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(server, outputOwner);
+        if (player == null) {
+            cachedOutputEndpoint = null;
+            cachedEndpointOwner = null;
+            cachedEndpointPlayer = null;
+            return null;
+        }
+        if (outputOwner.equals(cachedEndpointOwner)
+                && player == cachedEndpointPlayer
+                && server == cachedEndpointServer
+                && level.dimension().equals(cachedEndpointDimension)
+                && cachedOutputEndpoint != null
+                && cachedOutputEndpoint.online()
+                && outputOwner.equals(cachedOutputEndpoint.owner())
+                && cachedOutputEndpoint.stage() >= 6
+                && (!(cachedOutputEndpoint
+                instanceof PersonalStorageNetwork.Endpoint concrete)
+                || concrete.data() == com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(player))) {
+            return cachedOutputEndpoint;
+        }
+        PersonalStorageNetwork.Endpoint resolved = ImmortalStorageDimensions.isPersonalRealmFor(
+                level.dimension(), outputOwner)
+                ? PersonalStorageNetwork.resolveInOwnerRealm(level, outputOwner, this::setChanged)
+                : PersonalStorageNetwork.resolve(level.getServer(), outputOwner, this::setChanged);
+        cachedOutputEndpoint = resolved;
+        cachedEndpointOwner = outputOwner;
+        cachedEndpointPlayer = player;
+        cachedEndpointServer = server;
+        cachedEndpointDimension = level.dimension();
+        return resolved;
     }
 
     private void updateWorkingState(ServerLevel level, BlockPos pos, BlockState state, boolean working) {
@@ -118,22 +227,15 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         if (fuel.is(ModItems.IMMORTAL_YUAN.get())) {
             items.extractItem(FUEL_SLOT, 1, false); burnTicks = 500; return true;
         }
-        if (fuel.is(ModItems.SPIRIT_DRIVE.get())) {
-            UUID driveOwner = SpiritDriveItem.owner(fuel).orElse(null);
-            ServerPlayer player = driveOwner == null ? null
-                    : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), driveOwner);
-            if (player != null) {
-                var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(player);
-                if (data.consumeImmortalYuan(1L)) { burnTicks = 500; return true; }
-                if (data.consumeTrueYuan(1L)) { burnTicks = 50; return true; }
-            }
-        }
-        UUID realmOwner = ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
-        ServerPlayer ownerPlayer = realmOwner == null ? null
-                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), realmOwner);
+        XianqiaoBindingPolicy.Binding binding = XianqiaoBindingPolicy.resolve(level, fuel);
+        UUID payer = binding.isBound() ? binding.owner() : null;
+        ServerPlayer ownerPlayer = payer == null ? null
+                : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), payer);
         if (ownerPlayer != null) {
             var data = com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData.get(ownerPlayer);
             if (data.consumeImmortalYuan(1L)) { burnTicks = 500; return true; }
+            if (binding.source() == XianqiaoBindingPolicy.BindingSource.SPIRIT_DRIVE
+                    && data.consumeTrueYuan(1L)) { burnTicks = 50; return true; }
         }
         return false;
     }
@@ -150,6 +252,12 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         return entity instanceof LivingEntity living ? living : null;
     }
 
+    private boolean hasSpecimenSource() {
+        ItemStack source = items.getStackInSlot(SOURCE_SLOT);
+        return source.getItem() instanceof SpawnEggItem
+                || source.getItem() instanceof SoulCatcherItem && SoulCatcherItem.hasEntity(source);
+    }
+
     public @Nullable LivingEntity createDisplayEntity(net.minecraft.world.level.Level displayLevel) {
         ItemStack source = items.getStackInSlot(SOURCE_SLOT);
         Entity entity = null;
@@ -161,8 +269,9 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         return entity instanceof LivingEntity living ? living : null;
     }
 
-    private void produce(ServerLevel level, LivingEntity specimen) {
-        UUID outputOwner = effectiveOutputOwner(level);
+    private void produce(ServerLevel level, LivingEntity specimen,
+                         @Nullable UUID outputOwner,
+                         @Nullable PersonalStorageNetwork.Endpoint endpoint) {
         ServerPlayer killer = outputOwner == null ? null
                 : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), outputOwner);
         if (killer == null) killer = level.getNearestPlayer(worldPosition.getX(), worldPosition.getY(),
@@ -195,12 +304,12 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
             }
         }
         int xp = Math.max(0, specimen.getExperienceReward(level, killer));
-        if (outputOwner != null && automaticOutput && killer != null) {
+        if (outputOwner != null && killer != null) {
             killer.giveExperiencePoints(xp);
         } else {
             storedExperience = Math.min(Integer.MAX_VALUE, storedExperience + xp);
         }
-        route(level, drops, outputOwner);
+        route(level, drops, endpoint);
         if (killer != null) {
             com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers.SIMULATED_KILL.trigger(killer);
             completedCycles++;
@@ -212,27 +321,25 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         setChanged();
     }
 
-    private @Nullable UUID effectiveOutputOwner(ServerLevel level) {
-        if (!automaticOutput) return null;
-        if (owner != null && ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), owner)
-                && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
-                .onlinePlayer(level.getServer(), owner) != null) return owner;
-        UUID driveOwner = SpiritDriveItem.owner(items.getStackInSlot(FUEL_SLOT)).orElse(null);
-        return driveOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
-                .onlinePlayer(level.getServer(), driveOwner) != null
-                ? driveOwner : null;
+    private @Nullable UUID effectiveXianqiaoOwner(ServerLevel level) {
+        if (!xianqiaoOutput) return null;
+        UUID boundOwner = XianqiaoBindingPolicy.resolve(level, items.getStackInSlot(FUEL_SLOT)).owner();
+        return boundOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), boundOwner) != null ? boundOwner : null;
     }
 
-    private void route(ServerLevel level, List<ItemStack> drops, @Nullable UUID outputOwner) {
-        PersonalStorageNetwork.Endpoint endpoint = outputOwner == null ? null
-                : (ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), outputOwner)
-                ? PersonalStorageNetwork.resolveInOwnerRealm(level, outputOwner, this::setChanged)
-                : PersonalStorageNetwork.resolve(level.getServer(), outputOwner, this::setChanged));
+    private void route(ServerLevel level, List<ItemStack> drops,
+                       @Nullable PersonalStorageNetwork.Endpoint endpoint) {
         for (ItemStack drop : drops) {
-            ItemStack remainder = endpoint == null ? drop : endpoint.insert(drop, false);
+            ItemStack remainder = MachineOutputScheduler.pushItemToFaces(
+                    level, worldPosition, automaticOutput, outputFaces, drop.copy());
+            if (endpoint != null && !remainder.isEmpty()) {
+                remainder = endpoint.insert(remainder, false);
+            }
             for (int slot = OUTPUT_START; !remainder.isEmpty() && slot < SLOT_COUNT; slot++) {
                 remainder = items.insertItem(slot, remainder, false);
             }
+            if (!remainder.isEmpty()) Block.popResource(level, worldPosition, remainder);
         }
     }
 
@@ -240,7 +347,7 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         if (storedExperience <= 0) return;
         player.giveExperiencePoints(storedExperience);
         storedExperience = 0;
-        setChanged();
+        setChangedAndSync();
     }
 
     public void dropAsItem(ServerPlayer player) {
@@ -248,6 +355,36 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(saveWithFullMetadata(player.registryAccess())));
         net.minecraft.world.level.block.Block.popResource(player.level(), worldPosition, dropped);
         player.level().removeBlock(worldPosition, false);
+    }
+
+    private void setChangedAndSync() {
+        setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            lastSyncTick = serverLevel.getGameTime();
+            lastSyncInvocation = ++syncInvocationCount;
+            serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            broadcastOpenMenu(serverLevel);
+        }
+    }
+
+    private void setChangedAndMaybeSync(ServerLevel serverLevel) {
+        setChanged();
+        long invocation = ++syncInvocationCount;
+        if (!MachineTickSync.due(serverLevel, lastSyncTick, invocation, lastSyncInvocation)) return;
+        lastSyncTick = serverLevel.getGameTime();
+        lastSyncInvocation = invocation;
+        serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        broadcastOpenMenu(serverLevel);
+    }
+
+    private void broadcastOpenMenu(ServerLevel serverLevel) {
+        for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+            if (player.level() == serverLevel
+                    && player.containerMenu instanceof SimulatedReincarnationFurnaceMenu menu
+                    && menu.blockPos().equals(worldPosition)) {
+                menu.broadcastChanges();
+            }
+        }
     }
 
     @Override public Component getDisplayName() {
@@ -270,18 +407,22 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries); tag.put("Items", items.serializeNBT(registries));
         tag.putInt("Progress", progress); tag.putInt("BurnTicks", burnTicks);
-        tag.putInt("StoredExperience", storedExperience); tag.putBoolean("AutomaticOutput", automaticOutput);
+        tag.putInt("StoredExperience", storedExperience);
+        tag.putBoolean("XianqiaoOutput", xianqiaoOutput);
+        tag.putBoolean("AutomaticFaceOutput", automaticOutput);
         int[] faces = new int[outputFaces.length];
         for (Direction side : Direction.values()) faces[side.ordinal()] = outputFaces[side.ordinal()] ? 1 : 0;
         tag.putIntArray("OutputFaces", faces);
         tag.putLong("CompletedCycles", completedCycles);
-        if (owner != null) tag.putUUID("Owner", owner);
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries); items.deserializeNBT(registries, tag.getCompound("Items"));
         progress=tag.getInt("Progress"); burnTicks=tag.getInt("BurnTicks"); storedExperience=tag.getInt("StoredExperience");
         completedCycles=Math.max(0L, tag.getLong("CompletedCycles"));
-        automaticOutput=!tag.contains("AutomaticOutput") || tag.getBoolean("AutomaticOutput"); owner=tag.hasUUID("Owner")?tag.getUUID("Owner"):null;
+        xianqiaoOutput = tag.contains("XianqiaoOutput")
+                ? tag.getBoolean("XianqiaoOutput")
+                : !tag.contains("AutomaticOutput") || tag.getBoolean("AutomaticOutput");
+        automaticOutput = !tag.contains("AutomaticFaceOutput") || tag.getBoolean("AutomaticFaceOutput");
         Arrays.fill(outputFaces, false);
         int[] faces = tag.getIntArray("OutputFaces");
         for (int i = 0; i < Math.min(faces.length, outputFaces.length); i++) outputFaces[i] = faces[i] != 0;

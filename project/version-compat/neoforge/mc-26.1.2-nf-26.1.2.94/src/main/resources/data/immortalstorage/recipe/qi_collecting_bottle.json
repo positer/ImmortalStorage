@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "immortalstorage:nurturing_crystal",
+    "minecraft:glass_bottle",
+    "immortalstorage:immortal_yuan"
+  ],
+  "result": {
+    "id": "immortalstorage:qi_collecting_bottle",
+    "count": 1
+  }
+}

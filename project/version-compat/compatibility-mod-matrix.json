@@ -1,0 +1,189 @@
+{
+  "schema_version": 2,
+  "checked_at": "2026-08-10",
+  "scope": "Only NeoForge 1.21.1 and Minecraft/NeoForge 26.1.2 are supported migration targets.",
+  "policy": {
+    "release_requires_target_artifacts": true,
+    "probe_property": "compatibility_api_probe",
+    "probe_rule": "A probe may inspect released API jars, but probe output is never a release claim and never supplies runtime dependencies for a release artifact.",
+    "required_integration_interfaces": ["ae2", "refinedstorage", "jei"],
+    "optional_integration_interfaces": ["mekanism", "emi"],
+    "official_sources": {
+      "neoforge_versioning": "https://docs.neoforged.net/docs/gettingstarted/versioning/",
+      "neoforge_26_1_primer": "https://docs.neoforged.net/primer/docs/26.1/",
+      "ae2_maven": "https://repo1.maven.org/maven2/org/appliedenergistics/appliedenergistics2/maven-metadata.xml",
+      "mekanism_maven": "https://modmaven.dev/mekanism/Mekanism/maven-metadata.xml",
+      "jei_maven": "https://maven.blamejared.com/mezz/jei/",
+      "refinedstorage_maven": "https://maven.creeperhost.net/com/refinedmods/refinedstorage/refinedstorage-neoforge/maven-metadata.xml",
+      "emi_tags": "https://github.com/emilyploszaj/emi/tags"
+    }
+  },
+  "profiles": [
+    {
+      "id": "mc-1.21.1",
+      "minecraft_versions": ["1.21.1"],
+      "release_ready": true,
+      "mods": {
+        "ae2": {
+          "status": "available",
+          "compile": "org.appliedenergistics:appliedenergistics2:19.2.17",
+          "runtime": "org.appliedenergistics:appliedenergistics2:19.2.17",
+          "api_classes": [
+            "appeng/api/stacks/AEKey.class",
+            "appeng/api/storage/MEStorage.class",
+            "appeng/api/storage/cells/ICellHandler.class"
+          ],
+          "api_methods": {
+            "appeng.api.storage.MEStorage": ["long insert(", "long extract(", "KeyCounter getAvailableStacks("]
+          }
+        },
+        "refinedstorage": {
+          "status": "available",
+          "compile": "com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9",
+          "runtime": "com.refinedmods.refinedstorage:refinedstorage-neoforge:2.0.9",
+          "api_classes": [
+            "com/refinedmods/refinedstorage/api/storage/Storage.class",
+            "com/refinedmods/refinedstorage/api/storage/InsertableStorage.class",
+            "com/refinedmods/refinedstorage/api/storage/ExtractableStorage.class"
+          ],
+          "api_methods": {
+            "com.refinedmods.refinedstorage.api.storage.InsertableStorage": ["long insert("],
+            "com.refinedmods.refinedstorage.api.storage.ExtractableStorage": ["long extract("]
+          }
+        },
+        "jei": {
+          "status": "available",
+          "common_api": "mezz.jei:jei-1.21.1-common-api:19.27.0.343",
+          "neoforge_api": "mezz.jei:jei-1.21.1-neoforge-api:19.27.0.343",
+          "runtime": "mezz.jei:jei-1.21.1-neoforge:19.27.0.343",
+          "api_classes": [
+            "mezz/jei/api/JeiPlugin.class",
+            "mezz/jei/api/recipe/category/IRecipeCategory.class"
+          ],
+          "api_methods": {
+            "mezz.jei.api.recipe.category.IRecipeCategory": ["getRecipeType("]
+          }
+        },
+        "mekanism": {
+          "status": "available",
+          "compile": "mekanism:Mekanism:1.21.1-10.7.19.85:api",
+          "runtime": "mekanism:Mekanism:1.21.1-10.7.19.85:api",
+          "api_classes": [
+            "mekanism/api/MekanismAPI.class",
+            "mekanism/api/chemical/IChemicalHandler.class"
+          ],
+          "api_methods": {
+            "mekanism.api.chemical.IChemicalHandler": ["long getChemicalTankCapacity(", "extractChemical(int, long"]
+          }
+        },
+        "emi": {
+          "status": "available",
+          "compile": "dev.emi:emi-neoforge:1.1.24+1.21.1:api",
+          "runtime": "dev.emi:emi-neoforge:1.1.24+1.21.1",
+          "api_classes": [
+            "dev/emi/emi/api/EmiPlugin.class",
+            "dev/emi/emi/api/EmiRegistry.class"
+          ],
+          "api_methods": {
+            "dev.emi.emi.api.EmiPlugin": ["void register("]
+          }
+        },
+        "refined_types": {
+          "status": "available",
+          "compile": "maven.modrinth:refined-types:1.21.1-0.3.2"
+        },
+        "rs_mekanism_integration": {
+          "status": "available",
+          "compile": "maven.modrinth:refined-storage-mekanism-integration:1.1.1"
+        }
+      }
+    },
+    {
+      "id": "mc-26.1.2",
+      "minecraft_versions": ["26.1.2"],
+      "release_ready": false,
+      "blockers": [
+        "Automated 26.1.2 source migration, the 690-test suite, clean build, production-boundary, version-composition, exact-artifact, and no-AE2 runtime gates now pass; formal release remains blocked until target client/server/Numen and AE2/RS runtime interoperability evidence is completed.",
+        "No matching Mekanism 26.1.2 or EMI 26.1.2 artifact was found; these optional integrations are intentionally excluded from this target until an official API line exists."
+      ],
+      "mods": {
+        "ae2": {
+          "status": "available",
+          "compile": "org.appliedenergistics:appliedenergistics2:26.1.10-beta:api",
+          "runtime": "org.appliedenergistics:appliedenergistics2:26.1.10-beta",
+          "api_classes": [
+            "appeng/api/stacks/AEKey.class",
+            "appeng/api/storage/MEStorage.class",
+            "appeng/api/storage/cells/ICellHandler.class"
+          ],
+          "api_methods": {
+            "appeng.api.storage.MEStorage": ["long insert(", "long extract(", "KeyCounter getAvailableStacks("]
+          }
+        },
+        "refinedstorage": {
+          "status": "available",
+          "compile": "com.refinedmods.refinedstorage:refinedstorage-neoforge:3.2.1",
+          "runtime": "com.refinedmods.refinedstorage:refinedstorage-neoforge:3.2.1",
+          "api_classes": [
+            "com/refinedmods/refinedstorage/api/storage/Storage.class",
+            "com/refinedmods/refinedstorage/api/storage/InsertableStorage.class",
+            "com/refinedmods/refinedstorage/api/storage/ExtractableStorage.class"
+          ],
+          "api_methods": {
+            "com.refinedmods.refinedstorage.api.storage.InsertableStorage": ["long insert("],
+            "com.refinedmods.refinedstorage.api.storage.ExtractableStorage": ["long extract("]
+          }
+        },
+        "jei": {
+          "status": "available",
+          "common_api": "mezz.jei:jei-26.1.2-common-api:29.21.0.68",
+          "neoforge_api": "mezz.jei:jei-26.1.2-neoforge-api:29.21.0.68",
+          "runtime": "mezz.jei:jei-26.1.2-neoforge:29.21.0.68",
+          "api_classes": [
+            "mezz/jei/api/JeiPlugin.class",
+            "mezz/jei/api/recipe/category/IRecipeCategory.class"
+          ],
+          "api_methods": {
+            "mezz.jei.api.recipe.category.IRecipeCategory": ["getRecipeType("]
+          }
+        },
+        "mekanism": {
+          "status": "unavailable",
+          "official_api_classes": [
+            "mekanism/api/resource/IMekanismResourceHandler.class",
+            "mekanism/api/resource/IResourceContainer.class",
+            "mekanism/api/resource/LargeResourceStack.class",
+            "mekanism/api/chemical/IChemicalTank.class"
+          ],
+          "official_api_methods": {
+            "mekanism.api.resource.IMekanismResourceHandler": [
+              "long getAmountAsLong(",
+              "long getCapacityAsLong(",
+              "insert(",
+              "extract("
+            ],
+            "mekanism.api.resource.LargeResourceStack": [
+              "long amount(",
+              "long amountAsLong(",
+              "long grow("
+            ]
+          },
+          "reason": "The official 26.1 branch replaces IChemicalHandler with the NeoForge transfer-based IMekanismResourceHandler/IResourceContainer/LargeResourceStack API, but no official Mekanism 26.1.2 Maven API artifact is published yet. Do not borrow 1.21.1 classes in a release build; implement and verify this adapter only when the official target API artifact is resolvable.",
+          "official_source": "https://github.com/mekanism/Mekanism/tree/26.1/src/api/java/mekanism/api/resource"
+        },
+        "emi": {
+          "status": "unavailable",
+          "reason": "No official EMI 26.1.2 API artifact or tag was found; do not borrow 1.21.1 classes in a release build."
+        },
+        "refined_types": {
+          "status": "unavailable",
+          "reason": "No 26.1.2 Refined Types artifact was found."
+        },
+        "rs_mekanism_integration": {
+          "status": "unavailable",
+          "reason": "No 26.1.2 RS Mekanism integration artifact was found."
+        }
+      }
+    }
+  ]
+}

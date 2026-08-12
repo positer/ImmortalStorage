@@ -2,6 +2,8 @@ package com.immortalstorage.immortalstorage.block;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.block.custom.*;
+import com.immortalstorage.immortalstorage.block.entity.CrystalKind;
+import com.immortalstorage.immortalstorage.compat.CompatManager;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.item.SourceVeinBlockItem;
 import com.immortalstorage.immortalstorage.item.SourceVeinManagerBlockItem;
@@ -14,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
@@ -64,6 +67,31 @@ public final class ModBlocks {
             () -> new SimulatedSpiritFieldBlock(setBlockId("simulated_spirit_field",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.SMOOTH_STONE)
                             .strength(3.5F).requiresCorrectToolForDrops().noOcclusion())));
+    public static final Supplier<Block> ENERGY_CRYSTAL = reg("energy_crystal",
+            () -> new EnergyCrystalBlock(setBlockId("energy_crystal",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)
+                            .mapColor(MapColor.COLOR_CYAN).strength(3.5F)
+                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(
+                                    state -> state.getValue(EnergyCrystalBlock.LIT) ? 15 : 0)),
+                    CrystalKind.ELECTRIC));
+    /** Only Botania installs the mana crystal registry entries and recipes. */
+    public static final @Nullable Supplier<Block> MANA_CRYSTAL = CompatManager.BOTANIA_LOADED
+            ? reg("mana_crystal", () -> new EnergyCrystalBlock(setBlockId("mana_crystal",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)
+                            .mapColor(MapColor.COLOR_GREEN).strength(3.5F)
+                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(
+                                    state -> state.getValue(EnergyCrystalBlock.LIT) ? 15 : 0)),
+                    CrystalKind.MANA))
+            : null;
+    /** Only Ars Nouveau installs the source crystal registry entries and recipes. */
+    public static final @Nullable Supplier<Block> SOURCE_CRYSTAL = CompatManager.ARS_NOUVEAU_LOADED
+            ? reg("source_crystal", () -> new EnergyCrystalBlock(setBlockId("source_crystal",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.AMETHYST_BLOCK)
+                            .mapColor(MapColor.COLOR_PURPLE).strength(3.5F)
+                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(
+                                    state -> state.getValue(EnergyCrystalBlock.LIT) ? 15 : 0)),
+                    CrystalKind.SOURCE))
+            : null;
     public static final Supplier<Block> SOURCE_VEIN_MANAGER = reg("source_vein_manager",
             () -> new SourceVeinManagerBlock(setBlockId("source_vein_manager",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
@@ -170,6 +198,14 @@ public final class ModBlocks {
     public static final Supplier<Block> DRAGON_EGG_VEIN = reg("dragon_egg_vein", () -> new SourceVeinBlock(VeinKind.DRAGON_EGG));
 
     private static Supplier<Block> reg(String id, Supplier<Block> b) {
+        return reg(id, b, null);
+    }
+
+    /**
+     * Variant-aware overload kept separate so optional crystal registration
+     * cannot accidentally change the established block-item factory.
+     */
+    private static Supplier<Block> reg(String id, Supplier<Block> b, @Nullable CrystalKind ignoredKind) {
         Supplier<Block> ro = BLOCKS.register(id, b);
         ModItems.ITEMS.register(id, () -> ro.get() instanceof SourceVeinBlock source
                 ? new SourceVeinBlockItem(source, ModItems.setItemId(id, new Item.Properties()))

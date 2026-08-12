@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/stabilized_miniature_immortal_ruin",
+    "model": {
+      "type": "immortalstorage:dynamic_preview"
+    }
+  }
+}

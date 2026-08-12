@@ -1,0 +1,40 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "immortalstorage:staff_mode",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "immortalstorage:item/spirit_staff_explore"
+    },
+    "cases": [
+      {
+        "when": "wrench",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/spirit_staff_wrench"
+        }
+      },
+      {
+        "when": "pick",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/spirit_staff_pick"
+        }
+      },
+      {
+        "when": "build",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/spirit_staff_build"
+        }
+      },
+      {
+        "when": "teleport",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/spirit_staff_teleport"
+        }
+      }
+    ]
+  }
+}

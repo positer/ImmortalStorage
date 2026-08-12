@@ -1,0 +1,11 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "cookingtime": 50,
+  "experience": 1.0,
+  "ingredient": "immortalstorage:premixed_heavy_compound",
+  "result": {
+    "id": "minecraft:heavy_core",
+    "count": 1
+  }
+}

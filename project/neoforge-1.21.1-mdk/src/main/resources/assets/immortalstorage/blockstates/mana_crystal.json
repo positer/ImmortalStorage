@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": {"model": "immortalstorage:block/mana_crystal"},
+    "lit=true": {"model": "immortalstorage:block/mana_crystal"}
+  }
+}

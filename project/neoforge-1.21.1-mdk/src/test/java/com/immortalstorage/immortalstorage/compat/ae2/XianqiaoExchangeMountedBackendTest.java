@@ -104,6 +104,41 @@ final class XianqiaoExchangeMountedBackendTest {
         assertEquals(2_250L, afterMutations.get(waterKey));
     }
 
+    @Test
+    void longAvailableReadRefreshesOnAnExternalRevisionWithoutIntTruncation() {
+        UUID owner = UUID.fromString("00000000-0000-0000-0000-000000000411");
+        UUID disk = UUID.fromString("00000000-0000-0000-0000-000000000412");
+        ImmortalStoragePlayerData data = new ImmortalStoragePlayerData();
+        data.setStage(6);
+        TerminalEntryKey diamonds = TerminalEntryKey.of(new ItemStack(Items.DIAMOND));
+        assertEquals(73L, data.insertXianqiaoItem(
+                diamonds, 73L, TerminalStorageAction.EXECUTE));
+
+        TerminalItemStorage items = new PersonalStorageLongItemStorage(
+                data, () -> {}, () -> true);
+        PersonalStorageEndpoint endpoint = endpoint(owner, data, items, null);
+        ItemStack link = new ItemStack(ModItems.XIANQIAO_EXCHANGE_CELL.get());
+        assertTrue(XianqiaoExchangeCellItem.bindUnbound(link, owner, disk, "ReadOwner"));
+        XianqiaoExchangeStorageCell cell = XianqiaoExchangeCellHandler.createCell(
+                link, (server, requestedOwner) -> owner.equals(requestedOwner) ? endpoint : null);
+        assertNotNull(cell);
+        activateThroughConcreteClassIndexedGrid(cell);
+
+        AEItemKey diamondKey = AEItemKey.of(Items.DIAMOND);
+        KeyCounter before = new KeyCounter();
+        cell.getAvailableStacks(before);
+        assertEquals(73L, before.get(diamondKey));
+
+        long additional = 2L * Integer.MAX_VALUE + 17L;
+        assertEquals(additional, data.insertXianqiaoItem(
+                diamonds, additional, TerminalStorageAction.EXECUTE));
+
+        KeyCounter after = new KeyCounter();
+        cell.getAvailableStacks(after);
+        assertEquals(73L + additional, after.get(diamondKey),
+                "AE2 must refresh the long directory when the authoritative revision changes");
+    }
+
     private static PersonalStorageEndpoint endpoint(
             UUID owner,
             ImmortalStoragePlayerData data,

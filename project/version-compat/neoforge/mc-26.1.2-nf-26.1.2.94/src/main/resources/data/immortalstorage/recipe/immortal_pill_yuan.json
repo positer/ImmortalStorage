@@ -1,0 +1,18 @@
+{
+  "type": "immortalstorage:yuan_substitution_shaped",
+  "category": "food",
+  "key": {
+    "Y": "#immortalstorage:yuan_crafting_materials",
+    "B": "immortalstorage:breakthrough_pill",
+    "D": "minecraft:dragon_egg"
+  },
+  "pattern": [
+    "YBY",
+    "BDB",
+    "YBY"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:immortal_pill"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "immortalstorage:add_item",
+  "conditions": [
+    {
+      "condition": "neoforge:loot_table_id",
+      "loot_table_id": "minecraft:chests/nether_bridge"
+    }
+  ],
+  "item": {
+    "id": "immortalstorage:breakthrough_pill",
+    "components": {}
+  },
+  "chance": 0.2,
+  "minCount": 2,
+  "maxCount": 3
+}

@@ -60,7 +60,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     public static final int OUTPUT_COUNT = 12;
     public static final int SLOT_COUNT = OUTPUT_START + OUTPUT_COUNT;
     public static final int PROCESS_TICKS = 50;
-    public static final int DATA_COUNT = 10;
+    public static final int DATA_COUNT = 11;
     private static final int[] SEED_ONLY = {SEED_SLOT};
     private static final int[] FUEL_ONLY = {FUEL_SLOT};
     private static final int[] OUTPUTS = java.util.stream.IntStream.range(
@@ -85,23 +85,37 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private int burnTicks;
     private int burnDuration;
     private int storedExperience;
+    private boolean xianqiaoOutput = true;
     private boolean automaticOutput = true;
     private final boolean[] outputFaces = new boolean[Direction.values().length];
     private BlockState substrate = Blocks.FARMLAND.defaultBlockState()
             .setValue(net.minecraft.world.level.block.FarmBlock.MOISTURE, 7);
     private BlockState substrateSource = Blocks.DIRT.defaultBlockState();
     private final IItemHandler[] handlers = new IItemHandler[7];
+    private long lastSyncTick = Long.MIN_VALUE;
+    private long syncInvocationCount;
+    private long lastSyncInvocation = Long.MIN_VALUE;
+    private @Nullable PersonalStorageNetwork.Endpoint cachedOutputEndpoint;
+    private @Nullable UUID cachedEndpointOwner;
+    private @Nullable ServerPlayer cachedEndpointPlayer;
+    private @Nullable net.minecraft.server.MinecraftServer cachedEndpointServer;
+    private @Nullable net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> cachedEndpointDimension;
+    private @Nullable List<ItemStack> pendingHarvestDrops;
+    private ItemStack cachedCropSeed = ItemStack.EMPTY;
+    private Optional<BlockState> cachedCrop = Optional.empty();
     private final ContainerData data = new ContainerData() {
         @Override public int get(int index) { return switch (index) {
             case 0 -> progress; case 1 -> burnTicks; case 2 -> storedExperience;
-            case 3 -> automaticOutput ? 1 : 0;
-            case 4, 5, 6, 7, 8, 9 -> outputFaces[index - 4] ? 1 : 0;
+            case 3 -> xianqiaoOutput ? 1 : 0;
+            case 4 -> automaticOutput ? 1 : 0;
+            case 5, 6, 7, 8, 9, 10 -> outputFaces[index - 5] ? 1 : 0;
             default -> 0; }; }
         @Override public void set(int index, int value) {
             if (index == 0) progress = value; else if (index == 1) burnTicks = value;
             else if (index == 2) storedExperience = value;
-            else if (index == 3) automaticOutput = value != 0;
-            else if (index >= 4 && index < 10) outputFaces[index - 4] = value != 0;
+            else if (index == 3) xianqiaoOutput = value != 0;
+            else if (index == 4) automaticOutput = value != 0;
+            else if (index >= 5 && index < 11) outputFaces[index - 5] = value != 0;
         }
         @Override public int getCount() { return DATA_COUNT; }
     };
@@ -115,8 +129,16 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     public boolean displaysGrowingChorusFlower() { return items.get(SEED_SLOT).is(Items.CHORUS_FRUIT); }
     public int burnTicks() { return burnTicks; }
     public int storedExperience() { return storedExperience; }
+    public boolean xianqiaoOutput() { return xianqiaoOutput; }
     public boolean automaticOutput() { return automaticOutput; }
     public boolean outputFace(Direction side) { return side != null && outputFaces[side.ordinal()]; }
+    public void toggleXianqiaoOutput() {
+        xianqiaoOutput = !xianqiaoOutput;
+        if (xianqiaoOutput && level instanceof ServerLevel serverLevel) {
+            flushOutputCacheToXianqiao(endpoint(serverLevel, effectiveXianqiaoOwner(serverLevel)));
+        }
+        setChangedAndSync();
+    }
     public void toggleAutomaticOutput() { automaticOutput = !automaticOutput; setChangedAndSync(); }
     public void toggleOutputFace(Direction side) {
         if (side == null) return;
@@ -165,6 +187,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         ItemStack previous = new ItemStack(substrateSource.getBlock().asItem());
         substrateSource = replacement;
         substrate = hydrated(replacement);
+        pendingHarvestDrops = null;
         if (!player.getAbilities().instabuild) held.shrink(1);
         if (!previous.isEmpty() && !player.getInventory().add(previous)) player.drop(previous, false);
         setChangedAndSync();
@@ -192,17 +215,68 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
 
     public static void serverTick(ServerLevel level, BlockPos pos, BlockState state,
                                   SimulatedSpiritFieldBlockEntity field) {
-        List<ItemStack> drops = field.harvestDrops(level);
-        if (drops.isEmpty()) { field.progress = 0; return; }
-        UUID outputOwner = field.effectiveOutputOwner(level);
-        if (!field.canRouteAll(level, drops, outputOwner)) { field.progress = PROCESS_TICKS; return; }
-        if (field.burnTicks <= 0 && !field.consumeFuel(level)) return;
+        // Face output is attempted before the Xianqiao fallback on every
+        // server tick, including ticks with no harvest ready.
+        boolean changed = field.pushCachedToFaces(level);
+        UUID outputOwner = field.effectiveXianqiaoOwner(level);
+        PersonalStorageNetwork.Endpoint endpoint = field.endpoint(level, outputOwner);
+        changed |= field.flushOutputCacheToXianqiao(endpoint);
+        if (!field.hasHarvestableCrop()) {
+            field.progress = 0;
+            field.pendingHarvestDrops = null;
+            if (changed) field.setChangedAndMaybeSync(level);
+            return;
+        }
+
+        List<ItemStack> drops = null;
+        if (field.progress >= PROCESS_TICKS - 1) {
+            // Loot construction is much more expensive than the progress
+            // counter. Build it only at the completion boundary instead of
+            // once per logical tick in an accelerated realm.
+            drops = field.pendingHarvestDrops;
+            if (drops == null) {
+                drops = field.harvestDrops(level);
+                if (!drops.isEmpty()) field.pendingHarvestDrops = drops;
+            }
+            if (drops.isEmpty()) {
+                field.pendingHarvestDrops = null;
+                field.progress = 0;
+                if (changed) field.setChangedAndMaybeSync(level);
+                return;
+            }
+            if (!field.canRouteAll(level, drops, endpoint)) {
+                field.progress = PROCESS_TICKS;
+                if (changed) field.setChangedAndMaybeSync(level);
+                return;
+            }
+        }
+        if (field.burnTicks <= 0 && !field.consumeFuel(level)) {
+            if (changed) field.setChangedAndMaybeSync(level);
+            return;
+        }
         field.burnTicks--;
         if (++field.progress >= PROCESS_TICKS) {
             // The seed is a permanent specimen: harvesting never shrinks or replaces SEED_SLOT.
-            field.route(level, drops, outputOwner); field.progress = 0;
+            if (drops == null) {
+                drops = field.pendingHarvestDrops;
+                if (drops == null) drops = field.harvestDrops(level);
+            }
+            field.route(level, drops, endpoint);
+            field.pendingHarvestDrops = null;
+            field.progress = 0;
         }
-        field.setChangedAndSync();
+        field.setChangedAndMaybeSync(level);
+    }
+
+    private boolean pushCachedToFaces(ServerLevel level) {
+        return MachineOutputScheduler.pushItemsToFaces(
+                level, worldPosition, automaticOutput, outputFaces,
+                getItemHandler(null), OUTPUT_START, SLOT_COUNT);
+    }
+
+    private boolean flushOutputCacheToXianqiao(@Nullable PersonalStorageNetwork.Endpoint endpoint) {
+        return MachineOutputScheduler.flushItemsToXianqiao(
+                getItemHandler(null), OUTPUT_START, SLOT_COUNT, endpoint);
     }
 
     private boolean consumeFuel(ServerLevel level) {
@@ -213,8 +287,8 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         if (fuel.is(ModItems.IMMORTAL_YUAN.get())) {
             fuel.shrink(1); burnTicks = burnDuration = ImmortalFurnaceEngine.IMMORTAL_YUAN.burnTicks(); return true;
         }
-        UUID payer = fuel.getItem() instanceof SpiritDriveItem ? SpiritDriveItem.owner(fuel).orElse(null)
-                : ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
+        XianqiaoBindingPolicy.Binding binding = XianqiaoBindingPolicy.resolve(level, fuel);
+        UUID payer = binding.isBound() ? binding.owner() : null;
         ServerPlayer owner = payer == null ? null
                 : com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), payer);
         ImmortalStoragePlayerData ownerData = owner == null ? null : ImmortalStoragePlayerData.get(owner);
@@ -232,16 +306,28 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     }
 
     private Optional<BlockState> cropFor(ItemStack seed) {
-        if (!isValidSeed(seed)) return Optional.empty();
+        if (seed == null) seed = ItemStack.EMPTY;
+        if (ItemStack.isSameItemSameComponents(cachedCropSeed, seed)) return cachedCrop;
+        cachedCropSeed = seed.isEmpty() ? ItemStack.EMPTY : seed.copyWithCount(1);
+        cachedCrop = Optional.empty();
+        if (!isValidSeed(seed)) return cachedCrop;
         Optional<SimulatedSpiritFieldCropCatalog.Entry> mapped =
                 SimulatedSpiritFieldCropCatalog.find(seed.getItem());
-        if (mapped.isPresent()) return Optional.of(mapped.get().crop());
-        if (seed.is(Items.CHORUS_FLOWER) || seed.is(Items.CHORUS_FRUIT)) {
-            return Optional.of(Blocks.CHORUS_FLOWER.defaultBlockState());
+        if (mapped.isPresent()) {
+            cachedCrop = Optional.of(mapped.get().crop());
+            return cachedCrop;
         }
-        if (seed.is(Items.NETHER_WART)) return Optional.of(Blocks.NETHER_WART.defaultBlockState());
-        return seed.getItem() instanceof BlockItem blockItem
+        if (seed.is(Items.CHORUS_FLOWER) || seed.is(Items.CHORUS_FRUIT)) {
+            cachedCrop = Optional.of(Blocks.CHORUS_FLOWER.defaultBlockState());
+            return cachedCrop;
+        }
+        if (seed.is(Items.NETHER_WART)) {
+            cachedCrop = Optional.of(Blocks.NETHER_WART.defaultBlockState());
+            return cachedCrop;
+        }
+        cachedCrop = seed.getItem() instanceof BlockItem blockItem
                 ? Optional.of(blockItem.getBlock().defaultBlockState()) : Optional.empty();
+        return cachedCrop;
     }
 
     private static boolean compatible(BlockState crop, BlockState base) {
@@ -273,6 +359,11 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         return crop;
     }
 
+    private boolean hasHarvestableCrop() {
+        Optional<BlockState> crop = cropFor(items.get(SEED_SLOT));
+        return crop.isPresent() && compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate);
+    }
+
     private List<ItemStack> harvestDrops(ServerLevel level) {
         Optional<BlockState> crop = cropFor(items.get(SEED_SLOT));
         if (crop.isEmpty() || !compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate)) return List.of();
@@ -287,12 +378,16 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                 ? List.of(new ItemStack(Items.CHORUS_FRUIT)) : drops;
     }
 
-    private boolean canRouteAll(ServerLevel level, List<ItemStack> drops, @Nullable UUID outputOwner) {
-        PersonalStorageNetwork.Endpoint endpoint = endpoint(level, outputOwner);
+    private boolean canRouteAll(ServerLevel level, List<ItemStack> drops,
+                                @Nullable PersonalStorageNetwork.Endpoint endpoint) {
         List<ItemStack> simulated = new ArrayList<>();
         for (int slot = OUTPUT_START; slot < SLOT_COUNT; slot++) simulated.add(items.get(slot).copy());
         for (ItemStack drop : drops) {
-            ItemStack remaining = endpoint == null ? drop.copy() : endpoint.insert(drop.copy(), true);
+            ItemStack remaining = MachineOutputScheduler.simulateItemToFaces(
+                    level, worldPosition, automaticOutput, outputFaces, drop.copy());
+            if (endpoint != null && !remaining.isEmpty()) {
+                remaining = endpoint.insert(remaining, true);
+            }
             for (int i = 0; i < simulated.size() && !remaining.isEmpty(); i++) {
                 ItemStack target = simulated.get(i);
                 if (target.isEmpty()) {
@@ -308,10 +403,14 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         return true;
     }
 
-    private void route(ServerLevel level, List<ItemStack> drops, @Nullable UUID outputOwner) {
-        PersonalStorageNetwork.Endpoint endpoint = endpoint(level, outputOwner);
+    private void route(ServerLevel level, List<ItemStack> drops,
+                       @Nullable PersonalStorageNetwork.Endpoint endpoint) {
         for (ItemStack drop : drops) {
-            ItemStack remaining = endpoint == null ? drop.copy() : endpoint.insert(drop.copy(), false);
+            ItemStack remaining = MachineOutputScheduler.pushItemToFaces(
+                    level, worldPosition, automaticOutput, outputFaces, drop.copy());
+            if (endpoint != null && !remaining.isEmpty()) {
+                remaining = endpoint.insert(remaining, false);
+            }
             for (int slot = OUTPUT_START; slot < SLOT_COUNT && !remaining.isEmpty(); slot++) {
                 ItemStack target = items.get(slot);
                 if (target.isEmpty()) {
@@ -322,27 +421,51 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                     target.grow(moved); remaining.shrink(moved);
                 }
             }
+            if (!remaining.isEmpty()) Block.popResource(level, worldPosition, remaining);
         }
     }
 
-    private @Nullable UUID effectiveOutputOwner(ServerLevel level) {
-        if (!automaticOutput) return null;
-        UUID realmOwner = ImmortalStorageDimensions.personalRealmOwner(level.dimension()).orElse(null);
-        if (realmOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
-                .onlinePlayer(level.getServer(), realmOwner) != null) {
-            return realmOwner;
-        }
-        UUID driveOwner = SpiritDriveItem.owner(items.get(FUEL_SLOT)).orElse(null);
-        return driveOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
-                .onlinePlayer(level.getServer(), driveOwner) != null
-                ? driveOwner : null;
+    private @Nullable UUID effectiveXianqiaoOwner(ServerLevel level) {
+        if (!xianqiaoOutput) return null;
+        UUID boundOwner = XianqiaoBindingPolicy.resolve(level, items.get(FUEL_SLOT)).owner();
+        return boundOwner != null && com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(level.getServer(), boundOwner) != null ? boundOwner : null;
     }
 
     private @Nullable PersonalStorageNetwork.Endpoint endpoint(ServerLevel level, @Nullable UUID outputOwner) {
         if (outputOwner == null) return null;
-        return ImmortalStorageDimensions.isPersonalRealmFor(level.dimension(), outputOwner)
+        net.minecraft.server.MinecraftServer server = level.getServer();
+        ServerPlayer player = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity
+                .onlinePlayer(server, outputOwner);
+        if (player == null) {
+            cachedOutputEndpoint = null;
+            cachedEndpointOwner = null;
+            cachedEndpointPlayer = null;
+            return null;
+        }
+        if (outputOwner.equals(cachedEndpointOwner)
+                && player == cachedEndpointPlayer
+                && server == cachedEndpointServer
+                && level.dimension().equals(cachedEndpointDimension)
+                && cachedOutputEndpoint != null
+                && cachedOutputEndpoint.online()
+                && outputOwner.equals(cachedOutputEndpoint.owner())
+                && cachedOutputEndpoint.stage() >= 6
+                && (!(cachedOutputEndpoint
+                instanceof PersonalStorageNetwork.Endpoint concrete)
+                || concrete.data() == ImmortalStoragePlayerData.get(player))) {
+            return cachedOutputEndpoint;
+        }
+        PersonalStorageNetwork.Endpoint resolved = ImmortalStorageDimensions.isPersonalRealmFor(
+                level.dimension(), outputOwner)
                 ? PersonalStorageNetwork.resolveInOwnerRealm(level, outputOwner, this::setChanged)
                 : PersonalStorageNetwork.resolve(level.getServer(), outputOwner, this::setChanged);
+        cachedOutputEndpoint = resolved;
+        cachedEndpointOwner = outputOwner;
+        cachedEndpointPlayer = player;
+        cachedEndpointServer = server;
+        cachedEndpointDimension = level.dimension();
+        return resolved;
     }
 
     public void releaseExperience(ServerPlayer player) {
@@ -355,7 +478,30 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private void setChangedAndSync() {
         setChanged();
         if (level instanceof ServerLevel serverLevel) {
+            lastSyncTick = serverLevel.getGameTime();
+            lastSyncInvocation = ++syncInvocationCount;
             serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            broadcastOpenMenu(serverLevel);
+        }
+    }
+
+    private void setChangedAndMaybeSync(ServerLevel serverLevel) {
+        setChanged();
+        long invocation = ++syncInvocationCount;
+        if (!MachineTickSync.due(serverLevel, lastSyncTick, invocation, lastSyncInvocation)) return;
+        lastSyncTick = serverLevel.getGameTime();
+        lastSyncInvocation = invocation;
+        serverLevel.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        broadcastOpenMenu(serverLevel);
+    }
+
+    private void broadcastOpenMenu(ServerLevel serverLevel) {
+        for (ServerPlayer player : serverLevel.getServer().getPlayerList().getPlayers()) {
+            if (player.level() == serverLevel
+                    && player.containerMenu instanceof SimulatedSpiritFieldMenu menu
+                    && menu.blockPos().equals(worldPosition)) {
+                menu.broadcastChanges();
+            }
         }
     }
 
@@ -370,14 +516,20 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     @Override public ItemStack getItem(int slot) { return items.get(slot); }
     @Override public ItemStack removeItem(int slot, int amount) {
         ItemStack result = ContainerHelper.removeItem(items, slot, amount);
+        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
         if (!result.isEmpty()) setChanged(); return result;
     }
-    @Override public ItemStack removeItemNoUpdate(int slot) { return ContainerHelper.takeItem(items, slot); }
+    @Override public ItemStack removeItemNoUpdate(int slot) {
+        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
+        return ContainerHelper.takeItem(items, slot);
+    }
     @Override public void setItem(int slot, ItemStack stack) {
-        items.set(slot, stack); stack.limitSize(getMaxStackSize(stack)); setChanged();
+        items.set(slot, stack); stack.limitSize(getMaxStackSize(stack));
+        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
+        setChanged();
     }
     @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public void clearContent() { items.clear(); }
+    @Override public void clearContent() { items.clear(); pendingHarvestDrops = null; }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
         if (slot == FUEL_SLOT) return stack.is(ModItems.TRUE_YUAN.get())
                 || stack.is(ModItems.IMMORTAL_YUAN.get()) || stack.getItem() instanceof SpiritDriveItem;
@@ -387,7 +539,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     @Override public int[] getSlotsForFace(Direction side) {
         int[] input = side == Direction.UP ? SEED_ONLY
                 : side.getAxis().isHorizontal() ? FUEL_ONLY : EMPTY;
-        return outputFace(side)
+        return automaticOutput && outputFace(side)
                 ? java.util.stream.IntStream.concat(Arrays.stream(input), Arrays.stream(OUTPUTS)).toArray()
                 : input.clone();
     }
@@ -396,7 +548,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                 || (side.getAxis().isHorizontal() && slot == FUEL_SLOT)) && canPlaceItem(slot, stack);
     }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return outputFace(side) && slot >= OUTPUT_START && slot < SLOT_COUNT;
+        return automaticOutput && outputFace(side) && slot >= OUTPUT_START && slot < SLOT_COUNT;
     }
 
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -405,7 +557,8 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         tag.putInt("BurnDuration", burnDuration); tag.put("Substrate", NbtUtils.writeBlockState(substrate));
         tag.put("SubstrateSource", NbtUtils.writeBlockState(substrateSource));
         tag.putInt("StoredExperience", storedExperience);
-        tag.putBoolean("AutomaticOutput", automaticOutput);
+        tag.putBoolean("XianqiaoOutput", xianqiaoOutput);
+        tag.putBoolean("AutomaticFaceOutput", automaticOutput);
         int[] faces = new int[outputFaces.length];
         for (Direction side : Direction.values()) faces[side.ordinal()] = outputFaces[side.ordinal()] ? 1 : 0;
         tag.putIntArray("OutputFaces", faces);
@@ -414,10 +567,16 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         super.loadAdditional(tag, registries);
         items = net.minecraft.core.NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
         ContainerHelper.loadAllItems(tag, items, registries);
+        pendingHarvestDrops = null;
+        cachedCropSeed = ItemStack.EMPTY;
+        cachedCrop = Optional.empty();
         progress = tag.getInt("Progress"); burnTicks = tag.getInt("BurnTicks");
         burnDuration = tag.getInt("BurnDuration");
         storedExperience = tag.getInt("StoredExperience");
-        automaticOutput = !tag.contains("AutomaticOutput") || tag.getBoolean("AutomaticOutput");
+        xianqiaoOutput = tag.contains("XianqiaoOutput")
+                ? tag.getBoolean("XianqiaoOutput")
+                : !tag.contains("AutomaticOutput") || tag.getBoolean("AutomaticOutput");
+        automaticOutput = !tag.contains("AutomaticFaceOutput") || tag.getBoolean("AutomaticFaceOutput");
         Arrays.fill(outputFaces, false);
         int[] faces = tag.getIntArray("OutputFaces");
         for (int i = 0; i < Math.min(faces.length, outputFaces.length); i++) outputFaces[i] = faces[i] != 0;

@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/xianqiao_manager",
+    "model": {
+      "type": "immortalstorage:dynamic_preview"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "food",
+  "key": {
+    "X": "immortalstorage:immortal_yuan",
+    "B": "immortalstorage:breakthrough_pill"
+  },
+  "pattern": [
+    "XXX",
+    "XBX",
+    "XXX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:immortal_pill"
+  }
+}

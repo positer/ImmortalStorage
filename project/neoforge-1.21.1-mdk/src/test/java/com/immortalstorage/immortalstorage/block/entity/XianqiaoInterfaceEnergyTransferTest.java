@@ -40,6 +40,17 @@ final class XianqiaoInterfaceEnergyTransferTest {
         assertEquals(50, closed.energy);
     }
 
+    @Test
+    void longCachePushUsesTheSameTransactionalXianqiaoInteraction() {
+        Store localCache = new Store(2_000_000_000L, 2_000_000_000L);
+        Store xianqiao = new Store(100L, Long.MAX_VALUE);
+
+        assertEquals(2_000_000_000L,
+                XianqiaoInterfaceEnergyTransfer.pushAll(localCache, xianqiao));
+        assertEquals(0L, localCache.amount());
+        assertEquals(2_000_000_100L, xianqiao.amount());
+    }
+
     private static final class Store implements AtomicEnergyRefill.ResourceStore {
         private long amount;
         private final long capacity;

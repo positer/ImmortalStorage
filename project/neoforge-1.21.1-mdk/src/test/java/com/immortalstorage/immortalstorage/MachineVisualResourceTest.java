@@ -1,5 +1,8 @@
 package com.immortalstorage.immortalstorage;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -7,8 +10,10 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -18,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class MachineVisualResourceTest {
     @Test
-    void managerUsesIndependentNativePixelTexturesAndBakedEdgeCage() throws Exception {
+    void managerUsesTheSourceVeinFrameAndIndependentCoreTextures() throws Exception {
         for (String xianqiaoFace : new String[]{"panel", "side", "top"}) {
             BufferedImage xianqiao = png("assets/immortalstorage/textures/block/xianqiao_interface_" + xianqiaoFace + ".png");
             assertEquals(16, xianqiao.getWidth());
@@ -34,66 +39,75 @@ final class MachineVisualResourceTest {
         }
 
         String model = text("assets/immortalstorage/models/block/source_vein_manager.json");
-        assertTrue(model.contains("immortalstorage:block/source_vein_manager_edge"));
-        assertTrue(model.contains("immortalstorage:block/source_vein_manager_core_used"));
+        assertTrue(model.contains("immortalstorage:block/custom_source_vein"),
+                "the manager must inherit the complete source-vein frame model");
+        assertFalse(model.contains("\"elements\""),
+                "the manager must not carry a second hand-authored frame");
+        assertFalse(model.contains("immortalstorage:block/source_vein_manager_core_used"),
+                "the manager core is rendered by its block entity renderer");
         assertFalse(model.contains("immortalstorage:block/source_vein_manager_front"));
         assertFalse(model.contains("immortalstorage:block/xianqiao_interface_"));
     }
 
     @Test
-    void managerCageIsABlackOpaqueFrameWithSolidColourCore() throws Exception {
+    void managerCageUsesLayeredFrameAndTranslucentCoreTextures() throws Exception {
         BufferedImage edge = png("assets/immortalstorage/textures/block/source_vein_manager_edge.png");
+        BufferedImage sourceFrame = png("assets/immortalstorage/textures/block/source_vein_frame.png");
         assertEquals(16, edge.getWidth());
         assertEquals(16, edge.getHeight());
-        assertOpaqueBlack(edge, 0, 0);
-        assertOpaqueBlack(edge, 2, 2);
-        assertOpaqueBlack(edge, 3, 3);
-        assertOpaqueBlack(edge, 0, 4);
-        assertOpaqueBlack(edge, 1, 5);
-        assertOpaqueBlack(edge, 4, 0);
-        assertOpaqueBlack(edge, 5, 1);
-        assertTransparent(edge, 4, 4);
-        assertTransparent(edge, 6, 0);
-        assertTransparent(edge, 15, 15);
-
-        Map<String, int[]> lockedCoreColors = Map.of(
-                "source_vein_manager_core_empty", new int[]{0, 41, 255},
-                "source_vein_manager_core_used", new int[]{163, 114, 218},
-                "source_vein_manager_core_full", new int[]{255, 0, 0});
-        for (Map.Entry<String, int[]> entry : lockedCoreColors.entrySet()) {
-            String name = entry.getKey();
-            int[] expected = entry.getValue();
+        assertEquals(pixelHash(sourceFrame), pixelHash(edge),
+                "the legacy manager edge texture must stay pixel-identical to the source frame");
+        Set<Integer> edgeColours = new HashSet<>();
+        for (int y = 0; y < edge.getHeight(); y++) {
+            for (int x = 0; x < edge.getWidth(); x++) {
+                int argb = edge.getRGB(x, y);
+                if ((argb >>> 24) != 0) edgeColours.add(argb);
+            }
+        }
+        assertTrue(edgeColours.size() >= 3, "the manager edge must contain layered pixel colours");
+        assertTrue((edge.getRGB(0, 0) >>> 24) > 0, "the outer frame corner must remain visible");
+        for (int y = 0; y < edge.getHeight(); y++) {
+            for (int x = 0; x < edge.getWidth(); x++) {
+                assertEquals(edge.getRGB(x, y), edge.getRGB(edge.getHeight() - 1 - y, x),
+                        "the manager atlas must be 90-degree centre-symmetric");
+            }
+        }
+        for (String name : new String[]{"source_vein_manager_core_empty", "source_vein_manager_core_used",
+                "source_vein_manager_core_full"}) {
             BufferedImage image = png("assets/immortalstorage/textures/block/" + name + ".png");
             assertEquals(16, image.getWidth());
             assertEquals(16, image.getHeight());
+            Set<Integer> coreColours = new HashSet<>();
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     int argb = image.getRGB(x, y);
-                    assertEquals(255, argb >>> 24, name + " must stay opaque");
-                    assertEquals(expected[0], argb >>> 16 & 0xFF, name + " red");
-                    assertEquals(expected[1], argb >>> 8 & 0xFF, name + " green");
-                    assertEquals(expected[2], argb & 0xFF, name + " blue");
+                    assertTrue((argb >>> 24) > 0 && (argb >>> 24) < 255,
+                            name + " must stay translucent");
+                    coreColours.add(argb);
                 }
             }
+            assertTrue(coreColours.size() > 1, name + " must contain crystal-like shading");
         }
 
         String blockModel = text("assets/immortalstorage/models/block/source_vein_manager.json");
-        assertTrue(blockModel.contains("\"parent\": \"minecraft:block/block\""));
-        assertTrue(blockModel.contains("\"elements\""));
-        assertEquals(12, countOccurrences(blockModel, "\"from\":"));
-        assertTrue(blockModel.contains("\"texture\": \"#edge\""));
-        assertTrue(blockModel.contains("immortalstorage:block/source_vein_manager_core_used"));
-        assertFalse(blockModel.contains("\"rotation\""), "the twelve edge beams are baked flat");
-        assertEquals(4, countOccurrences(blockModel, "\"up\""),
-                "the four top ring beams gain a closed top face");
-        assertEquals(4, countOccurrences(blockModel, "\"down\""),
-                "the four bottom ring beams gain a closed bottom face");
+        assertTrue(blockModel.contains("\"parent\": \"immortalstorage:block/custom_source_vein\""));
+        assertFalse(blockModel.contains("\"elements\""),
+                "the source block owns the complete manager frame geometry");
         assertFalse(blockModel.contains("source_vein_manager_front"));
 
         String itemModel = text("assets/immortalstorage/models/item/source_vein_manager.json");
         assertTrue(itemModel.contains("\"parent\": \"immortalstorage:block/source_vein_manager\""));
         assertFalse(itemModel.contains("\"overrides\""),
                 "the rotating core comes from the item BEWLR, not model overrides");
+    }
+
+    @Test
+    void managerFrameUvComesFromTheSourceModelWithoutASecondUvIslandSet() throws Exception {
+        JsonObject model = JsonParser.parseString(
+                text("assets/immortalstorage/models/block/source_vein_manager.json")).getAsJsonObject();
+        assertEquals("immortalstorage:block/custom_source_vein", model.get("parent").getAsString());
+        assertFalse(model.has("elements"),
+                "the manager must inherit the source model's point-to-point UV mapping unchanged");
     }
 
     @Test
@@ -162,18 +176,6 @@ final class MachineVisualResourceTest {
                     + "/profession/immortal_sage.png.mcmeta");
             assertTrue(metadata.contains("\"hat\": \"none\""));
         }
-    }
-
-    private static void assertOpaqueBlack(BufferedImage image, int x, int y) {
-        int argb = image.getRGB(x, y);
-        assertEquals(255, argb >>> 24, "edge frame pixel (" + x + "," + y + ") must be opaque");
-        assertEquals(0, argb >>> 16 & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
-        assertEquals(0, argb >>> 8 & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
-        assertEquals(0, argb & 0xFF, "edge frame pixel (" + x + "," + y + ") must be black");
-    }
-
-    private static void assertTransparent(BufferedImage image, int x, int y) {
-        assertEquals(0, image.getRGB(x, y) >>> 24, "edge pixel (" + x + "," + y + ") must stay transparent");
     }
 
     private static int countOccurrences(String text, String needle) {

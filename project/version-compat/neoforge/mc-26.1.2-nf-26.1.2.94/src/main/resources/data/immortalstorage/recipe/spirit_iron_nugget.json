@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "immortalstorage:spirit_iron"
+  ],
+  "result": {
+    "id": "immortalstorage:spirit_iron_nugget",
+    "count": 9
+  }
+}

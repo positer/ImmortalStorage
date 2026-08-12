@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": {"model": "immortalstorage:block/source_crystal"},
+    "lit=true": {"model": "immortalstorage:block/source_crystal"}
+  }
+}

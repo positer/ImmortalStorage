@@ -3,9 +3,9 @@
   "pages":[
     {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_interface","text":"仙窍接口可放在任意维度并绑定放置者。九个配置槽可缓存物品、流体及已安装联动的额外资源。空手左键清除目标；右键设置数量与逐槽六面掩码。"},
     {"type":"patchouli:text","text":"主动抽入开启后，会从对应面的相邻容器吸入所有可存内容，不限于配置目标。主动推出（Push）只从真实缓存输出，且只有该槽的输出面掩码允许的面才会推出。六面默认为关闭；关闭不会拒绝相邻模组主动访问能力。"},
-    {"type":"patchouli:text","text":"FE、Botania Mana、Ars魔源优先消耗接口真实缓存，只有不足差额才按服务器配置兑换仙元。Botania火花和Ars方块直接交互不携带方向，因此不受六面设置影响。"},
+    {"type":"patchouli:text","text":"FE、Botania Mana、Ars魔源等额外资源优先使用接口真实缓存；接口外部资源现在是独立长整型账本，不再把仙元转换为非源方块的FE、Mana或Source。Botania火花和Ars方块直接交互不携带方向，因此不受六面设置影响。"},
     {"type":"patchouli:text","text":"释放（Release）：清空或更换缓存目标时，非空缓存会先原子返还仙窍，不会丢失；空手左键配置槽即可返还并清除。拆除接口时同样先返还全部缓存，仅无法放入的溢出余量保留在掉落物的压缩数据中，重新放置后继续返回。"},
-    {"type":"patchouli:text","text":"额外资源槽按稳定资源键保存FE、Botania Mana、Ars Source、工业先锋Souls或Mekanism化学品。化学品从真实容器设置身份，幽灵槽不猜测化学品；已安装模组才会显示对应目录。每类资源的仙元兑换比例、启用开关和每刻上限都可在配置中调整。"},
+    {"type":"patchouli:text","text":"额外资源槽按稳定资源键保存FE、Botania Mana、Ars Source、工业先锋Souls或Mekanism化学品。化学品从真实容器设置身份，幽灵槽不猜测化学品；已安装模组才会显示对应目录。旧版仙元转化配置仍可读取，但对非源方块额外资源不再生效。"},
     {"type":"patchouli:text","text":"被动能力与主动推拉独立：管道可以从任意面写入匹配资源，主动开关和六面模式只约束调度器的定时抽取/推出。Botania火花与Ars Source Provider属于无方向官方能力，不受六面开关影响。"}
   ]
 }

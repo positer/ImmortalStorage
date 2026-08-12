@@ -1,0 +1,12 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "group": "immortalstorage:spirit_sword_tempering",
+  "cookingtime": 50,
+  "experience": 0.0,
+  "ingredient": "#immortalstorage:spirit_swords",
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:spirit_sword"
+  }
+}

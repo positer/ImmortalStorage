@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "I": "immortalstorage:spirit_iron",
+    "C": "immortalstorage:spirit_crystal",
+    "B": "minecraft:blast_furnace",
+    "J": "immortalstorage:jade_guide"
+  },
+  "pattern": [
+    "ICI",
+    "BJB",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:immortal_furnace"
+  }
+}

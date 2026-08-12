@@ -46,6 +46,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.List;
 
@@ -82,6 +83,18 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
     private final boolean[] faceFaulted = new boolean[Direction.values().length];
     private final long[] faceUncertainInFlight = new long[Direction.values().length];
     private long observedDefinitionGeneration;
+    private SourceDefinition cachedDefinition;
+    private ResourceLocation cachedDefinitionId;
+    private long cachedDefinitionGeneration = Long.MIN_VALUE;
+    private SourceChargePlan cachedChargePlan;
+    private ResourceLocation cachedChargePlanDefinitionId;
+    private long cachedChargePlanGeneration = Long.MIN_VALUE;
+    private @Nullable Item cachedOutputItem;
+    private @Nullable Fluid cachedOutputFluid;
+    private long lastCacheIndexChangeTick = Long.MIN_VALUE;
+    /** True only while this BE's ticker is dispatching its own PUSH pass. */
+    private boolean internalOutputPass;
+    private final long[] internalFaceOutputSpent = new long[Direction.values().length];
 
     public SourceVeinBlockEntity(BlockPos pos, BlockState state, VeinKind kind) {
         this(ModBlockEntities.SOURCE_VEIN.get(), pos, state, kind);
@@ -107,7 +120,20 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
     }
 
     public SourceDefinition definition() {
-        return SourceDefinitions.find(sourceDefinitionId()).orElse(UNCONFIGURED);
+        ResourceLocation id = sourceDefinitionId();
+        long generation = SourceDefinitions.generation();
+        if (cachedDefinition == null || cachedDefinitionGeneration != generation
+                || !java.util.Objects.equals(cachedDefinitionId, id)) {
+            cachedDefinition = SourceDefinitions.find(id).orElse(UNCONFIGURED);
+            cachedDefinitionId = id;
+            cachedDefinitionGeneration = generation;
+            cachedChargePlan = null;
+            cachedChargePlanDefinitionId = null;
+            cachedChargePlanGeneration = Long.MIN_VALUE;
+            cachedOutputItem = null;
+            cachedOutputFluid = null;
+        }
+        return cachedDefinition;
     }
 
     public ResourceLocation sourceDefinitionId() {
@@ -135,7 +161,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
     }
 
     private boolean hasValidDefinition() {
-        return SourceDefinitions.find(sourceDefinitionId()).isPresent();
+        return definition() != UNCONFIGURED;
     }
 
     public VeinKind getKind() { return kind; }
@@ -281,8 +307,17 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     @Override
     public SourceChargePlan chargePlan() {
-        return new SourceChargePlan(SourceChargeRegistry.IMMORTAL_YUAN,
-                definition().yuanCostPerBatch(), definition().outputsPerBatch());
+        ResourceLocation id = sourceDefinitionId();
+        long generation = SourceDefinitions.generation();
+        if (cachedChargePlan == null || cachedChargePlanGeneration != generation
+                || !java.util.Objects.equals(cachedChargePlanDefinitionId, id)) {
+            SourceDefinition definition = definition();
+            cachedChargePlan = new SourceChargePlan(SourceChargeRegistry.IMMORTAL_YUAN,
+                    definition.yuanCostPerBatch(), definition.outputsPerBatch());
+            cachedChargePlanDefinitionId = id;
+            cachedChargePlanGeneration = generation;
+        }
+        return cachedChargePlan;
     }
 
     public SourceSideMode getSideMode(@Nullable Direction side) {
@@ -392,7 +427,11 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
     public ItemStack itemSample(int count) {
         SourceDefinition definition = definition();
         if (definition.fluid() || count <= 0) return ItemStack.EMPTY;
-        Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(definition.outputId());
+        Item item = cachedOutputItem;
+        if (item == null) {
+            item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(definition.outputId());
+            cachedOutputItem = item;
+        }
         return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item, count);
     }
 
@@ -442,9 +481,13 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     public Fluid sampleFluid() {
         SourceDefinition definition = definition();
-        return definition.fluid()
-                ? net.minecraft.core.registries.BuiltInRegistries.FLUID.get(definition.outputId())
-                : Fluids.EMPTY;
+        if (!definition.fluid()) return Fluids.EMPTY;
+        Fluid fluid = cachedOutputFluid;
+        if (fluid == null) {
+            fluid = net.minecraft.core.registries.BuiltInRegistries.FLUID.get(definition.outputId());
+            cachedOutputFluid = fluid;
+        }
+        return fluid;
     }
 
     public ItemStack filledVanillaContainer() {
@@ -546,6 +589,10 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     /** Every PUSH face owns the configured rate independently, including creative sources. */
     private long availableActiveOutputBudget(Direction direction) {
+        if (internalOutputPass) {
+            int index = java.util.Objects.requireNonNull(direction, "direction").ordinal();
+            return Math.max(0L, Math.max(0L, fluxLimit) - internalFaceOutputSpent[index]);
+        }
         return activeFaceFluxBudget(direction).available(currentGameTick(), fluxLimit);
     }
 
@@ -574,6 +621,9 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
      * through the same transaction.
      */
     long extractForActiveOutput(Direction direction, long requested, boolean simulate) {
+        if (internalOutputPass) {
+            return extractForInternalOutputPass(direction, requested, simulate);
+        }
         ResourceAmountPolicy policy = amountPolicy();
         long tick = currentGameTick();
         SourceVeinFluxBudget faceBudget = activeFaceFluxBudget(direction);
@@ -589,8 +639,43 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         return extracted;
     }
 
+    /**
+     * An actual ticker invocation is one logical accelerated pass.  Vanilla
+     * calls this once per world tick; accelerator mods may call it repeatedly
+     * while the world clock is unchanged.  Keep a fresh face allowance for
+     * every such invocation instead of keying PUSH output only by game time.
+     */
+    private long extractForInternalOutputPass(Direction direction, long requested, boolean simulate) {
+        if (requested <= 0L) return 0L;
+        int index = java.util.Objects.requireNonNull(direction, "direction").ordinal();
+        long allowance = Math.max(0L, Math.max(0L, fluxLimit) - internalFaceOutputSpent[index]);
+        long granted = Math.min(requested, allowance);
+        ResourceAmountPolicy policy = amountPolicy();
+        long extracted = policy.extractable(buffer.available(), granted);
+        if (!simulate) {
+            if (policy == ResourceAmountPolicy.CONSUMED) {
+                extracted = buffer.extract(extracted, false);
+            }
+            if (extracted > 0L) {
+                internalFaceOutputSpent[index] += extracted;
+                markCacheChanged();
+            }
+        }
+        return extracted;
+    }
+
     private SourceVeinFluxBudget activeFaceFluxBudget(Direction direction) {
         return activeFaceFluxBudgets[java.util.Objects.requireNonNull(direction, "direction").ordinal()];
+    }
+
+    private void refundActiveOutputBudget(Direction direction, long amount) {
+        if (amount <= 0L) return;
+        int index = java.util.Objects.requireNonNull(direction, "direction").ordinal();
+        if (internalOutputPass) {
+            internalFaceOutputSpent[index] = Math.max(0L, internalFaceOutputSpent[index] - amount);
+        } else {
+            activeFaceFluxBudget(direction).refund(currentGameTick(), amount);
+        }
     }
 
     /** Rolls back an exact-container commit that unexpectedly delivered only a partial amount. */
@@ -660,6 +745,9 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     private void markCacheChanged() {
         setChanged();
+        long tick = currentGameTick();
+        if (lastCacheIndexChangeTick == tick) return;
+        lastCacheIndexChangeTick = tick;
         SourceVeinStorageIndex.changed(this);
     }
 
@@ -688,11 +776,17 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         if (owner == null || !hasValidDefinition()) return;
         refillCacheForAutomation(sl);
         if (!hasPushSide() || logicalAvailableUnits() <= 0L) return;
-        if (fluidSource()) {
-            tryPushFluid(sl);
-            return;
+        Arrays.fill(internalFaceOutputSpent, 0L);
+        internalOutputPass = true;
+        try {
+            if (fluidSource()) {
+                tryPushFluid(sl);
+                return;
+            }
+            tryPushItems(sl);
+        } finally {
+            internalOutputPass = false;
         }
-        tryPushItems(sl);
     }
 
     private void tryPushItems(ServerLevel sl) {
@@ -782,7 +876,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
                         long restored = buffer.restore(refused);
                         if (restored > 0L) markCacheChanged();
                     }
-                    activeFaceFluxBudget(dir).refund(currentGameTick(), refused);
+                    refundActiveOutputBudget(dir, refused);
                 }
             } catch (RuntimeException error) {
                 faultFace(dir, staged, "execute an item transfer for", error);
@@ -849,7 +943,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
             long restored = buffer.restore(refused);
             if (restored > 0L) markCacheChanged();
         }
-        activeFaceFluxBudget(dir).refund(currentGameTick(), refused);
+        refundActiveOutputBudget(dir, refused);
     }
 
     private void pushItemsToNativeBypassTarget(Direction dir, SourceBypassTransferTarget target,
@@ -965,7 +1059,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
                     long restored = buffer.restore(refused);
                     if (restored > 0L) markCacheChanged();
                 }
-                activeFaceFluxBudget(dir).refund(currentGameTick(), refused);
+                refundActiveOutputBudget(dir, refused);
             }
             setChanged();
         } catch (RuntimeException error) {
@@ -997,7 +1091,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
                     long restored = buffer.restore(refused);
                     if (restored > 0L) markCacheChanged();
                 }
-                activeFaceFluxBudget(dir).refund(currentGameTick(), refused);
+                refundActiveOutputBudget(dir, refused);
             }
             setChanged();
         } catch (RuntimeException error) {

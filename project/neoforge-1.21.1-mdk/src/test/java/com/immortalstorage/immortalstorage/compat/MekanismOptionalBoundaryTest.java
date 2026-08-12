@@ -29,10 +29,14 @@ final class MekanismOptionalBoundaryTest {
     @Test
     void officialApiVersionAndCapabilityLifecycleArePinned() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
-        assertTrue(build.contains("mekanism:Mekanism:1.21.1-10.7.19.85:api"));
+        assertTrue(build.contains(
+                "addCompatNoTransitive('compileOnly', 'mekanism', 'compile')"));
+        String matrix = Files.readString(PROJECT.resolve(Path.of(
+                "..", "version-compat", "compatibility-mod-matrix.json")).normalize());
+        assertTrue(matrix.contains("mekanism:Mekanism:1.21.1-10.7.19.85:api"));
 
         String metadata = Files.readString(PROJECT.resolve(Path.of(
-                "src", "main", "resources", "META-INF", "neoforge.mods.toml")));
+                "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         assertTrue(metadata.contains("modId=\"mekanism\""));
         assertTrue(metadata.contains("versionRange=\"[10.7.19,10.8)\""));
 

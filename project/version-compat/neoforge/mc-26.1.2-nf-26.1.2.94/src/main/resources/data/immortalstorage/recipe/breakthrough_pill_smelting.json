@@ -1,0 +1,11 @@
+{
+  "type": "immortalstorage:immortal_furnace",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0,
+  "ingredient": "immortalstorage:breakthrough_pill_embryo",
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:breakthrough_pill"
+  }
+}

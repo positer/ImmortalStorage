@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "immortalstorage:nurturing_crystal",
+    "minecraft:netherite_block",
+    "immortalstorage:spirit_core"
+  ],
+  "result": {
+    "id": "immortalstorage:premixed_heavy_compound",
+    "count": 1
+  }
+}

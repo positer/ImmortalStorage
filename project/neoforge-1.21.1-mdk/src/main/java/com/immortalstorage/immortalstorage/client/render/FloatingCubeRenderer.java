@@ -37,12 +37,29 @@ public final class FloatingCubeRenderer {
                               float pitchDegreesPerTick,
                               int rgb,
                               int alpha) {
-        float bob = Mth.sin(animationTime * bobRadiansPerTick) * bobAmplitude;
+        render(poseStack, buffers, (double) animationTime, centerY, size, bobAmplitude,
+                bobRadiansPerTick, yawDegreesPerTick, pitchDegreesPerTick, rgb, alpha);
+    }
+
+    public static void render(PoseStack poseStack,
+                              MultiBufferSource buffers,
+                              double animationTime,
+                              float centerY,
+                              float size,
+                              float bobAmplitude,
+                              float bobRadiansPerTick,
+                              float yawDegreesPerTick,
+                              float pitchDegreesPerTick,
+                              int rgb,
+                              int alpha) {
+        float bob = (float) (Math.sin(animationTime * bobRadiansPerTick) * bobAmplitude);
 
         poseStack.pushPose();
         poseStack.translate(0.5F, centerY + bob, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(animationTime * yawDegreesPerTick));
-        poseStack.mulPose(Axis.XP.rotationDegrees(animationTime * pitchDegreesPerTick));
+        poseStack.mulPose(Axis.YP.rotationDegrees(
+                (float) ((animationTime * yawDegreesPerTick) % 360.0D)));
+        poseStack.mulPose(Axis.XP.rotationDegrees(
+                (float) ((animationTime * pitchDegreesPerTick) % 360.0D)));
 
         PoseStack.Pose pose = poseStack.last();
         VertexConsumer vertices = buffers.getBuffer(TRANSLUCENT_EMISSIVE);
@@ -85,6 +102,71 @@ public final class FloatingCubeRenderer {
                 half,  half,  half,
                 1.0F, 0.0F, 0.0F, rgb, alpha, 0.96F);
 
+        poseStack.popPose();
+    }
+
+    /**
+     * Renders an externally defined source with the same fixed-pivot rule as
+     * the baked block/item paths.  The seed fixes its initial attitude; only
+     * the slow yaw changes with animation time.
+     */
+    public static void renderAnchored(PoseStack poseStack,
+                                      MultiBufferSource buffers,
+                                      double animationTime,
+                                      float centerX,
+                                      float centerY,
+                                      float centerZ,
+                                      float size,
+                                      long orientationSeed,
+                                      int rgb,
+                                      int alpha) {
+        SourceVeinAnimation.Orientation orientation = SourceVeinAnimation.orientation(orientationSeed);
+        poseStack.pushPose();
+        poseStack.translate(centerX, centerY, centerZ);
+        poseStack.mulPose(Axis.YP.rotationDegrees(orientation.yaw()
+                + SourceVeinAnimation.rotationDegrees(animationTime, 0.18D)));
+        poseStack.mulPose(Axis.XP.rotationDegrees(orientation.pitch()));
+        poseStack.mulPose(Axis.ZP.rotationDegrees(orientation.roll()));
+
+        PoseStack.Pose pose = poseStack.last();
+        VertexConsumer vertices = buffers.getBuffer(TRANSLUCENT_EMISSIVE);
+        float half = size * 0.5F;
+        face(vertices, pose,
+                -half, -half, -half,
+                 half, -half, -half,
+                 half, -half,  half,
+                -half, -half,  half,
+                0.0F, -1.0F, 0.0F, rgb, alpha, 0.82F);
+        face(vertices, pose,
+                -half,  half,  half,
+                 half,  half,  half,
+                 half,  half, -half,
+                -half,  half, -half,
+                0.0F, 1.0F, 0.0F, rgb, alpha, 1.0F);
+        face(vertices, pose,
+                 half, -half, -half,
+                -half, -half, -half,
+                -half,  half, -half,
+                 half,  half, -half,
+                0.0F, 0.0F, -1.0F, rgb, alpha, 0.86F);
+        face(vertices, pose,
+                -half, -half, half,
+                 half, -half, half,
+                 half,  half, half,
+                -half,  half, half,
+                0.0F, 0.0F, 1.0F, rgb, alpha, 0.94F);
+        face(vertices, pose,
+                -half, -half, -half,
+                -half, -half,  half,
+                -half,  half,  half,
+                -half,  half, -half,
+                -1.0F, 0.0F, 0.0F, rgb, alpha, 0.84F);
+        face(vertices, pose,
+                 half, -half,  half,
+                 half, -half, -half,
+                 half,  half, -half,
+                 half,  half,  half,
+                1.0F, 0.0F, 0.0F, rgb, alpha, 0.96F);
         poseStack.popPose();
     }
 

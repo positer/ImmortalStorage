@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "neoforge-mc26.1.2-nf26.1.2.94",
+  "minecraft_version": "26.1.2",
+  "minecraft_range": "[26.1.2]",
+  "neoforge_version": "26.1.2.94",
+  "neoforge_range": "[26.1.2.94]",
+  "core_api_revision": 1,
+  "integration_project": "project/neoforge-1.21.1-mdk",
+  "adapter_source": "project/version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/java",
+  "status": "development"
+}

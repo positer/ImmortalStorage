@@ -24,7 +24,8 @@ final class DynamicItemPreviewContractTest {
         assertTrue(setup.contains("RuinCoreItemDecorator.INSTANCE"));
         assertTrue(setup.contains("XianqiaoManagerItemDecorator.INSTANCE"));
         assertTrue(source.contains("extends BlockEntityWithoutLevelRenderer"));
-        assertTrue(source.contains("context == ItemDisplayContext.GUI"));
+        assertTrue(source.contains("SourceVeinDisplayRenderer.renderForItem")
+                || source.contains("SourceVeinDisplayRenderer.submit"));
         assertTrue(!sourceDecorator.contains("enableScissor"));
         assertTrue(!sourceDecorator.contains("disableScissor"));
         assertTrue(!ruinDecorator.contains("enableScissor"));

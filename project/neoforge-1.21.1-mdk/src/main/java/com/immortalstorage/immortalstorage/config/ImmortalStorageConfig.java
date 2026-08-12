@@ -38,6 +38,10 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_7;
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_8;
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_9;
+    /** Internal FE memory of one Energy Crystal. Kept as a long at the config boundary. */
+    public static final ModConfigSpec.LongValue ENERGY_CRYSTAL_FE_CAPACITY;
+    /** FE produced and offered by one running Energy Crystal per server tick. */
+    public static final ModConfigSpec.LongValue ENERGY_CRYSTAL_FE_PER_TICK;
     public static final @Nullable ConversionValues FE_CONVERSION;
     public static final @Nullable ConversionValues BOTANIA_MANA_CONVERSION;
     public static final @Nullable ConversionValues ARS_SOURCE_CONVERSION;
@@ -120,6 +124,18 @@ public final class ImmortalStorageConfig {
         TRIBULATION_TARGET_STAGE_8 = BUILDER.translation(key("progression.tribulation_targets.stage8To9")).define("stage8To9", "minecraft:vindicator");
         TRIBULATION_TARGET_STAGE_9 = BUILDER.translation(key("progression.tribulation_targets.stage9To10")).define("stage9To10", "minecraft:warden");
         BUILDER.pop(2);
+
+        BUILDER.translation(key("energy_crystal")).push("energy_crystal");
+        ENERGY_CRYSTAL_FE_CAPACITY = BUILDER
+                .translation(key("energy_crystal.feCapacity"))
+                .comment("Internal FE memory of one Energy Crystal. The default is 800 million FE.")
+                .defineInRange("feCapacity", 800_000_000L, 1L, Long.MAX_VALUE);
+        ENERGY_CRYSTAL_FE_PER_TICK = BUILDER
+                .translation(key("energy_crystal.fePerTick"))
+                .comment("FE generated and offered by a running Energy Crystal every server tick.")
+                .defineInRange("fePerTick", 1_000L, 1L, Long.MAX_VALUE);
+        BUILDER.pop();
+
         boolean energyCompat = CompatManager.MEKANISM_LOADED || CompatManager.FLUX_NETWORKS_LOADED;
         if (energyCompat || CompatManager.BOTANIA_LOADED || CompatManager.ARS_NOUVEAU_LOADED) {
             BUILDER.translation(key("resource_conversion")).push("resource_conversion");
@@ -142,15 +158,12 @@ public final class ImmortalStorageConfig {
     }
 
     public static ConversionPolicy conversionPolicy(ResourceChannelKey key) {
-        ConversionValues values = key == null ? null
-                : key.equals(ExternalResourceChannels.FE) ? FE_CONVERSION
-                : key.equals(ExternalResourceChannels.BOTANIA_MANA) ? BOTANIA_MANA_CONVERSION
-                : key.equals(ExternalResourceChannels.ARS_NOUVEAU_SOURCE) ? ARS_SOURCE_CONVERSION
-                : null;
-        return values == null
-                ? ConversionPolicy.DISABLED
-                : new ConversionPolicy(values.enabled().get(), values.resourcePerImmortalYuan().get(),
-                        values.maximumConversionPerTick().get());
+        /*
+         * External resource storage is now a real, independent long-valued
+         * namespace.  Keep the old config schema readable for existing worlds,
+         * but deliberately never turn Immortal Yuan into FE/mana/source.
+         */
+        return ConversionPolicy.DISABLED;
     }
 
     private static ConversionValues defineConversion(

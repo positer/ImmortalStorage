@@ -52,16 +52,22 @@ public final class ImmortalStorageDimensions {
     }
 
     public static boolean isXianqiaoRealm(ResourceKey<Level> key) {
+        if (key == null) {
+            return false;
+        }
         ResourceLocation location = key.location();
         return ImmortalStorageMod.MODID.equals(location.getNamespace())
                 && location.getPath().startsWith(XIANQIAO_REALM_PREFIX);
     }
 
     public static boolean isPersonalRealmFor(ResourceKey<Level> key, UUID playerId) {
-        return key.equals(personalRealmKey(playerId));
+        return key != null && playerId != null && key.equals(personalRealmKey(playerId));
     }
 
     public static Optional<UUID> personalRealmOwner(ResourceKey<Level> key) {
+        if (key == null) {
+            return Optional.empty();
+        }
         ResourceLocation location = key.location();
         if (!ImmortalStorageMod.MODID.equals(location.getNamespace())) {
             return Optional.empty();

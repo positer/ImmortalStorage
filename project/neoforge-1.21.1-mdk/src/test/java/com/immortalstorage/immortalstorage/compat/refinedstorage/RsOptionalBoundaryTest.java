@@ -91,7 +91,7 @@ final class RsOptionalBoundaryTest {
 
     @Test
     void resourceAddonMetadataIsOptionalAndOrderedBeforeImmortalStorageSetup() throws IOException {
-        String modsToml = source("resources/META-INF/neoforge.mods.toml");
+        String modsToml = processedModsToml();
         assertTrue(modsToml.contains("modId=\"refinedtypes\""));
         assertTrue(modsToml.contains("modId=\"refinedstorage_mekanism_integration\""));
         assertTrue(modsToml.contains(
@@ -118,7 +118,7 @@ final class RsOptionalBoundaryTest {
     @Test
     void recipeAndMetadataStayOptionalAndPinnedToRsTwoPointZeroNine() throws IOException {
         String recipe = source("resources/data/immortalstorage/recipe/xianqiao_rs_exchange_disk.json");
-        String modsToml = source("resources/META-INF/neoforge.mods.toml");
+        String modsToml = processedModsToml();
         assertTrue(recipe.contains("neoforge:mod_loaded"));
         assertTrue(recipe.contains("\"modid\": \"refinedstorage\""));
         assertTrue(recipe.contains("refinedstorage:storage_housing"));
@@ -150,6 +150,11 @@ final class RsOptionalBoundaryTest {
 
     private static String source(String relative) throws IOException {
         return Files.readString(ROOT.resolve(relative));
+    }
+
+    private static String processedModsToml() throws IOException {
+        return Files.readString(ROOT.getParent().getParent().resolve(
+                "build/resources/main/META-INF/neoforge.mods.toml"));
     }
 
     private static Path locateMainSourceRoot() {

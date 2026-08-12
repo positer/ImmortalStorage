@@ -4,6 +4,6 @@
   "package": "com.immortalstorage.immortalstorage.mixin.arsnouveau",
   "plugin": "com.immortalstorage.immortalstorage.mixin.arsnouveau.ArsNouveauMixinConfigPlugin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["RelayTileXianqiaoMixin"],
+  "mixins": ["RelayTileXianqiaoMixin", "EnergyCrystalArsWandableMixin"],
   "injectors": { "defaultRequire": 1 }
 }

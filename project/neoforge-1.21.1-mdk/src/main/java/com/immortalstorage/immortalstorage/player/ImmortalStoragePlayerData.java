@@ -11,6 +11,7 @@ import com.immortalstorage.immortalstorage.dimension.RealmTimeScalePolicy;
 import com.immortalstorage.immortalstorage.menu.custom.EmbeddedImmortalFurnaceBackend;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -213,10 +214,15 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         this(null);
     }
 
-    ImmortalStoragePlayerData(Player owner) {
+    public ImmortalStoragePlayerData(Player owner) {
         this.owner = owner;
         ensureXianqiaoSize(XIANQIAO_INITIAL_SLOTS);
         recomputeCaps();
+    }
+
+    /** Registry context used by loader-specific attachment serializers. */
+    public HolderLookup.Provider registryAccess() {
+        return owner == null ? RegistryAccess.EMPTY : owner.registryAccess();
     }
 
     public static ImmortalStoragePlayerData get(Player p) {

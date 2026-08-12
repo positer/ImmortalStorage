@@ -8,18 +8,15 @@ import org.junit.jupiter.api.Test;
 
 class ModDescriptionContractTest {
     @Test
-    void descriptionRepresentsTheZeroPointZeroPointTenTooltipAndHandbookUpdate() throws Exception {
+    void descriptionRepresentsTheZeroPointZeroPointElevenMiniatureRuinRules() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("persistent-player-bound realm"));
-        assertTrue(properties.contains("Version 0.0.10"));
-        assertTrue(properties.contains("realm, device, puppet, AE2 and RS disk ownership"));
-        assertTrue(properties.contains("one-shot legacy migration"));
-        assertTrue(properties.contains("AE2 external-resource rendering crashes"));
-        assertTrue(properties.contains("sword tempering tooltip coefficients"));
-        assertTrue(properties.contains("bilingual Patchouli handbook"));
+        assertTrue(properties.contains("Version 0.0.11"));
+        assertTrue(properties.contains("exact 13x1x13 block-layer collision box"));
+        assertTrue(properties.contains("excludes players holding the miniature ruin"));
     }
 
     private static Path locateProject() {

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "immortalstorage:immortal_yuan"
+  ],
+  "result": {
+    "id": "immortalstorage:true_yuan",
+    "count": 64
+  }
+}

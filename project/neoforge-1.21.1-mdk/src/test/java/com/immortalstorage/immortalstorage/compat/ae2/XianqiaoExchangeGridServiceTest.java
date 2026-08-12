@@ -135,12 +135,13 @@ final class XianqiaoExchangeGridServiceTest {
     }
 
     @Test
-    void infiniteSentinelUsesTheIntCompatibleAe2DisplayCeiling() {
+    void infiniteSentinelKeepsTheAe2LongDisplayContract() {
         AEItemKey diamond = AEItemKey.of(Items.DIAMOND);
         KeyCounter counter = new KeyCounter();
 
+        XianqiaoExchangeStorageCell.setLongAmountApiSupported(true);
         XianqiaoExchangeStorageCell.addSaturated(counter, diamond, Long.MAX_VALUE);
-        assertEquals((long) Integer.MAX_VALUE, counter.get(diamond));
+        assertEquals(Long.MAX_VALUE, counter.get(diamond));
 
         counter.set(diamond, Long.MAX_VALUE - 5L);
         XianqiaoExchangeStorageCell.addSaturated(counter, diamond, 10L);
