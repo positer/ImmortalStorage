@@ -42,7 +42,10 @@ The interface follows Minecraft's native pixel language while borrowing the info
 
 **Latest published version:** [ImmortalStorage 0.0.12](https://github.com/positer/ImmortalStorage/releases/tag/0.0.12)
 
-**Release JAR SHA256:** `60F0314381D714708FA9C7F29EFC4D8F50653E8FB6DDD40B5A6ED64541B37DF3` (5,295,016 bytes)
+**Release artifact SHA-256:**
+
+- Minecraft 1.21.1 / NeoForge 21.1.235: `55B0816FC27F81A0E81E42517203E5FDE95CF97BB18676D06BB906B63CDCBE8A` (5,382,838 bytes)
+- Minecraft 26.1.2 / NeoForge 26.1.2.94: `15C451F4C4C87E81462B310B33E0F0CDC279D80B555A718FAD090D57A5270D76` (5,397,569 bytes)
 
 ## Highlights
 
@@ -52,18 +55,16 @@ The interface follows Minecraft's native pixel language while borrowing the info
 - A UUID-bound personal realm whose usable space and time flow grow with cultivation stage.
 - Source Veins and automation blocks for high-throughput item, fluid, energy, and optional-mod resources.
 - Shared weapon attack projection writes paid resource and tempering growth into standard main-hand attributes so systems such as Apotheosis can read and multiply the real weapon damage.
-- Bundled Patchouli Ancient Jade handbook with bilingual progression, real recipes, and major-system coverage through 0.0.11: the Xianqiao Manager, World Shard Miner/Treasure Basin datapack rules, terminal management, external-resource boundaries, all Spirit Sword branches and their actual tempering coefficients, plus Soul Catcher, Spirit Drive, simulated production, all Stabilized Ruin variants, Source Veins/Manager, personal-realm weather and persistent-identity migration. The Miniature Immortal Ruins entry also gives native guidance for its exact `13×1×13` single-layer area and holder exclusion rule. Locale-tree parity and later-version coverage are enforced by tests; no separate Patchouli install is required.
+- Bundled Patchouli Ancient Jade handbook with bilingual progression, real recipes, and complete 0.0.12 coverage for reinforcement plugins, machine output, addon storage, and every pill recipe. Locale-tree parity is enforced by tests; no separate Patchouli install is required.
 - Optional JEI, EMI, AE2, Refined Storage, Mekanism, Botania, Ars Nouveau, Industrial Foregoing, and related integrations.
 - Complete Simplified Chinese and English localization for gameplay and configuration.
 
 ## Requirements
 
-| Component | Version |
-| --- | --- |
-| Minecraft | 1.21.1 |
-| NeoForge | 21.1.235 (build baseline); supported range: `[21.1.235,21.2)` |
-| Java | 21 |
-| ImmortalStorage | 0.0.11 (published) |
+| Minecraft | NeoForge | Java | 0.0.12 artifact |
+| --- | --- | --- | --- |
+| 1.21.1 | 21.1.235 (build baseline); supported range: `[21.1.235,21.2)` | 21 | `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.12.jar` |
+| 26.1.2 | 26.1.2.94 | 25 | `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.0.12.jar` |
 
 No recipe viewer or storage mod is required. Optional integrations activate only when their target mod is installed. The republished 0.0.10 artifact also passed startup smoke tests in temporary 35-mod clients using both Sodium and Embeddium rendering stacks.
 
@@ -73,14 +74,14 @@ No recipe viewer or storage mod is required. Optional integrations activate only
 - Both temporary clients completed NeoForge mod loading, resource reload, sound-engine initialization, and ImmortalStorage registration for Mekanism, Botania, Industrial Foregoing Souls, AE2, Refined Storage, and Ars Nouveau without an optimization-mod or ImmortalStorage crash.
 - Sodium and Embeddium are mutually exclusive rendering backends and must not be installed together. The ImmortalStorage JAR has no direct references to their classes and no mixins into their internal renderer; compatibility relies on standard Minecraft/NeoForge rendering entry points.
 
-`CHANGELOG.md` records the user-visible delta from 0.0.9 to 0.0.10 and the Minecraft 1.21.1-only delta from 0.0.10 to 0.0.11 in both Simplified Chinese and English. The 0.0.11 gate passes **210 XML suites / 764 tests / 0 failures / 0 errors / 0 skipped**, plus production-boundary, version-composition, exact-artifact, Ars Source API, and no-AE2-runtime checks.
+`CHANGELOG.md` records every user-visible release delta in Simplified Chinese and English. The 0.0.12 entry fully covers `0.0.11 → 0.0.12` and separately documents the Minecraft 1.21.1/26.1.2 migration boundary and dual-artifact installation rules.
 
 ## Installation
 
-1. Install Minecraft 1.21.1 and NeoForge 21.1.235.
-2. Use Java 21 for the client and dedicated server.
-3. Use the current locally validated 0.0.11 JAR (NeoForge supported range `[21.1.235,21.2)`, build baseline 21.1.235), or build `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.11.jar` from the current main source.
-4. Place the JAR in the instance or server `mods` directory.
+1. Confirm that the instance is Minecraft 1.21.1 / NeoForge 21.1.235 or Minecraft 26.1.2 / NeoForge 26.1.2.94.
+2. Use Java 21 for 1.21.1 clients and servers, and Java 25 for 26.1.2.
+3. Download the version-specific JAR from Release 0.0.12. The two artifacts are not cross-version compatible and must never be installed together.
+4. Remove every older ImmortalStorage JAR from the instance, then place the matching new JAR in the client or server `mods` directory.
 5. Start the game. New players receive an Ancient Jade by default; this can be changed from the NeoForge Mod List configuration screen.
 
 The Mods screen displays **ImmortalStorage** (Chinese: **仙藏**). The administrator command root is `/immortalstorage`; configuration files are `immortalstorage-common.toml` and `immortalstorage-client.toml`.

@@ -2,7 +2,22 @@
 
 ## [0.0.12] - 2026-08-13
 
-### 简体中文
+### 简体中文（0.0.11 → 0.0.12）
+
+本节完整记录从正式版 `0.0.11` 升级到 `0.0.12` 的用户可见变化，并单独说明 Minecraft 1.21.1 与 26.1.2 的迁移边界；不收录 0.0.12 开发期间的逐轮调试过程。
+
+#### 版本迁移
+
+- `0.0.12` 是仙藏首次正式提供双版本制品的发行版：`immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.12.jar` 面向 Minecraft 1.21.1 / NeoForge 21.1.235，`immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.0.12.jar` 面向 Minecraft 26.1.2 / NeoForge 26.1.2.94。它们是同一功能版本的两个独立 JAR，不是可跨游戏版本安装的通用 JAR。
+- 1.21.1 继续作为功能语义与资源表现基线；26.1.2 通过硬隔离的目标生成源码和版本适配层实现同等功能，不把 1.21.1 的 Minecraft、NeoForge 或联动模组类直接带入目标制品。
+- 26.1.2 迁移覆盖注册与数据组件、菜单与输入事件、客户端提交式 GUI/物品/方块渲染、网络载荷、配方与战利品、世界生成、能力与存储传输、内置 Patchouli 手册以及同等发布测试。固定档位界面沿用 1.21.1 的尺寸、槽位和材质，不引入动态宽度布局。
+- 26.1.2 正式联动矩阵使用目标版本官方接口：AE2 26.1.10-beta、Refined Storage 3.2.1 和 JEI 29.21.0.68。FE 能力与存储不依赖任何附属模组并始终注册；Mekanism、EMI 及其附属在没有可解析的 26.1.2 官方制品时保持可选且不启用，不借用旧版本 API 伪装兼容。
+- 26.1.2 的仙窍存储、仙窍接口、高级仙窍接口、仙炉、模拟机器、仙能水晶和管理页面均按 1.21.1 固定档位重新适配坐标、裁剪、点击、拖动与滚动事件；物品、动态流体、FE/长整型额外资源、青白火焰和箭头进度继续使用原有材质与布局。本模组不再移动或替换 JEI 搜索组件，所有界面恢复 JEI 默认配置。
+- 26.1.2 同步迁移了源方块动态悬浮、管理器动态物品预览、范围/双色面预览、非完整方块邻面渲染、聚宝盆模型与碰撞、世界碎片采集器玻璃颜色、仙窍时间流速和时间/天气锁定，以及灵铁/灵晶对应原版铁矿/钻石分布方式的世界生成规则。
+- 1.21.1 的发布测试与迁移断言已同步到 26.1.2。最终门禁分别通过 219 suites / 792 tests 与 218 suites / 782 tests，均为 0 failures、0 errors、0 skipped，并通过生产 JAR 边界、版本组成、精确制品和无 AE2 运行时验证。
+- 从 `0.0.11` 升级时必须选择与实例完全匹配的 JAR，并在替换前备份世界与配置；不要同时安装两个版本制品或保留旧版仙藏 JAR。
+
+#### 功能与修复
 
 - 修复 NeoForge 26.1.2 一气归元剑第一人称光束从画面下方偏置位置发射的问题。发射点现在取实际渲染剑模型的包围盒中心，并完整叠加实时手持、挥动、装备和视角变换；光束方向、武器模型与战斗逻辑保持不变。
 - 修复模拟轮回炼化炉关闭仙窍输出后产物无法进入本地 4×3 缓存的问题。机器内部生产写入不再经过“输出槽禁止外部放入”的自动化过滤；管线输入限制保持不变，已有同类堆叠和空输出槽会按容量正常接收产物。
@@ -12,16 +27,32 @@
 - 手册新增放置/内置仙炉强化边界，以及 AE2/RS 官方注册型附属存储、优先级、无附属回退和附属移除/重装行为说明。
 - 修复 26.1.2 仙窍存储滚动半格时物品、流体、额外资源及长整型数量被错误裁剪而消失的问题。
 - 仙窍内置仙炉新增与放置仙炉一致的强化插件槽及“插件/火焰/燃料”上中下排布；两者的插件均只加速处理，不增加产物、不延长燃料时间。
-- AE2 与 Refined Storage 兼容层会主动读取官方注册表中新出现的附属资源/存储类型，并以可逆持久化键接入仙窍长整型额外资源账本；原有明确附属联动与无附属 FE/额外资源回退路径保持不变。
+- AE2 与 Refined Storage 兼容层会主动读取官方注册表中新出现的附属资源/存储类型，并以可逆持久化键接入仙窍长整型额外资源账本；磁盘、存储总线和 RS 对等外部存储访问共享事务化快照与去重写入，避免重复挂载造成物品丢失。原有明确附属联动与无附属 FE/额外资源回退路径保持不变。
+- 免费资源源方块放置在仙窍中会绑定维度所属玩家并进入仙窍存储索引；源方块和源方块管理器的移除、解绑与重复清理改为幂等异常安全，避免破坏方块时崩溃。
 
-- 新增独立“强化插件”分组及次元窥令（×4）、次元平行法符（×16）、大千世界并行敕令（×256）。三件物品使用指定锻造顺序；普通库存可堆叠64，机器插件槽限制1。最高级插件采用紫底白核，并以像素条带雷电螺旋环绕核心。
+- 新增次元窥令（×4）、次元平行法符（×16）、大千世界并行敕令（×256）三种强化插件，并入仙藏主分类；源方块改为独立分类。三件物品使用指定锻造顺序；普通库存可堆叠64，机器插件槽限制1。最高级插件采用紫底白核，并以像素条带雷电螺旋环绕核心。
 - 手持插件右键支持的机器可直接安装；更高倍率可替换较低倍率，旧插件优先回到背包，背包已满时安全掉落。相同或更低倍率不会覆盖。
-- 模拟灵田和模拟轮回炼化炉按处理槽堆叠数量一次结算等倍产物，再叠加强化插件倍率，不通过重复执行相同处理制造额外性能开销。
+- 模拟灵田和模拟轮回炼化炉按处理槽堆叠数量一次结算等倍产物，再叠加强化插件倍率，不通过重复执行相同处理制造额外性能开销；插件与原工具/武器槽共用，不新增多余机器槽位。
 - 仙炉新增强化槽并仅按倍率加快处理进度；燃料燃烧时间不受影响。仙能水晶系列按倍率增加每刻 FE/魔力/魔源产量；安装插件时充能物留在处理槽原位完成，并禁用类赛特斯石英充能配方。
-- 稳定化迷你仙墟全系列新增过滤/六面配置页插件槽；反转模式按倍率尝试更多输出组，缓存为空或目标拒收时提前结束。聚宝盆新增六面输出、仙窍输出和插件配置，插件按倍率增加单轮战利品。
+- 稳定化迷你仙墟全系列新增过滤/六面配置页插件槽；反转模式按倍率尝试更多输出组，缓存为空或目标拒收时提前结束。聚宝盆与世界碎片采集器获得一致的六面输出、仙窍输出和插件配置；插件分别增加单轮战利品与单轮产矿。
 - 两代聚宝盆亮度调整为15。修复 NeoForge 26.1.2 世界碎片开采器玻璃罩的错误红色染色，并同步双语内置帕秋莉手册。
 
-### English
+### English (0.0.11 → 0.0.12)
+
+This section records the complete user-visible upgrade from the `0.0.11` release to `0.0.12` and explicitly defines the Minecraft 1.21.1/26.1.2 migration boundary. Iterative internal debugging steps from 0.0.12 development are intentionally omitted.
+
+#### Version migration
+
+- `0.0.12` is the first ImmortalStorage release with two official version-specific artifacts: `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.0.12.jar` targets Minecraft 1.21.1 / NeoForge 21.1.235, while `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.0.12.jar` targets Minecraft 26.1.2 / NeoForge 26.1.2.94. They implement the same feature release but are separate JARs, not universal cross-version builds.
+- Minecraft 1.21.1 remains the behavioral and visual baseline. The 26.1.2 build reaches feature parity through hard-separated generated target sources and version adapters, without packaging or loading 1.21.1 Minecraft, NeoForge, or integration classes.
+- The 26.1.2 migration covers registration and data components, menus and input events, the submitted GUI/item/block rendering pipeline, network payloads, recipes and loot, world generation, capabilities and storage transfer, the bundled Patchouli handbook, and equivalent release tests. Fixed-size screen tiers preserve the 1.21.1 dimensions, slots, and textures; dynamic-width layouts are not introduced.
+- The released 26.1.2 integration matrix uses target-version official APIs for AE2 26.1.10-beta, Refined Storage 3.2.1, and JEI 29.21.0.68. FE capability and storage are always registered without requiring another mod. Mekanism, EMI, and their addons remain optional and disabled where no resolvable official 26.1.2 artifact exists; older APIs are never borrowed to claim compatibility.
+- Xianqiao Storage, both interface tiers, Immortal Furnaces, simulated machines, Immortal Energy Crystals, and management screens were adapted to the fixed 1.21.1 screen tiers on 26.1.2, including coordinates, clipping, click/drag input, and scrolling. Items, dynamic fluids, FE/long-valued external resources, cyan-white flames, and progress arrows retain their original textures and layout. ImmortalStorage no longer moves or replaces JEI search widgets; every screen uses JEI's default configuration.
+- The target migration also carries over animated source-vein cores, dynamic manager item previews, range and dual-color face previews, exposed faces beside full blocks, Treasure Basin models and collision, World Shard Miner glass color, Xianqiao time flow and time/weather locking, and world generation that follows vanilla iron distribution for Spirit Iron and diamond distribution for Spirit Crystal.
+- The 1.21.1 publication tests and migration assertions were carried over to 26.1.2. Final gates passed 219 suites / 792 tests and 218 suites / 782 tests respectively, both with 0 failures, 0 errors, and 0 skipped tests, plus production-JAR boundary, version-composition, exact-artifact, and no-AE2-runtime verification.
+- When upgrading from `0.0.11`, install only the JAR matching the exact game instance and back up worlds and configuration first. Do not install both artifacts together or leave an older ImmortalStorage JAR in the same instance.
+
+#### Features and fixes
 
 - Fixed the NeoForge 26.1.2 first-person One-Qi Returning Origin Sword beam spawning from an offset near the bottom of the view. Its muzzle now follows the exact rendered sword-model bounding-box center through live hand, swing, equip, and camera transforms without changing beam direction, item rendering, or combat behavior.
 - Fixed Simulated Reincarnation Furnace products failing to enter the local 4×3 cache after Xianqiao Output was disabled. Machine-owned production writes no longer pass through the output slots' external-insertion filter; pipe input restrictions remain unchanged, while matching stacks and empty output slots accept completed drops normally.
@@ -31,13 +62,14 @@
 - Documented placed/embedded furnace reinforcement boundaries and official registered AE2/RS addon storage, priority, no-addon fallback, and addon removal/reinstallation behavior.
 - Fixed NeoForge 26.1.2 half-row terminal scrolling incorrectly clipping items, fluids, external resources, and long-valued amount labels.
 - The embedded Immortal Furnace now has the same reinforcement slot and top-plugin/middle-flame/bottom-fuel layout as the placed furnace. Both accelerate processing only and never multiply output or fuel duration.
-- AE2 and Refined Storage now discover addon-defined resource/storage types through their official registries and map them reversibly into the long-valued Xianqiao external-resource ledger. Existing explicit addon integrations and no-addon FE/external-resource fallbacks remain available.
+- AE2 and Refined Storage now discover addon-defined resource/storage types through their official registries and map them reversibly into the long-valued Xianqiao external-resource ledger. Disks, storage buses, and equivalent RS external-storage access share transactional snapshots and deduplicated writes so duplicate mounts cannot consume items. Existing explicit addon integrations and no-addon FE/external-resource fallbacks remain available.
+- Free-resource source veins placed inside a Xianqiao bind to the realm owner and enter the storage index. Source-vein and manager removal, unbinding, and repeated cleanup are now idempotent and exception-safe to prevent block-breaking crashes.
 
-- Added a dedicated Reinforcement Plugins group: Dimensional Peeking Order (×4), Dimensional Parallel Talisman (×16), and Great Thousand-World Parallel Edict (×256), with the specified smithing sequences. Items stack to 64 normally while machine slots hold one. The highest tier uses a purple body, white core, and pixel-lightning bands spiralling around it.
+- Added three reinforcement plugins—Dimensional Peeking Order (×4), Dimensional Parallel Talisman (×16), and Great Thousand-World Parallel Edict (×256)—to the main ImmortalStorage category, while source veins now have their own category. The specified smithing sequences are retained; items stack to 64 normally while machine slots hold one. The highest tier uses a purple body, white core, and pixel-lightning bands spiralling around it.
 - Using a plugin on a supported machine installs it directly. A higher tier replaces a lower tier and returns the old plugin to the inventory, safely dropping it only when the inventory is full. Equal or lower tiers do not overwrite it.
-- Simulated Spirit Fields and Simulated Reincarnation Furnaces settle input-stack scaling and plugin scaling in one output batch instead of repeating the same processing operation.
+- Simulated Spirit Fields and Simulated Reincarnation Furnaces settle input-stack scaling and plugin scaling in one output batch instead of repeating the same processing operation. Their plugin shares the existing tool/weapon slot instead of adding another machine slot.
 - The Immortal Furnace gains a plugin slot that multiplies processing progress only; fuel duration is unchanged. Crystals multiply FE/Mana/Source production. With a crystal plugin installed, chargeable items complete in place and Certus-like recipes are disabled.
-- Every stabilized ruin variant gains a plugin slot below its filter/face controls and attempts more reversed output groups, stopping early when empty or blocked. The Treasure Basin gains face output, Xianqiao output, and plugin controls, with multiplied per-round loot.
+- Every stabilized ruin variant gains a plugin slot below its filter/face controls and attempts more reversed output groups, stopping early when empty or blocked. The Treasure Basin and World Shard Miner gain matching face-output, Xianqiao-output, and plugin controls; plugins multiply per-round loot and mined resources respectively.
 - Treasure Basin light level is 15 in both generations. Fixed the red-tinted World Shard Miner glass cover on NeoForge 26.1.2 and updated the built-in bilingual Patchouli handbook.
 
 ## [0.0.11]
