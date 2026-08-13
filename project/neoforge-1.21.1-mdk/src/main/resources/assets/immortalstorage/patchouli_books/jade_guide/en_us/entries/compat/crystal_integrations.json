@@ -1,13 +1,60 @@
 {
-  "name":"Crystal Integrations","icon":"immortalstorage:energy_crystal","category":"immortalstorage:compat","sortnum":5,
-  "pages":[
-    {"type":"patchouli:text","text":"The Xianeng Mana Crystal and Xianeng Source Crystal are optional integration variants and leave no empty registry entries when their target mods are absent. The Electricity Crystal is unconditional; the Mana Crystal registers only with Botania, and the Source Crystal only with Ars Nouveau. All three share structure, non-color rendering, UI, fuel, the 800,000,000 default capacity, 1,000 resource per tick, and the two output switches."},
-    {"type":"patchouli:text","text":"The Xianeng Mana Crystal exists only with Botania and uses the green crystal palette. Its cache is Botania Mana: active six-face output searches official ManaReceiver targets, including Mana Pools. The processing slot accepts ManaItem containers such as Mana Tablets and Mana Rings; once full, the complete item moves to the extra slot. The extra slot still rejects manual input, never writes to Xianqiao, and only extracts from below."},
-    {"type":"patchouli:text","text":"The Mana Crystal accepts a Botania Spark through the official SparkAttachable capability. The attachment state is stored in block data and reconciled after a world reload, so a reload does not incorrectly drop or duplicate the Spark. With Xianqiao Output enabled, its Mana cache reads the owner's Mana ledger; closing it detaches the ledger and resumes a local cache from zero. Automatic Output only controls six-face Mana pushes and never replaces the Xianqiao switch."},
-    {"type":"patchouli:text","text":"The Xianeng Source Crystal exists only with Ars Nouveau and uses the purple crystal palette. Its cache is Ars Nouveau Source: active six-face output searches containers registered through ISourceCap, such as Source Jars. The processing slot accepts Source containers, charges them to full, and moves the complete container into the extra slot. The extra slot likewise never writes to Xianqiao and can only be extracted from below."},
-    {"type":"patchouli:text","text":"The Dominion Wand uses Ars Nouveau's IWandable protocol on a Source Crystal: the first connection records the Source start and the last connection records the priority point; clearing connections clears both marks. These flags are stored in block data and survive a game reload. They mark Source-network endpoints only; they do not change burn production or the extra-slot output restriction."},
-    {"type":"patchouli:text","text":"With Xianqiao Output enabled, the Source Crystal's Source capability, Xianqiao meter, and external storage access all point to the owner's long-valued Source ledger; closing it detaches the ledger and resumes a local cache from zero. Automatic Output remains independent and attempts to push the complete available cache every tick to enabled six-face ISourceCap containers."},
-    {"type":"patchouli:text","text":"The three variants form one Xianeng Crystal family. A stonecutter can convert between any variants that currently exist; the crafting table has one shapeless conversion from the current existing variant to the next existing variant in order. If Botania or Ars Nouveau is absent, its block, item, capability, and recipes are not loaded, allowing a modpack to keep only Electricity or any available combination of variants."},
-    {"type":"patchouli:text","text":"Mana and Source are independent resource ledgers, not FE, and do not invoke the old non-Source Immortal Yuan external-resource conversion. Immortal Yuan and True Yuan are fuel in a crystal, not a resource-conversion exchange. Source Veins retain their own established Immortal Yuan charging and conversion behavior. AE2, RS, and the corresponding official capabilities connect only when their target integration exists and use the same long-valued ledger."}
+  "name": "Xianeng Crystal Integrations",
+  "icon": "immortalstorage:energy_crystal",
+  "category": "immortalstorage:compat",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:energy_crystal",
+      "title": "Electricity Always Exists",
+      "text": "The Xianeng Electricity Crystal registers, stores FE, and charges items even with no other power mod. Default capacity is 800,000,000 FE and base burn output is 1,000 FE/t. A plugin multiplies production without changing fuel burn time."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shared Slots and Output",
+      "text": "All three crystals share one layout: processing enters from above, fuel from the sides, and the extra slot extracts only from below. With a plugin in that slot, a full container stays in processing and Certus-style charging recipes are rejected. The extra slot never enters Xianqiao, regardless of the output switch."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Local Cache or Xianqiao Ledger",
+      "text": "A crystal first binds to the owner of its current Xianqiao, then falls back to a Spirit Drive. Xianqiao Output can turn on only when bound: it flushes local cache, then points the capability and meter at the owner's ledger. Turning it off detaches and re-enables an empty local cache. Face output is independent."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:mana_crystal",
+      "title": "Xianeng Mana Crystal",
+      "flag": "mod:botania",
+      "text": "With Botania installed, the green Mana variant produces a base 1,000 Mana/t and actively talks only to official containers such as ManaReceiver. Its processing slot charges ManaItem containers including Mana Tablets and Rings."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Spark and Mana Ledger",
+      "flag": "mod:botania",
+      "text": "A Spark can attach to the Mana Crystal; connection state reloads from block data without dropping or duplicating it. With Xianqiao Output on, capability, meter, and external networks share the owner's long-valued Mana ledger. Turning it off restores local cache."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:source_crystal",
+      "title": "Xianeng Source Crystal",
+      "flag": "mod:ars_nouveau",
+      "text": "With Ars Nouveau installed, the purple Source variant produces a base 1,000 Source/t and actively talks only to ISourceCap containers. Its processing slot charges Source Jars and other registered Source containers."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Dominion Wand and Source Ledger",
+      "flag": "mod:ars_nouveau",
+      "text": "A Dominion Wand may mark the Source Crystal as a network start or priority point; both marks persist in block data across reloads. With Xianqiao Output on, capability, meter, and external networks share the owner's long-valued Source ledger."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crystal-Family Conversion",
+      "text": "Available variants form one Xianeng Crystal family. Stonecutting converts between any variants that exist, while one shapeless item converts to the next existing variant in order. Without Botania or Ars Nouveau, its block, item, capability, and recipes do not load."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Resource Boundary",
+      "text": "FE, Mana, and Source are independent long-valued ledgers and never invoke the removed non-source Immortal Yuan conversion. Immortal Yuan or True Yuan serves only as crystal fuel. Existing Source Vein charging and exchange remain unchanged."
+    }
   ]
 }

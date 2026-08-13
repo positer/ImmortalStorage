@@ -8,6 +8,11 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.core.Direction;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Vanilla three-row chest geometry with a read-only status strip. */
 public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureBasinMenu> {
@@ -17,12 +22,50 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
     private static final int STATUS_TOP = 17;
     private static final int STATUS_HEIGHT = 18;
     private static final int CHEST_ROWS_HEIGHT = 54;
+    private static final int SETTINGS_WIDTH = 126;
+    private final List<Button> settingsWidgets = new ArrayList<>();
+    private boolean settingsOpen;
 
     public TreasureBasinScreen(TreasureBasinMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
         imageHeight = 186;
         inventoryLabelY = 92;
+    }
+
+    @Override protected void init() {
+        super.init();
+        addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
+                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .tooltip(Tooltip.create(Component.translatable(
+                        "container.immortalstorage.treasure_basin.settings"))).build());
+        int panelX = leftPos + imageWidth + 4;
+        for (Direction side : Direction.values()) {
+            Button face = Button.builder(Component.literal(side.getName().substring(0, 1).toUpperCase()),
+                    button -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId,
+                            10 + side.get3DDataValue()))
+                    .bounds(panelX + 8 + (side.get3DDataValue() % 3) * 34,
+                            topPos + 34 + (side.get3DDataValue() / 3) * 34, 30, 30).build();
+            settingsWidgets.add(addRenderableWidget(face));
+        }
+        settingsWidgets.add(addRenderableWidget(Button.builder(Component.empty(), button -> {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 0);
+        }).bounds(panelX + 8, topPos + 108, 110, 20).build()));
+        settingsWidgets.add(addRenderableWidget(Button.builder(Component.empty(), button -> {
+            minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1);
+        }).bounds(panelX + 8, topPos + 132, 110, 20).build()));
+        refreshSettings();
+    }
+
+    private void toggleSettings() {
+        settingsOpen = !settingsOpen;
+        minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 2);
+        refreshSettings();
+    }
+
+    private void refreshSettings() {
+        settingsWidgets.forEach(widget -> widget.visible = settingsOpen);
+        menu.setSettingsVisible(settingsOpen);
     }
 
     @Override
@@ -45,6 +88,13 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
         graphics.blit(CHEST_TEXTURE, x,
                 y + STATUS_TOP + STATUS_HEIGHT + CHEST_ROWS_HEIGHT,
                 0.0F, 126.0F, imageWidth, 96, 256, 256);
+        if (settingsOpen) {
+            int panelX = leftPos + imageWidth + 4;
+            VanillaGuiPainter.panel(
+                    graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
+            VanillaGuiPainter.slot(
+                    graphics, leftPos + 190, topPos + 160, true);
+        }
     }
 
     @Override
@@ -62,6 +112,19 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
         graphics.drawString(font, cache, imageWidth - 8 - font.width(cache), 26, TEXT, false);
         graphics.drawString(font, playerInventoryTitle,
                 inventoryLabelX, inventoryLabelY, TEXT, false);
+        if (settingsOpen) {
+            int panelX = imageWidth + 4;
+            graphics.drawString(font, Component.translatable(
+                    "container.immortalstorage.treasure_basin.settings"), panelX + 8, 8, TEXT, false);
+            graphics.drawString(font, Component.translatable(
+                    "container.immortalstorage.treasure_basin.xianqiao_output",
+                    Component.translatable(menu.xianqiaoOutput() ? "options.on" : "options.off")), panelX + 12, 114, TEXT, false);
+            graphics.drawString(font, Component.translatable(
+                    "container.immortalstorage.treasure_basin.automatic_output",
+                    Component.translatable(menu.automaticOutput() ? "options.on" : "options.off")), panelX + 12, 138, TEXT, false);
+            graphics.drawString(font, Component.translatable(
+                    "container.immortalstorage.reinforcement_plugin"), panelX + 34, 165, TEXT, false);
+        }
     }
 
     @Override

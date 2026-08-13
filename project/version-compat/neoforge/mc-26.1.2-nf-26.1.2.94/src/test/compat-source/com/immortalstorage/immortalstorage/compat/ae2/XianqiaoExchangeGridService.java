@@ -7,7 +7,11 @@ import appeng.api.networking.IGridService;
 import appeng.api.networking.IGridServiceProvider;
 import appeng.api.storage.cells.StorageCell;
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -54,6 +58,16 @@ public final class XianqiaoExchangeGridService implements IGridService, IGridSer
     @Override
     public void addNode(IGridNode node, @Nullable CompoundTag savedData) {
         dirty = true;
+        // Close the one-tick double-mount window immediately. A mounted disk
+        // and a newly added storage bus may otherwise both advertise and
+        // mutate the same owner backend before the periodic reconciliation.
+        UUID storageBusOwner = managerOwnerBehindStorageBus(node.getOwner());
+        XianqiaoExchangeStorageCell mountedDisk = storageBusOwner == null
+                ? null : winners.get(storageBusOwner);
+        if (mountedDisk != null && mountedDisk.setActive(false)) {
+            mountedDisk.invalidateSnapshotCache();
+            grid.getStorageService().invalidateCache();
+        }
     }
 
     @Override
@@ -74,6 +88,7 @@ public final class XianqiaoExchangeGridService implements IGridService, IGridSer
 
     private void reconcileWrappers() {
         Set<XianqiaoExchangeStorageCell> discovered = discoverActiveDriveWrappers();
+        Set<UUID> storageBusOwners = discoverManagerStorageBusOwners();
         Map<UUID, List<XianqiaoExchangeStorageCell>> byOwner = new HashMap<>();
         for (XianqiaoExchangeStorageCell wrapper : discovered) {
             byOwner.computeIfAbsent(wrapper.owner(), ignored -> new ArrayList<>()).add(wrapper);
@@ -95,7 +110,7 @@ public final class XianqiaoExchangeGridService implements IGridService, IGridSer
                     ? previous
                     : entry.getValue().stream().min(STABLE_CANDIDATE_ORDER).orElseThrow();
             nextWinners.put(entry.getKey(), winner);
-            desiredActive.add(winner);
+            if (diskWrapperMayMount(entry.getKey(), storageBusOwners)) desiredActive.add(winner);
         }
 
         boolean invalidate = false;
@@ -124,6 +139,40 @@ public final class XianqiaoExchangeGridService implements IGridService, IGridSer
         duplicateOwners = Set.copyOf(nextDuplicateOwners);
 
         if (invalidate) grid.getStorageService().invalidateCache();
+    }
+
+    static boolean diskWrapperMayMount(UUID owner, Set<UUID> storageBusOwners) {
+        return !storageBusOwners.contains(owner);
+    }
+
+    /**
+     * A disk cell and a storage bus can otherwise mount the exact same
+     * PersonalStorage backend twice. Prefer the physical manager's storage-bus
+     * mount on this grid and leave its disk wrapper inactive until that bus is
+     * removed.
+     */
+    private Set<UUID> discoverManagerStorageBusOwners() {
+        Set<UUID> owners = new HashSet<>();
+        for (IGridNode node : grid.getNodes()) {
+            if (!node.isActive()) continue;
+            UUID owner = managerOwnerBehindStorageBus(node.getOwner());
+            if (owner != null) owners.add(owner);
+        }
+        return owners;
+    }
+
+    private static @Nullable UUID managerOwnerBehindStorageBus(@Nullable Object machine) {
+        if (machine == null || !machine.getClass().getName().endsWith(".StorageBusPart")) return null;
+        try {
+            Level level = (Level) machine.getClass().getMethod("getLevel").invoke(machine);
+            Direction side = (Direction) machine.getClass().getMethod("getSide").invoke(machine);
+            BlockEntity host = (BlockEntity) machine.getClass().getMethod("getBlockEntity").invoke(machine);
+            if (level == null || side == null || host == null) return null;
+            BlockEntity target = level.getBlockEntity(host.getBlockPos().relative(side));
+            return target instanceof XianqiaoManagerBlockEntity manager ? manager.getOwner() : null;
+        } catch (ReflectiveOperationException | ClassCastException ignored) {
+            return null;
+        }
     }
 
     private Set<XianqiaoExchangeStorageCell> discoverActiveDriveWrappers() {

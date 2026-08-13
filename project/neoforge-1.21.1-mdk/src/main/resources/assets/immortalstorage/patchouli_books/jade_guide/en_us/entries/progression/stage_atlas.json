@@ -1,0 +1,13 @@
+{
+  "name":"Stages and Unlocks",
+  "icon":"immortalstorage:spirit_core",
+  "category":"immortalstorage:progression",
+  "sortnum":5,
+  "pages":[
+    {"type":"patchouli:text","text":"A stage is more than a number: it changes the space and tools available to you. The first five stages develop a $(thing)Kongqiao$(); stage six and beyond develop a $(thing)Xianqiao$() and personal realm. Every unlock preserves what came before."},
+    {"type":"patchouli:text","title":"Stages 1–5 · Kongqiao","text":"$(li)Stage 1: 9 slots at normal stack size.$(li)Stage 2: 18 slots at 2× stack size.$(li)Stage 3: 36 slots at 4×, plus embedded crafting.$(li)Stage 4: 54 slots at 8×, plus embedded smithing.$(li)Stage 5: 72 slots at 16×, plus the embedded Immortal Furnace."},
+    {"type":"patchouli:text","title":"Stages 6–8 · Xianqiao","text":"$(li)Stage 6: aggregated item storage and a personal realm with a 1-chunk radius.$(li)Stage 7: fluid storage, 3-chunk radius and 0.5×–4× time.$(li)Stage 8: FE, mana, source, chemicals and other external resources; 9-chunk radius and 0.2×–8× time."},
+    {"type":"patchouli:text","title":"Stages 9–10 · Open Heavens","text":"$(li)Stage 9: 32-chunk radius and 0.1×–16× time.$(li)Stage 10: a rules radius of 1,024 chunks; time may be frozen or raised to 32×.$(br2)A separate safety cap limits force-loaded chunks. The playable boundary and storage rules still follow your stage."},
+    {"type":"patchouli:text","title":"Advancement Is Explicit","text":"Stages one through four follow the lingqi bar. Stage five requires a valid Immortal Pill ascension. Later stages require a tribulation begun inside the owner's realm. Servers may lower the highest normal stage or replace enemies; this book states the defaults."}
+  ]
+}

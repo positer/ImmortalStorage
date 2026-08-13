@@ -8,6 +8,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -65,8 +66,9 @@ public final class WorldShardMinerBlock extends BaseEntityBlock {
     public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                             Player player, BlockHitResult hit) {
         if (level.isClientSide) return InteractionResult.SUCCESS;
-        if (level.getBlockEntity(pos) instanceof WorldShardMinerBlockEntity miner) {
-            player.openMenu(miner);
+        if (player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof WorldShardMinerBlockEntity miner) {
+            serverPlayer.openMenu(miner, pos);
             return InteractionResult.CONSUME;
         }
         return InteractionResult.PASS;
@@ -82,6 +84,14 @@ public final class WorldShardMinerBlock extends BaseEntityBlock {
                 if (!stack.isEmpty()) {
                     Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
                 }
+            }
+            for (ItemStack pending : miner.drainPendingOutputForRemoval()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), pending);
+            }
+            ItemStack plugin = miner.reinforcementPlugin();
+            if (!plugin.isEmpty()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), plugin.copy());
+                miner.setReinforcementPlugin(ItemStack.EMPTY);
             }
             level.updateNeighbourForOutputSignal(pos, this);
         }

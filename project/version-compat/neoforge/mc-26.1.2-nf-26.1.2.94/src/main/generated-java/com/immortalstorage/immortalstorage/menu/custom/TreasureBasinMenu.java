@@ -22,7 +22,8 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
     public static final int CACHE_SLOT_COUNT = WorldShardMinerCache.SLOT_COUNT;
     public static final int PLAYER_SLOT_COUNT = Inventory.INVENTORY_SIZE;
     public static final int CACHE_START = 0;
-    public static final int PLAYER_START = CACHE_START + CACHE_SLOT_COUNT;
+    public static final int PLUGIN_MENU_SLOT = CACHE_SLOT_COUNT;
+    public static final int PLAYER_START = PLUGIN_MENU_SLOT + 1;
     public static final int PLAYER_INVENTORY_END = PLAYER_START + 27;
     public static final int PLAYER_END = PLAYER_START + PLAYER_SLOT_COUNT;
 
@@ -32,11 +33,12 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
 
     private static final int DATA_STATUS = 0;
     private static final int DATA_FILLED_SLOTS = 1;
-    public static final int DATA_COUNT = 2;
+    public static final int DATA_COUNT = 10;
 
     private final Container cacheContainer;
     private final ContainerData statusData;
     private final @Nullable TreasureBasinBlockEntity basin;
+    private boolean settingsVisible;
 
     public TreasureBasinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, resolveContext(inventory, buffer));
@@ -75,6 +77,13 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
                         8 + column * 18, CACHE_Y + row * 18));
             }
         }
+        addSlot(new Slot(cacheContainer, CACHE_SLOT_COUNT, 190, 160) {
+            @Override public boolean mayPlace(ItemStack stack) {
+                return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack);
+            }
+            @Override public int getMaxStackSize() { return 1; }
+            @Override public boolean isActive() { return settingsVisible; }
+        });
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
                 addSlot(new Slot(inventory, column + row * 9 + 9,
@@ -99,7 +108,9 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(moving, PLAYER_START, PLAYER_END, true)) {
                 return ItemStack.EMPTY;
             }
-        } else if (!moveItemStackTo(moving, CACHE_START, PLAYER_START, false)) {
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(moving)) {
+            if (!moveItemStackTo(moving, PLUGIN_MENU_SLOT, PLUGIN_MENU_SLOT + 1, false)) return ItemStack.EMPTY;
+        } else if (!moveItemStackTo(moving, CACHE_START, PLUGIN_MENU_SLOT, false)) {
             if (index < PLAYER_INVENTORY_END) {
                 if (!moveItemStackTo(moving, PLAYER_INVENTORY_END, PLAYER_END, false)) {
                     return ItemStack.EMPTY;
@@ -156,6 +167,22 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
         return TreasureBasinStatus.fromNetwork(statusData.get(DATA_STATUS));
     }
 
+    public boolean xianqiaoOutput() { return statusData.get(2) != 0; }
+    public boolean automaticOutput() { return statusData.get(3) != 0; }
+    public boolean outputFace(int side) { return side >= 0 && side < 6 && statusData.get(4 + side) != 0; }
+    public void setSettingsVisible(boolean visible) { settingsVisible = visible; }
+
+    @Override public boolean clickMenuButton(Player player, int id) {
+        if (basin == null) return false;
+        if (id == 2) { settingsVisible = !settingsVisible; return true; }
+        if (id == 0) { basin.toggleXianqiaoOutput(); return true; }
+        if (id == 1) { basin.toggleAutomaticOutput(); return true; }
+        if (id >= 10 && id < 16) {
+            basin.toggleOutputFace(net.minecraft.core.Direction.from3DDataValue(id - 10)); return true;
+        }
+        return false;
+    }
+
     private static ContainerData liveStatus(TreasureBasinBlockEntity basin) {
         if (basin.getLevel() != null && basin.getLevel().isClientSide()) {
             return new SimpleContainerData(DATA_COUNT);
@@ -166,6 +193,10 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
                 return switch (index) {
                     case DATA_STATUS -> basin.getOperatingStatus().ordinal();
                     case DATA_FILLED_SLOTS -> filledSlots(basin);
+                    case 2 -> basin.xianqiaoOutput() ? 1 : 0;
+                    case 3 -> basin.automaticOutput() ? 1 : 0;
+                    case 4, 5, 6, 7, 8, 9 -> basin.outputFace(
+                            net.minecraft.core.Direction.from3DDataValue(index - 4)) ? 1 : 0;
                     default -> 0;
                 };
             }

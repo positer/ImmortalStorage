@@ -32,7 +32,7 @@ public final class ImmortalFurnaceRecipe extends AbstractCookingRecipe {
 
     @Override
     public net.minecraft.world.item.crafting.RecipeBookCategory recipeBookCategory() {
-        return new net.minecraft.world.item.crafting.RecipeBookCategory();
+        return net.minecraft.world.item.crafting.RecipeBookCategories.FURNACE_MISC;
     }
 
     @Override

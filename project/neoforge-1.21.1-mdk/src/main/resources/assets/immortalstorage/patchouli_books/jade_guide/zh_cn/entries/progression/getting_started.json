@@ -1,8 +1,13 @@
 {
-  "name":"从古玉开始","icon":"immortalstorage:jade_guide","category":"immortalstorage:progression","sortnum":0,
+  "name":"从古玉开始",
+  "icon":"immortalstorage:jade_guide",
+  "category":"immortalstorage:progression",
+  "sortnum":0,
+  "priority":true,
   "pages":[
-    {"type":"patchouli:spotlight","item":"immortalstorage:jade_guide","title":"古玉共鸣","text":"古玉会在出生时随身出现。零阶时携带它等待共鸣；启灵后右键即可查阅本书。$(br2)按正常流程修行不会在一至六阶降级。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:jade_guide","text":"若古玉遗失，可用书、绿宝石、灵晶与仙元无序合成。"},
-    {"type":"patchouli:text","text":"推荐顺序：积累灵气→炼制当前阶段丹药→扩展空窍→五阶完成特殊飞升→进入个人仙窍→在仙窍内渡劫。快捷键可在控制设置中重新绑定。"}
+    {"type":"patchouli:spotlight","item":"immortalstorage:jade_guide","title":"古玉启灵","text":"零阶时把$(item)古玉$()带在身边一整日，或携玉入睡，便会迈入一阶。启灵后右键古玉即可重开本书；正常修行的一至六阶不会因死亡倒退。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:jade_guide","title":"失而复得","text":"古玉遗失时，以书、绿宝石、灵晶和仙元无序合成。它既是手册，也是整条修行线的入口。"},
+    {"type":"patchouli:text","title":"一眼看懂路线","text":"$(li)一至四阶：积累灵气，满额后自然进阶。$(li)五阶：蓄满灵气，再以仙丹完成飞升。$(li)六阶：空窍化为仙窍，并获得个人仙窍维度。$(li)六至十阶：只在自己的仙窍中渡劫。$(br2)具体解锁见$(l:immortalstorage:progression/stage_atlas)境界与解锁$(/l)。"},
+    {"type":"patchouli:text","title":"第一段路","text":"先认识$(l:immortalstorage:progression/yuan)真元与仙元$(/l)，再炼制$(l:immortalstorage:recipes/pills)聚灵丹$(/l)。个人存储会随境界自动扩展，不必先造容器。三阶起可在终端合成，四阶解锁内置锻造，五阶解锁内置仙炉。快捷键均可在控制设置中改绑。"}
   ]
 }

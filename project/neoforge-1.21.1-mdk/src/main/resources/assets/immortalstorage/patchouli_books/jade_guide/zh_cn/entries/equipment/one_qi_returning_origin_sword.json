@@ -1,10 +1,34 @@
 {
-  "name":"一气归元剑","icon":"immortalstorage:one_qi_returning_origin_sword","category":"immortalstorage:equipment","sortnum":40,
-  "pages":[
-    {"type":"patchouli:smithing","recipe":"immortalstorage:one_qi_returning_origin_sword","text":"在锻造台中以灵核为模板、灵剑为基底、混元一气为追加材料锻成。它继承灵剑的境界伤害、灵气修复、连续煅烧与淬火点体系。"},
-    {"type":"patchouli:text","text":"一气归元剑的近战淬火点增伤系数为每点0%。淬火点仍会显示在Tooltip中，并用于第三阶段光束每次消耗10点；它不会像普通灵剑或仙墟锻灵剑那样把淬火点乘入近战伤害。"},
-    {"type":"patchouli:text","text":"按住右键蓄力5刻后发射可贯穿多个生物的64格光束。第一阶段每10刻造成攻击伤害的20%，进入时消耗1仙元。"},
-    {"type":"patchouli:text","text":"蓄力25刻进入第二阶段：额外消耗2仙元，之后每5刻造成攻击伤害的20%。蓄力超过50刻进入第三阶段，每5刻造成50%攻击伤害并消耗10淬火点。"},
-    {"type":"patchouli:text","text":"仙元或淬火点不足时会停止持续使用。光束可同时命中路径上的全部生物；物品组件更新不会令剑反复放下和抬起，只有真实换槽才会触发重装备动画。"}
+  "name": "一气归元剑",
+  "icon": "immortalstorage:one_qi_returning_origin_sword",
+  "category": "immortalstorage:equipment",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:smithing",
+      "recipe": "immortalstorage:one_qi_returning_origin_sword",
+      "title": "以混元一气定形",
+      "text": "锻造台依次放入灵核模板、灵剑基底与混元一气。成剑继承境界伤害、灵气修复、连续淬火和已有淬火点。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "淬火不再增幅近战",
+      "text": "近战淬火系数固定为每点0%。点数仍显示于Tooltip，并作为第三阶段光束的消耗资源；普通挥砍不会把它乘入伤害。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "第一阶段",
+      "text": "按住右键5刻后发射64格贯穿光束。进入阶段时消耗1仙元，随后每10刻对路径上全部生物造成攻击伤害的20%。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "第二与第三阶段",
+      "text": "蓄力25刻额外消耗2仙元，频率提高为每5刻20%。超过50刻进入第三阶段：每5刻造成50%攻击伤害，并为每束消耗10淬火点。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "何时停剑",
+      "text": "任一阶段缺少所需仙元或淬火点都会停止持续使用。组件数值刷新不会反复触发收剑动画，只有真正换槽或更换物品才会重装备。"
+    }
   ]
 }

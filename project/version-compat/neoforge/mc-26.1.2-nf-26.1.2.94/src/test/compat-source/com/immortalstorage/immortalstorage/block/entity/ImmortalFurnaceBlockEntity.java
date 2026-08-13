@@ -59,7 +59,7 @@ import java.util.UUID;
  * pairs are appended, so old three-slot NBT loads without moving or rewriting
  * any existing stack.</p>
  */
-public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
+public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity implements ReinforcementPluginHost {
     public static final int INPUT_1 = 0;
     public static final int FUEL = 1;
     public static final int RESULT_1 = 2;
@@ -67,7 +67,8 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
     public static final int RESULT_2 = 4;
     public static final int INPUT_3 = 5;
     public static final int RESULT_3 = 6;
-    public static final int SLOT_COUNT = 7;
+    public static final int PLUGIN_SLOT = 7;
+    public static final int SLOT_COUNT = 8;
     public static final int DATA_COUNT = 8;
 
     private static final int NBT_VERSION = 2;
@@ -397,6 +398,7 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
+        if (slot == PLUGIN_SLOT) return ReinforcementPluginHost.isPlugin(stack);
         if (slot == FUEL) {
             return stack != null && stack.getItem() instanceof SpiritDriveItem || isImmortalFuel(stack);
         }
@@ -447,7 +449,7 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
         furnace.refreshSpiritDriveRetryState();
         boolean wasLit = furnace.engine.isLit();
         boolean changed = furnace.engine.tick(level.getGameTime(), furnace, furnace.fuelResolver,
-                furnace::findRecipe);
+                furnace::findRecipe, channel -> false, furnace.reinforcementMultiplier());
         furnace.recordCompletedRecipes((RecipeManager) level.recipeAccess());
         boolean isLit = furnace.engine.isLit();
         if (wasLit != isLit && state.hasProperty(ImmortalFurnaceBlock.LIT)) {
@@ -455,6 +457,12 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
             changed = true;
         }
         if (changed) setChanged(level, pos, state);
+    }
+
+    @Override public ItemStack reinforcementPlugin() { return items.get(PLUGIN_SLOT); }
+    @Override public void setReinforcementPlugin(ItemStack stack) {
+        setItem(PLUGIN_SLOT, stack.copyWithCount(1));
+        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
     private void recordCompletedRecipes(RecipeManager manager) {

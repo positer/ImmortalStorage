@@ -18,9 +18,9 @@ import net.minecraft.util.Mth;
 /** View-independent black sphere silhouette wrapped by a solid white emissive edge and glow. */
 public final class MiniatureImmortalRuinRenderer implements BlockEntityRenderer<MiniatureImmortalRuinBlockEntity> {
     private static final RenderType OPAQUE_LAYER = RenderType.entityCutoutNoCull(
-            ResourceLocation.withDefaultNamespace("textures/misc/white.png"));
+            ResourceLocation.withDefaultNamespace("textures/block/white_concrete.png"));
     private static final RenderType OUTLINE_LAYER = RenderType.entityTranslucentEmissive(
-            ResourceLocation.withDefaultNamespace("textures/misc/white.png"));
+            ResourceLocation.withDefaultNamespace("textures/block/white_concrete.png"));
     public MiniatureImmortalRuinRenderer(BlockEntityRendererProvider.Context context) {}
 
     @Override

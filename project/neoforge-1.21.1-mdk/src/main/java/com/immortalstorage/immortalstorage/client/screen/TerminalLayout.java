@@ -44,6 +44,7 @@ public final class TerminalLayout {
     public static final int FURNACE_LANE_COUNT = 3;
     public static final int FURNACE_INPUT_X = 48;
     public static final int FURNACE_FUEL_X = 8;
+    public static final int FURNACE_PLUGIN_X = FURNACE_FUEL_X;
     public static final int FURNACE_RESULT_X = 134;
 
     private static final int STORAGE_ONLY_FIXED_HEIGHT = 116;
@@ -134,7 +135,15 @@ public final class TerminalLayout {
     }
 
     public static int furnaceFuelY(int imageHeight) {
-        return furnaceLaneY(imageHeight, 1);
+        return furnaceLaneY(imageHeight, 2);
+    }
+
+    public static int furnacePluginY(int imageHeight) {
+        return furnaceLaneY(imageHeight, 0);
+    }
+
+    public static int furnaceFlameY(int imageHeight) {
+        return furnaceLaneY(imageHeight, 1) + 3;
     }
 
     public static int furnaceResultY(int imageHeight) {

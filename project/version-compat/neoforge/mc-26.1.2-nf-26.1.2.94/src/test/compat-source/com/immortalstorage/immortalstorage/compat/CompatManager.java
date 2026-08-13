@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.List;
 
@@ -86,6 +87,7 @@ public final class CompatManager {
         registerExternalResourceCatalogues();
         if (AE2_LOADED) {
             modBus.addListener(CompatManager::registerAe2ExternalResourceKeyType);
+            modBus.addListener(CompatManager::registerAe2Capabilities);
             modBus.addListener(CompatManager::initializeAe2);
         }
         if (RS_LOADED) modBus.addListener(CompatManager::initializeRs);
@@ -111,11 +113,7 @@ public final class CompatManager {
     private static void registerExternalResourceCatalogues() {
         ExternalResourceCatalog.register(
                 Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "builtin_external_resources"),
-                () -> List.of(
-                        ExternalResourceChannels.FE,
-                        ExternalResourceChannels.BOTANIA_MANA,
-                        ExternalResourceChannels.ARS_NOUVEAU_SOURCE,
-                        ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL));
+                CompatManager::availableBuiltinExternalResources);
         registerResource(ExternalResourceChannels.FE,
                 builtinAddonTexture("ae2_fe"), "FE", 0xFFFF4B35,
                 "resource.immortalstorage.external.name.energy");
@@ -128,6 +126,18 @@ public final class CompatManager {
         registerResource(ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL,
                 builtinAddonTexture("soul_surge"),
                 "Soul", 0xFF6FD6E8, "resource.immortalstorage.external.name.soul");
+    }
+
+    private static List<com.immortalstorage.core.resource.ResourceChannelKey>
+    availableBuiltinExternalResources() {
+        List<com.immortalstorage.core.resource.ResourceChannelKey> resources = new ArrayList<>();
+        resources.add(ExternalResourceChannels.FE);
+        if (BOTANIA_LOADED) resources.add(ExternalResourceChannels.BOTANIA_MANA);
+        if (ARS_NOUVEAU_LOADED) resources.add(ExternalResourceChannels.ARS_NOUVEAU_SOURCE);
+        if (INDUSTRIAL_FOREGOING_SOULS_LOADED) {
+            resources.add(ExternalResourceChannels.INDUSTRIAL_FOREGOING_SOUL);
+        }
+        return List.copyOf(resources);
     }
 
     private static Identifier builtinAddonTexture(String name) {
@@ -145,6 +155,14 @@ public final class CompatManager {
     private static void initializeAe2(InterModEnqueueEvent event) {
         event.enqueueWork(() -> invokeOptionalBootstrap(
                 "com.immortalstorage.immortalstorage.compat.ae2.Ae2Compat"));
+    }
+
+    private static void registerAe2Capabilities(RegisterCapabilitiesEvent event) {
+        invokeOptionalMethod(
+                "com.immortalstorage.immortalstorage.compat.ae2.Ae2Compat",
+                "registerCapabilities",
+                new Class<?>[]{RegisterCapabilitiesEvent.class},
+                event);
     }
 
     private static void registerAe2ExternalResourceKeyType(RegisterEvent event) {

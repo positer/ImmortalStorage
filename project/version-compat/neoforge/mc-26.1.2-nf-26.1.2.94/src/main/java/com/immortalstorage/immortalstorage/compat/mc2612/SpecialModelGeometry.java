@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Official 26.1 submission helpers for item special-model compatibility renderers. */
@@ -62,6 +63,16 @@ public final class SpecialModelGeometry {
         parent.scale(scale, scale, scale);
         renderState.submit(parent, collector, light, overlay, outlineColor);
         parent.popPose();
+    }
+
+    /** Returns the resolved item model bounds in the same context used by submitNestedItem. */
+    public static AABB itemModelBounds(ItemStack stack) {
+        if (stack.isEmpty()) return new AABB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+        Minecraft minecraft = Minecraft.getInstance();
+        ItemStackRenderState renderState = new ItemStackRenderState();
+        minecraft.getItemModelResolver().appendItemLayers(renderState, stack,
+                ItemDisplayContext.NONE, minecraft.level, null, 0);
+        return renderState.getModelBoundingBox();
     }
 
     private static final class RecordingMultiBufferSource implements MultiBufferSource {

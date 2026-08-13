@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.0.12] - 2026-08-13
+
+### 简体中文
+
+- 修复 NeoForge 26.1.2 一气归元剑第一人称光束从画面下方偏置位置发射的问题。发射点现在取实际渲染剑模型的包围盒中心，并完整叠加实时手持、挥动、装备和视角变换；光束方向、武器模型与战斗逻辑保持不变。
+- 修复模拟轮回炼化炉关闭仙窍输出后产物无法进入本地 4×3 缓存的问题。机器内部生产写入不再经过“输出槽禁止外部放入”的自动化过滤；管线输入限制保持不变，已有同类堆叠和空输出槽会按容量正常接收产物。
+- 模拟灵田、模拟轮回炼化炉、聚宝盆和世界碎片采集器不再把缓存不足时的产物弹到世界。每轮产物依次进入本地槽、允许输出的临近目标和持久临时缓存；本地空间释放后优先回填临时内容，临时缓存清空前暂停下一轮，清空后自动恢复。开启仙窍输出时仍直接向所属仙窍结算，不受本地容量限制；暂时拒收的整批产物会安全等待，不会掉落或重复。
+- 修复 NeoForge 26.1.2 仙窍内置仙炉在客户端错误查询服务端配方，以及仙炉配方返回未注册配方书分类的问题；淬火点满的灵剑可以正常取下，不再触发 `clientbound/minecraft:recipe_book_add` 编码异常。
+- 双语内置帕秋莉手册补齐全部 10 条丹药配方，区分工作台、普通熔炉与仙炉处理，并明确飞升丹只来自末地战利品、没有合成表。
+- 手册新增放置/内置仙炉强化边界，以及 AE2/RS 官方注册型附属存储、优先级、无附属回退和附属移除/重装行为说明。
+- 修复 26.1.2 仙窍存储滚动半格时物品、流体、额外资源及长整型数量被错误裁剪而消失的问题。
+- 仙窍内置仙炉新增与放置仙炉一致的强化插件槽及“插件/火焰/燃料”上中下排布；两者的插件均只加速处理，不增加产物、不延长燃料时间。
+- AE2 与 Refined Storage 兼容层会主动读取官方注册表中新出现的附属资源/存储类型，并以可逆持久化键接入仙窍长整型额外资源账本；原有明确附属联动与无附属 FE/额外资源回退路径保持不变。
+
+- 新增独立“强化插件”分组及次元窥令（×4）、次元平行法符（×16）、大千世界并行敕令（×256）。三件物品使用指定锻造顺序；普通库存可堆叠64，机器插件槽限制1。最高级插件采用紫底白核，并以像素条带雷电螺旋环绕核心。
+- 手持插件右键支持的机器可直接安装；更高倍率可替换较低倍率，旧插件优先回到背包，背包已满时安全掉落。相同或更低倍率不会覆盖。
+- 模拟灵田和模拟轮回炼化炉按处理槽堆叠数量一次结算等倍产物，再叠加强化插件倍率，不通过重复执行相同处理制造额外性能开销。
+- 仙炉新增强化槽并仅按倍率加快处理进度；燃料燃烧时间不受影响。仙能水晶系列按倍率增加每刻 FE/魔力/魔源产量；安装插件时充能物留在处理槽原位完成，并禁用类赛特斯石英充能配方。
+- 稳定化迷你仙墟全系列新增过滤/六面配置页插件槽；反转模式按倍率尝试更多输出组，缓存为空或目标拒收时提前结束。聚宝盆新增六面输出、仙窍输出和插件配置，插件按倍率增加单轮战利品。
+- 两代聚宝盆亮度调整为15。修复 NeoForge 26.1.2 世界碎片开采器玻璃罩的错误红色染色，并同步双语内置帕秋莉手册。
+
+### English
+
+- Fixed the NeoForge 26.1.2 first-person One-Qi Returning Origin Sword beam spawning from an offset near the bottom of the view. Its muzzle now follows the exact rendered sword-model bounding-box center through live hand, swing, equip, and camera transforms without changing beam direction, item rendering, or combat behavior.
+- Fixed Simulated Reincarnation Furnace products failing to enter the local 4×3 cache after Xianqiao Output was disabled. Machine-owned production writes no longer pass through the output slots' external-insertion filter; pipe input restrictions remain unchanged, while matching stacks and empty output slots accept completed drops normally.
+- Simulated Spirit Fields, Simulated Reincarnation Furnaces, Treasure Basins, and World Shard Miners no longer eject output when a batch exceeds local capacity. Each batch routes through local slots, enabled accepting faces, and then a persistent temporary buffer. Newly freed local capacity is filled from that buffer first, and production pauses until it clears. Direct Xianqiao output still bypasses local capacity; a temporarily rejected batch remains pending without drops or duplicate settlement.
+- Fixed NeoForge 26.1.2 embedded-furnace code querying server recipes on the client and returning an unregistered recipe-book category. Fully tempered swords can be removed normally without a `clientbound/minecraft:recipe_book_add` encoding failure.
+- Expanded the bundled bilingual Patchouli handbook to cover all ten pill recipes, distinguishing crafting, vanilla smelting, and Immortal Furnace processing; Ascension Dan is explicitly End loot and has no fabricated recipe.
+- Documented placed/embedded furnace reinforcement boundaries and official registered AE2/RS addon storage, priority, no-addon fallback, and addon removal/reinstallation behavior.
+- Fixed NeoForge 26.1.2 half-row terminal scrolling incorrectly clipping items, fluids, external resources, and long-valued amount labels.
+- The embedded Immortal Furnace now has the same reinforcement slot and top-plugin/middle-flame/bottom-fuel layout as the placed furnace. Both accelerate processing only and never multiply output or fuel duration.
+- AE2 and Refined Storage now discover addon-defined resource/storage types through their official registries and map them reversibly into the long-valued Xianqiao external-resource ledger. Existing explicit addon integrations and no-addon FE/external-resource fallbacks remain available.
+
+- Added a dedicated Reinforcement Plugins group: Dimensional Peeking Order (×4), Dimensional Parallel Talisman (×16), and Great Thousand-World Parallel Edict (×256), with the specified smithing sequences. Items stack to 64 normally while machine slots hold one. The highest tier uses a purple body, white core, and pixel-lightning bands spiralling around it.
+- Using a plugin on a supported machine installs it directly. A higher tier replaces a lower tier and returns the old plugin to the inventory, safely dropping it only when the inventory is full. Equal or lower tiers do not overwrite it.
+- Simulated Spirit Fields and Simulated Reincarnation Furnaces settle input-stack scaling and plugin scaling in one output batch instead of repeating the same processing operation.
+- The Immortal Furnace gains a plugin slot that multiplies processing progress only; fuel duration is unchanged. Crystals multiply FE/Mana/Source production. With a crystal plugin installed, chargeable items complete in place and Certus-like recipes are disabled.
+- Every stabilized ruin variant gains a plugin slot below its filter/face controls and attempts more reversed output groups, stopping early when empty or blocked. The Treasure Basin gains face output, Xianqiao output, and plugin controls, with multiplied per-round loot.
+- Treasure Basin light level is 15 in both generations. Fixed the red-tinted World Shard Miner glass cover on NeoForge 26.1.2 and updated the built-in bilingual Patchouli handbook.
+
 ## [0.0.11]
 
 本节完整列出 `0.0.10` → `0.0.11` 的用户可见变化，不包含内部调试过程、失败复现记录或构建过程。

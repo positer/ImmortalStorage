@@ -475,6 +475,16 @@ public final class SourceVeinManagerBlockEntity extends com.immortalstorage.immo
         if (level instanceof ServerLevel) displayState.refreshFrom(this);
         SourceVeinStorageIndex.register(this);
     }
-    @Override public void setRemoved() { SourceVeinStorageIndex.unregister(this); super.setRemoved(); }
+    @Override public void setRemoved() {
+        if (isRemoved()) return;
+        try {
+            SourceVeinStorageIndex.unregister(this);
+        } catch (RuntimeException failure) {
+            com.immortalstorage.immortalstorage.ImmortalStorageMod.LOG.error(
+                    "Failed to unregister source-vein manager at {}; continuing removal", worldPosition, failure);
+        } finally {
+            super.setRemoved();
+        }
+    }
 
 }

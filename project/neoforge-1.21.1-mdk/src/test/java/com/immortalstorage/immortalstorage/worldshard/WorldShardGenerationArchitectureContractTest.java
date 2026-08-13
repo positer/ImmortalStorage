@@ -70,7 +70,8 @@ final class WorldShardGenerationArchitectureContractTest {
             String client = methodBody(entity, "private CompoundTag writeClientState(");
 
             assertTrue(save.contains("writeClientState(tag)"), file);
-            assertTrue(load.contains("tag.getBoolean(CACHE_FULL_TAG)"), file);
+            assertTrue(load.contains("tag.getList(PENDING_OUTPUT_TAG"), file);
+            assertTrue(load.contains("cacheFull = !pendingOutput.isEmpty()"), file);
             assertTrue(load.contains("tag.getBoolean(STORAGE_UNAVAILABLE_TAG)"), file);
             assertTrue(client.contains("tag.putBoolean(CACHE_FULL_TAG, cacheFull)"), file);
             assertTrue(client.contains("tag.putBoolean(STORAGE_UNAVAILABLE_TAG, storageUnavailable)"), file);

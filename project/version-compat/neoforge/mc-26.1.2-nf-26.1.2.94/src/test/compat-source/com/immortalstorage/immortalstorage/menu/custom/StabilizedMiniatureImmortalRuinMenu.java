@@ -19,6 +19,7 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
     protected final ContainerData data;
     protected final StabilizedMiniatureImmortalRuinBlockEntity blockEntity;
     protected final net.minecraft.core.BlockPos blockPos;
+    private boolean pluginVisible;
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id, inventory, clientContainer(),
@@ -41,23 +42,29 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
         this.data = data;
         this.blockEntity = blockEntity;
         this.blockPos = blockPos;
-        checkContainerSize(container, 54);
+        checkContainerSize(container, 55);
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(container, col + row * 9, 8 + col * 18, 18 + row * 18));
+        addSlot(new Slot(container, 54, 188, 198) {
+            @Override public boolean mayPlace(ItemStack stack) { return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack); }
+            @Override public int getMaxStackSize() { return 1; }
+            @Override public boolean isActive() { return pluginVisible; }
+        });
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 8 + col * 18, 198));
         addDataSlots(data);
     }
 
-    private static Container clientContainer() { return new SimpleContainer(54); }
+    private static Container clientContainer() { return new SimpleContainer(55); }
     public int value(int index) { return data.get(index); }
     public void setAuthoritativeValue(int index, int value) {
         if (blockEntity != null && index >= 0 && index < data.getCount()) blockEntity.setMenuValue(index, value);
     }
     public net.minecraft.core.BlockPos blockPos() { return blockPos; }
     public StabilizedMiniatureImmortalRuinBlockEntity blockEntity() { return blockEntity; }
+    public void setPluginVisible(boolean visible) { pluginVisible = visible; }
     public void setFilter(int slot, ItemStack stack) { if (blockEntity != null) blockEntity.setFilter(slot, stack); }
     public void toggleFilterMode(int mode) { if (blockEntity != null) { if (mode == 0) blockEntity.toggleFilterMatchComponents(); else blockEntity.toggleFilterWhitelist(); } }
 
@@ -92,7 +99,11 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack original = slot.getItem();
         ItemStack copy = original.copy();
-        if (index < 54 ? !moveItemStackTo(original, 54, slots.size(), true) : !moveItemStackTo(original, 0, 54, false)) return ItemStack.EMPTY;
+        if (index < 55) {
+            if (!moveItemStackTo(original, 55, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(original)) {
+            if (!moveItemStackTo(original, 54, 55, false)) return ItemStack.EMPTY;
+        } else if (!moveItemStackTo(original, 0, 54, false)) return ItemStack.EMPTY;
         if (original.isEmpty()) slot.set(ItemStack.EMPTY); else slot.setChanged();
         return copy;
     }

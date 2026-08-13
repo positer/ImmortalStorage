@@ -25,9 +25,9 @@ final class VanillaArrowRenderingContractTest {
 
         assertTrue(source.contains("textures/gui/container/crafting_table.png"));
         assertTrue(source.contains("90.0F, 35.0F, 22, 15, 256, 256"));
-        assertTrue(source.contains("textures/gui/container/furnace.png"));
-        assertTrue(source.contains("79.0F, 34.0F, 24, 16, 256, 256"));
-        assertTrue(source.contains("container/furnace/burn_progress"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/container/furnace.png"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("79.0F, 34.0F, 24, 16, 256, 256"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/sprites/container/furnace/burn_progress.png"));
         assertTrue(source.contains("container/immortal_furnace/lit_progress"));
         assertTrue(furnaceModule.contains("furnaceFlame("));
         assertTrue(furnaceFlame.contains("56.0F, 36.0F, 14, 14, 256, 256"));
@@ -56,9 +56,9 @@ final class VanillaArrowRenderingContractTest {
         String source = Files.readString(SCREEN_SOURCES.resolve("ImmortalFurnaceScreen.java"));
         String background = methodBody(source, "protected void renderBg");
 
-        assertTrue(source.contains("textures/gui/container/furnace.png"));
-        assertTrue(source.contains("79.0F, 34.0F, 24, 16, 256, 256"));
-        assertTrue(source.contains("container/furnace/burn_progress"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/container/furnace.png"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("79.0F, 34.0F, 24, 16, 256, 256"));
+        assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/sprites/container/furnace/burn_progress.png"));
         assertTrue(background.contains("VanillaGuiPainter.furnaceFlame("));
         assertFalse(background.contains("graphics.fill(x + 21"));
         assertFalse(background.contains("graphics.fill(x + 19"));

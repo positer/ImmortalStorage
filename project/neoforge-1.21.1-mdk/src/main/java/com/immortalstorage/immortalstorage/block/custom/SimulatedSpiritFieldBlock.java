@@ -75,6 +75,9 @@ public final class SimulatedSpiritFieldBlock extends BaseEntityBlock {
         if (!state.is(nextState.getBlock())
                 && level.getBlockEntity(pos) instanceof SimulatedSpiritFieldBlockEntity field) {
             Containers.dropContents(level, pos, field);
+            for (ItemStack pending : field.drainPendingOutputForRemoval()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), pending);
+            }
             field.dropStoredSubstrate();
         }
         super.onRemove(state, level, pos, nextState, movedByPiston);

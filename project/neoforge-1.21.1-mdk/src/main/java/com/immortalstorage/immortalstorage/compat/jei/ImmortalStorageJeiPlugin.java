@@ -9,6 +9,7 @@ import com.immortalstorage.immortalstorage.client.screen.TerminalScreenAccess;
 import com.immortalstorage.immortalstorage.client.screen.TerminalFluidScreenAccess;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoStorageScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoInterfaceScreen;
+import com.immortalstorage.immortalstorage.client.screen.AdvancedXianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.menu.ModMenus;
 import com.immortalstorage.immortalstorage.menu.custom.KongqiaoMenu;
 import com.immortalstorage.immortalstorage.menu.custom.XianqiaoStorageMenu;
@@ -29,7 +30,6 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import com.immortalstorage.immortalstorage.config.ImmortalStorageClientConfig;
-import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -80,10 +80,11 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
 
     @Override
     public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-        registration.addGuiContainerHandler(KongqiaoScreen.class, new TerminalGuiHandler<>());
         registration.addGuiContainerHandler(XianqiaoStorageScreen.class, new TerminalGuiHandler<>());
         registration.addGuiContainerHandler(XianqiaoInterfaceScreen.class,
                 new XianqiaoInterfaceJeiGuiHandler());
+        registration.addGuiContainerHandler(AdvancedXianqiaoInterfaceScreen.class,
+                new AdvancedXianqiaoInterfaceJeiGuiHandler());
         registration.addGhostIngredientHandler(XianqiaoInterfaceScreen.class,
                 new XianqiaoInterfaceJeiGhostHandler());
         registration.addGhostIngredientHandler(
@@ -133,11 +134,6 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
 
     private static final class TerminalGuiHandler<S extends net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>>
             implements IGuiContainerHandler<S> {
-        @Override
-        public List<Rect2i> getGuiExtraAreas(S screen) {
-            return ((TerminalScreenAccess) screen).immortalstorage$getExtraAreas();
-        }
-
         @Override
         public Optional<? extends mezz.jei.api.runtime.IClickableIngredient<?>> getClickableIngredientUnderMouse(
                 IClickableIngredientFactory factory, S screen, double mouseX, double mouseY) {

@@ -155,6 +155,27 @@ final class EmbeddedImmortalFurnaceBackendTest {
     }
 
     @Test
+    void embeddedPluginAcceleratesProgressWithoutChangingFuelOrRecipeYield() {
+        EmbeddedImmortalFurnaceBackend backend = new EmbeddedImmortalFurnaceBackend();
+        backend.setItem(EmbeddedImmortalFurnaceBackend.INPUT, new ItemStack(Items.IRON_ORE, 2));
+        backend.setItem(EmbeddedImmortalFurnaceBackend.FUEL, new ItemStack(Items.COAL, 2));
+        backend.setItem(EmbeddedImmortalFurnaceBackend.PLUGIN,
+                new ItemStack(ModItems.DIMENSIONAL_PEEKING_ORDER.get()));
+
+        tick(backend, 0, 12, ImmortalFurnaceEngine.TRUE_YUAN);
+        assertEquals(48, backend.channelProgress(0));
+        assertTrue(backend.getItem(EmbeddedImmortalFurnaceBackend.RESULT).isEmpty());
+
+        tick(backend, 12, 13, ImmortalFurnaceEngine.TRUE_YUAN);
+        assertEquals(1, backend.getItem(EmbeddedImmortalFurnaceBackend.INPUT).getCount());
+        assertEquals(1, backend.getItem(EmbeddedImmortalFurnaceBackend.RESULT).getCount(),
+                "the plugin accelerates one normal recipe completion instead of multiplying output");
+        assertEquals(1, backend.getItem(EmbeddedImmortalFurnaceBackend.FUEL).getCount(),
+                "the plugin does not multiply fuel consumption");
+        assertEquals(138, backend.data(0), "burn time still decreases by exactly one after the ignition tick");
+    }
+
+    @Test
     void immortalYuanCooksTheWholeInputStackAtomicallyAtTwentyFiveTicks() {
         EmbeddedImmortalFurnaceBackend backend = new EmbeddedImmortalFurnaceBackend();
         backend.setItem(EmbeddedImmortalFurnaceBackend.INPUT, new ItemStack(Items.IRON_ORE, 64));
@@ -232,11 +253,11 @@ final class EmbeddedImmortalFurnaceBackendTest {
         data.setStage(5);
         data.setStage(6);
         assertSame(furnace, data.getEmbeddedImmortalFurnace(),
-                "the 5 -> 6 terminal transition must retain the same seven real slots");
+                "the 5 -> 6 terminal transition must retain the same eight real slots");
     }
 
     @Test
-    void allSevenSlotsAndRunningRecipeStateSurvivePlayerNbtRoundTrip() throws Exception {
+    void allEightSlotsAndRunningRecipeStateSurvivePlayerNbtRoundTrip() throws Exception {
         ImmortalStoragePlayerData original = new ImmortalStoragePlayerData();
         EmbeddedImmortalFurnaceBackend furnace = original.getEmbeddedImmortalFurnace();
         furnace.setAutoConsume(true);
@@ -254,6 +275,8 @@ final class EmbeddedImmortalFurnaceBackendTest {
         furnace.setItem(EmbeddedImmortalFurnaceBackend.RESULT_2, new ItemStack(Items.GOLD_INGOT, 7));
         furnace.setItem(EmbeddedImmortalFurnaceBackend.INPUT_3, new ItemStack(Items.COPPER_ORE, 4));
         furnace.setItem(EmbeddedImmortalFurnaceBackend.RESULT_3, new ItemStack(Items.COPPER_INGOT, 8));
+        furnace.setItem(EmbeddedImmortalFurnaceBackend.PLUGIN,
+                new ItemStack(ModItems.DIMENSIONAL_PARALLEL_TALISMAN.get()));
         furnace.dataAccess().set(0, 91);
         furnace.dataAccess().set(1, 150);
         furnace.dataAccess().set(2, 17);
@@ -274,6 +297,7 @@ final class EmbeddedImmortalFurnaceBackendTest {
         assertEquals(7, reopened.getItem(EmbeddedImmortalFurnaceBackend.RESULT_2).getCount());
         assertEquals(4, reopened.getItem(EmbeddedImmortalFurnaceBackend.INPUT_3).getCount());
         assertEquals(8, reopened.getItem(EmbeddedImmortalFurnaceBackend.RESULT_3).getCount());
+        assertEquals(16, reopened.reinforcementMultiplier());
         assertTrue(reopened.isAutoConsume());
         assertTrue(reopened.isAutoFill());
         assertEquals(91, reopened.data(0));
@@ -287,9 +311,9 @@ final class EmbeddedImmortalFurnaceBackendTest {
 
         reopened.tickCore(50L, stack -> ImmortalFurnaceEngine.NO_FUEL,
                 EmbeddedImmortalFurnaceBackendTest::recipe);
-        assertEquals(18, reopened.channelProgress(0), "the active recipe resumes instead of restarting");
-        assertEquals(19, reopened.channelProgress(1));
-        assertEquals(20, reopened.channelProgress(2));
+        assertEquals(33, reopened.channelProgress(0), "the active recipe resumes with plugin acceleration");
+        assertEquals(34, reopened.channelProgress(1));
+        assertEquals(35, reopened.channelProgress(2));
         assertEquals(90, reopened.data(0), "the remaining burn time resumes from the persisted value");
     }
 
@@ -300,7 +324,7 @@ final class EmbeddedImmortalFurnaceBackendTest {
         restored.deserializeNBT(REGISTRIES, new net.minecraft.nbt.CompoundTag());
 
         EmbeddedImmortalFurnaceBackend furnace = restored.getEmbeddedImmortalFurnace();
-        assertEquals(7, furnace.getContainerSize());
+        assertEquals(8, furnace.getContainerSize());
         assertTrue(furnace.isEmpty());
         assertFalse(furnace.isLit());
         assertFalse(furnace.isAutoConsume());

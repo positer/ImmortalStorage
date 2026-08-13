@@ -195,9 +195,10 @@ final class SourceVeinArchitectureContractTest {
         assertTrue(blockItem.contains("getCustomRenderer()"));
         assertTrue(blockItem.contains("SourceVeinItemRenderer.INSTANCE"));
         assertTrue(renderer.contains("extends BlockEntityWithoutLevelRenderer"));
-        assertTrue(renderer.contains("SourceVeinDisplayRenderer.renderForItem(")
-                        || renderer.contains("SourceVeinDisplayRenderer.submit("),
-                "source items must share the world dynamic-output rule renderer");
+            assertTrue(renderer.contains("SourceVeinDisplayRenderer.renderForItem(")
+                    || renderer.contains("SourceVeinDisplayRenderer.submitForItem(")
+                    || renderer.contains("SourceVeinDisplayRenderer.submit("),
+                    "source items must share the world dynamic-output rule renderer");
         assertFalse(renderer.contains("GUI_ITEM_SCALE")
                         || renderer.contains("ITEM_PREVIEW_SCALE"),
                 "the source vein item's established preview size must remain unchanged");

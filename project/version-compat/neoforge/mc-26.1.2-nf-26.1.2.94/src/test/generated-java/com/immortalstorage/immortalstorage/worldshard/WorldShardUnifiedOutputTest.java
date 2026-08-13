@@ -22,6 +22,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Outcome-level contract shared by ore mining and treasure-basin loot.
@@ -117,6 +118,29 @@ final class WorldShardUnifiedOutputTest {
                 .mapToObj(cache::getStackInSlot)
                 .filter(stack -> stack.is(Items.EMERALD))
                 .mapToInt(ItemStack::getCount).sum());
+    }
+
+    @Test
+    void completedReinforcedGenerationCommitsWhatFitsAndReturnsExactOverflow() {
+        WorldShardMinerCache cache = new WorldShardMinerCache(null);
+        for (int slot = 0; slot < cache.getSlots() - 1; slot++) {
+            cache.setStackInSlot(slot, new ItemStack(Items.COBBLESTONE, 64));
+        }
+        int lastSlot = cache.getSlots() - 1;
+        cache.setStackInSlot(lastSlot, new ItemStack(Items.DIAMOND, 63));
+
+        WorldShardOutputRouter.CacheRouteResult routed =
+                WorldShardOutputRouter.routeCacheWithOverflow(
+                        List.of(new ItemStack(Items.DIAMOND, 2),
+                                new ItemStack(Items.EMERALD, 1)), cache);
+
+        assertEquals(3L, routed.route().offered());
+        assertEquals(1L, routed.route().accepted());
+        assertEquals(2L, routed.route().unaccepted());
+        assertEquals(64, cache.getStackInSlot(lastSlot).getCount());
+        assertEquals(2, routed.overflow().stream().mapToInt(ItemStack::getCount).sum());
+        assertTrue(routed.overflow().stream().anyMatch(stack -> stack.is(Items.DIAMOND)));
+        assertTrue(routed.overflow().stream().anyMatch(stack -> stack.is(Items.EMERALD)));
     }
 
     @Test

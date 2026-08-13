@@ -19,8 +19,9 @@ import org.jetbrains.annotations.Nullable;
  * {@link FloatingCubeRenderer}; null face renders nothing.
  */
 public final class RuinFaceHighlightRenderer {
+    private static final double FACE_OFFSET = 0.004D;
     private static final Identifier WHITE_TEXTURE =
-            Identifier.withDefaultNamespace("textures/misc/white.png");
+            Identifier.withDefaultNamespace("textures/block/white_concrete.png");
     private static final RenderType TRANSLUCENT =
             CompatRenderTypes.entityTranslucentEmissive(WHITE_TEXTURE);
 
@@ -60,30 +61,37 @@ public final class RuinFaceHighlightRenderer {
         if (face == null) return;
         VertexConsumer vertices = buffers.getBuffer(TRANSLUCENT);
         PoseStack.Pose pose = poses.last();
+        // Keep the translucent preview face just outside adjacent full cubes.
+        // Rendering on the exact block boundary lets the depth buffer erase
+        // the face that touches a solid neighbour.
+        AABB visibleFace = box.move(
+                face.getStepX() * FACE_OFFSET,
+                face.getStepY() * FACE_OFFSET,
+                face.getStepZ() * FACE_OFFSET);
         switch (face) {
             case DOWN -> quad(vertices, pose,
-                    box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ,
-                    box.maxX, box.minY, box.maxZ, box.minX, box.minY, box.maxZ,
+                    visibleFace.minX, visibleFace.minY, visibleFace.minZ, visibleFace.maxX, visibleFace.minY, visibleFace.minZ,
+                    visibleFace.maxX, visibleFace.minY, visibleFace.maxZ, visibleFace.minX, visibleFace.minY, visibleFace.maxZ,
                     0.0F, -1.0F, 0.0F, r, g, b, a);
             case UP -> quad(vertices, pose,
-                    box.minX, box.maxY, box.maxZ, box.maxX, box.maxY, box.maxZ,
-                    box.maxX, box.maxY, box.minZ, box.minX, box.maxY, box.minZ,
+                    visibleFace.minX, visibleFace.maxY, visibleFace.maxZ, visibleFace.maxX, visibleFace.maxY, visibleFace.maxZ,
+                    visibleFace.maxX, visibleFace.maxY, visibleFace.minZ, visibleFace.minX, visibleFace.maxY, visibleFace.minZ,
                     0.0F, 1.0F, 0.0F, r, g, b, a);
             case NORTH -> quad(vertices, pose,
-                    box.maxX, box.minY, box.minZ, box.minX, box.minY, box.minZ,
-                    box.minX, box.maxY, box.minZ, box.maxX, box.maxY, box.minZ,
+                    visibleFace.maxX, visibleFace.minY, visibleFace.minZ, visibleFace.minX, visibleFace.minY, visibleFace.minZ,
+                    visibleFace.minX, visibleFace.maxY, visibleFace.minZ, visibleFace.maxX, visibleFace.maxY, visibleFace.minZ,
                     0.0F, 0.0F, -1.0F, r, g, b, a);
             case SOUTH -> quad(vertices, pose,
-                    box.minX, box.minY, box.maxZ, box.maxX, box.minY, box.maxZ,
-                    box.maxX, box.maxY, box.maxZ, box.minX, box.maxY, box.maxZ,
+                    visibleFace.minX, visibleFace.minY, visibleFace.maxZ, visibleFace.maxX, visibleFace.minY, visibleFace.maxZ,
+                    visibleFace.maxX, visibleFace.maxY, visibleFace.maxZ, visibleFace.minX, visibleFace.maxY, visibleFace.maxZ,
                     0.0F, 0.0F, 1.0F, r, g, b, a);
             case WEST -> quad(vertices, pose,
-                    box.minX, box.minY, box.minZ, box.minX, box.minY, box.maxZ,
-                    box.minX, box.maxY, box.maxZ, box.minX, box.maxY, box.minZ,
+                    visibleFace.minX, visibleFace.minY, visibleFace.minZ, visibleFace.minX, visibleFace.minY, visibleFace.maxZ,
+                    visibleFace.minX, visibleFace.maxY, visibleFace.maxZ, visibleFace.minX, visibleFace.maxY, visibleFace.minZ,
                     -1.0F, 0.0F, 0.0F, r, g, b, a);
             case EAST -> quad(vertices, pose,
-                    box.maxX, box.minY, box.maxZ, box.maxX, box.minY, box.minZ,
-                    box.maxX, box.maxY, box.minZ, box.maxX, box.maxY, box.maxZ,
+                    visibleFace.maxX, visibleFace.minY, visibleFace.maxZ, visibleFace.maxX, visibleFace.minY, visibleFace.minZ,
+                    visibleFace.maxX, visibleFace.maxY, visibleFace.minZ, visibleFace.maxX, visibleFace.maxY, visibleFace.maxZ,
                     1.0F, 0.0F, 0.0F, r, g, b, a);
         }
     }

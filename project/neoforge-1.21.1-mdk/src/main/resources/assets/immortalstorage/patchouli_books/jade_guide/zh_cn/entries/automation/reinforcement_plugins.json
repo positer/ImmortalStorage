@@ -1,0 +1,15 @@
+{
+  "name":"强化插件",
+  "icon":"immortalstorage:dimensional_peeking_order",
+  "category":"immortalstorage:automation",
+  "sortnum":35,
+  "pages":[
+    {"type":"patchouli:smithing","recipe":"immortalstorage:dimensional_peeking_order","title":"次元窥令 · 4倍","text":"第一阶插件：以回响碎片为模板、下界合金升级锻造模板为基底、灵晶为追加材料。普通物品栏可堆叠64，机器插件位只能放1件。"},
+    {"type":"patchouli:smithing","recipe":"immortalstorage:dimensional_parallel_talisman","title":"次元平行法符 · 16倍","text":"第二阶插件：灵核作模板，次元窥令作基底，蕴灵晶作追加材料。手持它右键装有低阶插件的机器，可直接替换并先把旧件送回背包。"},
+    {"type":"patchouli:smithing","recipe":"immortalstorage:great_thousand_world_parallel_edict","title":"大千世界并行敕令 · 256倍","text":"最高阶插件：灵核作模板，次元平行法符作基底，迷你仙墟作追加材料。相同或更低阶不会覆盖；背包满时，旧插件安全掉落。"},
+    {"type":"patchouli:text","title":"仙炉：加快处理","text":"放置仙炉与仙窍内置仙炉只把处理进度乘以倍率。配方产物不增加，燃料总燃烧刻数也不改变。插件、青白火焰、燃料在界面中依次由上到下排列。"},
+    {"type":"patchouli:text","title":"模拟设备：放大产物","text":"模拟灵田与模拟轮回炼化炉把插件放在原工具/武器槽，不新增额外槽。处理物堆叠数量与插件倍率在一次结算中相乘；不重复执行战利品逻辑，也不改变燃料时间。"},
+    {"type":"patchouli:text","title":"水晶与两种采集器","text":"仙能水晶按倍率提高每刻FE、魔力或魔源产量；装插件后，充满的物品留在处理槽且类赛特斯石英配方停用。世界碎片开采器放大每轮产矿，聚宝盆放大每轮战利品，二者周期都不变。若单轮撑满本地缓存，余量只弹出一次并停机等待腾挪。"},
+    {"type":"patchouli:text","title":"稳定化仙墟","text":"四种稳定化迷你仙墟只增加反转状态每轮可尝试的输出组数。缓存为空或所有目标拒收时立即结束本轮，不为追求倍率继续空转。"}
+  ]
+}

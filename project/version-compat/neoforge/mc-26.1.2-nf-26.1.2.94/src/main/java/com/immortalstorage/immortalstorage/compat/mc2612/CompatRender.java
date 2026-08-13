@@ -43,9 +43,11 @@ public final class CompatRender {
         dz /= length;
         vertices.addVertex(pose, (float) x0, (float) y0, (float) z0)
                 .setColor(red, green, blue, alpha)
+                .setLineWidth(1.0F)
                 .setNormal(pose, dx, dy, dz);
         vertices.addVertex(pose, (float) x1, (float) y1, (float) z1)
                 .setColor(red, green, blue, alpha)
+                .setLineWidth(1.0F)
                 .setNormal(pose, dx, dy, dz);
     }
 }

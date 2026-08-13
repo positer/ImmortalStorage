@@ -18,6 +18,12 @@ AGENTS.md
 MinecraftClient.ini
 mob.java
 player.java
+/_moditems.txt
+/_rar.txt
+/_rar2.txt
+/_swordlang.txt
+/_swordsrc.txt
+/compat-api-usage.txt
 /reference_core_16.png
 *.log
 *.tmp

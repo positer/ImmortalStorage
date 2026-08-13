@@ -1,1 +1,13 @@
-{"name":"Begin with the Jade","icon":"immortalstorage:jade_guide","category":"immortalstorage:progression","sortnum":0,"pages":[{"type":"patchouli:spotlight","item":"immortalstorage:jade_guide","title":"Jade Resonance","text":"The Ancient Jade is granted on first spawn. Carry it at stage zero until it resonates; after awakening, right-click it to read this book. Normal play does not lower stages one through six."},{"type":"patchouli:crafting","recipe":"immortalstorage:jade_guide","text":"If it is lost, craft another from a book, emerald, Spirit Crystal and Immortal Power."},{"type":"patchouli:text","text":"Suggested route: gather aura, brew the current pill, expand Kongqiao, satisfy the special stage-five ascension, enter your personal realm, then complete tribulations there. All keybinds are configurable."}]}
+{
+  "name":"Begin with the Jade",
+  "icon":"immortalstorage:jade_guide",
+  "category":"immortalstorage:progression",
+  "sortnum":0,
+  "priority":true,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"immortalstorage:jade_guide","title":"Awakening","text":"At stage zero, carry the $(item)Ancient Jade$() for one full day or sleep with it nearby to enter stage one. After awakening, use the jade to reopen this book. Ordinary cultivation from stages one through six is never lost on death."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:jade_guide","title":"If It Is Lost","text":"Craft a replacement from a book, emerald, Spirit Crystal and ImmortalPower. The jade is both your manual and the entrance to the cultivation path."},
+    {"type":"patchouli:text","title":"The Path at a Glance","text":"$(li)Stages 1–4: gather lingqi and advance when the bar fills.$(li)Stage 5: fill the bar, then ascend with an Immortal Pill.$(li)Stage 6: Kongqiao becomes Xianqiao and opens a personal realm.$(li)Stages 6–10: face tribulations only inside your own realm.$(br2)See $(l:immortalstorage:progression/stage_atlas)Stages and Unlocks$(/l) for the full map."},
+    {"type":"patchouli:text","title":"Your First Steps","text":"Learn $(l:immortalstorage:progression/yuan)TruePower and ImmortalPower$(/l), then brew $(l:immortalstorage:recipes/pills)Spirit-Gathering Pills$(/l). Personal storage expands automatically. The embedded crafting grid opens at stage three, smithing at stage four and the Immortal Furnace at stage five. All keybinds can be changed in Controls."}
+  ]
+}

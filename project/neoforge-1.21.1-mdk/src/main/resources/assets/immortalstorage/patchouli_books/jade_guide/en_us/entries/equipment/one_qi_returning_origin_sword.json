@@ -1,10 +1,34 @@
 {
-  "name":"One-Qi Returning Origin Sword","icon":"immortalstorage:one_qi_returning_origin_sword","category":"immortalstorage:equipment","sortnum":40,
-  "pages":[
-    {"type":"patchouli:smithing","recipe":"immortalstorage:one_qi_returning_origin_sword","text":"Forge it at a smithing table with a Spirit Core template, a Spirit Sword base, and Primordial Qi. It inherits stage-scaled damage, aura repair, continuous furnace tempering, and tempering points."},
-    {"type":"patchouli:text","text":"Its melee tempering growth is 0% per point. The points still appear in the tooltip and are spent by phase three at 10 points per beam, but they are not multiplied into melee damage as they are for the ordinary and Immortal-Ruin-Forged swords."},
-    {"type":"patchouli:text","text":"Hold use for 5 ticks to fire a 64-block beam that pierces multiple living targets. Phase one deals 20% attack damage every 10 ticks and costs 1 Immortal Yuan on entry."},
-    {"type":"patchouli:text","text":"At 25 ticks, phase two spends 2 more Immortal Yuan and deals 20% attack damage every 5 ticks. Beyond 50 ticks, phase three deals 50% every 5 ticks while spending 10 tempering points per beam."},
-    {"type":"patchouli:text","text":"Sustained use stops when the required Yuan or tempering points run out. Every living target along the beam may be hit. Component updates do not repeatedly lower and raise the sword; only a real slot or item change causes re-equip animation."}
+  "name": "One-Qi Returning Origin Sword",
+  "icon": "immortalstorage:one_qi_returning_origin_sword",
+  "category": "immortalstorage:equipment",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:smithing",
+      "recipe": "immortalstorage:one_qi_returning_origin_sword",
+      "title": "Shape It with Primordial Qi",
+      "text": "At the Smithing Table, place Spirit Core as template, Spirit Sword as base, and Primordial Qi as addition. The result keeps stage damage, Aura Repair, continuous tempering, and existing points."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "No Melee Growth from Tempering",
+      "text": "Its melee coefficient is fixed at 0% per point. Points remain visible in the tooltip and serve as phase-three beam fuel; ordinary slashes never multiply them into damage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Phase One",
+      "text": "Hold use for 5 ticks to fire a piercing 64-block beam. Entering costs 1 Immortal Yuan, then every 10 ticks the beam deals 20% attack damage to every living target on its path."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Phases Two and Three",
+      "text": "At 25 ticks, spend 2 more Immortal Yuan and deal 20% every 5 ticks. Beyond 50 ticks, phase three deals 50% every 5 ticks and spends 10 tempering points for each beam."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "When the Stance Ends",
+      "text": "Sustained use stops when a phase lacks its required Yuan or tempering. Component refreshes do not replay lowering and raising; only a real slot or item change triggers re-equip."
+    }
   ]
 }

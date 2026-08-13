@@ -190,6 +190,8 @@ final class VanillaGuiPainter {
     static void terminalFurnaceModule(GuiGraphics g, int x, int y, int h,
                                       int flameProgress, int[] cookProgress, boolean lit) {
         int fuelY = TerminalLayout.furnaceFuelY(h);
+        int pluginY = TerminalLayout.furnacePluginY(h);
+        slot(g, x + TerminalLayout.FURNACE_PLUGIN_X, y + pluginY, true);
         slot(g, x + TerminalLayout.FURNACE_FUEL_X, y + fuelY, true);
 
         for (int channel = 0; channel < TerminalLayout.FURNACE_LANE_COUNT; channel++) {
@@ -206,7 +208,8 @@ final class VanillaGuiPainter {
             }
         }
 
-        furnaceFlame(g, x + 28, y + fuelY - 12, flameProgress, lit);
+        furnaceFlame(g, x + TerminalLayout.FURNACE_FUEL_X + 1,
+                y + TerminalLayout.furnaceFlameY(h), flameProgress, lit);
     }
 
     static void terminalSmithingModule(GuiGraphics g, int x, int y, int h) {

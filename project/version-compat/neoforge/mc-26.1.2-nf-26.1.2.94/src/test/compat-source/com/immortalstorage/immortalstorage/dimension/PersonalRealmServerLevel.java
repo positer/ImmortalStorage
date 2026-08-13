@@ -1,29 +1,26 @@
 package com.immortalstorage.immortalstorage.dimension;
 
+import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.clock.ClockNetworkState;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.saveddata.WeatherData;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 
-/**
- * A server level whose tick budget belongs only to one personal Xianqiao.
- *
- * <p>This deliberately does not read or mutate MinecraftServer's global
- * ServerTickRateManager (the object used by vanilla {@code /tick rate}). The
- * normal server loop still invokes this level once; this class grants bounded
- * additional passes to this level alone. The pattern is equivalent to local
- * tick accelerators such as Time in a Bottle, but the target is the owner's
- * isolated realm rather than an arbitrary block.</p>
- */
+/** A server level whose simulation, clock presentation and weather belong to one personal Xianqiao. */
 final class PersonalRealmServerLevel extends ServerLevel {
     static final double MIN_TICK_SCALE = 0.0D;
     static final double MAX_TICK_SCALE = 32.0D;
@@ -32,6 +29,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
     private final UUID ownerId;
     private final PersonalRealmLevelData realmLevelData;
     private final TickBudget tickBudget = new TickBudget();
+    private WeatherData realmWeatherData;
     private boolean tickingRealm;
 
     PersonalRealmServerLevel(
@@ -81,6 +79,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
         }
         realmLevelData.setEnvironmentLock(daytime, weatherMode);
         applyEnvironmentLock();
+        syncOwnerEnvironment(RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId));
     }
 
     boolean isTickScaleActive() {
@@ -95,12 +94,36 @@ final class PersonalRealmServerLevel extends ServerLevel {
         return (float) (BASE_TICKS_PER_SECOND * this.tickBudget.scale);
     }
 
+    /**
+     * 26.1 moved weather out of ServerLevelData into WeatherData. Vanilla's
+     * ServerLevel returns the server-global instance, so a personal realm must
+     * provide its own instance or changing it also changes every dimension.
+     * The lazy initialization is required because ServerLevel consults this
+     * virtual method from its constructor.
+     */
+    @Override
+    public WeatherData getWeatherData() {
+        if (this.realmWeatherData == null) {
+            this.realmWeatherData = new WeatherData();
+        }
+        return this.realmWeatherData;
+    }
+
+    /** Server-side time queries must use the realm lock, not the shared server clock. */
+    @Override
+    public long getDefaultClockTime() {
+        return lockedClockTime();
+    }
+
+    @Override
+    public long getOverworldClockTime() {
+        return lockedClockTime();
+    }
+
     @Override
     public void tick(BooleanSupplier hasTime) {
-        // A nested invocation would multiply the pass budget recursively. The
-        // normal server loop is the sole permitted entry into this scheduler.
         if (this.tickingRealm) return;
-        var owner = RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId);
+        ServerPlayer owner = RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId);
         if (owner == null || owner.level() != this) {
             this.tickBudget.restore();
         }
@@ -120,27 +143,52 @@ final class PersonalRealmServerLevel extends ServerLevel {
         } finally {
             this.tickingRealm = false;
         }
+        syncOwnerEnvironment(owner);
+    }
+
+    private long lockedClockTime() {
+        return RealmEnvironmentPolicy.lockedDayTime(this.realmLevelData == null
+                || this.realmLevelData.lockedDaytime());
     }
 
     private void applyEnvironmentLock() {
-        realmLevelData.setDayTime(RealmEnvironmentPolicy.lockedDayTime(realmLevelData.lockedDaytime()));
         int weather = realmLevelData.lockedWeatherMode();
         boolean raining = RealmEnvironmentPolicy.requiresRain(weather);
         boolean thundering = RealmEnvironmentPolicy.requiresThunder(weather);
-        if (realmLevelData.isRaining() != raining) realmLevelData.setRaining(raining);
-        if (realmLevelData.isThundering() != thundering) realmLevelData.setThundering(thundering);
+        WeatherData weatherData = getWeatherData();
+        if (weatherData.isRaining() != raining) weatherData.setRaining(raining);
+        if (weatherData.isThundering() != thundering) weatherData.setThundering(thundering);
         if (raining) {
-            if (realmLevelData.getRainTime() < 200) realmLevelData.setRainTime(12_000);
-            if (realmLevelData.getClearWeatherTime() != 0) realmLevelData.setClearWeatherTime(0);
+            if (weatherData.getRainTime() < 200) weatherData.setRainTime(12_000);
+            if (weatherData.getClearWeatherTime() != 0) weatherData.setClearWeatherTime(0);
         } else {
-            if (realmLevelData.getClearWeatherTime() < 200) realmLevelData.setClearWeatherTime(12_000);
-            if (realmLevelData.getRainTime() != 0) realmLevelData.setRainTime(0);
+            if (weatherData.getClearWeatherTime() < 200) weatherData.setClearWeatherTime(12_000);
+            if (weatherData.getRainTime() != 0) weatherData.setRainTime(0);
         }
         if (thundering) {
-            if (realmLevelData.getThunderTime() < 200) realmLevelData.setThunderTime(12_000);
-        } else if (realmLevelData.getThunderTime() != 0) {
-            realmLevelData.setThunderTime(0);
+            if (weatherData.getThunderTime() < 200) weatherData.setThunderTime(12_000);
+        } else if (weatherData.getThunderTime() != 0) {
+            weatherData.setThunderTime(0);
         }
+        setRainLevel(raining ? 1.0F : 0.0F);
+        setThunderLevel(thundering ? 1.0F : 0.0F);
+        environmentAttributes().invalidateTickCache();
+    }
+
+    /**
+     * World clocks are server-global in 26.1. Send the owner a realm-local
+     * frozen state while they are inside this dimension, without mutating the
+     * clock seen by the overworld or another player's realm.
+     */
+    private void syncOwnerEnvironment(@Nullable ServerPlayer owner) {
+        if (owner == null || owner.level() != this) return;
+        dimensionType().defaultClock().ifPresent(clock -> owner.connection.send(
+                new ClientboundSetTimePacket(getGameTime(), Map.of(clock,
+                        new ClockNetworkState(lockedClockTime(), 0.0F, 0.0F)))));
+        owner.connection.send(new ClientboundGameEventPacket(
+                ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, getRainLevel(1.0F)));
+        owner.connection.send(new ClientboundGameEventPacket(
+                ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, getThunderLevel(1.0F)));
     }
 
     static double clampTickScale(double requestedScale) {
@@ -150,7 +198,6 @@ final class PersonalRealmServerLevel extends ServerLevel {
         return Math.max(MIN_TICK_SCALE, Math.min(MAX_TICK_SCALE, requestedScale));
     }
 
-    /** Fraction-preserving tick budget, kept package-visible for contract tests. */
     static final class TickBudget {
         private boolean active;
         private double scale = 1.0D;
@@ -158,9 +205,13 @@ final class PersonalRealmServerLevel extends ServerLevel {
         private int carryPermille;
 
         void activate(double requestedScale) {
+            double clampedScale = clampTickScale(requestedScale);
+            int clampedPermille = (int) Math.round(
+                    clampedScale * RealmTimeScalePolicy.NORMAL_PERMILLE);
+            if (this.active && this.scalePermille == clampedPermille) return;
             this.active = true;
-            this.scale = clampTickScale(requestedScale);
-            this.scalePermille = (int) Math.round(this.scale * RealmTimeScalePolicy.NORMAL_PERMILLE);
+            this.scale = clampedScale;
+            this.scalePermille = clampedPermille;
             this.carryPermille = 0;
         }
 

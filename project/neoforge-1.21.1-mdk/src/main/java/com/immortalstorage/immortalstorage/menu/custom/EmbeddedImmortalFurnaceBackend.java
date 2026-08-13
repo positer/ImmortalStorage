@@ -5,6 +5,7 @@ import com.immortalstorage.immortalstorage.item.custom.SpiritSwordItem;
 import com.immortalstorage.immortalstorage.item.custom.SpiritSwordTempering;
 import com.immortalstorage.immortalstorage.item.custom.TrueYuanItem;
 import com.immortalstorage.immortalstorage.item.ModItems;
+import com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.recipe.ModRecipes;
 import net.minecraft.core.HolderLookup;
@@ -43,8 +44,8 @@ import java.util.function.Supplier;
  * channel; two additional input/result pairs extend the same container to
  * three independent work channels sharing one fuel slot.
  */
-public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
-    private static final int NBT_VERSION = 2;
+public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer implements ReinforcementPluginHost {
+    private static final int NBT_VERSION = 3;
     private static final String ITEMS_TAG = "Items";
     private static final String RECIPE_USAGE_TAG = "RecipeUsage";
     private static final String RECALL_BACKEND_TAG = "spiritSwordRecallBackend";
@@ -58,6 +59,7 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
     static final int RESULT_2 = 4;
     static final int INPUT_3 = 5;
     static final int RESULT_3 = 6;
+    static final int PLUGIN = 7;
     static final int DATA_COUNT = 10;
 
     private static final int TRUE_YUAN_BURN_TICKS = 150;
@@ -124,7 +126,7 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
     };
 
     public EmbeddedImmortalFurnaceBackend() {
-        super(7);
+        super(8);
     }
 
     public CompoundTag save(HolderLookup.Provider registries) {
@@ -500,7 +502,20 @@ public final class EmbeddedImmortalFurnaceBackend extends SimpleContainer {
 
     void tickCore(long gameTick, ImmortalFurnaceEngine.FuelResolver fuelResolver,
                   ImmortalFurnaceEngine.RecipeResolver recipeResolver) {
-        if (engine.tick(gameTick, this, fuelResolver, recipeResolver, this::isRecallReserved)) setChanged();
+        if (engine.tick(gameTick, this, fuelResolver, recipeResolver,
+                this::isRecallReserved, reinforcementMultiplier())) setChanged();
+    }
+
+    @Override
+    public ItemStack reinforcementPlugin() {
+        return getItem(PLUGIN);
+    }
+
+    @Override
+    public void setReinforcementPlugin(ItemStack stack) {
+        setItem(PLUGIN, ReinforcementPluginHost.isPlugin(stack)
+                ? stack.copyWithCount(1) : ItemStack.EMPTY);
+        setChanged();
     }
 
     private int firstAvailableChannel() {

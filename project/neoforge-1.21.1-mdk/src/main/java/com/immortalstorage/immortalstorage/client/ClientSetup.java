@@ -27,6 +27,7 @@ import com.immortalstorage.immortalstorage.client.screen.XianqiaoStorageScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.AdvancedXianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.TreasureBasinScreen;
+import com.immortalstorage.immortalstorage.client.screen.WorldShardMinerScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinManagerScreen;
 import com.immortalstorage.immortalstorage.client.screen.StabilizedMiniatureImmortalRuinScreen;
 import com.immortalstorage.immortalstorage.client.screen.MiniatureImmortalRuinScreen;
@@ -100,6 +101,7 @@ public final class ClientSetup {
         e.register(ModMenus.ENERGY_CRYSTAL.get(), EnergyCrystalScreen::new);
         e.register(ModMenus.SOURCE_VEIN.get(), SourceVeinScreen::new);
         e.register(ModMenus.TREASURE_BASIN.get(), TreasureBasinScreen::new);
+        e.register(ModMenus.WORLD_SHARD_MINER.get(), WorldShardMinerScreen::new);
         e.register(ModMenus.SOURCE_VEIN_MANAGER.get(), SourceVeinManagerScreen::new);
         e.register(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu,

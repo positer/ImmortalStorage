@@ -56,6 +56,9 @@ public final class ModCreativeTabs {
                                 .ifPresent(enchantment -> output.accept(net.minecraft.world.item.enchantment.EnchantmentHelper.createBook(
                                         new EnchantmentInstance(enchantment, 1))));
                         output.accept(ModItems.SPIRIT_DRIVE.get());
+                        output.accept(ModItems.DIMENSIONAL_PEEKING_ORDER.get());
+                        output.accept(ModItems.DIMENSIONAL_PARALLEL_TALISMAN.get());
+                        output.accept(ModItems.GREAT_THOUSAND_WORLD_PARALLEL_EDICT.get());
                         if (CompatManager.AE2_LOADED) {
                             output.accept(ModItems.XIANQIAO_EXCHANGE_CELL.get());
                         }
@@ -92,6 +95,14 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.CRUDE_SPIRIT_IRON_BLOCK.get());
+                    })
+                    .build());
+
+    public static final Supplier<CreativeModeTab> SOURCE_VEINS = TABS.register("source_veins",
+            () -> CreativeModeTab.builder()
+                    .icon(() -> new ItemStack(ModBlocks.WATER_VEIN.get()))
+                    .title(Component.translatable("itemGroup.immortalstorage.source_veins"))
+                    .displayItems((params, output) -> {
                         output.accept(ModBlocks.WATER_VEIN.get());
                         output.accept(ModBlocks.MILK_VEIN.get());
                         output.accept(ModBlocks.LAVA_VEIN.get());
@@ -131,8 +142,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.NETHER_STAR_VEIN.get());
                         output.accept(ModBlocks.ENCHANTED_GOLDEN_APPLE_VEIN.get());
                         output.accept(ModBlocks.DRAGON_EGG_VEIN.get());
-                    })
-                    .build());
+                    }).build());
 
     private ModCreativeTabs() {}
 }

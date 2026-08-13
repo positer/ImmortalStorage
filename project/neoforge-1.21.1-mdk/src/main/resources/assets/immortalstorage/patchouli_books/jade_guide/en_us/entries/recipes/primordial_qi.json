@@ -1,1 +1,13 @@
-{"name":"Qi Bottles and Primordial Qi","icon":"immortalstorage:primordial_qi","category":"immortalstorage:recipes","sortnum":40,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:qi_collecting_bottle","recipe2":"immortalstorage:disposable_qi_collecting_bottle"},{"type":"patchouli:text","text":"Use air below a dimension's minimum build height or at/above its maximum build height. The reusable bottle has 1024 durability; disposable bottles stack to 16. Output enters inventory first, then personal storage."},{"type":"patchouli:text","text":"Primordial Qi shrinks a living entity to zero over 10 ticks (0.5 seconds) and discards it without a kill. A matching spawn egg is discovered from the global item registry. Config can block entity ids; tribulation disables use; Ender Dragon conversion completes the dragon fight."},{"type":"patchouli:text","text":"Ancient Jade can also appear in every vanilla suspicious sand or suspicious gravel archaeology table at a configurable chance, 5% by default."}]}
+{
+  "name":"Gathering Primordial Qi",
+  "icon":"immortalstorage:primordial_qi",
+  "category":"immortalstorage:recipes",
+  "sortnum":40,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:qi_collecting_bottle","recipe2":"immortalstorage:disposable_qi_collecting_bottle","title":"Two Collecting Bottles","text":"The durable bottle lasts 1,024 uses and does not stack. Disposable bottles stack to 16 and are consumed on use."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:qi_collecting_bottle,immortalstorage:disposable_qi_collecting_bottle","title":"Gather at the World's Edge","text":"In any dimension, move below minimum build height or above maximum build height and use the bottle on open air. Primordial Qi enters the inventory first, then personal storage if the inventory is full."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:primordial_qi","title":"Primordial Qi","text":"Use it on an entity to shrink that entity out of existence over 10 ticks, without counting as a player kill. If a matching spawn egg exists in the registry, one drops. Servers may deny selected entity types."},
+    {"type":"patchouli:text","title":"Limits and Exceptions","text":"Primordial Qi is disabled during tribulation so it cannot bypass the trial. Removing the Ender Dragon still completes the vanilla dragon flow. Modded entities work too, but no substitute item is invented when they have no registered spawn egg."},
+    {"type":"patchouli:text","title":"Another Trace of the Jade","text":"Besides initial grants, crafting and village chests, Ancient Jade may appear in vanilla suspicious sand or suspicious gravel archaeology loot, at 5% by default."}
+  ]
+}

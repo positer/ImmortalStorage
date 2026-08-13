@@ -10,6 +10,7 @@ import com.immortalstorage.immortalstorage.menu.custom.ImmortalFurnaceMenu;
 import com.immortalstorage.immortalstorage.menu.custom.KongqiaoMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.TreasureBasinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.WorldShardMinerMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SourceVeinManagerMenu;
 import com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu;
@@ -58,6 +59,9 @@ public final class ModMenus {
 
     public static final Supplier<MenuType<TreasureBasinMenu>> TREASURE_BASIN =
             MENUS.register("treasure_basin", () -> IMenuTypeExtension.create(TreasureBasinMenu::new));
+
+    public static final Supplier<MenuType<WorldShardMinerMenu>> WORLD_SHARD_MINER =
+            MENUS.register("world_shard_miner", () -> IMenuTypeExtension.create(WorldShardMinerMenu::new));
 
     public static final Supplier<MenuType<SourceVeinManagerMenu>> SOURCE_VEIN_MANAGER =
             MENUS.register("source_vein_manager", () -> IMenuTypeExtension.create(SourceVeinManagerMenu::new));

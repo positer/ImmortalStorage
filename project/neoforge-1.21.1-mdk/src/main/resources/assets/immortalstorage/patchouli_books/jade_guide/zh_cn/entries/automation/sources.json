@@ -1,12 +1,180 @@
 {
-  "name":"源方块与管理器","icon":"immortalstorage:water_vein","category":"immortalstorage:automation","sortnum":0,
-  "pages":[
-    {"type":"patchouli:spotlight","item":"immortalstorage:water_vein","title":"真实长整型缓存","text":"每个源方块都先把资源放入自身真实缓存。自动化、Shift取出与存储总线只能抽取缓存；收费源缓存不足时才为差额消耗仙元。关闭六面模式只停止主动推出，不会隐藏标准能力。"},
-    {"type":"patchouli:text","text":"六面可分别设置推出、绕过上限推出或关闭，并分别输入每刻速率。六面PUSH只负责主动推出缓存，标准物品/流体能力仍可按规则读取真实缓存；关闭某面不会制造资源，也不会触发仙元转化。流体源接受六面输入的任何流体并销毁。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:echo_shard_vein","text":"八阶解锁回响碎片源方块。它不可堆叠，每批用1回响碎片兑换16仙元，并接入管理器聚合与六面推出。"},
-    {"type":"patchouli:text","text":"源方块管理器只能放在自己的仙窍中，有72个单件槽且同名源最多一个。它聚合成员的仅抽取视图并绑定仙窍目录，但每个源仍独立工作、独立保存缓存。"},
-    {"type":"patchouli:text","text":"管理器外观由12根黑色梁组成开敞笼体，内部八个旋转源核按72槽占用量分段显示：空为蓝、使用中为紫、全满为红。拆下后物品栏与手持渲染保留显示状态；旧玩家绑定会随统一持久身份一次性迁移。"},
-    {"type":"patchouli:text","text":"现有源定义覆盖水、奶、岩浆、建筑材料、矿物、灵铁、灵晶、回响碎片、远古残骸、下界之星、附魔金苹果和龙蛋等资源。配置或数据包可扩展源定义；同一有效配置中同一资源只能有一个定义，避免缓存、费用和统计重复。源方块的仙元收费/预付机制仍然有效，这与普通接口的额外资源账本完全分离。"},
-    {"type":"patchouli:text","text":"成员源的缓存、所有者和面设置写入源方块物品的完整方块实体数据，管理器拆下或销毁时仍按原子事务保存。标准物品/流体能力可读取真实缓存，不会因为模拟查询凭空消耗仙元。"}
+  "name": "源方块与管理器",
+  "icon": "immortalstorage:water_vein",
+  "category": "immortalstorage:automation",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:water_vein",
+      "title": "从真实缓存开始",
+      "text": "源方块先按自身规则生成资源，再写入可持久化的长整型缓存。玩家取出、六面自动化、AE2与RS存储总线读取的都是这份真实缓存；模拟查询不会凭空生产，也不会提前扣除仙元。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:source_vein_manager",
+      "title": "把源编成目录",
+      "text": "源方块管理器只可放在所属玩家的仙窍。72个槽位各容纳一个源方块，同名源只能登记一次；管理器把成员缓存汇成统一的只抽取目录，成员仍独立生产、保存与结算。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "面设置与流体",
+      "text": "每个面可独立设为关闭、按速率推出或绕过速率推出。面开关只约束主动输出，不遮蔽物品/流体能力；流体源会销毁从六面灌入的流体。水源与岩浆源还可分别充当Create风扇的洗涤与鼓风催化介质。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "渲染即状态",
+      "text": "方块与流体源以缩小、半透明的真实内容在几何中心缓慢旋转；物品源保持不透明、竖直居中并绕Y轴旋转。管理器的八枚源核按72槽占用量分段变色，拆下后物品栏与手持预览继续反映所存状态。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:custom_source_vein",
+      "title": "给整合包作者",
+      "text": "数据包与配置可向统一源定义目录注入其他资源源方块。每个有效资源只允许一份最终定义，避免费用、缓存与统计重复；外部源沿用同一缓存、面行为、中心悬浮和管理器聚合规则。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "仙元边界",
+      "text": "收费源仅在真实缓存不足时为差额结算仙元；源方块原有的仙元收费、预付与兑换机制保持有效。被取消的是无源方块额外资源的旧仙元转化，两者不可混为一谈。破坏源或管理器时，物主、缓存和面设置随完整方块实体数据一并保存。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:water_vein",
+      "recipe2": "immortalstorage:milk_vein",
+      "title": "水与奶",
+      "text": "两种基础流体源分别持续提供水和奶，动态悬浮核心直接采用对应流体材质。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:lava_vein",
+      "recipe2": "immortalstorage:cobblestone_vein",
+      "title": "岩浆与圆石",
+      "text": "岩浆源提供可抽取流体；圆石源由前序基础源继续展开自动建材链。"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "immortalstorage:stone_vein_smelting",
+      "recipe2": "immortalstorage:smooth_stone_vein_smelting",
+      "title": "石头与平滑石",
+      "text": "圆石源依次烧炼为石头源和平滑石源，保留清晰的材料进阶。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:white_concrete_vein",
+      "recipe2": "immortalstorage:orange_concrete_vein",
+      "title": "白色与橙色混凝土",
+      "text": "彩色混凝土源保留各自方块身份，进入管理器时仍按名称去重。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:magenta_concrete_vein",
+      "recipe2": "immortalstorage:light_blue_concrete_vein",
+      "title": "品红与淡蓝混凝土",
+      "text": "每一种颜色都有独立配方、缓存和目录条目。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:yellow_concrete_vein",
+      "recipe2": "immortalstorage:lime_concrete_vein",
+      "title": "黄色与黄绿色混凝土",
+      "text": "可直接用于持续供应大规模建筑材料。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:pink_concrete_vein",
+      "recipe2": "immortalstorage:gray_concrete_vein",
+      "title": "粉色与灰色混凝土",
+      "text": "自动输出与外部抽取都从实际缓存扣除。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:light_gray_concrete_vein",
+      "recipe2": "immortalstorage:cyan_concrete_vein",
+      "title": "淡灰与青色混凝土",
+      "text": "关闭主动输出后，资源仍会留在源方块缓存中。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:purple_concrete_vein",
+      "recipe2": "immortalstorage:blue_concrete_vein",
+      "title": "紫色与蓝色混凝土",
+      "text": "管理器只汇总成员，不复制成员库存。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:brown_concrete_vein",
+      "recipe2": "immortalstorage:green_concrete_vein",
+      "title": "棕色与绿色混凝土",
+      "text": "标准存储总线可读取管理器暴露的聚合视图。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:red_concrete_vein",
+      "recipe2": "immortalstorage:black_concrete_vein",
+      "title": "红色与黑色混凝土",
+      "text": "十六种颜色至此齐全，均遵循同一兼容性规则。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:dirt_vein",
+      "recipe2": "immortalstorage:oak_log_vein",
+      "title": "泥土与橡木原木",
+      "text": "常用自然建材也可纳入连续供应链。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:coal_vein",
+      "recipe2": "immortalstorage:copper_vein",
+      "title": "煤炭与粗铜",
+      "text": "矿物源输出对应资源物品，而非伪造矿石方块状态。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:iron_vein",
+      "recipe2": "immortalstorage:gold_vein",
+      "title": "粗铁与粗金",
+      "text": "三种粗金属源可直接服务后续熔炼与自动合成。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:lapis_vein",
+      "recipe2": "immortalstorage:redstone_vein",
+      "title": "青金石与红石",
+      "text": "长整型缓存允许大规模网络持续抽取而不发生32位截断。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:spirit_iron_vein",
+      "recipe2": "immortalstorage:spirit_crystal_vein",
+      "title": "粗灵铁与灵晶",
+      "text": "两种修行矿物拥有独立源定义；它们的世界生成分别跟随铁矿与钻石矿。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:diamond_vein",
+      "recipe2": "immortalstorage:emerald_vein",
+      "title": "钻石与绿宝石",
+      "text": "高阶矿物源延续相同的真实缓存与收费边界。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:echo_shard_vein",
+      "recipe2": "immortalstorage:ancient_debris_vein",
+      "title": "回响碎片与远古残骸",
+      "text": "稀有资源源不会绕过阶段与配方成本；生成后的资源仍先进入缓存。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:nether_star_vein",
+      "recipe2": "immortalstorage:enchanted_golden_apple_vein",
+      "title": "下界之星与附魔金苹果",
+      "text": "极高阶源适合交由管理器统一暴露，再由面配置决定去向。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:dragon_egg_vein",
+      "title": "龙蛋源",
+      "text": "龙蛋源位于内置源链末端。它和其他物品源一样保持物品本体不透明、竖直居中旋转。"
+    }
   ]
 }

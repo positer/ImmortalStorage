@@ -1,0 +1,15 @@
+{
+  "name":"Reinforcement Plugins",
+  "icon":"immortalstorage:dimensional_peeking_order",
+  "category":"immortalstorage:automation",
+  "sortnum":35,
+  "pages":[
+    {"type":"patchouli:smithing","recipe":"immortalstorage:dimensional_peeking_order","title":"Dimensional Peeking Order · 4x","text":"Tier one: Echo Shard template, Netherite Upgrade Smithing Template base, and Spirit Crystal addition. It stacks to 64 in ordinary inventories, but a machine plugin position holds one."},
+    {"type":"patchouli:smithing","recipe":"immortalstorage:dimensional_parallel_talisman","title":"Dimensional Parallel Talisman · 16x","text":"Tier two: Spirit Core template, Dimensional Peeking Order base, and Nurturing Crystal addition. Use it on a machine with a lower tier to replace that plugin and return the old item to inventory first."},
+    {"type":"patchouli:smithing","recipe":"immortalstorage:great_thousand_world_parallel_edict","title":"Great-Thousand-World Edict · 256x","text":"Tier three: Spirit Core template, Dimensional Parallel Talisman base, and Miniature Immortal Ruin addition. Equal or lower tiers do not overwrite; if inventory is full, the old plugin drops safely."},
+    {"type":"patchouli:text","title":"Furnaces: Faster Processing","text":"Placed and embedded Immortal Furnaces multiply processing progress only. Recipe output and total fuel burn ticks never change. Their screen arranges plugin, cyan-white flame, and fuel from top to bottom."},
+    {"type":"patchouli:text","title":"Simulators: Larger Output","text":"The Simulated Field and Reincarnation Furnace share the original tool/weapon slot with plugins; no extra slot is added. Processing-stack count and plugin multiplier combine in one settlement, without repeating loot logic or changing fuel duration."},
+    {"type":"patchouli:text","title":"Crystals and Both Collectors","text":"Xianeng Crystals multiply FE, Mana, or Source production per tick. With a plugin, charged items stay in processing and Certus-like recipes are disabled. The World Shard Miner multiplies each ore batch and the Treasure Basin each loot roll without shortening either period. A locally overflowing cycle drops its excess once, then pauses for cache movement."},
+    {"type":"patchouli:text","title":"Stabilized Ruins","text":"The four stabilized ruins multiply only reversed output groups attempted per round. The round ends immediately when the cache empties or every target rejects, rather than spinning merely to reach the nominal multiplier."}
+  ]
+}

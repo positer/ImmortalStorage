@@ -50,7 +50,7 @@ public class ImmortalFurnaceScreen extends AbstractContainerScreen<ImmortalFurna
         }
 
         int flameProgress = Mth.ceil(menu.getLitProgress() * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, x + 18, y + 33,
+        VanillaGuiPainter.furnaceFlame(graphics, x + 18, y + 41,
                 flameProgress, menu.isLit());
     }
 

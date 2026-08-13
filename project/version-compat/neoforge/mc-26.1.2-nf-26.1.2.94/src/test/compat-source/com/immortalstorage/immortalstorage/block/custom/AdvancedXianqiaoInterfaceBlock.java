@@ -76,12 +76,12 @@ public final class AdvancedXianqiaoInterfaceBlock extends Block implements Entit
             ItemStack stack, BlockState state, Level level, BlockPos pos,
             Player player, net.minecraft.world.InteractionHand hand, BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof AdvancedXianqiaoInterfaceBlockEntity interfaceEntity)) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         InteractionResult result = XianqiaoInterfaceCompatHooks.useItemOn(
                 interfaceEntity, player, stack, hand, hit);
         return result == InteractionResult.PASS
-                ? InteractionResult.PASS
+                ? InteractionResult.TRY_WITH_EMPTY_HAND
                 : (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
     }
 

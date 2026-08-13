@@ -84,6 +84,8 @@ public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMe
         ItemStack current=slot.getItem(); result=current.copy();
         if(index < SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT) {
             if(!moveItemStackTo(current, SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(current)) {
+            if (!moveItemStackTo(current, 2, 3, false)) return ItemStack.EMPTY;
         } else if(!moveItemStackTo(current,0,3,false)) return ItemStack.EMPTY;
         if(current.isEmpty()) slot.setByPlayer(ItemStack.EMPTY); else slot.setChanged();
         return result;

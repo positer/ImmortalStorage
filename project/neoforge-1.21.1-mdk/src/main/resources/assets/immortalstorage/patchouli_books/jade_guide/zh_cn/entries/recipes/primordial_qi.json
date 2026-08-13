@@ -1,1 +1,13 @@
-{"name":"采气瓶与混元一气","icon":"immortalstorage:primordial_qi","category":"immortalstorage:recipes","sortnum":40,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:qi_collecting_bottle","recipe2":"immortalstorage:disposable_qi_collecting_bottle"},{"type":"patchouli:text","text":"在任意维度最低建筑高度以下或最高建筑高度以上对空气右键采集混元一气。采气瓶耐久1024；一次性采气瓶最多堆叠16并直接消耗。产物先入背包，再入个人存储。"},{"type":"patchouli:text","text":"混元一气右键生物会在10 tick（0.5秒）内将其缩至零并消失，不计击杀；若全局物品注册表存在匹配刷怪蛋则掉落它。配置可禁止实体类型。渡劫期间不可使用；末影龙消失会正常完成末地龙战。"},{"type":"patchouli:text","text":"古玉除村庄宝箱与初始配置外，还可从任意原版可疑的沙子或可疑的沙砾考古战利品中按配置概率获得，默认5%。"}]}
+{
+  "name":"采气与混元一气",
+  "icon":"immortalstorage:primordial_qi",
+  "category":"immortalstorage:recipes",
+  "sortnum":40,
+  "pages":[
+    {"type":"patchouli:crafting","recipe":"immortalstorage:qi_collecting_bottle","recipe2":"immortalstorage:disposable_qi_collecting_bottle","title":"两种采气瓶","text":"耐久瓶可使用1024次且不堆叠；一次性瓶每组最多16只，用后消耗。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:qi_collecting_bottle,immortalstorage:disposable_qi_collecting_bottle","title":"到天地边缘采气","text":"在任意维度低于最低建筑高度，或高于最高建筑高度时，对空气右键。所得混元一气先进入背包，背包已满再进入个人存储。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:primordial_qi","title":"混元一气","text":"对生物右键，会在10刻内将其缩至消失，不计玩家击杀。若该实体有可识别刷怪蛋，便掉落一枚；服务器可将实体加入禁用表。"},
+    {"type":"patchouli:text","title":"边界与例外","text":"渡劫期间不能使用混元一气，以免绕过劫敌。末影龙被化去时仍会完成原版末地龙流程。模组生物同样可处理，但没有注册刷怪蛋时不会凭空生成替代物。"},
+    {"type":"patchouli:text","title":"另一条古玉线索","text":"除初始发放、合成与村庄宝箱外，古玉还可能从原版可疑的沙子或沙砾考古战利品中出现，默认概率5%。"}
+  ]
+}

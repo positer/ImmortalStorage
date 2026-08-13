@@ -4,6 +4,6 @@
   "package": "com.immortalstorage.immortalstorage.mixin.core",
   "compatibilityLevel": "JAVA_21",
   "mixins": ["MerchantMenuMixin", "AbstractFurnaceSpiritDriveMixin", "AbstractFurnaceSpiritSwordTemperingMixin"],
-  "client": [],
+  "client": ["ItemInHandRendererOneQiMuzzleMixin"],
   "injectors": {"defaultRequire": 1}
 }

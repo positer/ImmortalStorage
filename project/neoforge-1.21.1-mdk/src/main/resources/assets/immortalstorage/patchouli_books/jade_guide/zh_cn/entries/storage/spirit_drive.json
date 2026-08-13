@@ -1,8 +1,12 @@
 {
-  "name":"仙灵驱动器","icon":"immortalstorage:spirit_drive","category":"immortalstorage:storage","sortnum":20,
+  "name":"仙灵驱动器",
+  "icon":"immortalstorage:spirit_drive",
+  "category":"immortalstorage:storage",
+  "sortnum":20,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_drive","text":"仙灵驱动器不可堆叠。首次手持对空气右键认主；Tooltip显示最新物主名。合法旧会话UUID会原地迁移为仙藏持久身份，不会清空物品数据，也不能被其他玩家强制改绑。"},
-    {"type":"patchouli:text","text":"驱动器是可重复使用的燃料凭据，而不是一次性燃料。放入普通熔炉或仙藏设备后，从已在线物主的个人存储优先扣除1仙元，余额不足再扣1真元；没有可用余额时设备等待并重试。设备位于玩家仙窍时，仙窍维度物主绑定优先于驱动器物主，但仙窍输出开关不会停用已经放入燃料槽的驱动器替代燃料。"},
-    {"type":"patchouli:text","text":"仙炉、模拟轮回炼化炉、模拟灵田和仙能水晶都支持驱动器。仙窍外没有驱动器或驱动器未认主时不绑定玩家；设备的库存、产物和驱动器本身不会因更换启动器而改变，所有权解析与个人仙窍、存储磁盘、接口和替死傀儡共用同一个持久身份。"}
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_drive","title":"可携带的身份凭据","text":"仙灵驱动器不可堆叠。首次手持对空气右键认主；Tooltip会显示最新物主名。认主后不能被其他玩家强行改绑。"},
+    {"type":"patchouli:text","title":"它不是燃料本身","text":"驱动器放入兼容燃料槽后，从在线物主的个人存储支付：先扣1仙元，不足再扣1真元。余额不足时机器等待并重试；驱动器本体不会消耗。"},
+    {"type":"patchouli:text","title":"谁拥有机器","text":"设备若位于个人仙窍，维度物主优先；只有离开仙窍维度后，驱动器物主才提供绑定。没有可靠物主便不绑定。仙窍输出开关不会停用已经插入的驱动器燃料替代。"},
+    {"type":"patchouli:text","title":"可用设备","text":"仙炉、模拟轮回炼化炉、模拟灵田和仙能水晶系列都接受驱动器。库存、产物与驱动器不会因更换启动器而改变；旧会话UUID只在证据可靠时原地迁移为持久身份。"}
   ]
 }

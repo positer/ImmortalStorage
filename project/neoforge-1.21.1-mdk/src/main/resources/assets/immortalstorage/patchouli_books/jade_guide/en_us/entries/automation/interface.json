@@ -1,11 +1,13 @@
 {
-  "name":"Xianqiao Interface","icon":"immortalstorage:xianqiao_interface","category":"immortalstorage:automation","sortnum":10,
+  "name":"Xianqiao Interface",
+  "icon":"immortalstorage:xianqiao_interface",
+  "category":"immortalstorage:automation",
+  "sortnum":10,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_interface","text":"The owner-bound interface may be placed in any dimension. Nine mixed targets cache items, fluids and installed external resources. Empty-hand left-click clears a target; right-click edits quantity and its six-face mask."},
-    {"type":"patchouli:text","text":"Active Pull drains every storable resource from enabled adjacent faces, not just configured targets. Active Push exports real caches, but only through faces allowed by that slot's output face mask. Faces default Disabled; this never rejects another mod's passive capability access."},
-    {"type":"patchouli:text","text":"FE, Botania Mana and Ars Source use the real interface cache first. External namespaces are now independent long-valued ledgers; non-source FE, Mana, and Source no longer convert Immortal Yuan. Directionless Botania spark and Ars block interactions ignore face modes."},
-    {"type":"patchouli:text","text":"Release: clearing or retargeting a cache slot atomically returns its non-empty buffer to Xianqiao; empty-hand left-click on a configured slot returns and clears it. Breaking the interface also returns every cache to Xianqiao first, keeping only un-placeable overflow in compact dropped-item data that resumes on re-placement."},
-    {"type":"patchouli:text","text":"External slots use stable resource keys for Forge Energy, Botania Mana, Ars Source, Industrial Foregoing Souls and Mekanism chemicals. Chemical identity comes from a real container rather than a guessed ghost slot. Legacy conversion settings remain readable for old TOML files but no longer affect non-source external resources; only installed integrations appear."},
-    {"type":"patchouli:text","text":"Passive capabilities are independent from active Pull/Push. Pipes may insert matching resources through any face, while the active scheduler follows its switches and masks. Botania sparks and Ars Source Providers are directionless official capabilities and remain usable even when every face is Disabled."}
+    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_interface","title":"Connect Xianqiao to Pipes","text":"From stage six, place an interface to claim it. Its nine targets are also real local caches. Use an item or container on a slot to select a resource; empty-hand attack first returns the cache, then clears it. Use a configured slot to edit quantity and face masks."},
+    {"type":"patchouli:text","title":"Choose a Resource Once","text":"Items and fluids can be sampled directly. FE, Botania Mana, Ars Source, Industrial Foregoing Souls and Mekanism chemicals use stable resource keys. Chemicals must be sampled from a real container; the interface never guesses an identity. Missing integrations stay out of the catalogue."},
+    {"type":"patchouli:text","title":"Pull and Push","text":"Active Pull takes every storable resource from the matching adjacent face, not only configured targets. Active Push sends only real cache contents and obeys the master switch, face mode, and per-slot mask together. Every face starts disabled."},
+    {"type":"patchouli:text","title":"Pipes May Still Access It","text":"External pipes use the standard capability, independently of the interface scheduler. Disabling an active face does not hide the cache capability. Botania Sparks and directionless Ars interactions have no face concept and therefore follow their official APIs."},
+    {"type":"patchouli:text","title":"Safe Retargeting and Pickup","text":"Clearing, retargeting, or breaking first returns every cache to Xianqiao atomically. Only a remainder that truly cannot fit is compressed into the dropped block and retried after placement. External resources use independent long-valued ledgers and are no longer fabricated from Immortal Yuan."}
   ]
 }

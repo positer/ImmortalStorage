@@ -1,8 +1,34 @@
 {
-  "name":"灵器五模式","icon":"immortalstorage:spirit_staff","category":"immortalstorage:equipment","sortnum":0,
-  "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_staff","text":"灵器可切换探索、扳手、挖掘、建筑、传送五种模式。不能在附魔台随机附魔，但能通过铁砧接受当前下界合金镐兼容的附魔。"},
-    {"type":"patchouli:text","text":"探索：对空气右键开关；启用且仍手持时，打开箱子、木桶或Lootr容器会把当前页面内容事务性收入个人存储。扳手：兼容公开扳手语义，Shift右键安全拆下仙藏机器。"},
-    {"type":"patchouli:text","text":"挖掘模式保留下界合金等级；建筑可预览和批量放置。传送模式每次右键消耗一仙元，沿视线传送1至20格；按住默认反引号的特殊操作键滚轮调距。扳手可链接两个相反状态的同类仙墟，对空气Shift右键清除记录。"}
+  "name": "灵器：五种用法",
+  "icon": "immortalstorage:spirit_staff",
+  "category": "immortalstorage:equipment",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:spirit_staff",
+      "title": "一器贯穿旅途",
+      "text": "灵器依次切换探索、扳手、挖掘、建筑与传送。它不参与附魔台随机附魔，但铁砧可赋予当前下界合金镐兼容的附魔。先选模式，再按对应交互操作。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "探索",
+      "text": "对空气右键开关探索。启用并仍在手中时，打开箱子、木桶或Lootr容器会把当前页面内容以事务方式收入个人存储；空间不足的部分留在原容器。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "扳手",
+      "text": "按公开扳手语义旋转或拆卸兼容方块；潜行右键可安全拆下仙藏机器。它还能依次链接两个同类、状态相反的仙墟，潜行对空气使用则清除已记录端点。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "挖掘与建筑",
+      "text": "挖掘模式保持下界合金等级。建筑模式读取计划、显示范围预览并批量放置；方块状态在世界中变化后会重新按当前位置识别，不把小箱子合并为大箱子之类的状态变化误判为缺失。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "传送",
+      "text": "沿视线右键传送1至20格，每次消耗1仙元。按住可重绑定的特殊操作键（默认反引号）并滚轮调整距离；目标位置必须安全，余额不足则不执行。"
+    }
   ]
 }

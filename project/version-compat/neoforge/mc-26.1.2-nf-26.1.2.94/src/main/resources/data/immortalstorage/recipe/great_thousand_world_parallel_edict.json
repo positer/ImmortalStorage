@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "immortalstorage:spirit_core",
+  "base": "immortalstorage:dimensional_parallel_talisman",
+  "addition": "immortalstorage:miniature_immortal_ruin",
+  "result": {
+    "id": "immortalstorage:great_thousand_world_parallel_edict"
+  }
+}

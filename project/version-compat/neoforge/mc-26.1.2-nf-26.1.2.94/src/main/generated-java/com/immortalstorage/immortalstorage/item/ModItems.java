@@ -42,6 +42,8 @@ public final class ModItems {
                     "xianqiao_rs_exchange_disk", "source_vein_manager", "ancient_debris_vein",
                     "diamond_vein", "emerald_vein", "echo_shard_vein",
                     "energy_crystal", "mana_crystal", "source_crystal" -> Rarity.RARE;
+            case "dimensional_peeking_order", "dimensional_parallel_talisman",
+                    "great_thousand_world_parallel_edict" -> Rarity.EPIC;
             case "jade_guide", "true_yuan", "refined_pill_embryo", "refined_pill",
                     "disposable_qi_collecting_bottle",
                     "spirit_crystal", "spirit_crystal_ore", "deepslate_spirit_crystal_ore",
@@ -101,6 +103,12 @@ public final class ModItems {
             new Item.Properties().stacksTo(1).durability(SubstitutePuppetItem.MAX_DURABILITY));
     public static final Supplier<Item> MINIATURE_IMMORTAL_RUIN = registerItem(
             "miniature_immortal_ruin", MiniatureImmortalRuinItem::new, new Item.Properties().stacksTo(1));
+    public static final Supplier<Item> DIMENSIONAL_PEEKING_ORDER = registerItem(
+            "dimensional_peeking_order", p -> new ReinforcementPluginItem(p, 4));
+    public static final Supplier<Item> DIMENSIONAL_PARALLEL_TALISMAN = registerItem(
+            "dimensional_parallel_talisman", p -> new ReinforcementPluginItem(p, 16));
+    public static final Supplier<Item> GREAT_THOUSAND_WORLD_PARALLEL_EDICT = registerItem(
+            "great_thousand_world_parallel_edict", p -> new ReinforcementPluginItem(p, 256));
 
     public static final Supplier<Item> SPIRIT_SWORD = registerItem("spirit_sword", SpiritSwordItem::new);
     public static final Supplier<Item> IMMORTAL_RUIN_FORGED_SPIRIT_SWORD = registerItem(

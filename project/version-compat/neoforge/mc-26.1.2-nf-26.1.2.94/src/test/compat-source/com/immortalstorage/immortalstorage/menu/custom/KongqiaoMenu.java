@@ -70,14 +70,16 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     public static final int FURNACE_RESULT_2_SLOT = FURNACE_INPUT_2_SLOT + 1;
     public static final int FURNACE_INPUT_3_SLOT = FURNACE_RESULT_2_SLOT + 1;
     public static final int FURNACE_RESULT_3_SLOT = FURNACE_INPUT_3_SLOT + 1;
-    public static final int FURNACE_END = FURNACE_RESULT_3_SLOT + 1;
+    public static final int FURNACE_PLUGIN_SLOT = FURNACE_RESULT_3_SLOT + 1;
+    public static final int FURNACE_END = FURNACE_PLUGIN_SLOT + 1;
     public static final int ARMOR_START = FURNACE_END;
     public static final int ARMOR_END = ARMOR_START + 4;
     public static final int PLAYER_START = ARMOR_END;
     private static final int FURNACE_INPUT_X = 48;
     private static final int FURNACE_INPUT_Y = 129;
     private static final int FURNACE_FUEL_X = 8;
-    private static final int FURNACE_FUEL_Y = 147;
+    private static final int FURNACE_FUEL_Y = 165;
+    private static final int FURNACE_PLUGIN_Y = 129;
     private static final int FURNACE_RESULT_X = 134;
     private static final int FURNACE_RESULT_Y = 129;
     private static final int FURNACE_LANE_PITCH = 18;
@@ -165,6 +167,8 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
                 FURNACE_INPUT_X, FURNACE_INPUT_Y + FURNACE_LANE_PITCH * 2));
         this.addSlot(new FurnaceModuleResultSlot(player, furnace, EmbeddedImmortalFurnaceBackend.RESULT_3,
                 FURNACE_RESULT_X, FURNACE_RESULT_Y + FURNACE_LANE_PITCH * 2));
+        this.addSlot(new FurnaceModulePluginSlot(furnace, EmbeddedImmortalFurnaceBackend.PLUGIN,
+                FURNACE_FUEL_X, FURNACE_PLUGIN_Y));
 
         net.minecraft.world.entity.EquipmentSlot[] armorSlots = {
                 net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
@@ -256,6 +260,11 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
             } else if (slot >= playerStart && slot < playerEnd) {
                 if (isSmithingVisible() && moveItemStackToSmithingInput(in)) {
                     // The active smithing recipe determines the first compatible empty input.
+                } else if (isFurnaceVisible()
+                        && com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(in)) {
+                    if (!this.moveItemStackTo(in, FURNACE_PLUGIN_SLOT, FURNACE_PLUGIN_SLOT + 1, false)) {
+                        return ItemStack.EMPTY;
+                    }
                 } else if (isFurnaceVisible() && furnace.isFuel(in)) {
                     if (!this.moveItemStackTo(in, FURNACE_FUEL_SLOT, FURNACE_FUEL_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
@@ -853,6 +862,18 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         @Override public boolean mayPlace(ItemStack stack) {
             return isActive() && furnace.isFuel(stack);
         }
+    }
+
+    private final class FurnaceModulePluginSlot extends FurnaceModuleSlot {
+        FurnaceModulePluginSlot(Container container, int index, int x, int y) {
+            super(container, index, x, y);
+        }
+
+        @Override public boolean mayPlace(ItemStack stack) {
+            return isActive() && com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack);
+        }
+
+        @Override public int getMaxStackSize() { return 1; }
     }
 
     private final class FurnaceModuleResultSlot extends FurnaceModuleSlot {

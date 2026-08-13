@@ -1,1 +1,34 @@
-{"name":"Five Instrument Modes","icon":"immortalstorage:spirit_staff","category":"immortalstorage:equipment","sortnum":0,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:spirit_staff","text":"The Spirit Instrument switches among Exploration, Wrench, Mining, Building and Teleport. It cannot receive random enchanting-table results, but anvils accept the current Netherite Pickaxe enchantment set."},{"type":"patchouli:text","text":"Exploration transfers supported opened containers. Wrench uses public wrench semantics, safely dismantles machines, and links opposite-state ruins of the same type."},{"type":"patchouli:text","text":"Mining keeps netherite-level breaking; Building previews and batch-places blocks. Teleport spends one Immortal Yuan to move 1-20 blocks along sight. Hold the rebindable special-action key (grave by default) and scroll to adjust distance. Shift-use air empty-handed in Wrench mode to clear the saved ruin endpoint."}]}
+{
+  "name": "Spirit Instrument: Five Uses",
+  "icon": "immortalstorage:spirit_staff",
+  "category": "immortalstorage:equipment",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:spirit_staff",
+      "title": "One Tool for the Journey",
+      "text": "The Spirit Instrument cycles through Exploration, Wrench, Mining, Building, and Teleport. It receives no random enchanting-table result, while anvils accept the current Netherite Pickaxe enchantment set. Choose a mode before using its interaction."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Exploration",
+      "text": "Use in air to toggle Exploration. While enabled and still held, opening a Chest, Barrel, or Lootr container commits the visible page into personal storage. Anything that cannot fit stays in the original container."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wrench",
+      "text": "Rotate or dismantle compatible blocks through public wrench semantics; sneak-use safely picks up ImmortalStorage machines. It can also link two same-type ruins in opposite states. Sneak-use in air clears the recorded endpoint."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mining and Building",
+      "text": "Mining retains Netherite-tier breaking. Building reads a plan, previews its range, and places in batches. If a placed state later changes—such as two small Chests merging—the plan re-resolves the current position instead of treating the changed state as missing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Teleport",
+      "text": "Use along sight to move 1–20 blocks for 1 Immortal Yuan. Hold the rebindable special-action key (grave by default) and scroll to set distance. The destination must be safe; insufficient balance cancels the action."
+    }
+  ]
+}

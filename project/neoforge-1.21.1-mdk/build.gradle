@@ -228,6 +228,10 @@ def legacyOptionalIntegrations = minecraft_version == '1.21.1'
 dependencies {
     addCompatDependency('compileOnly', 'jei', 'common_api')
     addCompatDependency('compileOnly', 'jei', 'neoforge_api')
+    // The optional JEI mixin only targets overlay layout internals that are not
+    // exported by the API artifacts. Keep the implementation compile-only;
+    // the mixin config plugin prevents loading it when JEI is absent.
+    addCompatDependency('compileOnly', 'jei', 'runtime')
     addCompatDependency('compileOnly', 'emi', 'compile')
     addCompatDependency('compileOnly', 'ae2', 'compile')
     addCompatNoTransitive('compileOnly', 'refinedstorage', 'compile')
@@ -253,6 +257,15 @@ dependencies {
             transitive = false
         }
         jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
+            transitive = false
+        }
+    } else if (target2612) {
+        // Patchouli remains an internal part of ImmortalStorage on 26.1.2,
+        // matching the 1.21.1 distribution contract.
+        implementation('vazkii.patchouli:patchouli-neoforge:26.1-94') {
+            transitive = false
+        }
+        jarJar('vazkii.patchouli:patchouli-neoforge:26.1-94') {
             transitive = false
         }
     }
@@ -393,7 +406,7 @@ tasks.named('processResources', ProcessResources).configure {
             neo_version: neo_version,
             neo_version_range: neo_version_range,
             loader_version_range: loader_version_range,
-            jei_version: jei_version,
+            jei_version: targetDependencyRange(jei_version, '29.21.0.68'),
             mod_id: mod_id,
             mod_name: mod_name,
             mod_license: mod_license,
@@ -410,8 +423,8 @@ tasks.named('processResources', ProcessResources).configure {
             industrialforegoingsouls_version_range: targetDependencyRange('[1.10.7,1.11)', '[0,)'),
             beyonddimensions_version_range: targetDependencyRange('[0.7.24]', '[0,)'),
             ars_nouveau_version_range: targetDependencyRange('[5.8.4,6)', '[0,)'),
-            patchouli_dependency_type: target2612 ? 'optional' : 'required',
-            patchouli_version_range: targetDependencyRange('[1.21.1-93,)', '[0,)'),
+            patchouli_dependency_type: 'required',
+            patchouli_version_range: targetDependencyRange('[1.21.1-93,)', '[26.1-94,)'),
     ]
     inputs.properties replaceProperties
 

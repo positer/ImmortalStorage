@@ -1,1 +1,50 @@
-{"name":"Shard Miner and Treasure Basin","icon":"immortalstorage:world_shard_miner","category":"immortalstorage:automation","sortnum":20,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:world_shard_miner","text":"The World Shard Miner uses the beacon's complete same-block base: Diamond Blocks select Overworld, Ancient Debris selects Nether, and Purpur Blocks select the End. Levels one through four increase work rate, and the structure can activate in any dimension."},{"type":"patchouli:text","text":"The three built-in modes select ores by target dimension/biome. By default it scans the final server world's live ore-generation rules, so datapacks and other mods participate; data/*/world_shard_miner/*.json can define or override modes."},{"type":"patchouli:text","text":"Inside the exact owner's personal realm, output is committed directly to that owner's storage. Elsewhere, the miner uses its own 27-slot cache and reports Cache Full when blocked. An unavailable owner realm pauses realm output and resumes after the cache/storage condition clears."},{"type":"patchouli:crafting","recipe":"immortalstorage:treasure_basin","text":"The Treasure Basin only observes an active World Shard Miner directly below to choose its loot mode; the blocks never communicate. It inherits only the mode and immutable owner snapshot, owns a separate 27-slot cache and status, and can block the beacon beam."},{"type":"patchouli:text","text":"Every 2400 ticks the basin generates one loot cycle from the current server LootTable and the owner's luck. Data packs can add or override mode-selected loot definitions under data/*/world_shard_loot/*.json. Missing selectable loot reports CALIBRATING instead of generating an empty drop."},{"type":"patchouli:text","text":"Miner and basin caches, full pauses and Xianqiao-unavailable states are independent. Owner-realm output uses an all-or-nothing storage transaction; non-realm output is published only to that machine's cache, so a rejected cycle cannot lose or contaminate the other machine's state."}]}
+{
+  "name": "World-Shard Mining and Treasure",
+  "icon": "immortalstorage:world_shard_miner",
+  "category": "immortalstorage:automation",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:world_shard_miner",
+      "title": "Choose a World",
+      "text": "Build a complete single-material beacon base below the miner: Diamond Blocks select Overworld, Ancient Debris selects Nether, and Purpur Blocks select End. Levels one through four set base speed, and the structure works in any dimension."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Read the Real Ore Rules",
+      "text": "Built-in modes read the final ore-generation rules for the target dimension and biome, so datapack and modded veins enter the pool naturally. Spirit Iron follows Iron generation; Spirit Crystal follows Diamond. Packs may extend or override modes under data/*/world_shard_miner/*.json."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Two Miner Output Routes",
+      "text": "The miner now has the complete Treasure Basin settings surface: Xianqiao Output, Automatic Output, six independent faces, and one plugin slot. Xianqiao Output writes or flushes only inside the exact owner's realm; when off, results enter the miner's 27-slot cache. Automatic Output only offers the whole cache to enabled faces each tick."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Plugins Multiply Ore Yield",
+      "text": "Dimensional Peeking Order, Dimensional Parallel Talisman, and Great Thousand World Parallel Edict multiply each mining batch by 4, 16, or 256. They enlarge one result without adding mining cycles or changing the period. Use a higher tier on the block to replace the old plugin and return it to inventory first."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:treasure_basin",
+      "title": "Place a Basin Above",
+      "text": "A Treasure Basin reads only the active miner directly below to choose its mode; inventories never merge. It inherits an immutable owner snapshot but keeps its own 27-slot cache, state, plugin, and outputs. Its 10x10x10 model, collision, and item rendering share one bound."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "One Treasure Cycle",
+      "text": "Every 2400 ticks, the basin rolls once from its current mode, the server's real loot tables, and owner luck. With no selectable loot it stays calibrating. Packs may extend or override data/*/world_shard_loot/*.json; the basin emits light level 15."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Basin Yield and Output",
+      "text": "A plugin likewise multiplies one complete loot result by 4, 16, or 256 without shortening the 2400-tick period. Xianqiao and face output remain independent: one flushes only to the owner's realm, while the other pushes only through enabled neighboring faces."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Temporary Cache and Pause",
+      "text": "When local space is short, mining and treasure still complete the current cycle: fitting results enter the 27-slot cache, then excess goes through enabled accepting faces. Every final rejected stack remains intact in a persistent temporary cache and never becomes a production drop. Newly freed ordinary cache space is refilled from temporary output first; no new cycle starts until it is empty, and work resumes on the tick it clears. An offline or rejecting Xianqiao remains a strict transaction: its complete batch waits without local fallback or ejection."
+    }
+  ]
+}

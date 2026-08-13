@@ -3,39 +3,18 @@ package com.immortalstorage.immortalstorage.compat.patchouli;
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-
-import java.lang.reflect.Method;
+import vazkii.patchouli.api.PatchouliAPI;
 
 /**
- * 26.1-safe handbook bridge. Patchouli is optional on this target because no
- * target artifact was audited; the native book resources remain available to
- * any installed handbook viewer, while an absent or changed viewer cannot
- * break the core item use path.
+ * Direct 26.1 handbook bridge. Patchouli is bundled and required, matching the
+ * 1.21.1 distribution contract, so the item always uses the official API.
  */
 public final class PatchouliJadeGuideCompat {
     private static final Identifier BOOK = Identifier.fromNamespaceAndPath(
             ImmortalStorageMod.MODID, "jade_guide");
 
     public static void open(ServerPlayer player) {
-        try {
-            Class<?> apiClass = Class.forName("vazkii.patchouli.api.PatchouliAPI", false,
-                    PatchouliJadeGuideCompat.class.getClassLoader());
-            Object api = apiClass.getMethod("get").invoke(null);
-            for (Method method : apiClass.getMethods()) {
-                if (!method.getName().equals("openBookGUI") || method.getParameterCount() != 2) {
-                    continue;
-                }
-                if (!method.getParameterTypes()[0].isInstance(player)
-                        || !method.getParameterTypes()[1].isInstance(BOOK)) {
-                    continue;
-                }
-                method.invoke(api, player, BOOK);
-                return;
-            }
-            ImmortalStorageMod.LOG.warn("[Compat/Patchouli] No 26.1-compatible openBookGUI signature found");
-        } catch (ReflectiveOperationException | LinkageError exception) {
-            ImmortalStorageMod.LOG.debug("[Compat/Patchouli] Handbook viewer is not installed or has no compatible bridge", exception);
-        }
+        PatchouliAPI.get().openBookGUI(player, BOOK);
     }
 
     private PatchouliJadeGuideCompat() {}

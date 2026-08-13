@@ -80,6 +80,11 @@ public class SourceVeinBlock extends BaseEntityBlock {
                 && level.getBlockEntity(pos) instanceof SourceVeinBlockEntity source) {
             source.setSourceDefinitionId(stack.get(ModDataComponents.SOURCE_DEFINITION_ID.get()));
         }
+        if (!level.isClientSide && level instanceof net.minecraft.server.level.ServerLevel serverLevel
+                && level.getBlockEntity(pos) instanceof SourceVeinBlockEntity source) {
+            com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
+                    .personalRealmOwner(serverLevel.dimension()).ifPresent(source::setOwner);
+        }
     }
 
     @Override

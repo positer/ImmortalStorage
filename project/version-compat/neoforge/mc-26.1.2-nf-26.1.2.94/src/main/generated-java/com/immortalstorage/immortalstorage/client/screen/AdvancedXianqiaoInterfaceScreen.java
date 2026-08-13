@@ -489,6 +489,7 @@ public final class AdvancedXianqiaoInterfaceScreen
             int slot = relativeX / 18;
             if (relativeX % 18 < 16) {
                 selectedTarget = slot;
+                if (tryOpenExternalResourceDialog(slot, button)) return true;
                 if (menu.getCarried().isEmpty() && menu.getConfiguredAmount(slot) > 0L) {
                     if (button == 0) {
                         return super.mouseClicked(mouseX, mouseY, button);
@@ -497,11 +498,7 @@ public final class AdvancedXianqiaoInterfaceScreen
                         openAmountDialog(slot);
                         return true;
                     }
-                } else if (menu.getCarried().isEmpty() && button == 1
-                        && !menu.availableExternalResources().isEmpty()) {
-                    openExternalResourceDialog(slot);
-                    return true;
-                }
+                } else if (tryOpenExternalResourceDialog(slot, button)) return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -829,6 +826,20 @@ public final class AdvancedXianqiaoInterfaceScreen
         updateControls();
     }
 
+    private boolean tryOpenExternalResourceDialog(int slot, int button) {
+        if (button != 1 || !menu.getCarried().isEmpty()
+                || hasShiftDown() || menu.availableExternalResources().isEmpty()) return false;
+        // A configured external target can be replaced directly. Shift+right
+        // click remains the explicit amount-editor gesture for that target.
+        if (menu.isExternalTarget(slot)) {
+            openExternalResourceDialog(slot);
+            return true;
+        }
+        if (menu.getConfiguredAmount(slot) > 0L) return false;
+        openExternalResourceDialog(slot);
+        return true;
+    }
+
     private void closeExternalResourceDialog() {
         externalDialogOpen = false;
         setExternalDialogWidgetsVisible(false);
@@ -1059,7 +1070,14 @@ public final class AdvancedXianqiaoInterfaceScreen
 
     private void renderFluidSprite(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y) {
         if (stack == null || stack.isEmpty()) return;
-        graphics.fakeItem(stack.getFluidType().getBucket(stack), x, y);
+        net.minecraft.client.renderer.block.FluidModel fluidModel = net.minecraft.client.Minecraft.getInstance().getModelManager()
+                .getFluidStateModelSet().get(stack.getFluid().defaultFluidState());
+        if (fluidModel == null || fluidModel.stillMaterial() == null) return;
+        TextureAtlasSprite sprite = fluidModel.stillMaterial().sprite();
+        int tint = fluidModel.fluidTintSource() == null ? 0xFFFFFFFF
+                : fluidModel.fluidTintSource().colorAsStack(stack);
+        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(
+                graphics, sprite, x, y, 16, 16, tint);
     }
 
     private void renderAmountOverlay(GuiGraphicsExtractor graphics, String label, int x, int y) {

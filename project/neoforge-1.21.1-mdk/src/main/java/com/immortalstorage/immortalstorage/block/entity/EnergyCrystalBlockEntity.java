@@ -61,7 +61,7 @@ import java.util.UUID;
  * even when Mekanism, Flux Networks, or both are absent.</p>
  */
 public final class EnergyCrystalBlockEntity extends BlockEntity
-        implements WorldlyContainer, MenuProvider {
+        implements WorldlyContainer, MenuProvider, ReinforcementPluginHost {
     public static final int INPUT_SLOT = 0;
     public static final int FUEL_SLOT = 1;
     public static final int EXTRA_SLOT = 2;
@@ -373,7 +373,8 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
         AtomicEnergyRefill.ResourceStore productionStore = crystal.boundExternalEnergy();
         if (productionStore == null) productionStore = crystal.localEnergyStore;
         changed |= productionStore.insert(
-                configuredOutput(crystal.kind),
+                ReinforcementPluginHost.multiplySaturated(
+                        configuredOutput(crystal.kind), crystal.reinforcementMultiplier()),
                 com.immortalstorage.core.resource.ResourceTransferAction.EXECUTE) > 0L;
         changed |= crystal.processInput(level);
         // One face pass per logical tick is enough.  The old pre/post passes
@@ -448,6 +449,10 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
                             this::canAcceptExtra);
             if (optional == null) return false;
             if (optional.output() != null) {
+                if (hasReinforcementPlugin()) {
+                    items.set(INPUT_SLOT, optional.output().copyWithCount(input.getCount()));
+                    return true;
+                }
                 if (!canAcceptExtra(optional.output())) return false;
                 input.shrink(1);
                 insertExtra(optional.output());
@@ -459,6 +464,7 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
         IEnergyStorage rechargeable = EnergyCrystalItemAccess.energy(input);
         if (rechargeable != null && rechargeable.getMaxEnergyStored() > 0) {
             if (rechargeable.getEnergyStored() >= rechargeable.getMaxEnergyStored()) {
+                if (hasReinforcementPlugin()) return false;
                 return moveInputToExtra(input.copyWithCount(1));
             }
             ItemStack completed = rechargeableOutputPreview(input);
@@ -475,12 +481,12 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
                     : XianqiaoInterfaceEnergyTransfer.pushAll(localEnergyStore, rechargeable);
             boolean changed = acceptedFromCache > 0 || acceptedFromXianqiao > 0;
             if (rechargeable.getEnergyStored() >= rechargeable.getMaxEnergyStored()) {
-                changed |= moveInputToExtra(input.copyWithCount(1));
+                if (!hasReinforcementPlugin()) changed |= moveInputToExtra(input.copyWithCount(1));
             }
             return changed;
         }
 
-        Item chargedQuartz = chargedQuartzOutput(input);
+        Item chargedQuartz = hasReinforcementPlugin() ? null : chargedQuartzOutput(input);
         if (chargedQuartz == null || !canAcceptExtra(new ItemStack(chargedQuartz))) {
             processTicks = 0;
             return false;
@@ -537,6 +543,19 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
         ItemStack extra = items.get(EXTRA_SLOT);
         if (extra.isEmpty()) items.set(EXTRA_SLOT, output.copy());
         else extra.grow(output.getCount());
+    }
+
+    private boolean hasReinforcementPlugin() {
+        return ReinforcementPluginHost.isPlugin(items.get(EXTRA_SLOT));
+    }
+
+    @Override public ItemStack reinforcementPlugin() {
+        return hasReinforcementPlugin() ? items.get(EXTRA_SLOT) : ItemStack.EMPTY;
+    }
+
+    @Override public void setReinforcementPlugin(ItemStack stack) {
+        items.set(EXTRA_SLOT, stack.copyWithCount(1));
+        setChangedAndSync();
     }
 
     /**
@@ -883,11 +902,13 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
         if (level instanceof ServerLevel serverLevel) refreshBinding(serverLevel);
     }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
-        if (slot == EXTRA_SLOT) return false;
+        if (slot == EXTRA_SLOT) return ReinforcementPluginHost.isPlugin(stack)
+                && (items.get(EXTRA_SLOT).isEmpty() || hasReinforcementPlugin());
         if (slot == FUEL_SLOT) return stack.is(ModItems.TRUE_YUAN.get())
                 || stack.is(ModItems.IMMORTAL_YUAN.get()) || stack.getItem() instanceof SpiritDriveItem;
         return slot == INPUT_SLOT && (kind == CrystalKind.ELECTRIC
-                ? EnergyCrystalItemAccess.energy(stack) != null || chargedQuartzOutput(stack) != null
+                ? EnergyCrystalItemAccess.energy(stack) != null
+                        || !hasReinforcementPlugin() && chargedQuartzOutput(stack) != null
                 : CrystalResourceCompatHooks.acceptsInput(kind, stack));
     }
     @Override public int[] getSlotsForFace(Direction side) {
@@ -904,7 +925,8 @@ public final class EnergyCrystalBlockEntity extends BlockEntity
     }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         return automaticOutputEnabled && side == Direction.DOWN
-                && outputFace(side) && slot == EXTRA_SLOT;
+                && outputFace(side) && slot == EXTRA_SLOT
+                && !ReinforcementPluginHost.isPlugin(stack);
     }
 
     public IItemHandler getItemHandler(@Nullable Direction side) {

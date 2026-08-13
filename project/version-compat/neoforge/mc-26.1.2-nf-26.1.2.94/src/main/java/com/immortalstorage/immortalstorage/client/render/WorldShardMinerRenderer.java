@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.blockentity.BeaconRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.level.block.state.BlockState;
@@ -67,8 +68,14 @@ public final class WorldShardMinerRenderer
     public void submit(State state, PoseStack poses, SubmitNodeCollector collector, CameraRenderState camera) {
         BlockModelRenderState glassModel = new BlockModelRenderState();
         blockModelResolver.update(glassModel, state.glass, BlockDisplayContext.create());
-        glassModel.submit(poses, collector, state.lightCoords, 0, state.blockPos.asLong() > Integer.MAX_VALUE
-                ? (int) state.blockPos.asLong() : (int) state.blockPos.asLong());
+        // The final argument is an outline colour, not a random/model seed.
+        // Passing blockPos here tinted clear glass according to the low bits
+        // of the position (most visibly green above grass).
+        // Glass must retain its translucent model layer. The basic submit path
+        // can flatten a block-display model onto the wrong layer in 26.1,
+        // causing the red active core behind it to colour the whole cover.
+        glassModel.submitMultiLayer(poses, collector, state.lightCoords,
+                OverlayTexture.NO_OVERLAY, 0);
 
         LegacyBlockEntityRenderer.submitLegacyGeometry(poses, collector, buffers ->
                 FloatingCubeRenderer.render(poses, buffers, 0.0F, CORE_CENTER_Y, CORE_SIZE,

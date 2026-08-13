@@ -39,7 +39,8 @@ final class RsXianqiaoStorageType implements StorageType {
     @Override
     public boolean isAllowed(ResourceKey resource) {
         return resource instanceof ItemResource || resource instanceof FluidResource
-                || resource instanceof RsExternalResource;
+                || resource instanceof RsExternalResource
+                || RegisteredRsResourceBridge.isAllowedByRegisteredAddonStorage(resource);
     }
 
     @Override

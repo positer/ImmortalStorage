@@ -24,11 +24,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class XianqiaoExchangeGridServiceTest {
     @org.junit.jupiter.api.BeforeAll
     static void immortalStorageTargetBootstrap() {
         com.immortalstorage.immortalstorage.compat.CompatTestBootstrap.bootstrap();
+    }
+
+    @Test
+    void storageBusForTheSameOwnerSuppressesOnlyThatOwnersDiskWrapper() {
+        UUID owner = UUID.fromString("00000000-0000-0000-0000-000000000031");
+        UUID other = UUID.fromString("00000000-0000-0000-0000-000000000032");
+        assertEquals(false, XianqiaoExchangeGridService.diskWrapperMayMount(owner, Set.of(owner)));
+        assertEquals(true, XianqiaoExchangeGridService.diskWrapperMayMount(other, Set.of(owner)));
     }
 
     @BeforeAll

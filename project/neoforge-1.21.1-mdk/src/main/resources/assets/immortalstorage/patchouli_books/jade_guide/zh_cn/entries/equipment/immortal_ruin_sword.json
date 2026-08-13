@@ -4,9 +4,26 @@
   "category": "immortalstorage:equipment",
   "sortnum": 30,
   "pages": [
-    {"type":"patchouli:smithing","recipe":"immortalstorage:immortal_ruin_forged_spirit_sword","text":"以迷你仙墟为模板、灵剑为基底、灵核为追加材料锻造。升级保留附魔与淬火点，并刷新为满耐久。"},
-    {"type":"patchouli:text","text":"它继承灵剑的阶段增伤、灵气修复、自循环淬火和灵剑召来。内置仙炉存在多把可召来灵剑时，优先选择最近使用过的一把。"},
-    {"type":"patchouli:text","text":"每点淬火提高1.5%伤害；横扫范围比普通灵剑扩大50%。每次命中后淬火点仍减半。"},
-    {"type":"patchouli:text","text":"手持右键消耗五枚仙元，将13×13×13范围内的其他目标传送到使用者面前一格，清除移动速度并禁锢1秒。配置页可以决定这一效果是否影响其他玩家。"}
+    {
+      "type": "patchouli:smithing",
+      "recipe": "immortalstorage:immortal_ruin_forged_spirit_sword",
+      "title": "以仙墟再锻",
+      "text": "锻造台依次放入迷你仙墟模板、灵剑基底与灵核材料。升级保留附魔和淬火点，并把耐久恢复至满。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "更宽的剑势",
+      "text": "它继承境界增伤、灵气修复、连续淬火和灵剑召来。每点淬火提高1.5%伤害，横扫范围比普通灵剑扩大50%；命中后淬火点仍减半。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "召来顺序",
+      "text": "当内置仙炉中存有多把可召来的灵剑，系统优先选择最近使用的一把。召来只改变手中武器，不复制物品或重置其组件。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "摄敌归前",
+      "text": "手持右键消耗5仙元，把13×13×13范围内的其他目标送至身前一格，清除速度并禁锢1秒。是否影响其他玩家由服务器配置决定。"
+    }
   ]
 }

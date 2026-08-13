@@ -41,6 +41,7 @@ public final class AdvancedEntangledMiniatureRuinScreen extends AbstractContaine
     @Override
     protected void init() {
         super.init();
+        menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
@@ -193,6 +194,9 @@ public final class AdvancedEntangledMiniatureRuinScreen extends AbstractContaine
             if (!faceButtons.isEmpty()) {
                 RuinFaceGrid.sync(faceButtons, menu.value(base() + 12), true);
             }
+            VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
+            graphics.drawString(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
+                    leftPos + 210, topPos + 203, 0xFFFFFF, true);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};

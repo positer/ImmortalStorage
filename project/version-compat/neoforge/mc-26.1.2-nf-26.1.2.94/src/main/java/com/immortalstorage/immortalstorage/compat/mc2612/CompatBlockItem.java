@@ -8,4 +8,5 @@ public class CompatBlockItem extends BlockItem {
     public CompatBlockItem(Block block, Properties properties) {
         super(block, properties);
     }
+
 }

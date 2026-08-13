@@ -127,10 +127,21 @@ final class AdvancedRuinScheduler {
     }
 
     /** Reversed mode: push the ruin's own inventory into the surrounding containers. */
-    static void eject(ItemStackHandler buffer,
-                      List<Target> targets, boolean forcePoll, boolean itemByItem,
-                      Predicate<ItemStack> allows, int[] groupCursor) {
+    static boolean eject(ItemStackHandler buffer,
+                         List<Target> targets, boolean forcePoll, boolean itemByItem,
+                         Predicate<ItemStack> allows, int[] groupCursor) {
+        long before = storedCount(buffer, allows);
         distribute(buffer, targets, forcePoll, itemByItem, allows, groupCursor);
+        return storedCount(buffer, allows) < before;
+    }
+
+    private static long storedCount(ItemStackHandler buffer, Predicate<ItemStack> allows) {
+        long count = 0L;
+        for (int slot = 0; slot < buffer.getSlots(); slot++) {
+            ItemStack stack = buffer.getStackInSlot(slot);
+            if (!stack.isEmpty() && allows.test(stack)) count += stack.getCount();
+        }
+        return count;
     }
 
     private static void distribute(ItemStackHandler buffer, List<Target> targets,

@@ -85,6 +85,8 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(moving, 0, 1, false)) return ItemStack.EMPTY;
         } else if (field != null && field.canPlaceItem(SimulatedSpiritFieldBlockEntity.FUEL_SLOT, moving)) {
             if (!moveItemStackTo(moving, 1, 2, false)) return ItemStack.EMPTY;
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(moving)) {
+            if (!moveItemStackTo(moving, 2, 3, false)) return ItemStack.EMPTY;
         } else if (moving.getMaxStackSize() == 1) {
             if (!moveItemStackTo(moving, 2, 3, false)) return ItemStack.EMPTY;
         } else return ItemStack.EMPTY;
@@ -104,7 +106,10 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
     }
     private static final class ToolSlot extends Slot {
         ToolSlot(Container c, int slot, int x, int y) { super(c, slot, x, y); }
-        @Override public boolean mayPlace(ItemStack stack) { return stack.getMaxStackSize() == 1; }
+        @Override public boolean mayPlace(ItemStack stack) {
+            return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack)
+                    || stack.getMaxStackSize() == 1;
+        }
         @Override public int getMaxStackSize() { return 1; }
     }
     private static final class OutputSlot extends Slot {

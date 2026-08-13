@@ -1,14 +1,76 @@
 {
-  "name":"Viewers and Storage Networks","icon":"immortalstorage:xianqiao_exchange_cell","category":"immortalstorage:compat","sortnum":0,
-  "pages":[
-    {"type":"patchouli:text","text":"With JEI or EMI, terminals support R/U lookup, ingredient recognition, synchronized search, missing-material hints, and recipe transfer. Immortal Furnaces and simulated reincarnation have dedicated categories. Without a viewer, this handbook still provides the full flow and real recipe pages."},
-    {"type":"patchouli:text","text":"AE2/RS exchange media bind to the persistent ImmortalStorage player identity and show the latest username. A network mounts only one medium per player. Valid 0.0.8-or-earlier session-UUID bindings migrate in place on first interaction, preserving independent disk IDs, contents, and components."},
-    {"type":"patchouli:text","text":"AE2 registers a direct renderer for ImmortalStorage external resources. Without a rendering addon, FE, Mana, Source, and Souls use bundled textures, while chemicals use the same registry-sampled solid colors as the Xianqiao terminal. Missing render handlers no longer crash the terminal."},
-    {"type":"patchouli:text","text":"Base RS 2.0.9 alone also displays ImmortalStorage external resources. Refined Types or RS Mekanism Integration native keys take priority when installed, while fallback keys stay readable/writable across addon install/removal. Capacity addons such as ExtraStorage coexist through RS's standard StorageContainerItem contract."},
-    {"type":"patchouli:text","text":"FE, Botania Mana, Ars Source, Industrial Foregoing Souls, and Mekanism chemicals use independent long-valued resource keys and a real ledger, appearing only when the corresponding system is available. Legacy Immortal Yuan conversion settings remain readable for old files, but non-source external storage no longer performs that conversion; Source Veins keep their own Immortal Yuan charging."},
-    {"type":"patchouli:text","text":"The Energy Crystal FE memory uses the same independent FE namespace. AE2 and RS read and write amounts larger than 32 bits through their official storage interfaces, while the GUI keeps long values from wrapping negative. Without an optional power mod, the crystal still registers, caches, charges items, and outputs to Xianqiao."},
-    {"type":"patchouli:text","text":"Mekanism, Flux Networks, Botania, Ars Nouveau and Industrial Foregoing connect through their official capabilities and activate only when present. Iron's Spells player mana is intentionally outside the shared ImmortalStorage ledger."},
-    {"type":"patchouli:text","text":"Building Gadgets may use Kongqiao/Xianqiao items as copy-paste materials without consuming them during simulation; a real placement commits extraction. Create's Schematicannon can read the Xianqiao Manager as a standard NeoForge block-item inventory. Beyond Dimensions never replaces or migrates ImmortalStorage storage; both backends remain independent."},
-    {"type":"patchouli:text","text":"Vanilla villager trades can draw exact payment items from personal storage, but Immortal Power never silently substitutes for True Power. Every optional integration is isolated behind its loading boundary, so an absent target mod does not prevent startup."}
+  "name": "Recipe Viewers and Storage Networks",
+  "icon": "immortalstorage:xianqiao_exchange_cell",
+  "category": "immortalstorage:compat",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Inspect Before Automating",
+      "text": "With JEI or EMI, terminals support R/U lookup, ingredient recognition, synchronized search, missing-material hints, and recipe transfer. Immortal Furnace and simulated reincarnation have dedicated categories. Every screen keeps the viewer's default layout and disables the conflicting extra Filter widget. This handbook still shows key real recipes without a viewer."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:xianqiao_exchange_cell",
+      "recipe2": "immortalstorage:xianqiao_exchange_cell_from_fluid_housing",
+      "title": "AE2 Xianqiao Exchange Cell",
+      "flag": "mod:ae2",
+      "text": "Shapelessly combine an Item or Fluid Cell Housing with a Xianqiao Manager. The cell binds ImmortalStorage's persistent player identity and mounts that player's ledger into the ME network."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "AE2 Access Rules",
+      "flag": "mod:ae2",
+      "text": "A network mounts only one medium for a given player, preventing duplicate accounting. AE2 reads and writes items, fluids, and external resources through official long-valued interfaces. Bundled renderers display large amounts without wrapping negative."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Automatic AE2 Addon Discovery",
+      "flag": "mod:ae2",
+      "text": "An addon that registers a round-trippable key through official AEKeyTypes is discovered automatically. Explicit native bridges win, then dynamically registered keys, then ImmortalStorage's fallback key. No addon class name needs to be hard-coded."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:xianqiao_rs_exchange_disk",
+      "title": "RS Xianqiao Exchange Disk",
+      "flag": "mod:refinedstorage",
+      "text": "Shapelessly combine an RS Storage Housing with a Xianqiao Manager. It uses the same persistent identity and long-valued ledger, and base RS alone can render ImmortalStorage external resources."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "RS and Capacity Addons",
+      "flag": "mod:refinedstorage",
+      "text": "Refined Types or RS Mekanism Integration native keys take priority when present. New addon resources registered through official ResourceType and StorageType are discovered automatically. Capacity addons such as ExtraStorage coexist through StorageContainerItem."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Bus Can Use the Manager",
+      "text": "Exchange media and AE2 or RS storage buses attached directly to the Xianqiao Manager can access items, fluids, FE, and registered addon resources. The manager exposes one real ledger rather than a second inventory; connecting both disk and bus never double-inserts or loses items."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "External Resource Ledgers",
+      "text": "FE, Botania Mana, Ars Source, Industrial Foregoing Souls, and Mekanism chemicals use independent long-valued keys and appear only with their systems. The Electricity Crystal always declares FE storage even without another power mod. Non-source external storage no longer performs that conversion; Source Vein charging remains intact."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Installing or Removing Addons",
+      "text": "Removing an addon never deletes its Xianqiao amount. A temporarily unrestorable native key stays available through the ImmortalStorage fallback key and returns to native form after reinstall. A block capability alone does not become AE2 or RS network storage unless the addon registers an official resource type."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Capability Integrations",
+      "text": "Mekanism, Flux Networks, Botania, Ars Nouveau, and Industrial Foregoing connect through their official capabilities and vanish cleanly when absent. Iron's Spells player mana intentionally remains outside the shared ImmortalStorage ledger."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Building and Copying",
+      "text": "Building Gadgets may use Kongqiao or Xianqiao items as copy-paste materials: simulation consumes nothing and real placement commits extraction. Create's Schematicannon reads the Xianqiao Manager as a standard NeoForge block-item inventory. Beyond Dimensions remains a separate backend with no migration."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Legacy Binding Migration",
+      "text": "Valid 0.0.8-or-earlier session-UUID bindings migrate in place on first interaction to the persistent player identity, preserving medium ID, contents, and components. Vanilla villager trades may draw exact payment from personal storage, but Immortal Yuan never silently substitutes for True Yuan."
+    }
   ]
 }

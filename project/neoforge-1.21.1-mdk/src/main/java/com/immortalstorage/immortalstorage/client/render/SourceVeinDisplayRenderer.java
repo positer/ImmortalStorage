@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -16,15 +17,19 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.fluids.FluidStack;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Rule renderer for source definitions.  It intentionally resolves registry
@@ -37,9 +42,12 @@ public final class SourceVeinDisplayRenderer {
     private static final float BLOCK_CENTER_X = 0.5F;
     private static final float BLOCK_CENTER_Y = 0.5F;
     private static final float BLOCK_CENTER_Z = 0.5F;
-    private static final float ITEM_CENTER_X = 0.0F;
-    private static final float ITEM_CENTER_Y = 0.0F;
-    private static final float ITEM_CENTER_Z = 0.0F;
+    // ItemRenderer has already translated the BEWLR pose by -0.5 on each
+    // axis. The baked item geometry is still in its native [0,1] space, so
+    // its local pivot must be moved to 0.5 before that outer translation.
+    private static final float ITEM_CENTER_X = 0.5F;
+    private static final float ITEM_CENTER_Y = 0.5F;
+    private static final float ITEM_CENTER_Z = 0.5F;
     private static final float SIZE = 0.42F;
     private static final int FLOATING_ALPHA = 166;
     private static final double SOLID_ROTATION_DEGREES_PER_TICK = 0.18D;
@@ -56,8 +64,20 @@ public final class SourceVeinDisplayRenderer {
                               PoseStack poses, MultiBufferSource buffers,
                               int packedLight, int packedOverlay,
                               long orientationSeed) {
+        render(definition, animationTime, poses, buffers, packedLight, packedOverlay,
+                orientationSeed, null, null);
+    }
+
+    /** Renders a source in the world and supplies the position for biome tinting. */
+    public static void render(SourceDefinition definition, double animationTime,
+                              PoseStack poses, MultiBufferSource buffers,
+                              int packedLight, int packedOverlay,
+                              long orientationSeed,
+                              @Nullable BlockAndTintGetter tintLevel,
+                              @Nullable BlockPos tintPos) {
         renderAt(definition, animationTime, poses, buffers, packedLight, packedOverlay,
-                BLOCK_CENTER_X, BLOCK_CENTER_Y, BLOCK_CENTER_Z, orientationSeed);
+                BLOCK_CENTER_X, BLOCK_CENTER_Y, BLOCK_CENTER_Z, orientationSeed,
+                tintLevel, tintPos);
     }
 
     /** Renders a source inside an item transform around the item origin. */
@@ -66,20 +86,22 @@ public final class SourceVeinDisplayRenderer {
                                      int packedLight, int packedOverlay,
                                      long orientationSeed) {
         renderAt(definition, animationTime, poses, buffers, packedLight, packedOverlay,
-                ITEM_CENTER_X, ITEM_CENTER_Y, ITEM_CENTER_Z, orientationSeed);
+                ITEM_CENTER_X, ITEM_CENTER_Y, ITEM_CENTER_Z, orientationSeed, null, null);
     }
 
     private static void renderAt(SourceDefinition definition, double animationTime,
                                  PoseStack poses, MultiBufferSource buffers,
                                  int packedLight, int packedOverlay,
                                  float centerX, float centerY, float centerZ,
-                                 long orientationSeed) {
+                                 long orientationSeed,
+                                 @Nullable BlockAndTintGetter tintLevel,
+                                 @Nullable BlockPos tintPos) {
         if (definition == null) return;
         if (definition.fluid()) {
             Fluid fluid = BuiltInRegistries.FLUID.getOptional(definition.outputId()).orElse(null);
             if (fluid != null && fluid != net.minecraft.world.level.material.Fluids.EMPTY
                     && renderFluid(fluid, animationTime, poses, buffers,
-                    centerX, centerY, centerZ, orientationSeed)) return;
+                    centerX, centerY, centerZ, orientationSeed, tintLevel, tintPos)) return;
         } else {
             Item item = BuiltInRegistries.ITEM.getOptional(definition.outputId()).orElse(null);
             if (item != null && item != net.minecraft.world.item.Items.AIR) {
@@ -241,13 +263,15 @@ public final class SourceVeinDisplayRenderer {
     private static boolean renderFluid(Fluid fluid, double animationTime,
                                        PoseStack poses, MultiBufferSource buffers,
                                        float centerX, float centerY, float centerZ,
-                                       long orientationSeed) {
+                                       long orientationSeed,
+                                       @Nullable BlockAndTintGetter tintLevel,
+                                       @Nullable BlockPos tintPos) {
         FluidStack stack = new FluidStack(fluid, 1_000);
         IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(stack.getFluidType());
         ResourceLocation still = extensions.getStillTexture(stack);
         if (still == null) return false;
         TextureAtlasSprite sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(still);
-        int tint = extensions.getTintColor(stack);
+        int tint = fluidTint(fluid, stack, extensions, tintLevel, tintPos);
         int tintAlpha = Math.max(1, tint >>> 24);
         int alpha = Math.max(48, Math.min(FLOATING_ALPHA, Math.round(tintAlpha * (FLOATING_ALPHA / 255.0F))));
         int red = tint >> 16 & 0xFF;
@@ -279,6 +303,28 @@ public final class SourceVeinDisplayRenderer {
                 sprite, red, green, blue, alpha);
         poses.popPose();
         return true;
+    }
+
+    private static int fluidTint(Fluid fluid, FluidStack stack,
+                                 IClientFluidTypeExtensions extensions,
+                                 @Nullable BlockAndTintGetter tintLevel,
+                                 @Nullable BlockPos tintPos) {
+        int tint = extensions.getTintColor(stack);
+        if ((fluid == Fluids.WATER || fluid == Fluids.FLOWING_WATER)
+                && tintLevel != null && tintPos != null) {
+            // FluidType extensions normally return white for vanilla water;
+            // the visible water colour is the biome blend at the source block.
+            int biomeTint = BiomeColors.getAverageWaterColor(tintLevel, tintPos);
+            tint = multiplyRgb(tint, biomeTint);
+        }
+        return tint;
+    }
+
+    private static int multiplyRgb(int first, int second) {
+        int red = ((first >> 16 & 0xFF) * (second >> 16 & 0xFF) + 127) / 255;
+        int green = ((first >> 8 & 0xFF) * (second >> 8 & 0xFF) + 127) / 255;
+        int blue = ((first & 0xFF) * (second & 0xFF) + 127) / 255;
+        return (first & 0xFF000000) | red << 16 | green << 8 | blue;
     }
 
     private static void face(VertexConsumer vertices, PoseStack.Pose pose,

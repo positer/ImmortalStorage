@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "minecraft:echo_shard",
+  "base": "minecraft:netherite_upgrade_smithing_template",
+  "addition": "immortalstorage:spirit_crystal",
+  "result": {
+    "id": "immortalstorage:dimensional_peeking_order"
+  }
+}

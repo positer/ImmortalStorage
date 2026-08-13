@@ -60,8 +60,9 @@ public final class AdvancedStabilizedMiniatureImmortalRuinBlockEntity
         boolean forcePoll = accessMode == ACCESS_FORCE_POLL;
         boolean itemByItem = splitMode == SPLIT_ITEM_BY_ITEM;
         if (reversed) {
-            AdvancedRuinScheduler.eject(itemHandler(), targets, forcePoll, itemByItem,
-                    this::allows, groupCursor);
+            for (int group = 0; group < reinforcementMultiplier(); group++)
+                if (!AdvancedRuinScheduler.eject(itemHandler(), targets, forcePoll, itemByItem,
+                        this::allows, groupCursor)) break;
         } else {
             AdvancedRuinScheduler.collect(itemHandler(), targets, forcePoll, itemByItem,
                     this::allows);

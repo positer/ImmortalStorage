@@ -1,8 +1,14 @@
 {
-  "name":"五阶飞升与渡劫","icon":"immortalstorage:ascension_dan","category":"immortalstorage:progression","sortnum":10,
+  "name":"飞升与渡劫",
+  "icon":"immortalstorage:immortal_pill",
+  "category":"immortalstorage:progression",
+  "sortnum":10,
   "pages":[
-    {"type":"patchouli:spotlight","item":"immortalstorage:ascension_dan","title":"有限转为无限","text":"五阶是有限空窍的最后阶段。先把灵气进度补满并准备飞升所需材料；飞升时身上和空窍中的真元按16:1一次性转换为仙元，之后新获得的真元不再自动转换。"},
-    {"type":"patchouli:text","text":"六阶以后只能在自己的仙窍维度渡劫。渡劫期间常驻增益暂时失效；击杀召唤目标后进阶。失败或死亡不会降阶：召唤物被清除、玩家原地保留物品复活，但当前仙元清零。"},
-    {"type":"patchouli:text","text":"默认目标依次为：六升七僵尸、七升八凋零骷髅、八升九卫道士、九升十坚守者。它们永久发光、力量III且拥有十倍基础生命。整合包可以修改目标和最高正常阶数。"}
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_pill","title":"五阶飞升","text":"五阶先把灵气补满，再服用$(item)仙丹$()。成功时生命降至1点并承受三分钟进阶虚弱，随后进入六阶；条件不足或低阶误服会遭致命反噬。完整丹方见$(l:immortalstorage:recipes/pills)丹胚与丹药$(/l)。"},
+    {"type":"patchouli:text","title":"有限化为无垠","text":"跨入六阶时，身上与个人存储中的真元按16:1一次性化为仙元；空窍物品同时迁入仙窍。此后新获得的真元仍是独立资源，不再自动兑换。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:ascension_dan","title":"飞升丹","link_recipe":true,"text":"飞升丹以1%概率出现在末地城宝箱中，可令未达六阶的修士直接进入六阶。它没有生存合成表；这是刻意保留的稀有捷径。"},
+    {"type":"patchouli:text","title":"六阶以后","text":"渡劫只能在自己的仙窍中开始。期间常驻增益暂时失效；击杀劫敌即进阶。死亡不会降阶或掉落物品，但本次劫敌会消失，玩家原地复生，当前仙元归零。"},
+    {"type":"patchouli:text","title":"默认四劫","text":"$(li)六升七：僵尸。$(li)七升八：凋零骷髅。$(li)八升九：卫道士。$(li)九升十：坚守者。$(br2)劫敌永久发光、力量III，并拥有十倍基础生命；服务器可更换目标。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:white_day_thunder","title":"白日惊雷","link_recipe":true,"text":"白日惊雷是无生存配方的特殊直达道具，使用后将境界设为十阶。它供创造、管理与整合包流程使用，不属于正常渡劫路线。"}
   ]
 }

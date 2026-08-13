@@ -1,12 +1,180 @@
 {
-  "name":"Source Veins and Manager","icon":"immortalstorage:water_vein","category":"immortalstorage:automation","sortnum":0,
-  "pages":[
-    {"type":"patchouli:spotlight","item":"immortalstorage:water_vein","title":"Real Long-Count Cache","text":"Every Source Vein first stores resources in its own real cache. Automation, sneak extraction, and storage buses can only drain that cache; paid veins spend Immortal Yuan only for a cache shortfall. Turning a face off stops active export without hiding the standard capability."},
-    {"type":"patchouli:text","text":"Each face can export, bypass the limit, or stay off with its own per-tick rate. Six-face PUSH is active cache export; standard item/fluid capabilities still read the real cache according to their rules. Turning a face off never fabricates output or enables yuan conversion. Fluid veins accept and void any fluid inserted through their faces. Water and Lava veins are also Create fan washing/blasting catalysts, and fan air passes through them."},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:echo_shard_vein","text":"The Echo Shard Source Vein unlocks at stage 8. It is non-stacking, converts one Echo Shard into 16 Immortal Yuan per batch, and participates in manager aggregation and per-face export."},
-    {"type":"patchouli:text","text":"A Source Vein Manager can only be placed inside its owner's Xianqiao. It has 72 single-item slots with at most one vein of each name. It exposes one aggregated extraction-only view while every member continues to work and save its own cache independently."},
-    {"type":"patchouli:text","text":"Twelve black beams form the manager's open cage. Eight rotating cores visualize the 72-slot occupancy in stages: blue when empty, purple while used, and red when full. Pickup preserves the displayed inventory/hand state, and legacy owner bindings migrate once to the shared persistent identity."},
-    {"type":"patchouli:text","text":"Built-in definitions cover water, milk, lava, building materials, ores, spirit iron, spirit crystal, Echo Shards, ancient debris, Nether Stars, enchanted golden apples and dragon eggs. Config or datapacks may add definitions; one effective definition per resource prevents duplicate cache, cost and catalog accounting. Source Vein Immortal Yuan charging/prepayment remains separate from ordinary interface external ledgers."},
-    {"type":"patchouli:text","text":"Member cache, ownership and face settings are saved in complete block-entity data on the source item, so manager pickup or destruction remains transactional. Standard item/fluid capabilities read the real cache; simulation never fabricates output or spends Immortal Power."}
+  "name": "Source Veins and Manager",
+  "icon": "immortalstorage:water_vein",
+  "category": "immortalstorage:automation",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:water_vein",
+      "title": "Begin with a Real Cache",
+      "text": "A Source Vein generates by its own rule, then commits into a persistent long-valued cache. Player extraction, face automation, and AE2 or RS storage buses all drain that cache. Simulation neither creates output nor prepays Immortal Yuan."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:source_vein_manager",
+      "title": "Turn Sources into a Catalogue",
+      "text": "The Source Vein Manager may be placed only in its owner's Xianqiao. Its 72 slots each hold one vein and reject a duplicate name. It exposes a unified extraction-only catalogue while every member keeps producing, saving, and settling independently."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Faces and Fluids",
+      "text": "Every face independently supports off, rate-limited push, or unlimited push. Face settings govern active export without hiding item or fluid capabilities. Fluid veins void fluid inserted through any face. Water and Lava veins can also serve as Create fan washing and blasting catalysts."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Rendering Shows State",
+      "text": "Block and fluid sources render their real contents as smaller translucent cores rotating slowly about the geometric center. Item sources remain opaque, upright, centered, and rotate only around Y. Eight manager cores change in stages with its 72-slot occupancy, including inventory and held previews."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:custom_source_vein",
+      "title": "For Pack Authors",
+      "text": "Datapacks and config may inject additional resources through the unified source-definition catalogue. One final definition is allowed per resource, preventing duplicate fees, cache, or statistics. External veins inherit the same cache, face, centered rendering, and manager aggregation rules."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Immortal Yuan Boundary",
+      "text": "A paid vein settles only the shortfall that its real cache cannot cover. Existing Source Vein charging, prepayment, and conversion remain intact. Only the old non-source external-resource conversion was removed. Breaking a vein or manager preserves owner, cache, and face settings in complete block-entity data."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:water_vein",
+      "recipe2": "immortalstorage:milk_vein",
+      "title": "Water and Milk",
+      "text": "These foundational fluid veins continuously provide Water and Milk, with the live fluid texture on every face of the floating core."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:lava_vein",
+      "recipe2": "immortalstorage:cobblestone_vein",
+      "title": "Lava and Cobblestone",
+      "text": "Lava is exposed as extractable fluid; Cobblestone continues the basic-source chain into construction materials."
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "immortalstorage:stone_vein_smelting",
+      "recipe2": "immortalstorage:smooth_stone_vein_smelting",
+      "title": "Stone and Smooth Stone",
+      "text": "Smelt the Cobblestone vein into Stone, then Smooth Stone, keeping the material progression explicit."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:white_concrete_vein",
+      "recipe2": "immortalstorage:orange_concrete_vein",
+      "title": "White and Orange Concrete",
+      "text": "Each concrete color keeps its own block identity and remains distinct when a manager checks duplicate names."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:magenta_concrete_vein",
+      "recipe2": "immortalstorage:light_blue_concrete_vein",
+      "title": "Magenta and Light Blue Concrete",
+      "text": "Every color has its own recipe, cache, and catalogue entry."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:yellow_concrete_vein",
+      "recipe2": "immortalstorage:lime_concrete_vein",
+      "title": "Yellow and Lime Concrete",
+      "text": "These veins are suited to sustained large-scale building supply."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:pink_concrete_vein",
+      "recipe2": "immortalstorage:gray_concrete_vein",
+      "title": "Pink and Gray Concrete",
+      "text": "Active export and external extraction both debit the real cache."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:light_gray_concrete_vein",
+      "recipe2": "immortalstorage:cyan_concrete_vein",
+      "title": "Light Gray and Cyan Concrete",
+      "text": "Disabling active output keeps generated material safely in the vein cache."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:purple_concrete_vein",
+      "recipe2": "immortalstorage:blue_concrete_vein",
+      "title": "Purple and Blue Concrete",
+      "text": "A manager aggregates its members without copying their inventories."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:brown_concrete_vein",
+      "recipe2": "immortalstorage:green_concrete_vein",
+      "title": "Brown and Green Concrete",
+      "text": "Standard storage buses can read the manager's aggregated view."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:red_concrete_vein",
+      "recipe2": "immortalstorage:black_concrete_vein",
+      "title": "Red and Black Concrete",
+      "text": "All sixteen colors are now covered and share one compatibility contract."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:dirt_vein",
+      "recipe2": "immortalstorage:oak_log_vein",
+      "title": "Dirt and Oak Logs",
+      "text": "Common natural building materials can join the same continuous supply chain."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:coal_vein",
+      "recipe2": "immortalstorage:copper_vein",
+      "title": "Coal and Raw Copper",
+      "text": "Ore sources output their corresponding resources rather than fabricating ore-block states."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:iron_vein",
+      "recipe2": "immortalstorage:gold_vein",
+      "title": "Raw Iron and Raw Gold",
+      "text": "All three raw-metal veins can directly feed smelting and autocrafting."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:lapis_vein",
+      "recipe2": "immortalstorage:redstone_vein",
+      "title": "Lapis and Redstone",
+      "text": "Long-valued caches support sustained network extraction without 32-bit truncation."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:spirit_iron_vein",
+      "recipe2": "immortalstorage:spirit_crystal_vein",
+      "title": "Crude Spirit Iron and Spirit Crystal",
+      "text": "These cultivation ores have independent definitions; their world generation follows Iron and Diamond ore respectively."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:diamond_vein",
+      "recipe2": "immortalstorage:emerald_vein",
+      "title": "Diamond and Emerald",
+      "text": "High-tier mineral veins retain the same real-cache and charging boundary."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:echo_shard_vein",
+      "recipe2": "immortalstorage:ancient_debris_vein",
+      "title": "Echo Shards and Ancient Debris",
+      "text": "Rare-resource veins do not bypass progression or recipe cost; generated resources still enter cache first."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:nether_star_vein",
+      "recipe2": "immortalstorage:enchanted_golden_apple_vein",
+      "title": "Nether Stars and Enchanted Apples",
+      "text": "Expose these highest-tier veins through a manager, then use face settings to choose their destination."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:dragon_egg_vein",
+      "title": "Dragon Egg Source",
+      "text": "The Dragon Egg vein closes the built-in chain. Like every item source, its core stays opaque, upright, centered, and rotates around Y."
+    }
   ]
 }

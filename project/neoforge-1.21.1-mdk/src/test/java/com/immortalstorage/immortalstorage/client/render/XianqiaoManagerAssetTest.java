@@ -56,6 +56,24 @@ final class XianqiaoManagerAssetTest {
                 "the placed block must keep the full-size world frame model");
     }
 
+    @Test
+    void coreUsesAnExistingVanillaTextureInsteadOfTheMissingMiscWhitePixel() throws IOException {
+        String renderer = Files.readString(locateProject().resolve(Path.of(
+                "src", "main", "java", "com", "immortalstorage", "immortalstorage",
+                "client", "render", "FloatingCubeRenderer.java")));
+        assertTrue(renderer.contains("textures/block/white_concrete.png"));
+        assertTrue(!renderer.contains("textures/misc/white.png"));
+    }
+
+    private static Path locateProject() {
+        Path current = Path.of("").toAbsolutePath();
+        while (current != null) {
+            if (Files.isDirectory(current.resolve("src/main/java"))) return current;
+            current = current.getParent();
+        }
+        throw new IllegalStateException("cannot locate ImmortalStorage project");
+    }
+
     private static Path locateResources() {
         Path current = Path.of("").toAbsolutePath();
         while (current != null) {

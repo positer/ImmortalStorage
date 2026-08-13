@@ -3,6 +3,7 @@ package com.immortalstorage.immortalstorage.client.render;
 import com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity;
 import com.immortalstorage.immortalstorage.compat.mc2612.LegacyBlockEntityRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -20,8 +21,11 @@ public final class SourceVeinRenderer extends LegacyBlockEntityRenderer<SourceVe
                 ? partialTick
                 : blockEntity.getLevel().getGameTime() + partialTick;
         float positionPhase = (blockEntity.getBlockPos().asLong() & 0xFFL) * 0.125F;
+        BlockAndTintGetter tintLevel = blockEntity.getLevel() instanceof BlockAndTintGetter level
+                ? level : null;
         SourceVeinDisplayRenderer.submit(blockEntity.definition(), worldTime + positionPhase,
-                poseStack, collector, 0x00F000F0, 0);
+                poseStack, collector, 0x00F000F0, 0,
+                tintLevel, blockEntity.getBlockPos());
         return true;
     }
 

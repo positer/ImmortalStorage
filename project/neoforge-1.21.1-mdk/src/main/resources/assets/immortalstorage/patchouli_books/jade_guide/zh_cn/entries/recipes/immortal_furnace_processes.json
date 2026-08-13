@@ -1,0 +1,20 @@
+{
+  "name":"仙炉工艺总表",
+  "icon":"immortalstorage:immortal_furnace",
+  "category":"immortalstorage:recipes",
+  "sortnum":5,
+  "pages":[
+    {"type":"patchouli:text","text":"以下是当前版本全部11条$(thing)仙炉专用处理配方$()。每页依次展示输入、仙炉与产物；刻数是未安装强化插件时的基础进度。仙炉插件只加快进度，不改变燃料时间或单次产量。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:crude_spirit_iron_immortal_furnace","heading":"粗灵铁 → 灵铁","input_item":"immortalstorage:crude_spirit_iron","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_iron","station_text":"$(thing)50刻 · 0.7经验$()","body":"适合把矿脉产出的粗灵铁连续精炼。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:spirit_iron_ore_immortal_furnace","heading":"灵铁矿 → 灵铁","input_item":"immortalstorage:spirit_iron_ore","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_iron","station_text":"$(thing)50刻 · 0.7经验$()","body":"处理普通石质灵铁矿。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:deepslate_spirit_iron_ore_immortal_furnace","heading":"深层灵铁矿 → 灵铁","input_item":"immortalstorage:deepslate_spirit_iron_ore","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_iron","station_text":"$(thing)50刻 · 0.7经验$()","body":"处理深层灵铁矿。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:spirit_crystal_ore_immortal_furnace","heading":"灵晶矿 → 灵晶","input_item":"immortalstorage:spirit_crystal_ore","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_crystal","station_text":"$(thing)50刻 · 0.7经验$()","body":"将精准采集的普通灵晶矿炼成灵晶。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:deepslate_spirit_crystal_ore_immortal_furnace","heading":"深层灵晶矿 → 灵晶","input_item":"immortalstorage:deepslate_spirit_crystal_ore","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_crystal","station_text":"$(thing)50刻 · 0.7经验$()","body":"将精准采集的深层灵晶矿炼成灵晶。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:crude_pill_immortal_furnace","heading":"粗制聚灵丹","input_item":"immortalstorage:crude_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:crude_pill","station_text":"$(thing)50刻 · 0经验$()","body":"丹效与完整丹方见“丹胚与丹药”。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:refined_pill_immortal_furnace","heading":"精致聚灵丹","input_item":"immortalstorage:refined_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:refined_pill","station_text":"$(thing)25刻 · 0经验$()","body":"仙炉中最快的固定丹药工艺。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:breakthrough_pill_smelting","heading":"破限丹","input_item":"immortalstorage:breakthrough_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:breakthrough_pill","station_text":"$(thing)100刻 · 0经验$()","body":"仙炉专属；普通熔炉和高炉均不接受。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:inactive_nurturing_crystal_bedrock_immortal_furnace","heading":"失活蕴灵晶母岩","input_item":"immortalstorage:spirit_crystal_block","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:inactive_nurturing_crystal_bedrock","station_text":"$(thing)50刻 · 1经验$()","body":"再以八枚仙元环绕，方可激活生长。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:heavy_core_immortal_furnace","heading":"沉重核心","input_item":"immortalstorage:premixed_heavy_compound","station_item":"immortalstorage:immortal_furnace","output_item":"minecraft:heavy_core","station_text":"$(thing)50刻 · 1经验$()","body":"预拌沉重混合物唯一的成形方式。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:spirit_sword_tempering_immortal_furnace","heading":"灵剑淬火","input_item":"immortalstorage:spirit_sword","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:spirit_sword","station_text":"$(thing)50刻 · 0经验$()","body":"接受灵剑族标签中的兵刃；完成后保留原剑并增加一点淬火。"}
+  ]
+}

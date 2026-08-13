@@ -9,12 +9,15 @@ import com.immortalstorage.immortalstorage.menu.custom.SimulatedSpiritFieldMenu;
 import com.immortalstorage.immortalstorage.network.storage.PersonalStorageNetwork;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog;
+import com.immortalstorage.immortalstorage.worldshard.WorldShardOutputRouter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -52,19 +55,21 @@ import java.util.UUID;
 
 /** One seed, one fuel, one harvesting tool and twelve atomic output slots. */
 public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
-        implements WorldlyContainer, MenuProvider {
+        implements WorldlyContainer, MenuProvider, ReinforcementPluginHost {
     public static final int SEED_SLOT = 0;
     public static final int FUEL_SLOT = 1;
     public static final int TOOL_SLOT = 2;
     public static final int OUTPUT_START = 3;
     public static final int OUTPUT_COUNT = 12;
-    public static final int SLOT_COUNT = OUTPUT_START + OUTPUT_COUNT;
+    public static final int OUTPUT_END = OUTPUT_START + OUTPUT_COUNT;
+    public static final int PLUGIN_SLOT = TOOL_SLOT;
+    public static final int SLOT_COUNT = OUTPUT_END;
     public static final int PROCESS_TICKS = 50;
     public static final int DATA_COUNT = 11;
     private static final int[] SEED_ONLY = {SEED_SLOT};
     private static final int[] FUEL_ONLY = {FUEL_SLOT};
     private static final int[] OUTPUTS = java.util.stream.IntStream.range(
-            OUTPUT_START, SLOT_COUNT).toArray();
+            OUTPUT_START, OUTPUT_END).toArray();
     private static final int[] EMPTY = {};
     private static final TagKey<Item> SEED_TAG = ItemTags.create(
             net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
@@ -95,6 +100,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private long lastSyncTick = Long.MIN_VALUE;
     private long syncInvocationCount;
     private long lastSyncInvocation = Long.MIN_VALUE;
+    private ItemStack legacyPluginOverflow = ItemStack.EMPTY;
     private @Nullable PersonalStorageNetwork.Endpoint cachedOutputEndpoint;
     private @Nullable UUID cachedEndpointOwner;
     private @Nullable ServerPlayer cachedEndpointPlayer;
@@ -134,8 +140,15 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     public boolean outputFace(Direction side) { return side != null && outputFaces[side.ordinal()]; }
     public void toggleXianqiaoOutput() {
         xianqiaoOutput = !xianqiaoOutput;
-        if (xianqiaoOutput && level instanceof ServerLevel serverLevel) {
-            flushOutputCacheToXianqiao(endpoint(serverLevel, effectiveXianqiaoOwner(serverLevel)));
+        if (level instanceof ServerLevel serverLevel) {
+            PersonalStorageNetwork.Endpoint endpoint = endpoint(
+                    serverLevel, effectiveXianqiaoOwner(serverLevel));
+            if (xianqiaoOutput) {
+                flushOutputCacheToXianqiao(endpoint);
+            }
+            if (pendingHarvestDrops != null) {
+                publishCompletedHarvest(serverLevel, endpoint, pendingHarvestDrops);
+            }
         }
         setChangedAndSync();
     }
@@ -187,7 +200,6 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         ItemStack previous = new ItemStack(substrateSource.getBlock().asItem());
         substrateSource = replacement;
         substrate = hydrated(replacement);
-        pendingHarvestDrops = null;
         if (!player.getAbilities().instabuild) held.shrink(1);
         if (!previous.isEmpty() && !player.getInventory().add(previous)) player.drop(previous, false);
         setChangedAndSync();
@@ -215,40 +227,31 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
 
     public static void serverTick(ServerLevel level, BlockPos pos, BlockState state,
                                   SimulatedSpiritFieldBlockEntity field) {
+        if (!field.legacyPluginOverflow.isEmpty()) {
+            Block.popResource(level, pos, field.legacyPluginOverflow);
+            field.legacyPluginOverflow = ItemStack.EMPTY;
+            field.setChanged();
+        }
         // Face output is attempted before the Xianqiao fallback on every
         // server tick, including ticks with no harvest ready.
         boolean changed = field.pushCachedToFaces(level);
         UUID outputOwner = field.effectiveXianqiaoOwner(level);
         PersonalStorageNetwork.Endpoint endpoint = field.endpoint(level, outputOwner);
         changed |= field.flushOutputCacheToXianqiao(endpoint);
+        if (field.pendingHarvestDrops != null) {
+            boolean settled = field.publishCompletedHarvest(
+                    level, endpoint, field.pendingHarvestDrops);
+            changed |= settled;
+            if (!settled) {
+                field.progress = 0;
+                field.setChangedAndMaybeSync(level);
+                return;
+            }
+        }
         if (!field.hasHarvestableCrop()) {
             field.progress = 0;
-            field.pendingHarvestDrops = null;
             if (changed) field.setChangedAndMaybeSync(level);
             return;
-        }
-
-        List<ItemStack> drops = null;
-        if (field.progress >= PROCESS_TICKS - 1) {
-            // Loot construction is much more expensive than the progress
-            // counter. Build it only at the completion boundary instead of
-            // once per logical tick in an accelerated realm.
-            drops = field.pendingHarvestDrops;
-            if (drops == null) {
-                drops = field.harvestDrops(level);
-                if (!drops.isEmpty()) field.pendingHarvestDrops = drops;
-            }
-            if (drops.isEmpty()) {
-                field.pendingHarvestDrops = null;
-                field.progress = 0;
-                if (changed) field.setChangedAndMaybeSync(level);
-                return;
-            }
-            if (!field.canRouteAll(level, drops, endpoint)) {
-                field.progress = PROCESS_TICKS;
-                if (changed) field.setChangedAndMaybeSync(level);
-                return;
-            }
         }
         if (field.burnTicks <= 0 && !field.consumeFuel(level)) {
             if (changed) field.setChangedAndMaybeSync(level);
@@ -257,12 +260,8 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         field.burnTicks--;
         if (++field.progress >= PROCESS_TICKS) {
             // The seed is a permanent specimen: harvesting never shrinks or replaces SEED_SLOT.
-            if (drops == null) {
-                drops = field.pendingHarvestDrops;
-                if (drops == null) drops = field.harvestDrops(level);
-            }
-            field.route(level, drops, endpoint);
-            field.pendingHarvestDrops = null;
+            List<ItemStack> drops = field.harvestDrops(level);
+            if (!drops.isEmpty()) field.publishCompletedHarvest(level, endpoint, drops);
             field.progress = 0;
         }
         field.setChangedAndMaybeSync(level);
@@ -271,12 +270,12 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private boolean pushCachedToFaces(ServerLevel level) {
         return MachineOutputScheduler.pushItemsToFaces(
                 level, worldPosition, automaticOutput, outputFaces,
-                getItemHandler(null), OUTPUT_START, SLOT_COUNT);
+                getItemHandler(null), OUTPUT_START, OUTPUT_END);
     }
 
     private boolean flushOutputCacheToXianqiao(@Nullable PersonalStorageNetwork.Endpoint endpoint) {
         return MachineOutputScheduler.flushItemsToXianqiao(
-                getItemHandler(null), OUTPUT_START, SLOT_COUNT, endpoint);
+                getItemHandler(null), OUTPUT_START, OUTPUT_END, endpoint);
     }
 
     private boolean consumeFuel(ServerLevel level) {
@@ -368,50 +367,40 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         Optional<BlockState> crop = cropFor(items.get(SEED_SLOT));
         if (crop.isEmpty() || !compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate)) return List.of();
         if (items.get(SEED_SLOT).is(Items.CHORUS_FRUIT)) {
-            return List.of(new ItemStack(Items.CHORUS_FLOWER), new ItemStack(Items.CHORUS_FRUIT, 2));
+            return multiplyDrops(List.of(new ItemStack(Items.CHORUS_FLOWER), new ItemStack(Items.CHORUS_FRUIT, 2)));
         }
         BlockState mature = ageForProgress(crop.get(), PROCESS_TICKS);
         if (mature.is(Blocks.CHORUS_FLOWER)) mature = Blocks.CHORUS_PLANT.defaultBlockState();
         List<ItemStack> drops = Block.getDrops(mature, level, worldPosition.above(), null, null,
                 items.get(TOOL_SLOT));
-        return drops.isEmpty() && mature.is(Blocks.CHORUS_PLANT)
-                ? List.of(new ItemStack(Items.CHORUS_FRUIT)) : drops;
+        return multiplyDrops(drops.isEmpty() && mature.is(Blocks.CHORUS_PLANT)
+                ? List.of(new ItemStack(Items.CHORUS_FRUIT)) : drops);
     }
 
-    private boolean canRouteAll(ServerLevel level, List<ItemStack> drops,
-                                @Nullable PersonalStorageNetwork.Endpoint endpoint) {
-        List<ItemStack> simulated = new ArrayList<>();
-        for (int slot = OUTPUT_START; slot < SLOT_COUNT; slot++) simulated.add(items.get(slot).copy());
-        for (ItemStack drop : drops) {
-            ItemStack remaining = MachineOutputScheduler.simulateItemToFaces(
-                    level, worldPosition, automaticOutput, outputFaces, drop.copy());
-            if (endpoint != null && !remaining.isEmpty()) {
-                remaining = endpoint.insert(remaining, true);
+    private List<ItemStack> multiplyDrops(List<ItemStack> source) {
+        long multiplier = (long) Math.max(1, items.get(SEED_SLOT).getCount()) * reinforcementMultiplier();
+        List<ItemStack> result = new ArrayList<>();
+        for (ItemStack stack : source) {
+            long remaining = Math.min(Integer.MAX_VALUE, (long) stack.getCount() * multiplier);
+            while (remaining > 0L) {
+                int count = (int) Math.min(stack.getMaxStackSize(), remaining);
+                result.add(stack.copyWithCount(count));
+                remaining -= count;
             }
-            for (int i = 0; i < simulated.size() && !remaining.isEmpty(); i++) {
-                ItemStack target = simulated.get(i);
-                if (target.isEmpty()) {
-                    int moved = Math.min(remaining.getCount(), remaining.getMaxStackSize());
-                    simulated.set(i, remaining.copyWithCount(moved)); remaining.shrink(moved);
-                } else if (ItemStack.isSameItemSameComponents(target, remaining)) {
-                    int moved = Math.min(remaining.getCount(), target.getMaxStackSize() - target.getCount());
-                    target.grow(moved); remaining.shrink(moved);
-                }
-            }
-            if (!remaining.isEmpty()) return false;
         }
-        return true;
+        return result;
     }
 
-    private void route(ServerLevel level, List<ItemStack> drops,
-                       @Nullable PersonalStorageNetwork.Endpoint endpoint) {
+    /**
+     * Commits as much of one completed harvest as possible to the visible
+     * output cache, then to enabled accepting faces. The exact remainder is
+     * returned for the persistent temporary cache; production never ejects it.
+     */
+    private List<ItemStack> routeToLocalCache(ServerLevel level, List<ItemStack> drops) {
+        List<ItemStack> temporary = new ArrayList<>();
         for (ItemStack drop : drops) {
-            ItemStack remaining = MachineOutputScheduler.pushItemToFaces(
-                    level, worldPosition, automaticOutput, outputFaces, drop.copy());
-            if (endpoint != null && !remaining.isEmpty()) {
-                remaining = endpoint.insert(remaining, false);
-            }
-            for (int slot = OUTPUT_START; slot < SLOT_COUNT && !remaining.isEmpty(); slot++) {
+            ItemStack remaining = drop.copy();
+            for (int slot = OUTPUT_START; slot < OUTPUT_END && !remaining.isEmpty(); slot++) {
                 ItemStack target = items.get(slot);
                 if (target.isEmpty()) {
                     int moved = Math.min(remaining.getCount(), remaining.getMaxStackSize());
@@ -421,8 +410,59 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                     target.grow(moved); remaining.shrink(moved);
                 }
             }
-            if (!remaining.isEmpty()) Block.popResource(level, worldPosition, remaining);
+            if (!remaining.isEmpty()) {
+                remaining = MachineOutputScheduler.pushItemToFaces(
+                        level, worldPosition, automaticOutput, outputFaces, remaining);
+                if (!remaining.isEmpty()) temporary.add(remaining.copy());
+            }
         }
+        return List.copyOf(temporary);
+    }
+
+    /**
+     * Publishes one completed harvest according to the selected output domain.
+     * Direct Xianqiao output never checks local free space and never ejects an
+     * overflow stack. A rejected direct transaction remains pending intact.
+     */
+    private boolean publishCompletedHarvest(
+            ServerLevel level,
+            @Nullable PersonalStorageNetwork.Endpoint endpoint,
+            List<ItemStack> drops) {
+        if (drops == null || drops.isEmpty()) {
+            pendingHarvestDrops = null;
+            return true;
+        }
+        if (xianqiaoOutput) {
+            WorldShardOutputRouter.RouteResult route =
+                    WorldShardOutputRouter.routeDirect(drops, endpoint);
+            if (route.unaccepted() > 0L) {
+                if (pendingHarvestDrops == null) pendingHarvestDrops = copyStacks(drops);
+                return false;
+            }
+            pendingHarvestDrops = null;
+            return true;
+        }
+        List<ItemStack> temporary = routeToLocalCache(level, drops);
+        pendingHarvestDrops = temporary.isEmpty() ? null : temporary;
+        setChanged();
+        return pendingHarvestDrops == null;
+    }
+
+    private static List<ItemStack> copyStacks(List<ItemStack> source) {
+        List<ItemStack> copies = new ArrayList<>(source.size());
+        for (ItemStack stack : source) {
+            if (stack != null && !stack.isEmpty()) copies.add(stack.copy());
+        }
+        return copies;
+    }
+
+    /** Returns and clears production awaiting output when the block is removed. */
+    public List<ItemStack> drainPendingOutputForRemoval() {
+        if (pendingHarvestDrops == null || pendingHarvestDrops.isEmpty()) return List.of();
+        List<ItemStack> drained = copyStacks(pendingHarvestDrops);
+        pendingHarvestDrops = null;
+        setChanged();
+        return drained;
     }
 
     private @Nullable UUID effectiveXianqiaoOwner(ServerLevel level) {
@@ -512,28 +552,32 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         return new SimulatedSpiritFieldMenu(id, inventory, this);
     }
     @Override public int getContainerSize() { return SLOT_COUNT; }
-    @Override public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
+    @Override public boolean isEmpty() {
+        return (pendingHarvestDrops == null || pendingHarvestDrops.isEmpty())
+                && items.stream().allMatch(ItemStack::isEmpty);
+    }
     @Override public ItemStack getItem(int slot) { return items.get(slot); }
     @Override public ItemStack removeItem(int slot, int amount) {
         ItemStack result = ContainerHelper.removeItem(items, slot, amount);
-        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
         if (!result.isEmpty()) setChanged(); return result;
     }
     @Override public ItemStack removeItemNoUpdate(int slot) {
-        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
         return ContainerHelper.takeItem(items, slot);
     }
     @Override public void setItem(int slot, ItemStack stack) {
         items.set(slot, stack); stack.limitSize(getMaxStackSize(stack));
-        if (slot == SEED_SLOT || slot == TOOL_SLOT) pendingHarvestDrops = null;
         setChanged();
     }
     @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public void clearContent() { items.clear(); pendingHarvestDrops = null; }
+    @Override public void clearContent() {
+        items.clear();
+        pendingHarvestDrops = null;
+    }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
         if (slot == FUEL_SLOT) return stack.is(ModItems.TRUE_YUAN.get())
                 || stack.is(ModItems.IMMORTAL_YUAN.get()) || stack.getItem() instanceof SpiritDriveItem;
-        if (slot == TOOL_SLOT) return stack.getMaxStackSize() == 1;
+        if (slot == TOOL_SLOT) return ReinforcementPluginHost.isPlugin(stack)
+                || stack.getMaxStackSize() == 1;
         return slot == SEED_SLOT && isValidSeed(stack);
     }
     @Override public int[] getSlotsForFace(Direction side) {
@@ -548,7 +592,12 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                 || (side.getAxis().isHorizontal() && slot == FUEL_SLOT)) && canPlaceItem(slot, stack);
     }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return automaticOutput && outputFace(side) && slot >= OUTPUT_START && slot < SLOT_COUNT;
+        return automaticOutput && outputFace(side) && slot >= OUTPUT_START && slot < OUTPUT_END;
+    }
+    @Override public ItemStack reinforcementPlugin() { return items.get(PLUGIN_SLOT); }
+    @Override public void setReinforcementPlugin(ItemStack stack) {
+        setItem(PLUGIN_SLOT, stack.copyWithCount(1));
+        setChangedAndSync();
     }
 
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -562,12 +611,36 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
         int[] faces = new int[outputFaces.length];
         for (Direction side : Direction.values()) faces[side.ordinal()] = outputFaces[side.ordinal()] ? 1 : 0;
         tag.putIntArray("OutputFaces", faces);
+        if (!legacyPluginOverflow.isEmpty()) {
+            tag.put("LegacyPluginOverflow", legacyPluginOverflow.save(registries));
+        }
+        if (pendingHarvestDrops != null && !pendingHarvestDrops.isEmpty()) {
+            ListTag pending = new ListTag();
+            for (ItemStack stack : pendingHarvestDrops) pending.add(stack.save(registries));
+            tag.put("PendingHarvestDrops", pending);
+        }
     }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
+        net.minecraft.core.NonNullList<ItemStack> loaded =
+                net.minecraft.core.NonNullList.withSize(OUTPUT_END + 1, ItemStack.EMPTY);
+        ContainerHelper.loadAllItems(tag, loaded, registries);
         items = net.minecraft.core.NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
-        ContainerHelper.loadAllItems(tag, items, registries);
+        for (int slot = 0; slot < SLOT_COUNT; slot++) items.set(slot, loaded.get(slot));
+        legacyPluginOverflow = tag.contains("LegacyPluginOverflow")
+                ? ItemStack.parseOptional(registries, tag.getCompound("LegacyPluginOverflow"))
+                : ItemStack.EMPTY;
+        migrateLegacyPlugin(loaded.get(OUTPUT_END));
         pendingHarvestDrops = null;
+        ListTag pending = tag.getList("PendingHarvestDrops", Tag.TAG_COMPOUND);
+        if (!pending.isEmpty()) {
+            pendingHarvestDrops = new ArrayList<>(pending.size());
+            for (int index = 0; index < pending.size(); index++) {
+                ItemStack stack = ItemStack.parseOptional(registries, pending.getCompound(index));
+                if (!stack.isEmpty()) pendingHarvestDrops.add(stack);
+            }
+            if (pendingHarvestDrops.isEmpty()) pendingHarvestDrops = null;
+        }
         cachedCropSeed = ItemStack.EMPTY;
         cachedCrop = Optional.empty();
         progress = tag.getInt("Progress"); burnTicks = tag.getInt("BurnTicks");
@@ -584,6 +657,21 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                 registries.lookupOrThrow(Registries.BLOCK), tag.getCompound("Substrate"));
         if (tag.contains("SubstrateSource")) substrateSource = NbtUtils.readBlockState(
                 registries.lookupOrThrow(Registries.BLOCK), tag.getCompound("SubstrateSource"));
+    }
+
+    private void migrateLegacyPlugin(ItemStack legacy) {
+        if (!ReinforcementPluginHost.isPlugin(legacy)) return;
+        if (items.get(PLUGIN_SLOT).isEmpty()) {
+            items.set(PLUGIN_SLOT, legacy.copyWithCount(1));
+            return;
+        }
+        for (int slot = OUTPUT_START; slot < OUTPUT_END; slot++) {
+            if (items.get(slot).isEmpty()) {
+                items.set(slot, legacy.copyWithCount(1));
+                return;
+            }
+        }
+        legacyPluginOverflow = legacy.copyWithCount(1);
     }
     @Override public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
         return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);

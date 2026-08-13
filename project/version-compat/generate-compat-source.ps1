@@ -124,6 +124,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('net.minecraft.client.gui.GuiGraphics',
         'net.minecraft.client.gui.GuiGraphicsExtractor')
     $text = [regex]::Replace($text, '\bGuiGraphics\b', 'GuiGraphicsExtractor')
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/].*Screen\.java$') {
+        # Screen.extractRenderStateWithTooltipAndSubtitles already extracts
+        # the background before invoking the container adapter. These legacy
+        # calls otherwise produce the giant duplicated panel seen in 26.1.2.
+        $text = [regex]::Replace($text,
+            '(?m)^\s*renderBackground\(graphics, mouseX, mouseY, partialTick\);\r?\n', '')
+        $text = $text.Replace(
+            'renderBackground(graphics, mouseX, mouseY, partialTick); super.render(',
+            'super.render(')
+    }
 
     # The 1.21.1 source uses CustomData for arbitrary block/item payloads.
     # In 26.1.2 the old BLOCK_ENTITY_DATA component is typed for an actual
@@ -134,7 +144,9 @@ function Transform-2612([string] $text, [string] $relativePath) {
 
     $text = $text.Replace('net.minecraft.world.ItemInteractionResult', 'net.minecraft.world.InteractionResult')
     $text = $text.Replace('ItemInteractionResult', 'InteractionResult')
-    $text = $text.Replace('PASS_TO_DEFAULT_BLOCK_INTERACTION', 'PASS')
+    # 26.1 requires this explicit result to continue into useWithoutItem.
+    # Mapping it to plain PASS made machine menus fail whenever an item was held.
+    $text = $text.Replace('PASS_TO_DEFAULT_BLOCK_INTERACTION', 'TRY_WITH_EMPTY_HAND')
     $text = $text.Replace('net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide)',
         '(level.isClientSide ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)')
     $text = $text.Replace('net.minecraft.world.InteractionResult.sidedSuccess(player.level().isClientSide)',
@@ -143,6 +155,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
         '(level.isClientSide ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)')
     $text = $text.Replace('InteractionResult.sidedSuccess(player.level().isClientSide)',
         '(player.level().isClientSide ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)')
+
+    if ($relativePath -match '[\\/]block[\\/]ModBlocks\.java$') {
+        # Item description ids are final in 26.1.2 and default to item.* even
+        # for BlockItem. Select the official block prefix at construction so
+        # the canonical block.* bilingual names remain authoritative.
+        $text = $text.Replace('new Item.Properties()))',
+            'new Item.Properties().useBlockDescriptionPrefix()))')
+        $text = $text.Replace('new Item.Properties())));',
+            'new Item.Properties().useBlockDescriptionPrefix())));')
+    }
 
     # NeoForge's capability handles retain the same transfer interfaces in
     # 26.1, but their official nested capability names were shortened.
@@ -647,6 +669,20 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = $text.Replace('holder.id()', 'holder.id().identifier()')
         $text = $text.Replace('candidate.holder().id()', 'candidate.holder().id().identifier()')
     }
+    if ($relativePath -match '[\\/]menu[\\/]custom[\\/]EmbeddedImmortalFurnaceBackend\.java$') {
+        # Slot validation runs on both logical sides.  On 26.1.2 the physical
+        # client exposes ClientRecipeContainer through RecipeAccess, not the
+        # server-only RecipeManager needed by the complete recipe scan below.
+        # Keep the server authoritative and let the client accept the cursor
+        # stack provisionally; the matching server menu still rejects invalid
+        # inputs and synchronizes the resulting slot state.
+        $text = [regex]::Replace($text,
+            '(?s)(boolean isRecipeInput\(Player player, ItemStack stack\) \{\s*' +
+                'if \(player == null \|\| stack == null \|\| stack\.isEmpty\(\)\) return false;\s*)' +
+                '(return findRecipe\(player, stack\)\.isPresent\(\);)',
+            ('$1if (player.level().isClientSide()) return true;' + $newline +
+                '        $2'))
+    }
     if ($relativePath -match '[\\/]compat[\\/]emi[\\/]ImmortalFurnaceEmiRecipe\.java$' -or
         $relativePath -match '[\\/]compat[\\/]jei[\\/]ImmortalFurnaceJeiCategory\.java$') {
         $text = $text.Replace('holder.value().getIngredients().getFirst()', 'holder.value().input()')
@@ -780,6 +816,14 @@ function Transform-2612([string] $text, [string] $relativePath) {
         "$script:compatCodec.saveFluidStack(blockEntity.getLevel().registryAccess(), fluid.copyWithAmount(1))")
     $text = $text.Replace('filters.get(slot).save(registries)',
         "$script:compatCodec.saveItemStack(registries, filters.get(slot))")
+    $text = $text.Replace('reinforcementPlugin.save(registries)',
+        "$script:compatCodec.saveItemStack(registries, reinforcementPlugin)")
+    $text = $text.Replace('plugin.save(registries)',
+        "$script:compatCodec.saveItemStack(registries, plugin)")
+    $text = $text.Replace('legacyPluginOverflow.save(registries)',
+        "$script:compatCodec.saveItemStack(registries, legacyPluginOverflow)")
+    $text = $text.Replace('stack.save(registries)',
+        "$script:compatCodec.saveItemStack(registries, stack)")
     $text = [regex]::Replace($text, '(\b\w+)\.serializeNBT\(registries\)',
         "$script:compatValueIo.serialize(`$1, registries)")
     $text = [regex]::Replace($text, '(\b\w+)\.deserializeNBT\(registries,',
@@ -1137,6 +1181,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             "$script:compatValueIo.saveItems(tag, items, registries)")
         $text = $text.Replace('ContainerHelper.loadAllItems(tag, items, registries)',
             "$script:compatValueIo.loadItems(tag, items, registries)")
+        $text = $text.Replace('ContainerHelper.loadAllItems(tag, loaded, registries)',
+            "$script:compatValueIo.loadItems(tag, loaded, registries)")
     }
 
     if ($relativePath -match '[\\/]block[\\/]entity[\\/]EnergyCrystalBlockEntity\.java$') {
@@ -1447,6 +1493,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'protected final void renderStorageAmountOverlays(GuiGraphicsExtractor graphics) {' + $newline,
             'protected final void renderStorageAmountOverlays(GuiGraphicsExtractor graphics) {' + $newline +
                 '        graphics.nextStratum();' + $newline)
+        # GuiGraphicsExtractor transforms scissor rectangles by the active
+        # foreground matrix. Canonical 1.21.1 uses absolute coordinates, while
+        # target foreground content is already translated by leftPos/topPos.
+        # Rewrite only the dedicated content boundary; background clipping
+        # remains screen-absolute because renderBg runs before that transform.
+        $text = [regex]::Replace($text,
+            '(?s)(protected final void enableStorageContentScissor\(GuiGraphicsExtractor graphics, Rect2i clip\) \{\s*)graphics\.enableScissor\(clip\.getX\(\), clip\.getY\(\),\s*clip\.getX\(\) \+ clip\.getWidth\(\), clip\.getY\(\) \+ clip\.getHeight\(\)\);',
+            '$1graphics.enableScissor(clip.getX() - this.leftPos, clip.getY() - this.topPos,' + $newline +
+                '                clip.getX() + clip.getWidth() - this.leftPos,' + $newline +
+                '                clip.getY() + clip.getHeight() - this.topPos);')
     }
 
     if ($relativePath -match '[\\/]client[\\/]ClientSetup\.java$') {
@@ -1475,14 +1531,21 @@ function Transform-2612([string] $text, [string] $relativePath) {
     }
 
     if ($relativePath -match '[\\/]client[\\/]screen[\\/](XianqiaoInterfaceScreen|XianqiaoStorageScreen|AdvancedXianqiaoInterfaceScreen)\.java$') {
-        # 26.1's fluid extension is no longer the texture/tint service.  The
-        # target helper renders the bucket item, which is the official stable
-        # representation for an arbitrary FluidStack in a GUI extractor.
+        # 26.1 exposes the real still sprite and stack tint through FluidModel.
+        # Preserve the canonical fluid-slot presentation instead of substituting
+        # a bucket item, which changes both identity and visual language.
         $text = [regex]::Replace($text,
             '(?s)    private void renderFluidSprite\(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y\) \{.*?\r?\n    \}',
             '    private void renderFluidSprite(GuiGraphicsExtractor graphics, FluidStack stack, int x, int y) {' + $newline +
                 '        if (stack == null || stack.isEmpty()) return;' + $newline +
-                '        graphics.fakeItem(stack.getFluidType().getBucket(stack), x, y);' + $newline +
+                '        net.minecraft.client.renderer.block.FluidModel fluidModel = net.minecraft.client.Minecraft.getInstance().getModelManager()' + $newline +
+                '                .getFluidStateModelSet().get(stack.getFluid().defaultFluidState());' + $newline +
+                '        if (fluidModel == null || fluidModel.stillMaterial() == null) return;' + $newline +
+                '        TextureAtlasSprite sprite = fluidModel.stillMaterial().sprite();' + $newline +
+                '        int tint = fluidModel.fluidTintSource() == null ? 0xFFFFFFFF' + $newline +
+                '                : fluidModel.fluidTintSource().colorAsStack(stack);' + $newline +
+                '        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(' + $newline +
+                '                graphics, sprite, x, y, 16, 16, tint);' + $newline +
                 '    }')
     }
 
@@ -1948,6 +2011,9 @@ function Transform-2612([string] $text, [string] $relativePath) {
             $text = $text.Replace(
                 'ROOT.resolve("java/com/immortalstorage/immortalstorage/network/ModPayloads.java")',
                 'TARGET_SOURCE_ROOT.resolve("com/immortalstorage/immortalstorage/network/ModPayloads.java")')
+            $text = $text.Replace(
+                "jarJar('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE')",
+                "jarJar('vazkii.patchouli:patchouli-neoforge:26.1-94')")
         }
         if ($relativePath -match '[\\/]item[\\/]SpiritStaffVisualResourceTest\.java$') {
             $text = $text.Replace(
@@ -2168,8 +2234,6 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'versionRange=\"[0,)\"')
         $text = $text.Replace('versionRange=\"[2.0.9,2.0.10)\"',
             'versionRange=\"[3.2.1,3.2.2)\"')
-        $text = $text.Replace('modId=\"patchouli\"\ntype=\"required\"',
-            'modId=\"patchouli\"\ntype=\"optional\"')
         if ($relativePath -match '[\\/]block[\\/]YuanLightContractTest\.java$') {
             $text = $text.Replace('getChunkNow(center.x, center.z)',
                 'getChunkNow(center.x(), center.z())')
@@ -2269,6 +2333,51 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = $text.Replace('RecipeIngredientRole.CATALYST', 'RecipeIngredientRole.CRAFTING_STATION')
     }
 
+    # 26.1's partial sprite extraction path shifts these progress layers. Use
+    # the complete PNG assets with pixel-space cropping and one shared painter.
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/]VanillaGuiPainter\.java$') {
+        $text = $text.Replace('Identifier.withDefaultNamespace("container/furnace/burn_progress")',
+            'Identifier.withDefaultNamespace("textures/gui/sprites/container/furnace/burn_progress.png")')
+        $text = $text.Replace('"immortalstorage", "container/immortal_furnace/lit_progress")',
+            '"immortalstorage", "textures/gui/sprites/container/immortal_furnace/lit_progress.png")')
+        $text = $text.Replace('                    "immortalstorage", "textures/gui/sprites/container/immortal_furnace/lit_progress.png"))',
+            '                    "immortalstorage", "textures/gui/sprites/container/immortal_furnace/lit_progress.png")')
+        $text = [regex]::Replace($text,
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(g, FURNACE_BURN_PROGRESS, 24, 16, 0, 0,\s*x \+ 82, y \+ laneY, progress, 16\);',
+            'furnaceProgress(g, x + 82, y + laneY, progress);')
+        $text = [regex]::Replace($text,
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(g, IMMORTAL_FURNACE_LIT_PROGRESS, 14, 14, 0, 14 - height,\s*x, y \+ 14 - height, 14, height\);',
+            'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(g,' + $newline +
+                '                IMMORTAL_FURNACE_LIT_PROGRESS, x, y + 14 - height, 14, height,' + $newline +
+                '                0.0F, 14 - height, 14, 14);')
+        $progressHelper =
+            '    static void furnaceProgress(GuiGraphicsExtractor g, int x, int y, int progress) {' + $newline +
+            '        int width = Mth.clamp(progress, 0, 24);' + $newline +
+            '        if (width <= 0) return;' + $newline +
+            '        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(g,' + $newline +
+            '                FURNACE_BURN_PROGRESS, x, y, width, 16, 0.0F, 0.0F, 24, 16);' + $newline +
+            '    }' + $newline + $newline
+        $text = $text.Replace('    private static void furnaceArrow(', $progressHelper + '    private static void furnaceArrow(')
+    }
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/](ImmortalFurnaceScreen|SimulatedSpiritFieldScreen|SimulatedReincarnationFurnaceScreen)\.java$') {
+        $text = [regex]::Replace($text,
+            '(?m)^\s*private static final Identifier BURN_PROGRESS =\s*\r?\n?\s*Identifier\.withDefaultNamespace\(\s*\r?\n?\s*"container/furnace/burn_progress"\);\s*\r?\n?', '')
+        $text = [regex]::Replace($text,
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*x \+ 95, laneY, width, 16\);',
+            'VanillaGuiPainter.furnaceProgress(graphics, x + 95, laneY, width);')
+        $text = [regex]::Replace($text,
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*leftPos \+ 91, topPos \+ 44, progress, 16\);',
+            'VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);')
+    }
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/]VanillaArrowRenderingContractTest\.java$') {
+        $text = $text.Replace('assertTrue(source.contains("textures/gui/container/furnace.png"))',
+            'assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/container/furnace.png"))')
+        $text = $text.Replace('assertTrue(source.contains("79.0F, 34.0F, 24, 16, 256, 256"))',
+            'assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("79.0F, 34.0F, 24, 16, 256, 256"))')
+        $text = $text.Replace('assertTrue(source.contains("container/furnace/burn_progress"))',
+            'assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/sprites/container/furnace/burn_progress.png"))')
+    }
+
     # A few targeted replacements above inject fully qualified factories. Keep
     # the final output on the official 26.1 name even for those injected calls.
     $text = $text.Replace('net.minecraft.resources.ResourceLocation', 'net.minecraft.resources.Identifier')
@@ -2279,10 +2388,39 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('ResourceLocation.read', 'Identifier.read')
     $text = $text.Replace('ResourceLocation', 'Identifier')
 
-    return $text
+    # Canonical sources are LF-normalized in git. Environment.NewLine is used
+    # above so exact Windows-source replacements remain readable, then the
+    # generated tree is normalized once to avoid mixed CRLF/LF additions.
+    return $text.Replace("`r`n", "`n")
 }
 
 $utf8 = [System.Text.UTF8Encoding]::new($false)
+
+function Write-TextIfChanged([string] $Path, [string] $Contents) {
+    if (Test-Path -LiteralPath $Path) {
+        $existing = [System.IO.File]::ReadAllText($Path)
+        if ($existing -ceq $Contents) {
+            return
+        }
+    }
+    [System.IO.File]::WriteAllText($Path, $Contents, $utf8)
+}
+
+function Copy-FileIfChanged([string] $Source, [string] $Destination) {
+    if (Test-Path -LiteralPath $Destination) {
+        $sourceInfo = Get-Item -LiteralPath $Source
+        $destinationInfo = Get-Item -LiteralPath $Destination
+        if ($sourceInfo.Length -eq $destinationInfo.Length) {
+            $sourceHash = (Get-FileHash -LiteralPath $Source -Algorithm SHA256).Hash
+            $destinationHash = (Get-FileHash -LiteralPath $Destination -Algorithm SHA256).Hash
+            if ($sourceHash -eq $destinationHash) {
+                return
+            }
+        }
+    }
+    [System.IO.File]::Copy($Source, $Destination, $true)
+}
+
 $targetExcludedFragments = @(
     '/compat/arsnouveau/',
     '/compat/beyonddimensions/',
@@ -2346,7 +2484,7 @@ foreach ($sourceFile in $canonicalFiles) {
     New-Item -ItemType Directory -Path $parent -Force | Out-Null
     $contents = [System.IO.File]::ReadAllText($sourceFile.FullName)
     $contents = Transform-2612 $contents $relative
-    [System.IO.File]::WriteAllText($destination, $contents, $utf8)
+    Write-TextIfChanged $destination $contents
 }
 
 # Minecraft 26.1 resolves an item's client model through
@@ -2396,7 +2534,7 @@ foreach ($resourcePair in @(
             $targetJson = Convert-2612LootModifierNode $canonicalJson
         }
         $targetJsonText = $targetJson | ConvertTo-Json -Depth 100
-        [System.IO.File]::WriteAllText($targetDataFile, $targetJsonText + $newline, $utf8)
+        Write-TextIfChanged $targetDataFile ($targetJsonText + $newline)
     }
 }
 $targetLegacyLootIndex = Join-Path $targetResourceRoot 'data/neoforge/loot_modifiers/global_loot_modifiers.json'
@@ -2467,7 +2605,7 @@ foreach ($modelFile in @(Get-ChildItem -LiteralPath $canonicalItemModelRoot -Fil
         }
     }
     $json = $definition | ConvertTo-Json -Depth 8
-    [System.IO.File]::WriteAllText($definitionPath, $json + $newline, $utf8)
+    Write-TextIfChanged $definitionPath ($json + $newline)
 }
 
 Write-Output "Generated target 26.1.2 client item definitions at $targetItemDefinitionRoot"
@@ -2554,14 +2692,26 @@ if (-not [string]::IsNullOrWhiteSpace($TargetAuditSourceRoot)) {
         throw "Refusing to generate audit sources into an empty or filesystem-root target: $auditRoot"
     }
     New-Item -ItemType Directory -Path $auditRoot -Force | Out-Null
+    $allowedAuditPaths = @{}
+    foreach ($sourceFile in $generatedFiles) {
+        $relativeGenerated = $sourceFile.FullName.Substring($target.Length).TrimStart('\', '/')
+        $allowedAuditPaths[$relativeGenerated] = $true
+    }
+    foreach ($overrideFile in @(Get-ChildItem -LiteralPath $overrideRoot -Filter '*.java' -Recurse -File)) {
+        $relativeOverride = $overrideFile.FullName.Substring($overrideRoot.Length).TrimStart('\', '/')
+        $allowedAuditPaths[$relativeOverride] = $true
+    }
     foreach ($staleAudit in @(Get-ChildItem -LiteralPath $auditRoot -Filter '*.java' -Recurse -File)) {
-        Remove-Item -LiteralPath $staleAudit.FullName -Force
+        $relativeStaleAudit = $staleAudit.FullName.Substring($auditRoot.Length).TrimStart('\', '/')
+        if (-not $allowedAuditPaths.ContainsKey($relativeStaleAudit)) {
+            Remove-Item -LiteralPath $staleAudit.FullName -Force
+        }
     }
     foreach ($sourceFile in $generatedFiles) {
         $relativeGenerated = $sourceFile.FullName.Substring($target.Length).TrimStart('\', '/')
         $destinationAudit = Join-Path $auditRoot $relativeGenerated
         New-Item -ItemType Directory -Path (Split-Path -Parent $destinationAudit) -Force | Out-Null
-        [System.IO.File]::Copy($sourceFile.FullName, $destinationAudit, $true)
+        Copy-FileIfChanged $sourceFile.FullName $destinationAudit
     }
     # Target overrides are the effective source for files deliberately kept
     # out of generated-java (notably the 26.1 rendering bridges).  Overlay
@@ -2571,7 +2721,7 @@ if (-not [string]::IsNullOrWhiteSpace($TargetAuditSourceRoot)) {
         $relativeOverride = $overrideFile.FullName.Substring($overrideRoot.Length).TrimStart('\', '/')
         $destinationAudit = Join-Path $auditRoot $relativeOverride
         New-Item -ItemType Directory -Path (Split-Path -Parent $destinationAudit) -Force | Out-Null
-        [System.IO.File]::Copy($overrideFile.FullName, $destinationAudit, $true)
+        Copy-FileIfChanged $overrideFile.FullName $destinationAudit
     }
     Write-Output "Generated merged 26.1.2 audit source view at $auditRoot"
 }
@@ -2633,7 +2783,7 @@ if (-not [string]::IsNullOrWhiteSpace($CanonicalTestRoot)) {
         New-Item -ItemType Directory -Path $parentTest -Force | Out-Null
         $testContents = [System.IO.File]::ReadAllText($testFile.FullName)
         $testContents = Transform-2612 $testContents ('src/test/java/' + $relativeTest)
-        [System.IO.File]::WriteAllText($destinationTest, $testContents, $utf8)
+        Write-TextIfChanged $destinationTest $testContents
     }
 
     $generatedTests = @(Get-ChildItem -LiteralPath $targetTests -Filter '*.java' -Recurse -File)

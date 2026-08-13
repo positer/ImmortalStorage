@@ -15,7 +15,7 @@ public final class AdvancedStabilizedMiniatureImmortalRuinMenu extends Stabilize
 
     public AdvancedStabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         super(ModMenus.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id, inventory,
-                new SimpleContainer(54), new SimpleContainerData(14), null,
+                new SimpleContainer(55), new SimpleContainerData(14), null,
                 buffer == null ? net.minecraft.core.BlockPos.ZERO : buffer.readBlockPos());
     }
 

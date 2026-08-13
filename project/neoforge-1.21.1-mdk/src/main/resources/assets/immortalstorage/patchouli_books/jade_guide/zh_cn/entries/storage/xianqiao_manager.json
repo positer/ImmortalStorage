@@ -1,10 +1,13 @@
 {
-  "name":"仙窍管理器","icon":"immortalstorage:xianqiao_manager","category":"immortalstorage:storage","sortnum":5,
+  "name":"仙窍管理器",
+  "icon":"immortalstorage:xianqiao_manager",
+  "category":"immortalstorage:storage",
+  "sortnum":5,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_manager","text":"仙窍管理器用灵核与下界之星合成，是把世界中的自动化设备接入个人仙窍存储的方块。只有六阶及以上玩家可以认领。"},
-    {"type":"patchouli:spotlight","item":"immortalstorage:xianqiao_manager","title":"首次认主","text":"管理器第一次被合格玩家打开时认主，先到先得；已经有物主的管理器不会因为其他玩家打开而静默改绑。物主使用仙藏持久身份保存，不依赖启动器本次会话UUID。"},
-    {"type":"patchouli:text","text":"管理器只能放在物主自己的个人仙窍维度。它把物主仙窍的物品能力提供给相邻自动化，并在达到七阶后提供流体能力；外部管道读取的是标准NeoForge能力，不需要依赖仙藏内部菜单类。它没有普通机器的六面主动生产开关，提供的是被动抽取视图。"},
-    {"type":"patchouli:text","text":"仙窍管理器可被Create蓝图大炮作为标准方块物品仓库读取，Building Gadgets复制粘贴时也能把物主的空窍/仙窍内容作为材料来源。模拟检查不会扣除资源，真正施工才执行抽取。"},
-    {"type":"patchouli:text","text":"物主离线、阶段不满足或个人仙窍不可解析时，外部能力会暂时不可用而不是指向其他玩家存储。管理器本身不包含外部 HTTP 或调试接口；所有身份和存储解析都由服务端完成。"}
+    {"type":"patchouli:crafting","recipe":"immortalstorage:xianqiao_manager","title":"把仙窍带到方块网络","text":"灵核与下界之星构成管理器。它不另造仓库，而是把物主已有的仙窍存储安全地暴露给世界自动化。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:xianqiao_manager","title":"认主与放置","text":"只有六阶以上玩家能认领，且管理器只能在物主自己的仙窍维度工作。首次合格交互认主；此后其他玩家打开不会改绑。身份来自仙藏持久玩家ID，不依赖本次启动器会话UUID。"},
+    {"type":"patchouli:text","title":"按境界开放能力","text":"六阶提供物品端点，七阶加入流体，八阶加入FE与已注册的额外资源。相邻管道读取标准NeoForge能力；AE2/RS存储总线还能通过各自原生存储接口读取同一长整型账本。管理器只提供被动存取，不替机器主动六面推出。"},
+    {"type":"patchouli:text","title":"施工与网络","text":"Create蓝图大炮可把它当作方块物品仓库；Building Gadgets复制粘贴也能从物主存储取材。模拟检查只预估，不扣物；真正施工才提交事务。磁盘与管理器同时接入同一网络时按物主去重，避免同一库存重复挂载。"},
+    {"type":"patchouli:text","title":"失联时宁可停机","text":"物主离线、境界不足或仙窍暂不可解析时，能力会关闭，而不会误连到最近玩家。恢复条件后自动重连；方块本身不保存第二份库存，因此不存在两份账本分叉。"}
   ]
 }

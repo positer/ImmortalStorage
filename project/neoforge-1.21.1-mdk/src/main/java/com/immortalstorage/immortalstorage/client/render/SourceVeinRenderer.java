@@ -31,7 +31,8 @@ public final class SourceVeinRenderer implements BlockEntityRenderer<SourceVeinB
 
         SourceVeinDisplayRenderer.render(blockEntity.definition(), worldTime + positionPhase,
                 poseStack, buffers, packedLight, packedOverlay,
-                blockEntity.getBlockPos().asLong());
+                blockEntity.getBlockPos().asLong(),
+                blockEntity.getLevel(), blockEntity.getBlockPos());
     }
 
     private SourceVeinAnimation.Clock clockFor(long key) {

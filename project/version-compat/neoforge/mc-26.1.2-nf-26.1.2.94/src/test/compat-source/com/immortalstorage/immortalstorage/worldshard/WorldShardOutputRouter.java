@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Strict, dimension-selected output transactions for both shard generators. */
+/** Dimension-selected output transactions for both shard generators. */
 public final class WorldShardOutputRouter {
     private WorldShardOutputRouter() {
     }
@@ -43,6 +43,28 @@ public final class WorldShardOutputRouter {
         return committed
                 ? new RouteResult(offered, offered, 0L)
                 : new RouteResult(offered, 0L, offered);
+    }
+
+    /**
+     * Commits the portion of a completed generation that still fits locally
+     * and returns the exact remainder for the owning machine's persistent
+     * temporary output buffer. Direct Xianqiao publication remains atomic.
+     */
+    public static CacheRouteResult routeCacheWithOverflow(
+            List<ItemStack> outputs, @Nullable WorldShardMinerCache cache) {
+        List<ItemStack> entries = normalizedCopies(outputs);
+        long offered = total(entries);
+        if (offered == 0L) {
+            return new CacheRouteResult(new RouteResult(0L, 0L, 0L), List.of());
+        }
+        if (cache == null) {
+            return new CacheRouteResult(new RouteResult(offered, 0L, offered), entries);
+        }
+        List<ItemStack> overflow = cache.insertAsMuchAsPossible(entries);
+        long unaccepted = total(overflow);
+        long accepted = Math.max(0L, offered - unaccepted);
+        return new CacheRouteResult(
+                new RouteResult(offered, accepted, unaccepted), List.copyOf(overflow));
     }
 
     /**
@@ -180,5 +202,11 @@ public final class WorldShardOutputRouter {
     }
 
     public record RouteResult(long offered, long accepted, long unaccepted) {
+    }
+
+    public record CacheRouteResult(RouteResult route, List<ItemStack> overflow) {
+        public CacheRouteResult {
+            overflow = overflow == null ? List.of() : List.copyOf(overflow);
+        }
     }
 }

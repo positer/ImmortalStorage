@@ -37,7 +37,7 @@ public final class AdvancedStabilizedMiniatureImmortalRuinBlock extends BaseEnti
         if (!(stack.getItem() instanceof com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem)
                 || com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem.getMode(stack)
                 != com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem.MODE_WRENCH) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.AdvancedStabilizedMiniatureImmortalRuinBlockEntity ruin) {

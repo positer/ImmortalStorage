@@ -13,10 +13,10 @@ final class VanillaGuiPainter {
     private static final Identifier FURNACE_TEXTURE =
             Identifier.withDefaultNamespace("textures/gui/container/furnace.png");
     private static final Identifier FURNACE_BURN_PROGRESS =
-            Identifier.withDefaultNamespace("container/furnace/burn_progress");
+            Identifier.withDefaultNamespace("textures/gui/sprites/container/furnace/burn_progress.png");
     private static final Identifier IMMORTAL_FURNACE_LIT_PROGRESS =
             Identifier.fromNamespaceAndPath(
-                    "immortalstorage", "container/immortal_furnace/lit_progress");
+                    "immortalstorage", "textures/gui/sprites/container/immortal_furnace/lit_progress.png");
     private static final int PANEL = 0xFFC6C6C6;
     private static final int PANEL_2 = 0xFFD8D8D8;
     private static final int PANEL_3 = 0xFF8B8B8B;
@@ -190,6 +190,8 @@ final class VanillaGuiPainter {
     static void terminalFurnaceModule(GuiGraphicsExtractor g, int x, int y, int h,
                                       int flameProgress, int[] cookProgress, boolean lit) {
         int fuelY = TerminalLayout.furnaceFuelY(h);
+        int pluginY = TerminalLayout.furnacePluginY(h);
+        slot(g, x + TerminalLayout.FURNACE_PLUGIN_X, y + pluginY, true);
         slot(g, x + TerminalLayout.FURNACE_FUEL_X, y + fuelY, true);
 
         for (int channel = 0; channel < TerminalLayout.FURNACE_LANE_COUNT; channel++) {
@@ -201,12 +203,12 @@ final class VanillaGuiPainter {
             int progress = cookProgress != null && channel < cookProgress.length
                     ? Mth.clamp(cookProgress[channel], 0, 24) : 0;
             if (progress > 0) {
-                com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(g, FURNACE_BURN_PROGRESS, 24, 16, 0, 0,
-                        x + 82, y + laneY, progress, 16);
+                furnaceProgress(g, x + 82, y + laneY, progress);
             }
         }
 
-        furnaceFlame(g, x + 28, y + fuelY - 12, flameProgress, lit);
+        furnaceFlame(g, x + TerminalLayout.FURNACE_FUEL_X + 1,
+                y + TerminalLayout.furnaceFlameY(h), flameProgress, lit);
     }
 
     static void terminalSmithingModule(GuiGraphicsExtractor g, int x, int y, int h) {
@@ -626,6 +628,13 @@ final class VanillaGuiPainter {
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(g, CRAFTING_TABLE_TEXTURE, x, y, 119.0F, 30.0F, 26, 26, 256, 256);
     }
 
+    static void furnaceProgress(GuiGraphicsExtractor g, int x, int y, int progress) {
+        int width = Mth.clamp(progress, 0, 24);
+        if (width <= 0) return;
+        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(g,
+                FURNACE_BURN_PROGRESS, x, y, width, 16, 0.0F, 0.0F, 24, 16);
+    }
+
     private static void furnaceArrow(GuiGraphicsExtractor g, int x, int y) {
         // The furnace texture supplies the unfilled arrow. The progress sprite
         // is cropped over it by the caller as cooking advances.
@@ -640,8 +649,9 @@ final class VanillaGuiPainter {
         if (!lit) return;
 
         int height = Mth.clamp(flameProgress, 0, 13) + 1;
-        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(g, IMMORTAL_FURNACE_LIT_PROGRESS, 14, 14, 0, 14 - height,
-                x, y + 14 - height, 14, height);
+        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(g,
+                IMMORTAL_FURNACE_LIT_PROGRESS, x, y + 14 - height, 14, height,
+                0.0F, 14 - height, 14, 14);
     }
 
     private static void vanillaInset(GuiGraphicsExtractor g, int x, int y, int w, int h) {

@@ -39,6 +39,18 @@ import net.neoforged.bus.api.EventPriority;
 public class CommonEvents {
     public CommonEvents() {}
 
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onReinforcementPluginUse(PlayerInteractEvent.RightClickBlock event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+        ItemStack held = player.getItemInHand(event.getHand());
+        if (!com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(held)) return;
+        if (!(event.getLevel().getBlockEntity(event.getPos()) instanceof
+                com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost host)) return;
+        if (!host.tryInstallReinforcement(player, held)) return;
+        event.setCanceled(true);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+    }
+
     @SubscribeEvent
     public void onEntityTick(EntityTickEvent.Post event) {
         com.immortalstorage.immortalstorage.entity.PrimordialQiConversion.tick(event.getEntity());
@@ -422,6 +434,11 @@ public class CommonEvents {
         }
         // Personal realm: keep the owner's active chunks force-loaded.
         if (com.immortalstorage.immortalstorage.dimension.RealmHelper.isInOwnRealm(p)) {
+            // Dimension-change callbacks can run before the destination level
+            // has become the player's current level on newer server lines.
+            // Reconcile the persisted scale from the stable post-player-tick
+            // position; activateTickScale is idempotent for an unchanged rate.
+            com.immortalstorage.immortalstorage.dimension.RealmHelper.refreshRealmTickRate(p);
             com.immortalstorage.immortalstorage.dimension.RealmHelper.enforcePlayerBoundary(p);
             com.immortalstorage.immortalstorage.dimension.RealmHelper.ensureChunksForced(p);
         }

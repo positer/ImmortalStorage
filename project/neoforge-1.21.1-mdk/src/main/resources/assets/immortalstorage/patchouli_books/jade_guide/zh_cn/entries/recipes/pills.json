@@ -1,8 +1,33 @@
 {
-  "name":"丹药流程","icon":"immortalstorage:refined_pill","category":"immortalstorage:recipes","sortnum":10,
+  "name":"丹胚与丹药",
+  "icon":"immortalstorage:refined_pill",
+  "category":"immortalstorage:recipes",
+  "sortnum":10,
+  "extra_recipe_mappings":{
+    "immortalstorage:crude_pill_embryo":1,
+    "immortalstorage:crude_pill":2,
+    "immortalstorage:refined_pill_embryo":5,
+    "immortalstorage:refined_pill":6,
+    "immortalstorage:breakthrough_pill_embryo":9,
+    "immortalstorage:breakthrough_pill":10,
+    "immortalstorage:immortal_pill":12
+  },
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_pill_embryo","recipe2":"immortalstorage:refined_pill_embryo","text":"先合成丹胚，再通过对应烧炼配方炼成丹药。所有丹药可无视饱食度快速服用，Tooltip会写明效果。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:breakthrough_pill_embryo_yuan","text":"破限丹在五阶使用时只把灵气进度补满，不会自动完成飞升。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_pill_yuan","recipe2":"immortalstorage:immortal_pill_xian","text":"真元材料配方在六阶后通常允许仙元替代；但原本明确要求仙元的配方仍正常消耗仙元。"}
+    {"type":"patchouli:text","text":"炼丹分三步：$(thing)合丹胚$()、$(thing)入炉成丹$()、$(thing)按境界服用$()。本章逐张展示全部3条丹胚配方、2条普通熔炉配方、3条仙炉配方和2条仙丹配方；没有用文字冒充的缺页。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_pill_embryo","title":"粗制聚灵丹胚","text":"一份真元或仙元材料配一束小麦，无序合成8枚。丹胚本身只补充饥饿，不增加灵气。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:crude_pill_smelting","title":"粗制聚灵丹 · 熔炉","text":"普通熔炉用50刻炼成一枚，无经验。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:crude_pill_immortal_furnace","heading":"粗制聚灵丹 · 仙炉","input_item":"immortalstorage:crude_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:crude_pill","station_text":"$(thing)仙炉 · 50刻 · 0经验$()","body":"与普通熔炉结果相同；可利用仙炉并行槽与强化插件加快进度。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:crude_pill","title":"粗制聚灵丹","text":"可无视饱食度快速服用：恢复3点饥饿，灵气进度+10，并获得1层、持续5秒的灵气饱和。若服用前已有饱和层，额外受到1点魔法伤害。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:refined_pill_embryo","title":"精致聚灵丹胚","text":"粗制聚灵丹居中，小麦与真元/仙元材料交错围合。丹胚可食：灵气+80，获得2层、持续15秒的饱和，并承受5点魔法伤害。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:refined_pill_smelting","title":"精致聚灵丹 · 熔炉","text":"普通熔炉仅需25刻，无经验。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:refined_pill_immortal_furnace","heading":"精致聚灵丹 · 仙炉","input_item":"immortalstorage:refined_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:refined_pill","station_text":"$(thing)仙炉 · 25刻 · 0经验$()","body":"仙炉路线同样产出一枚；插件只缩短处理时间，不增加这一配方的产量。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:refined_pill","title":"精致聚灵丹","text":"可无视饱食度快速服用：恢复4点饥饿，灵气进度+120，获得1层、持续10秒的饱和，并受到5点魔法伤害。它是破限丹胚的核心材料。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:breakthrough_pill_embryo_yuan","title":"破限丹胚","text":"灵晶居中，四枚精致聚灵丹成十字，四角放真元或仙元材料。丹胚不可食，必须交给仙炉。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:breakthrough_pill_smelting","heading":"破限丹","input_item":"immortalstorage:breakthrough_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:breakthrough_pill","station_text":"$(thing)仙炉专属 · 100刻 · 0经验$()","body":"普通熔炉与高炉不接受破限丹胚。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:breakthrough_pill","title":"破境之用","text":"一至四阶服用会直接进一阶，并获得5层饱和与两分钟进阶虚弱；原有饱和每层先造成20点魔法伤害。五阶只补满灵气。六至八阶补入仙元上限的一半；更高阶仍会获得1层饱和。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_pill_yuan","recipe2":"immortalstorage:immortal_pill_xian","title":"仙丹 · 两种丹方","text":"左式允许真元或仙元材料，龙蛋居中；右式以破限丹居中、八枚仙元围合，明确只收仙元。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_pill","title":"仙丹","text":"五阶灵气满时服用，生命降至1点并升入六阶；低阶或条件不足会遭致命反噬。六阶以上服用会补充仙元并附加2层、一分钟饱和：六至八阶补上限一半，九阶补3200，十阶默认补25600。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:ascension_dan","title":"飞升丹 · 非合成","link_recipe":true,"text":"末地城宝箱有1%概率出现。未达六阶者服用后直接进入六阶；它没有工作台或仙炉配方。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:white_day_thunder","title":"白日惊雷 · 特殊道具","link_recipe":true,"text":"使用后直接设为十阶。它没有生存合成表，仅用于创造、管理或整合包自定义流程。"}
   ]
 }

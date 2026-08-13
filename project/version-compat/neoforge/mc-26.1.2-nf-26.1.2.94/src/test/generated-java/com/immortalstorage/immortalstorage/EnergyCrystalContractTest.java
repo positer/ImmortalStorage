@@ -63,15 +63,16 @@ final class EnergyCrystalContractTest {
                 "direct processing writes must become visible in the open output slot");
         assertFalse(entity.contains("if (slot == EXTRA_SLOT && !stack.isEmpty()) return;"),
                 "client container sync must be allowed to populate the read-only output slot");
-        assertTrue(entity.contains("if (slot == EXTRA_SLOT) return false;"),
-                "the output slot must remain non-placeable through the container contract");
-        assertTrue(menu.contains("public boolean mayPlace(ItemStack stack) { return false; }"),
-                "the output slot must remain non-placeable through the menu");
+        assertTrue(entity.contains("if (slot == EXTRA_SLOT) return ReinforcementPluginHost.isPlugin(stack)"),
+                "the output slot must accept only the reinforcement plugin through the container contract");
+        assertTrue(menu.contains("ReinforcementPluginHost.isPlugin(stack)"),
+                "the output slot must expose the reinforcement plugin exception through the menu");
         assertTrue(registrations.contains("Capabilities.Energy.BLOCK"));
         assertTrue(menu.contains("new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 26, 26)"));
         assertTrue(menu.contains("getMaxStackSize(ItemStack stack)"),
                 "the processing slot must accept the source item's complete stack");
-        assertFalse(menu.contains("getMaxStackSize() { return 1; }"),
+        String inputSlot = menu.substring(menu.indexOf("class InputSlot"), menu.indexOf("class FuelSlot"));
+        assertFalse(inputSlot.contains("getMaxStackSize() { return 1; }"),
                 "the processing slot must not force a single-item input");
         assertTrue(menu.contains("new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 26, 62)"));
         assertTrue(menu.contains("new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 59, 44)"));

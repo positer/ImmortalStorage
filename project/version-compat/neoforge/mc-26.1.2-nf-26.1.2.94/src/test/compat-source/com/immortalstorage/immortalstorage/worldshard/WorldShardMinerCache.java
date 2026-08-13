@@ -4,6 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class WorldShardMinerCache extends ItemStackHandler {
@@ -47,5 +48,23 @@ public final class WorldShardMinerCache extends ItemStackHandler {
         }
         onChanged.run();
         return true;
+    }
+
+    /**
+     * Inserts every stack as far as the live 27-slot cache permits and returns
+     * component-preserving remainders in source order.  This is intentionally
+     * separate from {@link #tryInsertAll(List)}: normal transaction probes stay
+     * atomic, while a completed reinforced generation may commit its fitting
+     * portion before the caller persists the remainder and pauses.
+     */
+    public List<ItemStack> insertAsMuchAsPossible(List<ItemStack> offered) {
+        if (offered == null || offered.isEmpty()) return List.of();
+        List<ItemStack> overflow = new ArrayList<>();
+        for (ItemStack stack : offered) {
+            if (stack == null || stack.isEmpty()) continue;
+            ItemStack remainder = ItemHandlerHelper.insertItemStacked(this, stack.copy(), false);
+            if (!remainder.isEmpty()) overflow.add(remainder.copy());
+        }
+        return List.copyOf(overflow);
     }
 }

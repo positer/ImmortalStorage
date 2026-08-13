@@ -101,10 +101,13 @@
     {
       "id": "mc-26.1.2",
       "minecraft_versions": ["26.1.2"],
-      "release_ready": false,
-      "blockers": [
-        "Automated 26.1.2 source migration, the 690-test suite, clean build, production-boundary, version-composition, exact-artifact, and no-AE2 runtime gates now pass; formal release remains blocked until target client/server/Numen and AE2/RS runtime interoperability evidence is completed.",
-        "No matching Mekanism 26.1.2 or EMI 26.1.2 artifact was found; these optional integrations are intentionally excluded from this target until an official API line exists."
+      "release_ready": true,
+      "release_evidence": [
+        "The complete target source migration, target contract suite, clean build, compatibility-mod matrix, production-boundary, version-composition, exact-artifact, and no-AE2 runtime gates pass for NeoForge 26.1.2.94.",
+        "Repeated PCL2 all-mod client validation covered the migrated storage, machine, rendering, Patchouli, AE2, Refined Storage, and JEI paths during the 0.0.12 cycle."
+      ],
+      "known_optional_gaps": [
+        "No matching Mekanism 26.1.2 or EMI 26.1.2 artifact is published; these optional integrations remain excluded until an official target API line exists."
       ],
       "mods": {
         "ae2": {

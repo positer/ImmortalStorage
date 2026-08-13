@@ -214,7 +214,6 @@ public final class EnergyCrystalScreen extends com.immortalstorage.immortalstora
     }
 
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
         super.render(graphics, mouseX, mouseY, partialTick);
         if (tankHovered(mouseX, mouseY)) {
             com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, List.of(

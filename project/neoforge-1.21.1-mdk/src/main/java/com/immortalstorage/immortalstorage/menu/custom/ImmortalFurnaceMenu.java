@@ -50,7 +50,8 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
         this.blockEntity = blockEntity;
 
         addSlot(new InputSlot(container, ImmortalFurnaceBlockEntity.INPUT_1, 53, 20));
-        addSlot(new FuelSlot(container, ImmortalFurnaceBlockEntity.FUEL, 17, 50));
+        addSlot(new FuelSlot(container, ImmortalFurnaceBlockEntity.FUEL, 17, 58));
+        addSlot(new PluginSlot(container, ImmortalFurnaceBlockEntity.PLUGIN_SLOT, 17, 28));
         addSlot(new FurnaceResultSlot(inventory.player, container,
                 ImmortalFurnaceBlockEntity.RESULT_1, 143, 20));
         addSlot(new InputSlot(container, ImmortalFurnaceBlockEntity.INPUT_2, 53, 50));
@@ -120,6 +121,8 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
         if (index < MACHINE_SLOT_COUNT) {
             if (!moveItemStackTo(moving, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
             if (isResultMenuSlot(index)) slot.onQuickCraft(moving, original);
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(moving)) {
+            if (!moveItemStackTo(moving, 2, 3, false)) return ItemStack.EMPTY;
         } else if (isFuel(moving)) {
             if (!moveItemStackTo(moving, 1, 2, false)) return ItemStack.EMPTY;
         } else if (canSmelt(moving)) {
@@ -139,7 +142,7 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
 
     private boolean moveIntoInputSlots(ItemStack stack) {
         boolean moved = false;
-        for (int menuSlot : new int[] {0, 3, 5}) {
+        for (int menuSlot : new int[] {0, 4, 6}) {
             int before = stack.getCount();
             moveItemStackTo(stack, menuSlot, menuSlot + 1, false);
             moved |= stack.getCount() != before;
@@ -149,7 +152,7 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
     }
 
     private static boolean isResultMenuSlot(int index) {
-        return index == 2 || index == 4 || index == 6;
+        return index == 3 || index == 5 || index == 7;
     }
 
     private final class InputSlot extends Slot {
@@ -172,5 +175,13 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
         public boolean mayPlace(ItemStack stack) {
             return isFuel(stack);
         }
+    }
+
+    private static final class PluginSlot extends Slot {
+        private PluginSlot(Container container, int slot, int x, int y) { super(container, slot, x, y); }
+        @Override public boolean mayPlace(ItemStack stack) {
+            return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack);
+        }
+        @Override public int getMaxStackSize() { return 1; }
     }
 }

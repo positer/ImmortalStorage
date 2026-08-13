@@ -1,1 +1,33 @@
-{"name":"Pill Progression","icon":"immortalstorage:refined_pill","category":"immortalstorage:recipes","sortnum":10,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:crude_pill_embryo","recipe2":"immortalstorage:refined_pill_embryo","text":"Craft embryos, then use their processing recipes. Every pill is fast and edible at full hunger; tooltips state effects."},{"type":"patchouli:crafting","recipe":"immortalstorage:breakthrough_pill_embryo_yuan","text":"At stage five, Breakthrough Pill fills aura progress but never completes ascension automatically."},{"type":"patchouli:crafting","recipe":"immortalstorage:immortal_pill_yuan","recipe2":"immortalstorage:immortal_pill_xian","text":"After ascension, Immortal Power may substitute in True Power material recipes. Recipes explicitly requiring Immortal Power still consume it."}]}
+{
+  "name":"Pill Embryos and Pills",
+  "icon":"immortalstorage:refined_pill",
+  "category":"immortalstorage:recipes",
+  "sortnum":10,
+  "extra_recipe_mappings":{
+    "immortalstorage:crude_pill_embryo":1,
+    "immortalstorage:crude_pill":2,
+    "immortalstorage:refined_pill_embryo":5,
+    "immortalstorage:refined_pill":6,
+    "immortalstorage:breakthrough_pill_embryo":9,
+    "immortalstorage:breakthrough_pill":10,
+    "immortalstorage:immortal_pill":12
+  },
+  "pages":[
+    {"type":"patchouli:text","text":"Alchemy has three steps: $(thing)form the embryo$(), $(thing)refine it in heat$(), then $(thing)take the pill at the right stage$(). This chapter visibly presents all three embryo recipes, two furnace recipes, three Immortal Furnace recipes and both Immortal Pill recipes—no missing page replaced by an internal ID."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_pill_embryo","title":"Crude Pill Embryo","text":"Combine one TruePower/ImmortalPower crafting material with wheat, shapelessly, for eight embryos. The embryo only restores hunger; it grants no lingqi."},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:crude_pill_smelting","title":"Crude Pill · Furnace","text":"A vanilla furnace refines one pill in 50 ticks and grants no experience."},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:crude_pill_immortal_furnace","heading":"Crude Pill · Immortal Furnace","input_item":"immortalstorage:crude_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:crude_pill","station_text":"$(thing)Immortal Furnace · 50 ticks · 0 XP$()","body":"The result matches the vanilla furnace; the Immortal Furnace adds parallel lanes and plugin-driven processing speed."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:crude_pill","title":"Crude Pill","text":"Fast and edible at full hunger: restores 3 hunger, adds 10 lingqi and grants one Lingqi Saturation layer for 5 seconds. If a layer already existed before use, it also deals 1 magic damage."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:refined_pill_embryo","title":"Refined Pill Embryo","text":"Place a Crude Pill in the center, alternating wheat and TruePower/ImmortalPower materials around it. The edible embryo gives 80 lingqi, two saturation layers for 15 seconds and deals 5 magic damage."},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:refined_pill_smelting","title":"Refined Pill · Furnace","text":"A vanilla furnace needs only 25 ticks and grants no experience."},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:refined_pill_immortal_furnace","heading":"Refined Pill · Immortal Furnace","input_item":"immortalstorage:refined_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:refined_pill","station_text":"$(thing)Immortal Furnace · 25 ticks · 0 XP$()","body":"This route also yields one pill. Plugins shorten processing; they never multiply this furnace recipe's output."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:refined_pill","title":"Refined Pill","text":"Fast and edible at full hunger: restores 4 hunger, adds 120 lingqi, grants one saturation layer for 10 seconds and deals 5 magic damage. It is the heart of a Breakthrough Pill Embryo."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:breakthrough_pill_embryo_yuan","title":"Breakthrough Pill Embryo","text":"Center a Spirit Crystal, place four Refined Pills on the cardinal sides and TruePower/ImmortalPower materials in the corners. This embryo cannot be eaten; it belongs in an Immortal Furnace."},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:breakthrough_pill_smelting","heading":"Breakthrough Pill","input_item":"immortalstorage:breakthrough_pill_embryo","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:breakthrough_pill","station_text":"$(thing)Immortal Furnace only · 100 ticks · 0 XP$()","body":"Neither the vanilla furnace nor the blast furnace accepts this embryo."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:breakthrough_pill","title":"Breaking a Boundary","text":"At stages 1–4 it advances one stage, grants five saturation layers and two minutes of Advancement Weakness; each existing layer first deals 20 magic damage. At stage 5 it fills lingqi. At stages 6–8 it adds half the ImmortalPower cap; higher stages still gain one saturation layer."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_pill_yuan","recipe2":"immortalstorage:immortal_pill_xian","title":"Immortal Pill · Two Formulas","text":"The left accepts TruePower or ImmortalPower materials around a Dragon Egg. The right centers a Breakthrough Pill inside eight ImmortalPower and accepts no substitute."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_pill","title":"Immortal Pill","text":"At full stage-five lingqi, it leaves one health and opens stage six; taking it earlier or unprepared is lethal. At later stages it grants two saturation layers for one minute and ImmortalPower: half the cap at stages 6–8, 3,200 at stage 9, and 25,600 at stage 10 by default."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:ascension_dan","title":"Ascension Dan · Not Crafted","link_recipe":true,"text":"End City treasure has a 1% chance to contain one. It sends a cultivator below stage six directly to stage six and has no crafting or furnace recipe."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:white_day_thunder","title":"White Day Thunder · Special","link_recipe":true,"text":"Using it sets the player directly to stage ten. It has no survival recipe and exists for Creative, administration or modpack-authored progression."}
+  ]
+}

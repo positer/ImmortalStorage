@@ -1,9 +1,29 @@
 {
-  "name":"Substitute Puppet","icon":"immortalstorage:substitute_puppet","category":"immortalstorage:equipment","sortnum":20,
-  "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:substitute_puppet","text":"The Substitute Puppet is non-stacking. Use an unbound puppet in the air to claim it; the tooltip shows owner, Respawn Anchor, and durability. It shares the personal realm's persistent identity. First use migrates only a valid legacy owner field while preserving durability and anchor; another player cannot rebind it."},
-    {"type":"patchouli:text","text":"Hold the puppet in the offhand and use a Nurturing Crystal from the other hand to recharge it. Every eight crystals restore one durability, consuming as many full sets as possible up to sixteen durability."},
-    {"type":"patchouli:text","text":"When its owner dies, a puppet in inventory, Kongqiao, or Xianqiao storage immediately applies the Totem of Undying effect and spends one durability, with the puppet itself in the activation animation. Logging into the same account through another launcher does not detach ownership."},
-    {"type":"patchouli:text","text":"Use the held puppet on a Respawn Anchor to save that position. A rescue teleports across dimensions to the anchor even without cheats. Use it in the air to clear the anchor; breaking or exploding the bound anchor also clears it automatically."}
+  "name": "Substitute Puppet",
+  "icon": "immortalstorage:substitute_puppet",
+  "category": "immortalstorage:equipment",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:substitute_puppet",
+      "title": "Claim It First",
+      "text": "The puppet is non-stacking. Use an unbound one in air to claim it; the tooltip then shows owner, Respawn Anchor, and durability. It shares the personal realm's persistent identity. Valid legacy UUID migration changes only owner, not durability or anchor."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recharge with Nurturing Crystals",
+      "text": "Hold the puppet in the offhand and use Nurturing Crystals from the other hand. Every 8 restore 1 durability, consuming as many complete sets as possible until materials run out or durability reaches 16."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Substitution Trigger",
+      "text": "When the owner dies, a puppet in inventory, Kongqiao, or Xianqiao storage immediately applies the Totem of Undying effect and spends 1 durability. The activation shows the puppet itself and has no extra cooldown."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bind the Destination",
+      "text": "Use the held puppet on a Respawn Anchor to record a cross-dimensional destination. Rescue teleports there without cheat permission. Use in air to clear it; breaking or exploding the anchor clears it automatically. Another player cannot rebind it."
+    }
   ]
 }

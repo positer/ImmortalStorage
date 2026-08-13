@@ -13,9 +13,7 @@ import net.minecraft.world.entity.player.Inventory;
 public class ImmortalFurnaceScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<ImmortalFurnaceMenu> {
     private static final Identifier FURNACE_TEXTURE =
             Identifier.withDefaultNamespace("textures/gui/container/furnace.png");
-    private static final Identifier BURN_PROGRESS =
-            Identifier.withDefaultNamespace("container/furnace/burn_progress");
-    private static final int TEXT = 0xFF404040;
+private static final int TEXT = 0xFF404040;
     private static final int[] LANE_Y = {20, 50, 80};
 
     public ImmortalFurnaceScreen(ImmortalFurnaceMenu menu, Inventory inventory, Component title) {
@@ -45,13 +43,12 @@ public class ImmortalFurnaceScreen extends com.immortalstorage.immortalstorage.c
                     79.0F, 34.0F, 24, 16, 256, 256);
             int width = Mth.ceil(menu.getCookProgress(channel) * 24.0F);
             if (width > 0) {
-                com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(graphics, BURN_PROGRESS, 24, 16, 0, 0,
-                        x + 95, laneY, width, 16);
+                VanillaGuiPainter.furnaceProgress(graphics, x + 95, laneY, width);
             }
         }
 
         int flameProgress = Mth.ceil(menu.getLitProgress() * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, x + 18, y + 33,
+        VanillaGuiPainter.furnaceFlame(graphics, x + 18, y + 41,
                 flameProgress, menu.isLit());
     }
 

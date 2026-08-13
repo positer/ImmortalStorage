@@ -81,6 +81,11 @@ public class SourceVeinBlock extends BaseEntityBlock {
                 && level.getBlockEntity(pos) instanceof SourceVeinBlockEntity source) {
             source.setSourceDefinitionId(stack.get(ModDataComponents.SOURCE_DEFINITION_ID.get()));
         }
+        if (!level.isClientSide() && level instanceof net.minecraft.server.level.ServerLevel serverLevel
+                && level.getBlockEntity(pos) instanceof SourceVeinBlockEntity source) {
+            com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
+                    .personalRealmOwner(serverLevel.dimension()).ifPresent(source::setOwner);
+        }
     }
 
     @Override
@@ -107,11 +112,11 @@ public class SourceVeinBlock extends BaseEntityBlock {
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
                                               InteractionHand hand, BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof SourceVeinBlockEntity source) || !source.fluidSource()) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         ItemStack filled = source.filledVanillaContainer();
         if (filled.isEmpty()) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (stack.is(Items.BUCKET) && !player.isShiftKeyDown()) {
             if (!level.isClientSide()) {
@@ -145,7 +150,7 @@ public class SourceVeinBlock extends BaseEntityBlock {
             }
             return (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     private static void replaceHeldContainer(Player player, InteractionHand hand, ItemStack held, ItemStack replacement) {

@@ -26,12 +26,14 @@ final class RecipeViewerOptionalBoundaryTest {
         Path java = projectRoot().resolve(Path.of(
                 "..", "version-compat", "neoforge", "mc-26.1.2-nf-26.1.2.94", "src", "test", "compat-source", "com", "immortalstorage", "immortalstorage"));
         Path jeiRoot = java.resolve(Path.of("compat", "jei")).normalize();
+        Path jeiMixinRoot = java.resolve(Path.of("mixin", "jei")).normalize();
         Path emiRoot = java.resolve(Path.of("compat", "emi")).normalize();
 
         try (var files = Files.walk(java)) {
             for (Path source : files.filter(path -> path.toString().endsWith(".java")).toList()) {
                 String code = withoutCommentsAndStringLiterals(Files.readString(source));
-                if (!source.normalize().startsWith(jeiRoot)) {
+                if (!source.normalize().startsWith(jeiRoot)
+                        && !source.normalize().startsWith(jeiMixinRoot)) {
                     assertFalse(JEI_TYPE.matcher(code).find(),
                             () -> "hard JEI reference escaped compat/jei: " + source);
                 }

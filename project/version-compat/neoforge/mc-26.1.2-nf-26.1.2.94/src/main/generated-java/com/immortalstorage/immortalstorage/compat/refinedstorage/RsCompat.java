@@ -27,6 +27,9 @@ public final class RsCompat {
         }
         RsExternalResourceKeyBridges.register(ImmortalStorageRsExternalResourceKeyBridge.INSTANCE);
         InstalledAddonRsExternalResourceKeyBridges.registerPresent();
+        RsExternalResourceKeyBridges.register(RegisteredRsResourceBridge.INSTANCE);
+        RefinedStorageApi.INSTANCE.addExternalStorageProviderFactory(
+                XianqiaoRsManagerExternalStorageProvider::new);
         RefinedStorageApi.INSTANCE.getGridResourceTypeRegistry().register(EXTERNAL_RESOURCE_TYPE_ID, RsExternalGridResourceType.INSTANCE);
         var registry = RefinedStorageApi.INSTANCE.getStorageTypeRegistry();
         if (registry.get(STORAGE_TYPE_ID).isEmpty()) {
@@ -40,6 +43,10 @@ public final class RsCompat {
         ImmortalStorageMod.LOG.info(
                 "[Compat/RS] Registered RS 2.0.9 Xianqiao storage and {} external-resource key bridges",
                 RsExternalResourceKeyBridges.registered().size());
+        ImmortalStorageMod.LOG.info(
+                "[Compat/RS] Discovered registered addon resource types {} and storage types {}",
+                RegisteredRsResourceBridge.registeredAddonResourceTypeIds(),
+                RegisteredRsResourceBridge.registeredAddonStorageTypeIds());
     }
 
     private RsCompat() {

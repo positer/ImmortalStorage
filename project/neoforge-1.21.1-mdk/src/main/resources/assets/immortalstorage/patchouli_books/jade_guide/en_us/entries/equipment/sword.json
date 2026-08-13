@@ -1,8 +1,29 @@
 {
-  "name":"Spirit Sword Tempering","icon":"immortalstorage:spirit_sword","category":"immortalstorage:equipment","sortnum":10,
-  "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_sword","text":"Tooltip and combat share one damage model and show stage, payment, and tempering bonus. Anvils accept the current Netherite Sword enchantment set. Each tempering point adds 1% to a Spirit Sword, 0% to a One-Qi Returning Origin Sword, and 1.5% to an Immortal-Ruin-Forged Spirit Sword."},
-    {"type":"patchouli:text","text":"Repeatedly smelt the sword in furnaces, blast furnaces, placed Immortal Furnaces, or the terminal furnace. Each completion adds one tempering point, grants no experience, and returns the sword to input for continuous processing. Each point adds 1% damage."},
-    {"type":"patchouli:text","text":"After each hit, tempering points halve and round down. Aura repair spends the matching Yuan to restore durability; without enough balance, the hit still lands but deals only base weapon damage. Later, upgrade it into the Immortal-Ruin-Forged Spirit Sword, or forge the One-Qi Returning Origin Sword with a Spirit Core template and Primordial Qi. Each branch has its own chapter."}
+  "name": "Spirit Sword: Temper and Repair",
+  "icon": "immortalstorage:spirit_sword",
+  "category": "immortalstorage:equipment",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:spirit_sword",
+      "title": "Read the Damage",
+      "text": "The tooltip and real attack use one calculation, listing base damage, stage bonus, resource payment, and tempering bonus in order. Anvils accept the current Netherite Sword enchantment set."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Continuous Tempering",
+      "text": "Place the sword in a Furnace, Blast Furnace, placed Immortal Furnace, or embedded furnace. Each completion adds 1 tempering point, grants no experience, and returns the result to input. A Spirit Sword gains 1% damage per point."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Cost of a Hit",
+      "text": "After each hit, tempering points halve and round down. Aura repair spends the matching Yuan to restore durability. Insufficient balance does not cancel the attack, but that hit keeps only base weapon damage."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Two Forging Paths",
+      "text": "The Immortal-Ruin-Forged sword raises the coefficient to 1.5% and widens sweeping. The One-Qi sword has 0% melee growth and reserves points for phase-three beams. Both preserve the core progression but create distinct combat rhythms."
+    }
   ]
 }

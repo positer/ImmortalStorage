@@ -56,7 +56,7 @@ public final class YuanLightBlock extends BaseEntityBlock {
 
     @Override protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                                         Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof DyeItem dye)) return InteractionResult.PASS;
+        if (!(stack.getItem() instanceof DyeItem dye)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && state.getValue(COLOR) != stack.getOrDefault(net.minecraft.core.component.DataComponents.DYE, net.minecraft.world.item.DyeColor.WHITE)) {
             level.setBlock(pos, state.setValue(COLOR, stack.getOrDefault(net.minecraft.core.component.DataComponents.DYE, net.minecraft.world.item.DyeColor.WHITE)), 3);
             if (!player.getAbilities().instabuild) stack.shrink(1);

@@ -89,7 +89,7 @@ public final class SimulatedReincarnationFurnaceBlock extends BaseEntityBlock {
             if (!level.isClientSide()) furnace.dropAsItem((ServerPlayer) player);
             return (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
     @Override public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                        Player player, BlockHitResult hit) {

@@ -163,9 +163,13 @@ final class PersonalRealmServerLevel extends ServerLevel {
         private int carryPermille;
 
         void activate(double requestedScale) {
+            double clampedScale = clampTickScale(requestedScale);
+            int clampedPermille = (int) Math.round(
+                    clampedScale * RealmTimeScalePolicy.NORMAL_PERMILLE);
+            if (this.active && this.scalePermille == clampedPermille) return;
             this.active = true;
-            this.scale = clampTickScale(requestedScale);
-            this.scalePermille = (int) Math.round(this.scale * RealmTimeScalePolicy.NORMAL_PERMILLE);
+            this.scale = clampedScale;
+            this.scalePermille = clampedPermille;
             this.carryPermille = 0;
         }
 

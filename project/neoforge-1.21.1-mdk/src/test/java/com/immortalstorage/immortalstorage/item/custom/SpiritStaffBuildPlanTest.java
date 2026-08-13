@@ -2,6 +2,8 @@ package com.immortalstorage.immortalstorage.item.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -13,6 +15,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class SpiritStaffBuildPlanTest {
+    @Test
+    void mutableBlockStateStillBelongsToTheSameConstructionSurface() {
+        var single = Blocks.CHEST.defaultBlockState();
+        var joined = single.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, ChestType.LEFT);
+
+        assertTrue(SpiritStaffBuildPlan.sameBlock(single, joined),
+                "joining a chest must not make the original build surface disappear");
+        assertFalse(SpiritStaffBuildPlan.sameBlock(single, Blocks.TRAPPED_CHEST.defaultBlockState()));
+    }
+
     @Test
     void removalLayerStaysOnTheClickedPlaneAndHonorsTheLimit() {
         List<BlockPos> plan = SpiritStaffBuildPlan.removalLayer(

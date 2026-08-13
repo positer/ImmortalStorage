@@ -1,8 +1,13 @@
 {
-  "name":"真元与仙元","icon":"immortalstorage:immortal_yuan","category":"immortalstorage:progression","sortnum":20,
+  "name":"真元与仙元",
+  "icon":"immortalstorage:immortal_yuan",
+  "category":"immortalstorage:progression",
+  "sortnum":20,
   "pages":[
-    {"type":"patchouli:spotlight","item":"immortalstorage:true_yuan","title":"真实资源物品","text":"真元与仙元都是普通物品，可存入个人存储并被合成、村民交易和其他模组能力读取。存在阶段上限时，按身上加个人存储的总和计算；六阶后真元无上限。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_yuan_to_true_yuan","text":"一枚仙元可合成64真元。真元还能烧炼10件物品，仙元可烧炼500件物品。"},
-    {"type":"patchouli:text","text":"十阶默认每20刻生成256仙元且存储无上限。服务器可开启无消耗仙元通道。放置真元/仙元可形成可染色光源核心；空手右键切换模型显示，仙元光源还会抑制当前区块的敌对生物自然生成。"}
+    {"type":"patchouli:spotlight","item":"immortalstorage:true_yuan,immortalstorage:immortal_yuan","title":"两种真实资源","text":"$(item)真元$()供飞升前修行与低阶设备消耗；$(item)仙元$()支撑飞升后的机器、传送与高阶能力。它们都是普通物品，可合成、交易、入库，也可由兼容自动化读取。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_yuan_to_true_yuan","title":"向下化用","text":"一枚仙元可化为64真元，反向不可合成。要求仙元的专用配方始终消耗仙元，不会偷偷以真元替代。"},
+    {"type":"patchouli:text","title":"一至五阶 · 真元","text":"$(li)一阶：上限64，每1200刻生2。$(li)二阶：上限128，每1200刻生4。$(li)三阶：上限256，每1200刻生8。$(li)四阶：上限512，每600刻生8。$(li)五阶：上限1024，每300刻生8。$(br2)上限按背包与个人存储总量计算。"},
+    {"type":"patchouli:text","title":"六至十阶 · 仙元","text":"$(li)六阶：上限64，每150刻生2。$(li)七阶：上限256，每100刻生5。$(li)八阶：上限1024，每50刻生16。$(li)九阶：无上限，每20刻生32。$(li)十阶：默认无上限，每20刻生256；服务器也可改为不消耗的无限仙元。"},
+    {"type":"patchouli:text","title":"燃料与光","text":"真元可烧炼10件，仙元可烧炼500件。把任一种元气放入世界，会形成可染色光核；空手右键切换显隐。仙元光核还会抑制所在区块的敌对生物自然生成。"}
   ]
 }

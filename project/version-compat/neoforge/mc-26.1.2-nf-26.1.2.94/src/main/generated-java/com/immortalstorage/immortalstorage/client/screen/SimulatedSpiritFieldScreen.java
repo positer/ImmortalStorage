@@ -22,9 +22,7 @@ import java.util.Map;
 public final class SimulatedSpiritFieldScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<SimulatedSpiritFieldMenu> {
     private static final Identifier FURNACE = Identifier.withDefaultNamespace(
             "textures/gui/container/furnace.png");
-    private static final Identifier BURN_PROGRESS = Identifier.withDefaultNamespace(
-            "container/furnace/burn_progress");
-    private static final List<Direction> SIDE_ORDER = List.of(
+private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
     private static final int SETTINGS_WIDTH = 112;
@@ -134,8 +132,7 @@ public final class SimulatedSpiritFieldScreen extends com.immortalstorage.immort
         VanillaGuiPainter.furnaceFlame(graphics, leftPos + 28, topPos + 47, flame, menu.burnTicks() > 0);
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, FURNACE, leftPos + 91, topPos + 44, 79.0F, 34.0F, 24, 16, 256, 256);
         int progress = Mth.ceil(Math.min(1.0F, menu.progress() / 50.0F) * 24.0F);
-        if (progress > 0) com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(graphics, BURN_PROGRESS, 24, 16, 0, 0,
-                leftPos + 91, topPos + 44, progress, 16);
+        if (progress > 0) VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);
         if (settingsOpen) renderSettingsPanel(graphics);
     }
 
@@ -155,7 +152,7 @@ public final class SimulatedSpiritFieldScreen extends com.immortalstorage.immort
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick); super.render(graphics, mouseX, mouseY, partialTick);
+        super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
     }
 }

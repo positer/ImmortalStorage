@@ -1,1 +1,13 @@
-{"name":"True and Immortal Power","icon":"immortalstorage:immortal_yuan","category":"immortalstorage:progression","sortnum":20,"pages":[{"type":"patchouli:spotlight","item":"immortalstorage:true_yuan","title":"Real Item Resources","text":"True Power and Immortal Power are normal items. Storage, crafting, villagers and other mods can read them. Any stage cap counts player plus personal storage; True Power becomes uncapped after stage six."},{"type":"patchouli:crafting","recipe":"immortalstorage:immortal_yuan_to_true_yuan","text":"One Immortal Power crafts into 64 True Power. True Power smelts 10 items and Immortal Power smelts 500."},{"type":"patchouli:text","text":"Stage ten generates 256 Immortal Power every 20 ticks by default with uncapped storage. Servers may enable a non-consuming channel. Placed Power makes a dyeable light core; Immortal Power also suppresses hostile natural spawning in its current chunk."}]}
+{
+  "name":"TruePower and ImmortalPower",
+  "icon":"immortalstorage:immortal_yuan",
+  "category":"immortalstorage:progression",
+  "sortnum":20,
+  "pages":[
+    {"type":"patchouli:spotlight","item":"immortalstorage:true_yuan,immortalstorage:immortal_yuan","title":"Two Real Resources","text":"$(item)TruePower$() fuels pre-ascension cultivation and lower devices. $(item)ImmortalPower$() supports later machines, teleportation and high-stage abilities. Both are ordinary items: they can be crafted, traded, stored and read by compatible automation."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_yuan_to_true_yuan","title":"Descending Conversion","text":"One ImmortalPower becomes 64 TruePower; there is no reverse recipe. Recipes that explicitly require ImmortalPower always consume it and never silently substitute TruePower."},
+    {"type":"patchouli:text","title":"Stages 1–5 · TruePower","text":"$(li)Stage 1: cap 64; gain 2 every 1,200 ticks.$(li)Stage 2: cap 128; gain 4 every 1,200.$(li)Stage 3: cap 256; gain 8 every 1,200.$(li)Stage 4: cap 512; gain 8 every 600.$(li)Stage 5: cap 1,024; gain 8 every 300.$(br2)Caps count inventory and personal storage together."},
+    {"type":"patchouli:text","title":"Stages 6–10 · ImmortalPower","text":"$(li)Stage 6: cap 64; gain 2 every 150 ticks.$(li)Stage 7: cap 256; gain 5 every 100.$(li)Stage 8: cap 1,024; gain 16 every 50.$(li)Stage 9: uncapped; gain 32 every 20.$(li)Stage 10: uncapped and 256 every 20 by default; servers may instead make it non-consuming."},
+    {"type":"patchouli:text","title":"Fuel and Light","text":"TruePower smelts 10 items; ImmortalPower smelts 500. Place either resource to create a dyeable light core, then use it with an empty hand to toggle its model. An ImmortalPower light also suppresses natural hostile spawning in its chunk."}
+  ]
+}

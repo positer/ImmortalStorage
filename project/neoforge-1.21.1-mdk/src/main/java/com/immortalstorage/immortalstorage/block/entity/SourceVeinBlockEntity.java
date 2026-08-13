@@ -544,7 +544,16 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     /** Native long directory amount; int-only capabilities saturate separately. */
     public long storageVisibleUnits() {
-        return buffer.available();
+        long cached = buffer.available();
+        SourceChargePlan plan = chargePlan();
+        if (plan.isFree()) return Long.MAX_VALUE;
+        if (!(level instanceof ServerLevel serverLevel) || owner == null) return cached;
+        var player = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
+        if (player == null) return cached;
+        long convertible = SourceVeinBuffer.affordableRefill(Long.MAX_VALUE, 0L,
+                ImmortalStoragePlayerData.get(player).getImmortalYuan(),
+                plan.unitsPerBatch(), plan.outputsPerBatch());
+        return Long.MAX_VALUE - cached < convertible ? Long.MAX_VALUE : cached + convertible;
     }
 
     /** Exact UUID-realm/stage/loaded-state boundary for Xianqiao catalog exposure. */
@@ -1331,8 +1340,15 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
 
     @Override
     public void setRemoved() {
-        SourceVeinStorageIndex.unregister(this);
-        super.setRemoved();
+        if (isRemoved()) return;
+        try {
+            SourceVeinStorageIndex.unregister(this);
+        } catch (RuntimeException failure) {
+            com.immortalstorage.immortalstorage.ImmortalStorageMod.LOG.error(
+                    "Failed to unregister source vein at {}; continuing removal", worldPosition, failure);
+        } finally {
+            super.setRemoved();
+        }
     }
 
     static boolean acceptsPersistedKind(CompoundTag tag, VeinKind expected) {

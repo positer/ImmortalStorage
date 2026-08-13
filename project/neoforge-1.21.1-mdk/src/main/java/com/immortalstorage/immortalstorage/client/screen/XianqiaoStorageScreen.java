@@ -337,6 +337,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     @Override
     protected int visualSlotX(int menuIndex, Slot slot) {
         if (menuIndex == XianqiaoStorageMenu.FURNACE_FUEL_SLOT) return TerminalLayout.FURNACE_FUEL_X;
+        if (menuIndex == XianqiaoStorageMenu.FURNACE_PLUGIN_SLOT) return TerminalLayout.FURNACE_PLUGIN_X;
         if (XianqiaoStorageMenu.isFurnaceInputSlotIndex(menuIndex)) return TerminalLayout.FURNACE_INPUT_X;
         if (XianqiaoStorageMenu.isFurnaceResultSlotIndex(menuIndex)) return TerminalLayout.FURNACE_RESULT_X;
         int visual = super.visualSlotX(menuIndex, slot);
@@ -353,6 +354,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                     + (menuIndex - XianqiaoStorageMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
         }
         if (menuIndex == XianqiaoStorageMenu.FURNACE_FUEL_SLOT) return TerminalLayout.furnaceFuelY(this.imageHeight);
+        if (menuIndex == XianqiaoStorageMenu.FURNACE_PLUGIN_SLOT) return TerminalLayout.furnacePluginY(this.imageHeight);
         int channel = XianqiaoStorageMenu.furnaceChannelForSlot(menuIndex);
         if (XianqiaoStorageMenu.isFurnaceInputSlotIndex(menuIndex)) {
             return TerminalLayout.furnaceInputY(this.imageHeight, channel);
@@ -525,15 +527,22 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     }
 
     private void renderExternalResourceAmountOverlays(GuiGraphics graphics) {
-        var window = visibleBufferedRows();
-        for (int row = window.fromInclusive(); row < window.toExclusive(); row++) {
-            for (int column = 0; column < TerminalLayout.COLUMNS; column++) {
-                int index = row * TerminalLayout.COLUMNS + column;
-                var entry = this.menu.displayedExternalEntryAtIndex(index);
-                if (entry == null || entry.amount() <= 0L) continue;
-                renderFluidAmount(graphics, index, entry.amount(),
-                        fluidVisualX(index) - this.leftPos, fluidVisualY(index) - this.topPos);
+        Rect2i clip = storageBounds();
+        boolean needsScissor = fractionalScrollOffset() != 0;
+        if (needsScissor) enableStorageContentScissor(graphics, clip);
+        try {
+            var window = visibleBufferedRows();
+            for (int row = window.fromInclusive(); row < window.toExclusive(); row++) {
+                for (int column = 0; column < TerminalLayout.COLUMNS; column++) {
+                    int index = row * TerminalLayout.COLUMNS + column;
+                    var entry = this.menu.displayedExternalEntryAtIndex(index);
+                    if (entry == null || entry.amount() <= 0L) continue;
+                    renderFluidAmount(graphics, index, entry.amount(),
+                            fluidVisualX(index) - this.leftPos, fluidVisualY(index) - this.topPos);
+                }
             }
+        } finally {
+            if (needsScissor) graphics.disableScissor();
         }
     }
 
@@ -541,8 +550,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         Rect2i clip = storageBounds();
         boolean needsScissor = fractionalScrollOffset() != 0;
         if (needsScissor) {
-            graphics.enableScissor(clip.getX(), clip.getY(),
-                    clip.getX() + clip.getWidth(), clip.getY() + clip.getHeight());
+            enableStorageContentScissor(graphics, clip);
         }
         try {
             var window = visibleBufferedRows();

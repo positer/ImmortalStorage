@@ -1,8 +1,18 @@
 {
-  "name":"基础材料配方","icon":"immortalstorage:spirit_core","category":"immortalstorage:recipes","sortnum":0,
+  "name":"灵材入门",
+  "icon":"immortalstorage:spirit_core",
+  "category":"immortalstorage:recipes",
+  "sortnum":0,
   "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_core","text":"灵核堆叠上限16，只作为关键中间材料。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_block","recipe2":"immortalstorage:spirit_crystal_block","text":"灵铁块与灵晶块均由九份材料压缩，可逆分解。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_spirit_iron_block","recipe2":"immortalstorage:immortal_furnace","text":"粗灵铁块用于储存粗矿；仙炉是后续材料加工和高速烧炼核心。蕴灵晶、沉重核心与仙墟材料链详见“蕴灵晶材料链”。"}
+    {"type":"patchouli:text","text":"仙藏的材料链从两种矿开始：$(item)灵铁$()负责结构与工具，$(item)灵晶$()负责核心与高阶工艺。先采矿、再精炼，最后把两者合成灵核；这条链会贯穿几乎所有设备。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:spirit_iron_ore,immortalstorage:deepslate_spirit_iron_ore","title":"灵铁矿","text":"普通与深层灵铁矿沿用铁矿的世界生成分布。采下得到粗灵铁；高炉可在100刻内精炼，仙炉则用50刻。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:spirit_crystal_ore,immortalstorage:deepslate_spirit_crystal_ore","title":"灵晶矿","text":"普通与深层灵晶矿沿用钻石矿的世界生成分布。直接采得灵晶；仙炉还能把矿石本体炼成灵晶，适合精准采集后的批量处理。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:spirit_iron_from_crude_blasting","heading":"粗灵铁精炼","input_item":"immortalstorage:crude_spirit_iron","station_item":"minecraft:blast_furnace","output_item":"immortalstorage:spirit_iron","station_text":"$(thing)高炉 · 100刻 · 0.7经验$()","body":"普通与深层灵铁矿也各有同速高炉配方；仙炉总表列出更快路线。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_block","recipe2":"immortalstorage:spirit_iron_from_block","title":"灵铁压块与拆分","text":"九锭压成一块，一块还原九锭。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_crystal_block","recipe2":"immortalstorage:spirit_crystal_from_block","title":"灵晶压块与拆分","text":"九枚灵晶压成一块，也可完整还原。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_spirit_iron_block","recipe2":"immortalstorage:crude_spirit_iron_from_block","title":"粗灵铁压块与拆分","text":"未精炼材料同样可以无损压缩。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_nugget","recipe2":"immortalstorage:spirit_iron_from_nuggets","title":"灵铁粒","text":"一锭拆九粒，九粒复原一锭。灵铁粒用于替死傀儡、迷你仙墟与仙能电力水晶。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_core","title":"灵核","text":"灵铁、灵晶与紫水晶碎片凝成灵核。每组最多16枚；它不是消耗品的终点，而是机器、兵刃与高阶锻造的共同枢纽。"},
+    {"type":"patchouli:text","title":"下一步","text":"完整仙炉加工见$(l:immortalstorage:recipes/immortal_furnace_processes)仙炉工艺总表$(/l)；蕴灵晶、沉重核心与晶簇生长见$(l:immortalstorage:recipes/nurturing_crystal)蕴灵晶材料链$(/l)。"}
   ]
 }

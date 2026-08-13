@@ -174,17 +174,21 @@ final class TerminalContractsTest {
     }
 
     @Test
-    void embeddedFurnaceUsesSevenRealSlotsAndThreeNonOverlappingLanes() {
+    void embeddedFurnaceUsesEightRealSlotsAndVerticalPluginFlameFuelColumn() {
         int height = TerminalLayout.imageHeight(5, true);
         assertEquals(3, TerminalLayout.FURNACE_LANE_COUNT);
         assertEquals(129, TerminalLayout.furnaceLaneY(height, 0));
         assertEquals(147, TerminalLayout.furnaceLaneY(height, 1));
         assertEquals(165, TerminalLayout.furnaceLaneY(height, 2));
-        assertEquals(TerminalLayout.furnaceLaneY(height, 1), TerminalLayout.furnaceFuelY(height));
+        assertEquals(TerminalLayout.furnaceLaneY(height, 0), TerminalLayout.furnacePluginY(height));
+        assertEquals(TerminalLayout.furnaceLaneY(height, 1) + 3, TerminalLayout.furnaceFlameY(height));
+        assertEquals(TerminalLayout.furnaceLaneY(height, 2), TerminalLayout.furnaceFuelY(height));
         assertTrue(TerminalLayout.furnaceLaneY(height, 2) + TerminalLayout.SLOT_SIZE
                 < TerminalLayout.inventoryY(height), "all three furnace lanes stay above the player inventory");
 
-        assertEquals(7, XianqiaoStorageMenu.FURNACE_END - XianqiaoStorageMenu.FURNACE_START);
+        assertEquals(8, XianqiaoStorageMenu.FURNACE_END - XianqiaoStorageMenu.FURNACE_START);
+        assertEquals(XianqiaoStorageMenu.FURNACE_RESULT_3_SLOT + 1,
+                XianqiaoStorageMenu.FURNACE_PLUGIN_SLOT);
         assertEquals(XianqiaoStorageMenu.FURNACE_END, XianqiaoStorageMenu.ARMOR_START);
         assertEquals(4, XianqiaoStorageMenu.ARMOR_END - XianqiaoStorageMenu.ARMOR_START);
         assertEquals(XianqiaoStorageMenu.ARMOR_END, XianqiaoStorageMenu.PLAYER_START);
@@ -193,7 +197,8 @@ final class TerminalContractsTest {
         assertEquals(2, XianqiaoStorageMenu.furnaceChannelForSlot(
                 XianqiaoStorageMenu.FURNACE_RESULT_3_SLOT));
 
-        assertEquals(7, KongqiaoMenu.FURNACE_END - KongqiaoMenu.FURNACE_START);
+        assertEquals(8, KongqiaoMenu.FURNACE_END - KongqiaoMenu.FURNACE_START);
+        assertEquals(KongqiaoMenu.FURNACE_RESULT_3_SLOT + 1, KongqiaoMenu.FURNACE_PLUGIN_SLOT);
         assertEquals(KongqiaoMenu.FURNACE_END, KongqiaoMenu.ARMOR_START);
         assertEquals(4, KongqiaoMenu.ARMOR_END - KongqiaoMenu.ARMOR_START);
         assertEquals(KongqiaoMenu.ARMOR_END, KongqiaoMenu.PLAYER_START);

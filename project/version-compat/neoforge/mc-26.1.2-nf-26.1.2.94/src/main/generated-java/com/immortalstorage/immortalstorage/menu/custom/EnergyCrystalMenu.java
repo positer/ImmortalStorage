@@ -112,6 +112,8 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu {
             if (!moveItemStackTo(moving, 0, 1, false)) return ItemStack.EMPTY;
         } else if (crystal != null && crystal.canPlaceItem(EnergyCrystalBlockEntity.FUEL_SLOT, moving)) {
             if (!moveItemStackTo(moving, 1, 2, false)) return ItemStack.EMPTY;
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(moving)) {
+            if (!moveItemStackTo(moving, 2, 3, false)) return ItemStack.EMPTY;
         } else {
             return ItemStack.EMPTY;
         }
@@ -143,9 +145,14 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu {
         }
     }
 
-    private static final class ExtraSlot extends Slot {
+    private final class ExtraSlot extends Slot {
         private ExtraSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
-        @Override public boolean mayPlace(ItemStack stack) { return false; }
+        @Override public boolean mayPlace(ItemStack stack) {
+            return crystal == null
+                    ? com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack)
+                    : crystal.canPlaceItem(EnergyCrystalBlockEntity.EXTRA_SLOT, stack);
+        }
+        @Override public int getMaxStackSize() { return 1; }
     }
 
     private static EnergyCrystalBlockEntity resolve(Inventory inventory, FriendlyByteBuf buffer) {

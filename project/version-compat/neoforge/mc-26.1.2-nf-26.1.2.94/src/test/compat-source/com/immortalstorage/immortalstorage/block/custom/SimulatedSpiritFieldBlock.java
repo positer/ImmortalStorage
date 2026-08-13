@@ -54,7 +54,7 @@ public final class SimulatedSpiritFieldBlock extends BaseEntityBlock {
         if (!(stack.getItem() instanceof BlockItem blockItem)
                 || !(level.getBlockEntity(pos) instanceof SimulatedSpiritFieldBlockEntity field)
                 || !field.isValidSubstrate(blockItem.getBlock().defaultBlockState())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             field.replaceSubstrate(serverPlayer, blockItem.getBlock().defaultBlockState(), stack);
@@ -75,6 +75,9 @@ public final class SimulatedSpiritFieldBlock extends BaseEntityBlock {
         if (!state.is(nextState.getBlock())
                 && level.getBlockEntity(pos) instanceof SimulatedSpiritFieldBlockEntity field) {
             Containers.dropContents(level, pos, field);
+            for (ItemStack pending : field.drainPendingOutputForRemoval()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), pending);
+            }
             field.dropStoredSubstrate();
         }
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);

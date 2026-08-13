@@ -29,7 +29,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
  * buffer; the reversed side ejects the buffer to its target block. Each side has
  * its own range, frequency, preview, enabled state and item filter.
  */
-public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends com.immortalstorage.immortalstorage.compat.mc2612.CompatBlockEntity implements Container, MenuProvider {
+public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends com.immortalstorage.immortalstorage.compat.mc2612.CompatBlockEntity implements Container, MenuProvider, ReinforcementPluginHost {
     public static final int SLOT_COUNT = 54;
     private static final int FILTER_SLOTS = 20;
     private final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
@@ -41,6 +41,7 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
     private final NonNullList<ItemStack> filtersReversed = NonNullList.withSize(FILTER_SLOTS, ItemStack.EMPTY);
     private boolean filterMatchNormal, filterWhitelistNormal = true;
     private boolean filterMatchReversed, filterWhitelistReversed = true;
+    private ItemStack reinforcementPlugin = ItemStack.EMPTY;
 
     public EntangledStabilizedMiniatureImmortalRuinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), pos, state);
@@ -54,7 +55,8 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
             collect(serverLevel, normal, 0);
         }
         if (reversedSide.enabled && reversedSide.frequency > 0 && serverLevel.getGameTime() % reversedSide.frequency == 0) {
-            eject(serverLevel, reversedSide, 1);
+            for (int group = 0; group < reinforcementMultiplier(); group++)
+                if (!eject(serverLevel, reversedSide, 1)) break;
         }
     }
 
@@ -71,8 +73,9 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
         }
     }
 
-    private void eject(ServerLevel level, Side side, int sideIndex) {
-        if (side.faceMask == 0) return;
+    private boolean eject(ServerLevel level, Side side, int sideIndex) {
+        if (side.faceMask == 0) return false;
+        boolean moved = false;
         BlockPos target = worldPosition.offset(side.offsetX, side.offsetY, side.offsetZ);
         for (int slot = 0; slot < SLOT_COUNT; slot++) {
             ItemStack stored = inventory.getStackInSlot(slot);
@@ -94,7 +97,9 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
                 removed = ItemStack.EMPTY;
             }
             if (!removed.isEmpty()) inventory.insertItem(slot, removed, false);
+            if (removed.getCount() < stored.getCount()) moved = true;
         }
+        return moved;
     }
 
     private AABB selectedArea(Side side) {
@@ -176,14 +181,17 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
         return new com.immortalstorage.immortalstorage.menu.custom.EntangledMiniatureRuinMenu(id, inventory, this, menuData());
     }
 
-    @Override public int getContainerSize() { return SLOT_COUNT; }
+    @Override public int getContainerSize() { return SLOT_COUNT + 1; }
     @Override public boolean isEmpty() { for (int i = 0; i < SLOT_COUNT; i++) if (!inventory.getStackInSlot(i).isEmpty()) return false; return true; }
-    @Override public ItemStack getItem(int slot) { return inventory.getStackInSlot(slot); }
-    @Override public ItemStack removeItem(int slot, int amount) { return inventory.extractItem(slot, amount, false); }
-    @Override public ItemStack removeItemNoUpdate(int slot) { ItemStack stack = inventory.getStackInSlot(slot); inventory.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
-    @Override public void setItem(int slot, ItemStack stack) { inventory.setStackInSlot(slot, stack); }
+    @Override public ItemStack getItem(int slot) { return slot == SLOT_COUNT ? reinforcementPlugin : inventory.getStackInSlot(slot); }
+    @Override public ItemStack removeItem(int slot, int amount) { if (slot == SLOT_COUNT) { ItemStack out = reinforcementPlugin.split(amount); setChanged(); return out; } return inventory.extractItem(slot, amount, false); }
+    @Override public ItemStack removeItemNoUpdate(int slot) { if (slot == SLOT_COUNT) { ItemStack out = reinforcementPlugin; reinforcementPlugin = ItemStack.EMPTY; return out; } ItemStack stack = inventory.getStackInSlot(slot); inventory.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
+    @Override public void setItem(int slot, ItemStack stack) { if (slot == SLOT_COUNT) setReinforcementPlugin(stack); else inventory.setStackInSlot(slot, stack); }
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) { return slot == SLOT_COUNT && ReinforcementPluginHost.isPlugin(stack); }
+    @Override public ItemStack reinforcementPlugin() { return reinforcementPlugin; }
+    @Override public void setReinforcementPlugin(ItemStack stack) { reinforcementPlugin = ReinforcementPluginHost.isPlugin(stack) ? stack.copyWithCount(1) : ItemStack.EMPTY; setChangedAndSync(); }
     @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) inventory.setStackInSlot(i, ItemStack.EMPTY); }
+    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) inventory.setStackInSlot(i, ItemStack.EMPTY); reinforcementPlugin = ItemStack.EMPTY; }
 
     @Override
     protected void saveAdditionalLegacy(CompoundTag tag, HolderLookup.Provider registries) {
@@ -197,6 +205,7 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
         tag.putBoolean("FilterWhitelistNormal", filterWhitelistNormal);
         tag.putBoolean("FilterMatchReversed", filterMatchReversed);
         tag.putBoolean("FilterWhitelistReversed", filterWhitelistReversed);
+        if (!reinforcementPlugin.isEmpty()) tag.put("ReinforcementPlugin", com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.saveItemStack(registries, reinforcementPlugin));
     }
 
     @Override
@@ -211,6 +220,8 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
         filterWhitelistNormal = !tag.contains("FilterWhitelistNormal") || tag.getBooleanOr("FilterWhitelistNormal", false);
         filterMatchReversed = tag.getBooleanOr("FilterMatchReversed", false);
         filterWhitelistReversed = !tag.contains("FilterWhitelistReversed") || tag.getBooleanOr("FilterWhitelistReversed", false);
+        reinforcementPlugin = tag.contains("ReinforcementPlugin") ? com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.parseItemStack(registries,
+                tag.getCompoundOrEmpty("ReinforcementPlugin")) : ItemStack.EMPTY;
     }
 
     private static ListTag saveFilters(NonNullList<ItemStack> filters, HolderLookup.Provider registries) {

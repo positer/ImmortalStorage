@@ -269,8 +269,7 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends c
         Rect2i clip = storageBounds();
         boolean needsScissor = fractionalScrollOffset() != 0;
         if (needsScissor) {
-            graphics.enableScissor(clip.getX(), clip.getY(),
-                    clip.getX() + clip.getWidth(), clip.getY() + clip.getHeight());
+            enableStorageContentScissor(graphics, clip);
         }
         try {
             TerminalViewport.BufferedRowWindow window = visibleBufferedRows();
@@ -380,6 +379,18 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends c
             this.cachedStorageBounds = TerminalLayout.storageBounds(this, this.visibleRows);
         }
         return this.cachedStorageBounds;
+    }
+
+    /**
+     * Enables the storage viewport while the container's foreground pose is active.
+     * NeoForge 1.21.1 accepts absolute GUI coordinates here; the 26.1.2 source
+     * adapter rewrites this one boundary to local coordinates because its
+     * deferred extractor applies the current pose to scissor rectangles.
+     */
+    protected final void enableStorageContentScissor(GuiGraphicsExtractor graphics, Rect2i clip) {
+        graphics.enableScissor(clip.getX() - this.leftPos, clip.getY() - this.topPos,
+                clip.getX() + clip.getWidth() - this.leftPos,
+                clip.getY() + clip.getHeight() - this.topPos);
     }
 
     protected abstract int totalStorageRows();
@@ -518,8 +529,7 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends c
             }
             boolean needsScissor = storageCellRequiresScissor(absoluteX, absoluteY);
             if (needsScissor) {
-                graphics.enableScissor(clip.getX(), clip.getY(),
-                        clip.getX() + clip.getWidth(), clip.getY() + clip.getHeight());
+                enableStorageContentScissor(graphics, clip);
             }
             graphics.pose().pushMatrix();
             graphics.pose().translate(visualX - slot.x, visualY - slot.y);
@@ -566,8 +576,7 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends c
             int absoluteY = this.topPos + visualSlotY(menuIndex, slot);
             needsScissor = storageCellRequiresScissor(absoluteX, absoluteY);
             if (needsScissor) {
-                graphics.enableScissor(clip.getX(), clip.getY(),
-                        clip.getX() + clip.getWidth(), clip.getY() + clip.getHeight());
+                enableStorageContentScissor(graphics, clip);
             }
         }
         graphics.pose().pushMatrix();

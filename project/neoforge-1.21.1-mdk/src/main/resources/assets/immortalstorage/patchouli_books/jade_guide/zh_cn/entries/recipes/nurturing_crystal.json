@@ -1,14 +1,16 @@
 {
-  "name": "蕴灵晶材料链",
-  "icon": "immortalstorage:nurturing_crystal",
-  "category": "immortalstorage:recipes",
-  "sortnum": 20,
-  "pages": [
-    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_nugget","recipe2":"immortalstorage:spirit_iron_from_nuggets","text":"灵铁可分解为九枚淡紫色灵铁粒，并可逆合成。灵铁粒用于替死傀儡与迷你仙墟。"},
-    {"type":"patchouli:spotlight","item":"immortalstorage:inactive_nurturing_crystal_bedrock","title":"仙炉配方","text":"灵晶块只能在仙炉中烧成失活的蕴灵晶母岩，普通熔炉与高炉不接受该配方。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:nurturing_crystal_bedrock","text":"中心放失活母岩，外圈八枚仙元可激活为蕴灵晶母岩。它在任意维度随机生长四阶段蕴灵晶簇，仙窍时间倍率会随维度刻一并加速生长。"},
-    {"type":"patchouli:spotlight","item":"immortalstorage:nurturing_crystal","title":"成熟晶簇","text":"只有最大阶段晶簇会掉落蕴灵晶，需要下界合金等级采掘，默认一枚并受时运影响。母岩登记为通用母岩标签，供兼容的晶体催生设备识别。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:premixed_heavy_compound","text":"蕴灵晶、下界合金块与灵核无序合成预拌沉重混合物。"},
-    {"type":"patchouli:spotlight","item":"minecraft:heavy_core","title":"沉重核心","text":"预拌沉重混合物只能由仙炉烧炼为沉重核心。"}
+  "name":"蕴灵晶材料链",
+  "icon":"immortalstorage:nurturing_crystal",
+  "category":"immortalstorage:recipes",
+  "sortnum":20,
+  "pages":[
+    {"type":"patchouli:text","text":"蕴灵晶不是一次合成的成品，而是一条生长链：$(thing)灵晶块 → 失活母岩 → 激活母岩 → 四阶段晶簇 → 蕴灵晶$()。后续沉重核心、强化插件与高阶装备都从这里分流。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:inactive_nurturing_crystal_bedrock_immortal_furnace","heading":"烧成失活母岩","input_item":"immortalstorage:spirit_crystal_block","station_item":"immortalstorage:immortal_furnace","output_item":"immortalstorage:inactive_nurturing_crystal_bedrock","station_text":"$(thing)仙炉专属 · 50刻 · 1经验$()","body":"普通熔炉与高炉不接受灵晶块。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:nurturing_crystal_bedrock","title":"唤醒母岩","text":"以失活母岩为中心，八枚仙元封住外圈。此配方只收仙元。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:nurturing_crystal_bedrock","title":"蕴灵晶母岩","text":"放在任意维度都会随机长出晶芽。个人仙窍的时间倍率会同步加快随机刻；母岩同时登记在通用催生标签中，兼容设备可识别。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:small_nurturing_crystal_bud,immortalstorage:medium_nurturing_crystal_bud,immortalstorage:large_nurturing_crystal_bud,immortalstorage:nurturing_crystal_cluster","title":"四段生长","text":"晶芽依次经过小型、中型、大型，最终成为成熟蕴灵晶簇。前三阶段只负责生长；只有成熟晶簇产出材料。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:nurturing_crystal","title":"采得蕴灵晶","text":"成熟晶簇需要下界合金等级工具。默认掉落1枚蕴灵晶并受时运影响；精准采集不会绕过成熟判定。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:premixed_heavy_compound","title":"预拌沉重混合物","text":"蕴灵晶、下界合金块与灵核无序混合，为沉重核心准备可烧结的坯料。"},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:heavy_core_immortal_furnace","heading":"烧结沉重核心","input_item":"immortalstorage:premixed_heavy_compound","station_item":"immortalstorage:immortal_furnace","output_item":"minecraft:heavy_core","station_text":"$(thing)仙炉专属 · 50刻 · 1经验$()","body":"这是预拌沉重混合物唯一的成形路线。"}
   ]
 }

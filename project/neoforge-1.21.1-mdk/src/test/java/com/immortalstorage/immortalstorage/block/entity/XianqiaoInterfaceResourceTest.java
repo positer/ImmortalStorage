@@ -59,6 +59,19 @@ final class XianqiaoInterfaceResourceTest {
         }
     }
 
+    @Test
+    void openFrameInterfacesNeverUseFullCubeOcclusionLighting() throws IOException {
+        String registrations = Files.readString(PROJECT.resolve(Path.of("src", "main", "java",
+                "com", "immortalstorage", "immortalstorage", "block", "ModBlocks.java")));
+        assertTrue(registrations.matches("(?s).*XIANQIAO_INTERFACE.*?noOcclusion\\(\\).*"));
+        assertTrue(registrations.matches("(?s).*ADVANCED_XIANQIAO_INTERFACE.*?noOcclusion\\(\\).*"));
+        for (String model : List.of("xianqiao_interface.json", "advanced_xianqiao_interface.json")) {
+            String json = resource("assets/immortalstorage/models/block/" + model);
+            assertTrue(json.contains("\"ambientocclusion\": false"));
+            assertFalse(json.contains("\"cullface\""));
+        }
+    }
+
     private static String resource(String relative) throws IOException {
         return Files.readString(RESOURCES.resolve(relative));
     }

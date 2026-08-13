@@ -13,12 +13,13 @@ import net.minecraft.util.Mth;
 
 /**
  * Shared, texture-independent geometry for the luminous cubes rendered inside
- * ImmortalStorage's open machine frames. The only sampled texture is Minecraft's
- * runtime-provided white pixel, so the caller's RGB value defines the theme.
+ * ImmortalStorage's open machine frames. The cube uses a real vanilla block
+ * texture instead of the removed/unstable misc white-pixel path, so it cannot
+ * turn into a missing-texture quad on a newer client.
  */
 public final class FloatingCubeRenderer {
     private static final Identifier WHITE_TEXTURE =
-            Identifier.withDefaultNamespace("textures/misc/white.png");
+            Identifier.withDefaultNamespace("textures/block/white_concrete.png");
     private static final RenderType TRANSLUCENT_EMISSIVE =
             CompatRenderTypes.entityTranslucentEmissive(WHITE_TEXTURE);
 

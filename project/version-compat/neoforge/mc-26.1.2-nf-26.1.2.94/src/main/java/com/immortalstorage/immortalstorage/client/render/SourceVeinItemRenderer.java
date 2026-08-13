@@ -37,7 +37,7 @@ public final class SourceVeinItemRenderer implements SpecialModelRenderer<ItemSt
                 ? (System.currentTimeMillis() % 100_000L) / 50.0F
                 : minecraft.level.getGameTime()
                         + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        SourceVeinDisplayRenderer.submit(definition(source), ticks, poses, collector,
+        SourceVeinDisplayRenderer.submitForItem(definition(source), ticks, poses, collector,
                 packedLight, packedOverlay);
     }
 

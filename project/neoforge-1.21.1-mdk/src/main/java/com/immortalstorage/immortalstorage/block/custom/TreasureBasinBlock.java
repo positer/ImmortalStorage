@@ -18,9 +18,13 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public final class TreasureBasinBlock extends BaseEntityBlock {
+    private static final VoxelShape MODEL_BOUNDS = box(3.0D, 0.0D, 3.0D, 13.0D, 10.0D, 13.0D);
+
     public TreasureBasinBlock(Properties properties) {
         super(properties);
     }
@@ -33,6 +37,18 @@ public final class TreasureBasinBlock extends BaseEntityBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.MODEL;
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos,
+                                  CollisionContext context) {
+        return MODEL_BOUNDS;
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos,
+                                           CollisionContext context) {
+        return MODEL_BOUNDS;
     }
 
     /** Opaque basin geometry naturally clips any beacon-style beam passing through it. */
@@ -79,6 +95,14 @@ public final class TreasureBasinBlock extends BaseEntityBlock {
                 if (!stack.isEmpty()) {
                     Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), stack);
                 }
+            }
+            for (ItemStack pending : basin.drainPendingOutputForRemoval()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), pending);
+            }
+            ItemStack plugin = basin.reinforcementPlugin();
+            if (!plugin.isEmpty()) {
+                Containers.dropItemStack(level, pos.getX(), pos.getY(), pos.getZ(), plugin.copy());
+                basin.setReinforcementPlugin(ItemStack.EMPTY);
             }
             level.updateNeighbourForOutputSignal(pos, this);
         }

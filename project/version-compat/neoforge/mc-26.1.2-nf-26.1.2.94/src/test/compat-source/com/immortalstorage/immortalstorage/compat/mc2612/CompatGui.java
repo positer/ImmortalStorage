@@ -29,9 +29,12 @@ public final class CompatGui {
     public static void blitTexture(GuiGraphicsExtractor graphics, Identifier texture,
                                    int x, int y, int width, int height,
                                    float u, float v, int textureWidth, int textureHeight) {
-        graphics.blit(texture, x, y, width, height,
-                u / textureWidth, v / textureHeight,
-                (float) width / textureWidth, (float) height / textureHeight);
+        // 26.1's extractor takes destination end coordinates and normalized UV
+        // end coordinates.  The legacy GuiGraphics contract used x/y plus
+        // width/height and pixel-space u/v, so both pairs must be expanded.
+        graphics.blit(texture, x, y, x + width, y + height,
+                u / textureWidth, (u + width) / textureWidth,
+                v / textureHeight, (v + height) / textureHeight);
     }
 
     public static void blitTexture(GuiGraphicsExtractor graphics, Identifier texture,

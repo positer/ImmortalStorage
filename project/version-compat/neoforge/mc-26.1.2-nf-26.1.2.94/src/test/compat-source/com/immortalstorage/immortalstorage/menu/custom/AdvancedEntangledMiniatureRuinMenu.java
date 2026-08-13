@@ -26,9 +26,10 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
     private final ContainerData data;
     private final AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity blockEntity;
     private final net.minecraft.core.BlockPos blockPos;
+    private boolean pluginVisible;
 
     public AdvancedEntangledMiniatureRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
-        this(id, inventory, new SimpleContainer(54), new SimpleContainerData(26), null,
+        this(id, inventory, new SimpleContainer(55), new SimpleContainerData(26), null,
                 buffer == null ? net.minecraft.core.BlockPos.ZERO : buffer.readBlockPos());
     }
 
@@ -46,10 +47,15 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
         this.data = data;
         this.blockEntity = blockEntity;
         this.blockPos = blockPos;
-        checkContainerSize(container, 54);
+        checkContainerSize(container, 55);
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(container, col + row * 9, 8 + col * 18, 18 + row * 18));
+        addSlot(new Slot(container, 54, 188, 198) {
+            @Override public boolean mayPlace(ItemStack stack) { return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack); }
+            @Override public int getMaxStackSize() { return 1; }
+            @Override public boolean isActive() { return pluginVisible; }
+        });
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 8 + col * 18, 198));
@@ -59,6 +65,7 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
     public int value(int index) { return data.get(index); }
     public net.minecraft.core.BlockPos blockPos() { return blockPos; }
     public AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity blockEntity() { return blockEntity; }
+    public void setPluginVisible(boolean visible) { pluginVisible = visible; }
     public void setAuthoritativeValue(int side, int index, int value) {
         if (blockEntity != null && index >= 0 && index < 13) blockEntity.setMenuValue(side, index, value);
     }
@@ -104,7 +111,11 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack original = slot.getItem();
         ItemStack copy = original.copy();
-        if (index < 54 ? !moveItemStackTo(original, 54, slots.size(), true) : !moveItemStackTo(original, 0, 54, false)) return ItemStack.EMPTY;
+        if (index < 55) {
+            if (!moveItemStackTo(original, 55, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(original)) {
+            if (!moveItemStackTo(original, 54, 55, false)) return ItemStack.EMPTY;
+        } else if (!moveItemStackTo(original, 0, 54, false)) return ItemStack.EMPTY;
         if (original.isEmpty()) slot.set(ItemStack.EMPTY); else slot.setChanged();
         return copy;
     }

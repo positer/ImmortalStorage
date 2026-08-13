@@ -96,12 +96,12 @@ public final class EnergyCrystalBlock extends BaseEntityBlock {
             BlockPos pos, Player player, net.minecraft.world.InteractionHand hand,
             BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof EnergyCrystalBlockEntity crystal)) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         InteractionResult result = CrystalResourceCompatHooks.useItemOn(
                 crystal, player, stack, hand, hit);
         return result == InteractionResult.PASS
-                ? InteractionResult.PASS
+                ? InteractionResult.TRY_WITH_EMPTY_HAND
                 : (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
     }
 

@@ -200,6 +200,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     @Override
     protected int visualSlotX(int menuIndex, Slot slot) {
         if (menuIndex == KongqiaoMenu.FURNACE_FUEL_SLOT) return TerminalLayout.FURNACE_FUEL_X;
+        if (menuIndex == KongqiaoMenu.FURNACE_PLUGIN_SLOT) return TerminalLayout.FURNACE_PLUGIN_X;
         if (KongqiaoMenu.isFurnaceInputSlotIndex(menuIndex)) return TerminalLayout.FURNACE_INPUT_X;
         if (KongqiaoMenu.isFurnaceResultSlotIndex(menuIndex)) return TerminalLayout.FURNACE_RESULT_X;
         int visual = super.visualSlotX(menuIndex, slot);
@@ -216,6 +217,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
                     + (menuIndex - KongqiaoMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
         }
         if (menuIndex == KongqiaoMenu.FURNACE_FUEL_SLOT) return TerminalLayout.furnaceFuelY(this.imageHeight);
+        if (menuIndex == KongqiaoMenu.FURNACE_PLUGIN_SLOT) return TerminalLayout.furnacePluginY(this.imageHeight);
         int channel = KongqiaoMenu.furnaceChannelForSlot(menuIndex);
         if (KongqiaoMenu.isFurnaceInputSlotIndex(menuIndex)) {
             return TerminalLayout.furnaceInputY(this.imageHeight, channel);

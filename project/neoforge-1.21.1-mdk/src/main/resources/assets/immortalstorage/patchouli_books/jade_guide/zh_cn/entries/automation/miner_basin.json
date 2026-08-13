@@ -1,11 +1,50 @@
 {
-  "name":"开采器与聚宝盆","icon":"immortalstorage:world_shard_miner","category":"immortalstorage:automation","sortnum":20,
-  "pages":[
-    {"type":"patchouli:crafting","recipe":"immortalstorage:world_shard_miner","text":"世界碎片开采器使用与信标相同的完整同种底座：钻石块为主世界、下界残骸为下界、紫颂砖为末地。底座一至四级控制工作速度；结构可在任何维度激活。"},
-    {"type":"patchouli:text","text":"三个内置模式会按目标维度/生物群系选择主世界、下界或末地矿物。默认从当前服务器最终生效的世界生成规则扫描矿物权重，因此数据包和其他模组的矿脉也会参与；可用data/*/world_shard_miner/*.json定义或覆盖模式。"},
-    {"type":"patchouli:text","text":"在自己的仙窍内，产物经过所有者的个人存储事务直接入库；在其他维度则进入开采器独立的27格缓存，缓存满会显示“缓存满·停机”。物主离线或仙窍不可用时停止向仙窍输出，清空缓存后会自动恢复。"},
-    {"type":"patchouli:crafting","recipe":"immortalstorage:treasure_basin","text":"聚宝盆只观察正下方已激活开采器的状态来选择战利品模式，双方没有主动通信。它只继承模式与不可变物主快照，拥有自己的27格缓存和独立运行状态，并能遮挡信标光束。"},
-    {"type":"patchouli:text","text":"聚宝盆每2400刻生成一轮当前模式战利品，使用服务器实际LootTable与物主幸运值；data/*/world_shard_loot/*.json可增加或覆盖按模式选择的战利品定义。没有可选择战利品时显示“校准中”，而不是生成空掉落。"},
-    {"type":"patchouli:text","text":"开采器与聚宝盆的缓存、满载停机、仙窍离线状态互不污染。仙窍物主维度中使用带容量上限的原子入库事务，其他维度只写入各自缓存；失败的一整轮会被拒绝而不会丢失或拆分掉落。"}
+  "name": "世界碎片开采与聚宝",
+  "icon": "immortalstorage:world_shard_miner",
+  "category": "immortalstorage:automation",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:world_shard_miner",
+      "title": "选定一方世界",
+      "text": "在开采器下方搭建完整、同材质的信标底座：钻石块对应主世界，远古残骸对应下界，紫颂砖对应末地。底座一至四级决定基础速度；结构可在任意维度工作。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "读取真实矿脉",
+      "text": "内置模式读取目标维度与生物群系最终生效的矿物生成规则，数据包和其他模组矿脉会自然进入候选池。灵铁沿用铁矿生成，灵晶沿用钻石生成。整合包可通过data/*/world_shard_miner/*.json追加或覆盖模式。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "开采器的两条出口",
+      "text": "开采器拥有与聚宝盆完全一致的附加设置页：仙窍输出、六面自动输出、六个独立面开关和单件插件槽。仙窍输出仅在所属玩家的仙窍中直写或清空缓存；关闭后产物进入本机27格缓存。自动输出只控制已启用面每刻尝试推出全部缓存。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "插件放大产矿",
+      "text": "次元窥令、次元平行法符与大千世界并行敕令分别把每轮产矿整体放大4、16与256倍。倍率作用在一轮产物，不增加开采次数，也不改变周期。手持更高阶插件右键可替换，旧插件优先返回背包。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:treasure_basin",
+      "title": "在上方安放聚宝盆",
+      "text": "聚宝盆只读取正下方已激活开采器的模式，不与它共享库存。它继承不可变物主快照，却拥有独立27格缓存、状态、插件与输出设置；10×10×10模型、碰撞箱和物品渲染采用同一边界。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "聚宝一轮",
+      "text": "每2400刻，聚宝盆按当前模式、服务器真实战利品表和物主幸运生成一次结果。无可选战利品时保持校准。data/*/world_shard_loot/*.json可扩展或覆盖目录；盆体发出15级亮度。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "聚宝盆的倍率与输出",
+      "text": "插件同样把一轮战利品整体放大4、16或256倍，不缩短2400刻周期。仙窍输出和六面自动输出彼此独立：前者只向所属仙窍清空缓存，后者只向已启用邻面推出。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "临时缓存与暂停",
+      "text": "本地缓存不足时，产矿与聚宝仍完成当前一轮：能放入的结果进入27格缓存，余量优先推向已开启且可接收的邻面，最终拒收部分原样写入持久临时缓存，不生成掉落物。普通缓存一旦腾出余量便优先回填临时内容；临时缓存未清空不启动下一轮，清空当刻即可继续。仙窍离线或目标拒收仍采用严格事务，整批结果待处理，不转入本地也不掉落。"
+    }
   ]
 }

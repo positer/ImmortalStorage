@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "immortalstorage:spirit_core",
+  "base": "immortalstorage:dimensional_peeking_order",
+  "addition": "immortalstorage:nurturing_crystal",
+  "result": {
+    "id": "immortalstorage:dimensional_parallel_talisman"
+  }
+}

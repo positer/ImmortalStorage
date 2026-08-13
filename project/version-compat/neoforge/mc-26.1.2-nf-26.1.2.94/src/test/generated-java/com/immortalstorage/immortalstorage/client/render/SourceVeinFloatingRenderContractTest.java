@@ -77,7 +77,14 @@ final class SourceVeinFloatingRenderContractTest {
         assertTrue(renderer.contains("SourceVeinAnimation.orientation"));
         assertTrue(renderer.contains("Axis.ZP"));
         assertTrue(renderer.contains("BLOCK_CENTER_Y = 0.5F"));
-        assertTrue(renderer.contains("ITEM_CENTER_Y = 0.0F"));
+        assertTrue(renderer.contains("ITEM_CENTER_X = 0.5F"));
+        assertTrue(renderer.contains("ITEM_CENTER_Y = 0.5F"));
+        assertTrue(renderer.contains("ITEM_CENTER_Z = 0.5F"));
+        assertTrue(renderer.contains("BiomeColors.getAverageWaterColor(tintLevel, tintPos)"));
+        assertTrue(renderer.contains("fluid == Fluids.WATER || fluid == Fluids.FLOWING_WATER"));
+        assertTrue(renderer.contains("multiplyRgb(tint, biomeTint)"));
+        assertTrue(renderer.contains("@Nullable BlockAndTintGetter tintLevel"));
+        assertTrue(renderer.contains("@Nullable BlockPos tintPos"));
         assertTrue(renderer.contains("SOLID_ROTATION_DEGREES_PER_TICK"));
         assertTrue(renderer.contains("ITEM_ROTATION_DEGREES_PER_TICK"));
         assertFalse(renderer.contains("applyFloatingTransform"));
@@ -93,6 +100,7 @@ final class SourceVeinFloatingRenderContractTest {
         assertTrue(worldRenderer.contains("SourceVeinAnimation.continuousTime"));
         assertTrue(worldRenderer.contains("SourceVeinAnimation.Clock"));
         assertTrue(worldRenderer.contains("getBlockPos().asLong()"));
+        assertTrue(worldRenderer.contains("blockEntity.getLevel(), blockEntity.getBlockPos()"));
 
         String itemRenderer = Files.readString(source("main", "java", "com", "immortalstorage",
                 "immortalstorage", "client", "render", "SourceVeinItemRenderer.java"));
@@ -107,6 +115,11 @@ final class SourceVeinFloatingRenderContractTest {
                 "immortalstorage", "client", "render", "SourceVeinManagerRenderer.java"));
         assertTrue(managerRenderer.contains("SourceVeinAnimation.rotationDegrees"));
         assertTrue(managerRenderer.contains("SourceVeinAnimation.Clock"));
+
+        String floatingCube = Files.readString(source("main", "java", "com", "immortalstorage",
+                "immortalstorage", "client", "render", "FloatingCubeRenderer.java"));
+        assertTrue(floatingCube.contains("textures/block/white_concrete.png"));
+        assertFalse(floatingCube.contains("textures/misc/white.png"));
     }
 
     private static Path source(String... parts) {

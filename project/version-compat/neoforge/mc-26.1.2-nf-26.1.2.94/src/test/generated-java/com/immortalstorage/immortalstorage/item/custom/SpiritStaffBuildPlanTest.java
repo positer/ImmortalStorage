@@ -2,6 +2,8 @@ package com.immortalstorage.immortalstorage.item.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -16,6 +18,16 @@ final class SpiritStaffBuildPlanTest {
     @org.junit.jupiter.api.BeforeAll
     static void immortalStorageTargetBootstrap() {
         com.immortalstorage.immortalstorage.compat.CompatTestBootstrap.bootstrap();
+    }
+
+    @Test
+    void mutableBlockStateStillBelongsToTheSameConstructionSurface() {
+        var single = Blocks.CHEST.defaultBlockState();
+        var joined = single.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, ChestType.LEFT);
+
+        assertTrue(SpiritStaffBuildPlan.sameBlock(single, joined),
+                "joining a chest must not make the original build surface disappear");
+        assertFalse(SpiritStaffBuildPlan.sameBlock(single, Blocks.TRAPPED_CHEST.defaultBlockState()));
     }
 
     @Test

@@ -42,13 +42,13 @@ final class TreasureBasinMenuContractTest {
 
     @Test
     void menuUsesTheExactProvidedCacheForAllTwentySevenMachineSlots() {
-        SimpleContainer basinCache = new SimpleContainer(WorldShardMinerCache.SLOT_COUNT);
+        SimpleContainer basinCache = new SimpleContainer(WorldShardMinerCache.SLOT_COUNT + 1);
         TreasureBasinMenu menu = new TreasureBasinMenu(17, new Inventory(null, new net.minecraft.world.entity.EntityEquipment()), basinCache,
                 new SimpleContainerData(TreasureBasinMenu.DATA_COUNT));
 
         assertSame(basinCache, menu.getCacheContainer());
         assertEquals(27, menu.getCacheCapacity());
-        assertEquals(27 + Inventory.INVENTORY_SIZE, menu.slots.size());
+        assertEquals(28 + Inventory.INVENTORY_SIZE, menu.slots.size());
         for (int slot = 0; slot < WorldShardMinerCache.SLOT_COUNT; slot++) {
             assertSame(basinCache, menu.getSlot(slot).container,
                     "every basin machine slot must be a live view of the basin cache");

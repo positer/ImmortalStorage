@@ -91,7 +91,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public static final int FURNACE_RESULT_2_SLOT = FURNACE_INPUT_2_SLOT + 1;
     public static final int FURNACE_INPUT_3_SLOT = FURNACE_RESULT_2_SLOT + 1;
     public static final int FURNACE_RESULT_3_SLOT = FURNACE_INPUT_3_SLOT + 1;
-    public static final int FURNACE_END = FURNACE_RESULT_3_SLOT + 1;
+    public static final int FURNACE_PLUGIN_SLOT = FURNACE_RESULT_3_SLOT + 1;
+    public static final int FURNACE_END = FURNACE_PLUGIN_SLOT + 1;
     public static final int ARMOR_START = FURNACE_END;
     public static final int ARMOR_END = ARMOR_START + 4;
     public static final int PLAYER_START = ARMOR_END;
@@ -99,7 +100,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private static final int FURNACE_INPUT_X = 48;
     private static final int FURNACE_INPUT_Y = 129;
     private static final int FURNACE_FUEL_X = 8;
-    private static final int FURNACE_FUEL_Y = 147;
+    private static final int FURNACE_FUEL_Y = 165;
+    private static final int FURNACE_PLUGIN_Y = 129;
     private static final int FURNACE_RESULT_X = 134;
     private static final int FURNACE_RESULT_Y = 129;
     private static final int FURNACE_LANE_PITCH = 18;
@@ -252,6 +254,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
                 FURNACE_INPUT_X, FURNACE_INPUT_Y + FURNACE_LANE_PITCH * 2));
         addSlot(new FurnaceModuleResultSlot(player, furnace, EmbeddedImmortalFurnaceBackend.RESULT_3,
                 FURNACE_RESULT_X, FURNACE_RESULT_Y + FURNACE_LANE_PITCH * 2));
+        addSlot(new FurnaceModulePluginSlot(furnace, EmbeddedImmortalFurnaceBackend.PLUGIN,
+                FURNACE_FUEL_X, FURNACE_PLUGIN_Y));
 
         EquipmentSlot[] armorSlots = {
                 EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
@@ -326,6 +330,11 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         } else if (slotIndex >= PLAYER_START) {
             if (isSmithingVisible() && moveItemStackToSmithingInput(source)) {
                 // Inserted into the first compatible empty smithing slot.
+            } else if (isFurnaceVisible()
+                    && com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(source)) {
+                if (!moveItemStackTo(source, FURNACE_PLUGIN_SLOT, FURNACE_PLUGIN_SLOT + 1, false)) {
+                    return ItemStack.EMPTY;
+                }
             } else if (isFurnaceVisible() && furnace.isFuel(source)) {
                 if (!moveItemStackTo(source, FURNACE_FUEL_SLOT, FURNACE_FUEL_SLOT + 1, false)) {
                     return ItemStack.EMPTY;
@@ -1434,6 +1443,18 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         }
 
         @Override public boolean mayPlace(ItemStack stack) { return isActive() && furnace.isFuel(stack); }
+    }
+
+    private final class FurnaceModulePluginSlot extends FurnaceModuleSlot {
+        private FurnaceModulePluginSlot(Container container, int index, int x, int y) {
+            super(container, index, x, y);
+        }
+
+        @Override public boolean mayPlace(ItemStack stack) {
+            return isActive() && com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack);
+        }
+
+        @Override public int getMaxStackSize() { return 1; }
     }
 
     private final class FurnaceModuleResultSlot extends FurnaceModuleSlot {

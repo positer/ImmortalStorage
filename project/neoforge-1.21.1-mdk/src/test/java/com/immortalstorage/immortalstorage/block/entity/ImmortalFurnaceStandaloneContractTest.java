@@ -33,11 +33,12 @@ final class ImmortalFurnaceStandaloneContractTest {
     }
 
     @Test
-    void legacySlotsStayFixedWhileTwoChannelsAreAppended() {
+    void legacySlotsStayFixedWhileTwoChannelsAndThePluginSlotAreAppended() {
         assertEquals(0, ImmortalFurnaceBlockEntity.INPUT_1);
         assertEquals(1, ImmortalFurnaceBlockEntity.FUEL);
         assertEquals(2, ImmortalFurnaceBlockEntity.RESULT_1);
-        assertEquals(7, ImmortalFurnaceBlockEntity.SLOT_COUNT);
+        assertEquals(7, ImmortalFurnaceBlockEntity.PLUGIN_SLOT);
+        assertEquals(8, ImmortalFurnaceBlockEntity.SLOT_COUNT);
     }
 
     @Test

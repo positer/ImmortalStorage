@@ -13,15 +13,16 @@ class ModDescriptionContractTest {
     }
 
     @Test
-    void descriptionRepresentsTheZeroPointZeroPointElevenMiniatureRuinRules() throws Exception {
+    void descriptionRepresentsTheZeroPointZeroPointTwelveReinforcementRules() throws Exception {
         Path project = locateProject();
         String properties = Files.readString(project.resolve("gradle.properties"));
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("persistent-player-bound realm"));
-        assertTrue(properties.contains("Version 0.0.11"));
-        assertTrue(properties.contains("exact 13x1x13 block-layer collision box"));
-        assertTrue(properties.contains("excludes players holding the miniature ruin"));
+        assertTrue(properties.contains("Version 0.0.12"));
+        assertTrue(properties.contains("stack-scaled simulated processing"));
+        assertTrue(properties.contains("three reinforcement plugins"));
+        assertTrue(properties.contains("configurable Treasure Basin output"));
     }
 
     private static Path locateProject() {

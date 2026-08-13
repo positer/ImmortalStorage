@@ -1,0 +1,11 @@
+{
+  "components": [
+    {"type":"patchouli:header","text":"#heading","x":-1,"y":-1},
+    {"type":"patchouli:item","item":"#input_item","framed":true,"x":10,"y":43},
+    {"type":"patchouli:item","item":"#station_item","x":50,"y":43},
+    {"type":"patchouli:text","text":"$(l)→$()","x":73,"y":48,"color":"6B5B53"},
+    {"type":"patchouli:item","item":"#output_item","framed":true,"link_recipe":true,"x":94,"y":43},
+    {"type":"patchouli:text","text":"#station_text","x":4,"y":69,"max_width":108},
+    {"type":"patchouli:text","text":"#body","x":0,"y":91,"max_width":116}
+  ]
+}

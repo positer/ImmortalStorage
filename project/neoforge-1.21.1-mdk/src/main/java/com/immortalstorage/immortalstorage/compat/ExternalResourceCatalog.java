@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.compat;
 
 import com.immortalstorage.core.resource.ResourceChannelKey;
+import com.immortalstorage.core.resource.ExternalResourceChannels;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -55,6 +56,9 @@ public final class ExternalResourceCatalog {
 
     public static synchronized List<ResourceChannelKey> available() {
         Map<ResourceChannelKey, ResourceChannelKey> unique = new LinkedHashMap<>();
+        // FE is an ImmortalStorage built-in channel. Keep it visible even if
+        // a screen is constructed before optional integration bootstrap.
+        unique.putIfAbsent(ExternalResourceChannels.FE, ExternalResourceChannels.FE);
         for (Supplier<List<ResourceChannelKey>> provider : PROVIDERS.values()) {
             List<ResourceChannelKey> supplied = provider.get();
             if (supplied == null) continue;

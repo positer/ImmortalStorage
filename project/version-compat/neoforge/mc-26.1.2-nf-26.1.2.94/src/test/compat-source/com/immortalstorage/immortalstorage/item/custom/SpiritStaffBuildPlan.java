@@ -30,7 +30,7 @@ public final class SpiritStaffBuildPlan {
             LevelReader level, BlockPos clicked, Direction face, BlockState template, int limit) {
         if (level == null || template == null) return List.of();
         return create(clicked, face, limit,
-                pos -> level.getBlockState(pos).equals(template),
+                pos -> sameBlock(level.getBlockState(pos), template),
                 pos -> !level.isOutsideBuildHeight(pos) && level.getBlockState(pos).canBeReplaced());
     }
 
@@ -38,7 +38,7 @@ public final class SpiritStaffBuildPlan {
     public static List<BlockPos> removalLayer(
             LevelReader level, BlockPos clicked, Direction face, BlockState template, int limit) {
         if (level == null || clicked == null || face == null || template == null || limit <= 0) return List.of();
-        return removalLayer(clicked, face, limit, pos -> level.getBlockState(pos).equals(template));
+        return removalLayer(clicked, face, limit, pos -> sameBlock(level.getBlockState(pos), template));
     }
 
     static List<BlockPos> removalLayer(
@@ -74,8 +74,18 @@ public final class SpiritStaffBuildPlan {
             return List.of();
         }
         return create(clicked, face, limit,
-                pos -> level.hasChunkAt(pos) && level.getBlockState(pos).equals(supportingTemplate),
+                pos -> level.hasChunkAt(pos)
+                        && sameBlock(level.getBlockState(pos), supportingTemplate),
                 target -> canPlace(level, player, hand, target, face, placementTemplate, blockItem));
+    }
+
+    /**
+     * Construction surfaces are identified by block identity, not by every
+     * mutable state property. A chest joining another chest, a stair changing
+     * shape, or a fence reconnecting therefore remains part of the same layer.
+     */
+    static boolean sameBlock(BlockState current, BlockState template) {
+        return current != null && template != null && current.getBlock() == template.getBlock();
     }
 
     public static BlockPlaceContext placementContext(

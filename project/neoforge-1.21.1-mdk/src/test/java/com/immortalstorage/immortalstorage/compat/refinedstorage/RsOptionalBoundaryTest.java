@@ -32,6 +32,23 @@ final class RsOptionalBoundaryTest {
     }
 
     @Test
+    void managerExternalStorageBusPublishesOnlyExternalResourceChannels() throws IOException {
+        String bootstrap = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsCompat.java");
+        String provider = source(
+                "java/com/immortalstorage/immortalstorage/compat/refinedstorage/"
+                        + "XianqiaoRsManagerExternalStorageProvider.java");
+        assertTrue(bootstrap.contains("addExternalStorageProviderFactory"));
+        assertTrue(bootstrap.contains("XianqiaoRsManagerExternalStorageProvider::new"));
+        assertTrue(provider.contains("implements ExternalStorageProvider"));
+        assertTrue(provider.contains("endpoint.externalResourceStorage()"));
+        assertTrue(provider.contains("RsExternalResourceKeyBridges.toRsKey"));
+        assertTrue(provider.contains("RsExternalResourceKeyBridges.toResourceKey"));
+        assertFalse(provider.contains("ItemResource"));
+        assertFalse(provider.contains("FluidResource"));
+    }
+
+    @Test
     void rsRegistersAndRendersImmortalStoragesOwnExtraResourceKey() throws IOException {
         String bootstrap = source(
                 "java/com/immortalstorage/immortalstorage/compat/refinedstorage/RsCompat.java");

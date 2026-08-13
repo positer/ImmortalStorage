@@ -13,9 +13,12 @@ import com.immortalstorage.immortalstorage.worldshard.WorldShardMinerCache;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardOutputRouter;
 import com.immortalstorage.immortalstorage.worldshard.TreasureBasinStatus;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceKey;
@@ -39,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,13 +51,14 @@ import java.util.UUID;
  * below it. The basin owns its cache, generation cycle and output-block state;
  * it only inherits an immutable mode/owner snapshot from the miner.
  */
-public final class TreasureBasinBlockEntity extends com.immortalstorage.immortalstorage.compat.mc2612.CompatBlockEntity implements Container, MenuProvider {
+public final class TreasureBasinBlockEntity extends com.immortalstorage.immortalstorage.compat.mc2612.CompatBlockEntity implements Container, MenuProvider, ReinforcementPluginHost {
     private static final String CACHE_TAG = "Cache";
     private static final String BASIN_ID_TAG = "BasinId";
     private static final String CYCLE_TAG = "GenerationCycle";
     private static final String MODE_TAG = "ActiveMode";
     private static final String CACHE_FULL_TAG = "CacheFull";
     private static final String STORAGE_UNAVAILABLE_TAG = "StorageUnavailable";
+    private static final String PENDING_OUTPUT_TAG = "PendingOutput";
 
     private final WorldShardMinerCache cache = new WorldShardMinerCache(this::onCacheContentsChanged);
     private UUID basinId = UUID.randomUUID();
@@ -61,6 +66,11 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
     private TreasureBasinActivation activation = TreasureBasinActivation.inactive();
     private boolean cacheFull;
     private boolean storageUnavailable;
+    private ItemStack plugin = ItemStack.EMPTY;
+    private boolean xianqiaoOutput = true;
+    private boolean automaticOutput = true;
+    private final boolean[] outputFaces = new boolean[Direction.values().length];
+    private final List<ItemStack> pendingOutput = new ArrayList<>();
 
     public TreasureBasinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.TREASURE_BASIN.get(), pos, state);
@@ -110,6 +120,9 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     public static void serverTick(ServerLevel level, BlockPos pos, TreasureBasinBlockEntity basin) {
         basin.refreshActivation(level);
+        basin.pushCacheToFaces(level);
+        basin.flushCacheToXianqiao(level);
+        if (!basin.settlePendingOutput(level)) return;
         if (!basin.isActive() || !TreasureBasinSchedule.shouldRun(level.getGameTime())) return;
         if (!basin.hasSelectableLoot()) return;
         if (!basin.canGenerateOutputs(level)) return;
@@ -140,7 +153,8 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
                 basin.basinId, level.dimension().identifier(), pos, basin.generationCycle,
                 selected.sourceSeed(), selected.lootTable());
 
-        List<ItemStack> generated = table.getRandomItems(params, lootSeed);
+        List<ItemStack> generated = multiplyOutputs(
+                table.getRandomItems(params, lootSeed), basin.reinforcementMultiplier());
         WorldShardOutputRouter.RouteResult routed = basin.routeGenerated(level, generated);
         if (routed.unaccepted() > 0L || routed.accepted() != routed.offered()) return;
 
@@ -152,19 +166,118 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
     /** Routes loot through this basin's own state, never through the miner. */
     public WorldShardOutputRouter.RouteResult routeGenerated(
             ServerLevel level, List<ItemStack> generated) {
+        if (!pendingOutput.isEmpty()) return WorldShardOutputRouter.reject(generated);
         UUID owner = activation.owner();
-        if (isExactOwnerRealm(level, owner)) {
+        if (xianqiaoOutput && isExactOwnerRealm(level, owner)) {
             PersonalStorageNetwork.Endpoint endpoint = ownerEndpoint(level, owner);
             WorldShardOutputRouter.RouteResult result = endpoint == null
                     ? WorldShardOutputRouter.reject(generated)
                     : WorldShardOutputRouter.routeDirect(generated, endpoint);
-            setOutputBlock(false, result.unaccepted() > 0L);
+            if (result.unaccepted() > 0L) {
+                replacePendingOutput(generated);
+                setOutputBlock(false, true);
+                return completedRoute(result);
+            }
+            setOutputBlock(false, false);
             return result;
         }
-        if (cacheFull) return WorldShardOutputRouter.reject(generated);
-        WorldShardOutputRouter.RouteResult result = WorldShardOutputRouter.routeCache(generated, cache);
-        setOutputBlock(result.unaccepted() > 0L, false);
-        return result;
+        WorldShardOutputRouter.CacheRouteResult cacheRoute =
+                WorldShardOutputRouter.routeCacheWithOverflow(generated, cache);
+        List<ItemStack> temporary = new ArrayList<>();
+        for (ItemStack overflow : cacheRoute.overflow()) {
+            ItemStack remainder = MachineOutputScheduler.pushItemToFaces(
+                    level, worldPosition, automaticOutput, outputFaces, overflow.copy());
+            if (!remainder.isEmpty()) temporary.add(remainder.copy());
+        }
+        replacePendingOutput(temporary);
+        setOutputBlock(!pendingOutput.isEmpty(), false);
+        WorldShardOutputRouter.RouteResult result = cacheRoute.route();
+        return completedRoute(result);
+    }
+
+    /**
+     * Drains one previously completed batch before another roll may start.
+     * Local mode always refills the visible cache first; direct owner-realm
+     * mode remains an all-or-nothing Xianqiao transaction.
+     */
+    private boolean settlePendingOutput(ServerLevel level) {
+        if (pendingOutput.isEmpty()) return true;
+        UUID owner = activation.owner();
+        if (xianqiaoOutput && isExactOwnerRealm(level, owner)) {
+            WorldShardOutputRouter.RouteResult result = WorldShardOutputRouter.routeDirect(
+                    pendingOutput, ownerEndpoint(level, owner));
+            if (result.unaccepted() > 0L) {
+                setOutputBlock(false, true);
+                return false;
+            }
+            pendingOutput.clear();
+            setOutputBlock(false, false);
+            setChanged();
+            return true;
+        }
+
+        WorldShardOutputRouter.CacheRouteResult cacheRoute =
+                WorldShardOutputRouter.routeCacheWithOverflow(List.copyOf(pendingOutput), cache);
+        List<ItemStack> temporary = new ArrayList<>();
+        for (ItemStack overflow : cacheRoute.overflow()) {
+            ItemStack remainder = MachineOutputScheduler.pushItemToFaces(
+                    level, worldPosition, automaticOutput, outputFaces, overflow.copy());
+            if (!remainder.isEmpty()) temporary.add(remainder.copy());
+        }
+        replacePendingOutput(temporary);
+        setOutputBlock(!pendingOutput.isEmpty(), false);
+        return pendingOutput.isEmpty();
+    }
+
+    private static WorldShardOutputRouter.RouteResult completedRoute(
+            WorldShardOutputRouter.RouteResult route) {
+        return new WorldShardOutputRouter.RouteResult(route.offered(), route.offered(), 0L);
+    }
+
+    private void replacePendingOutput(List<ItemStack> stacks) {
+        pendingOutput.clear();
+        if (stacks != null) {
+            for (ItemStack stack : stacks) {
+                if (stack != null && !stack.isEmpty()) pendingOutput.add(stack.copy());
+            }
+        }
+        setChanged();
+    }
+
+    /** Returns and clears completed production when the basin is removed. */
+    public List<ItemStack> drainPendingOutputForRemoval() {
+        List<ItemStack> drained = pendingOutput.stream().map(ItemStack::copy).toList();
+        pendingOutput.clear();
+        setOutputBlock(false, false);
+        setChanged();
+        return drained;
+    }
+
+    static List<ItemStack> multiplyOutputs(List<ItemStack> source, int multiplier) {
+        return ReinforcementPluginHost.multiplyOutputs(source, multiplier);
+    }
+
+    private boolean pushCacheToFaces(ServerLevel level) {
+        return MachineOutputScheduler.pushItemsToFaces(level, worldPosition, automaticOutput,
+                outputFaces, cache, 0, WorldShardMinerCache.SLOT_COUNT);
+    }
+
+    private boolean flushCacheToXianqiao(ServerLevel level) {
+        if (!xianqiaoOutput) return false;
+        UUID owner = activation.owner();
+        return MachineOutputScheduler.flushItemsToXianqiao(cache, 0,
+                WorldShardMinerCache.SLOT_COUNT, ownerEndpoint(level, owner));
+    }
+
+    public boolean xianqiaoOutput() { return xianqiaoOutput; }
+    public boolean automaticOutput() { return automaticOutput; }
+    public boolean outputFace(Direction side) { return side != null && outputFaces[side.ordinal()]; }
+    public void toggleXianqiaoOutput() { xianqiaoOutput = !xianqiaoOutput; setChangedAndSync(); }
+    public void toggleAutomaticOutput() { automaticOutput = !automaticOutput; setChangedAndSync(); }
+    public void toggleOutputFace(Direction side) {
+        if (side == null) return;
+        outputFaces[side.ordinal()] = !outputFaces[side.ordinal()];
+        setChangedAndSync();
     }
 
     private void refreshActivation(ServerLevel serverLevel) {
@@ -183,8 +296,9 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     private boolean canGenerateOutputs(ServerLevel level) {
         if (!isActive()) return false;
+        if (!pendingOutput.isEmpty()) return false;
         UUID owner = activation.owner();
-        if (!isExactOwnerRealm(level, owner)) {
+        if (!xianqiaoOutput || !isExactOwnerRealm(level, owner)) {
             if (storageUnavailable) setOutputBlock(cacheFull, false);
             return !cacheFull;
         }
@@ -215,7 +329,6 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     private void onCacheContentsChanged() {
         setChanged();
-        if (cacheFull) setOutputBlock(false, storageUnavailable);
     }
 
     private void setOutputBlock(boolean nextCacheFull, boolean nextStorageUnavailable) {
@@ -231,12 +344,13 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     @Override
     public int getContainerSize() {
-        return WorldShardMinerCache.SLOT_COUNT;
+        return WorldShardMinerCache.SLOT_COUNT + 1;
     }
 
     @Override
     public boolean isEmpty() {
-        for (int slot = 0; slot < getContainerSize(); slot++) {
+        if (!plugin.isEmpty() || !pendingOutput.isEmpty()) return false;
+        for (int slot = 0; slot < WorldShardMinerCache.SLOT_COUNT; slot++) {
             if (!cache.getStackInSlot(slot).isEmpty()) return false;
         }
         return true;
@@ -244,16 +358,22 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     @Override
     public ItemStack getItem(int slot) {
-        return cache.getStackInSlot(slot);
+        return slot == WorldShardMinerCache.SLOT_COUNT ? plugin : cache.getStackInSlot(slot);
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
+        if (slot == WorldShardMinerCache.SLOT_COUNT) {
+            ItemStack removed = plugin.split(amount); setChanged(); return removed;
+        }
         return cache.extractItem(slot, amount, false);
     }
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
+        if (slot == WorldShardMinerCache.SLOT_COUNT) {
+            ItemStack removed = plugin; plugin = ItemStack.EMPTY; return removed;
+        }
         ItemStack removed = cache.removeStackNoUpdate(slot);
         if (!removed.isEmpty()) onCacheContentsChanged();
         return removed;
@@ -261,6 +381,10 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     @Override
     public void setItem(int slot, ItemStack stack) {
+        if (slot == WorldShardMinerCache.SLOT_COUNT) {
+            plugin = ReinforcementPluginHost.isPlugin(stack) ? stack.copyWithCount(1) : ItemStack.EMPTY;
+            setChanged(); return;
+        }
         ItemStack stored = stack.copy();
         stored.limitSize(getMaxStackSize(stored));
         cache.setStackInSlot(slot, stored);
@@ -273,9 +397,21 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
 
     @Override
     public void clearContent() {
-        for (int slot = 0; slot < getContainerSize(); slot++) {
+        for (int slot = 0; slot < WorldShardMinerCache.SLOT_COUNT; slot++) {
             cache.setStackInSlot(slot, ItemStack.EMPTY);
         }
+        plugin = ItemStack.EMPTY;
+        pendingOutput.clear();
+        cacheFull = false;
+        storageUnavailable = false;
+    }
+
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+        return slot == WorldShardMinerCache.SLOT_COUNT && ReinforcementPluginHost.isPlugin(stack);
+    }
+    @Override public ItemStack reinforcementPlugin() { return plugin; }
+    @Override public void setReinforcementPlugin(ItemStack stack) {
+        plugin = stack.copyWithCount(1); setChangedAndSync();
     }
 
     @Override
@@ -284,6 +420,17 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
         tag.put(CACHE_TAG, com.immortalstorage.immortalstorage.compat.mc2612.CompatValueIo.serialize(cache, registries));
         com.immortalstorage.immortalstorage.compat.mc2612.CompatNbt.putUuid(tag, BASIN_ID_TAG, basinId);
         tag.putLong(CYCLE_TAG, generationCycle);
+        if (!plugin.isEmpty()) tag.put("ReinforcementPlugin", com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.saveItemStack(registries, plugin));
+        tag.putBoolean("XianqiaoOutput", xianqiaoOutput);
+        tag.putBoolean("AutomaticFaceOutput", automaticOutput);
+        int[] faces = new int[outputFaces.length];
+        for (Direction side : Direction.values()) faces[side.ordinal()] = outputFaces[side.ordinal()] ? 1 : 0;
+        tag.putIntArray("OutputFaces", faces);
+        if (!pendingOutput.isEmpty()) {
+            ListTag pending = new ListTag();
+            for (ItemStack stack : pendingOutput) pending.add(com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.saveItemStack(registries, stack));
+            tag.put(PENDING_OUTPUT_TAG, pending);
+        }
         writeClientState(tag);
     }
 
@@ -295,11 +442,24 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
         }
         if (com.immortalstorage.immortalstorage.compat.mc2612.CompatNbt.hasUuid(tag, BASIN_ID_TAG)) basinId = com.immortalstorage.immortalstorage.compat.mc2612.CompatNbt.getUuid(tag, BASIN_ID_TAG);
         generationCycle = Math.max(0L, tag.getLongOr(CYCLE_TAG, 0L));
+        plugin = tag.contains("ReinforcementPlugin")
+                ? com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.parseItemStack(registries, tag.getCompoundOrEmpty("ReinforcementPlugin")) : ItemStack.EMPTY;
+        xianqiaoOutput = !tag.contains("XianqiaoOutput") || tag.getBooleanOr("XianqiaoOutput", false);
+        automaticOutput = !tag.contains("AutomaticFaceOutput") || tag.getBooleanOr("AutomaticFaceOutput", false);
+        java.util.Arrays.fill(outputFaces, false);
+        int[] faces = tag.getIntArray("OutputFaces").orElseGet(() -> new int[0]);
+        for (int i = 0; i < Math.min(faces.length, outputFaces.length); i++) outputFaces[i] = faces[i] != 0;
+        pendingOutput.clear();
+        ListTag pending = tag.getListOrEmpty(PENDING_OUTPUT_TAG);
+        for (int index = 0; index < pending.size(); index++) {
+            ItemStack stack = com.immortalstorage.immortalstorage.compat.mc2612.CompatCodec.parseItemStack(registries, pending.getCompoundOrEmpty(index));
+            if (!stack.isEmpty()) pendingOutput.add(stack);
+        }
         Identifier mode = tag.contains(MODE_TAG)
                 ? Identifier.tryParse(tag.getStringOr(MODE_TAG, "")) : null;
         activation = TreasureBasinActivation.resolve(
                 mode != null, mode != null, mode, null);
-        cacheFull = tag.getBooleanOr(CACHE_FULL_TAG, false);
+        cacheFull = !pendingOutput.isEmpty();
         storageUnavailable = tag.getBooleanOr(STORAGE_UNAVAILABLE_TAG, false);
     }
 
@@ -323,5 +483,13 @@ public final class TreasureBasinBlockEntity extends com.immortalstorage.immortal
         tag.putBoolean(CACHE_FULL_TAG, cacheFull);
         tag.putBoolean(STORAGE_UNAVAILABLE_TAG, storageUnavailable);
         return tag;
+    }
+
+    private void setChangedAndSync() {
+        setChanged();
+        if (level instanceof ServerLevel serverLevel) {
+            BlockState state = getBlockState();
+            serverLevel.sendBlockUpdated(worldPosition, state, state, Block.UPDATE_CLIENTS);
+        }
     }
 }

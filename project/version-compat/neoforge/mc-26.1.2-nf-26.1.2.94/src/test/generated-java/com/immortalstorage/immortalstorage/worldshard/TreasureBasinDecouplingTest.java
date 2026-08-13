@@ -98,7 +98,18 @@ final class TreasureBasinDecouplingTest {
 
         assertTrue(basin.contains("private final WorldShardMinerCache cache"),
                 "the basin must persist its own barrel-sized cache instance");
-        assertTrue(basin.contains("WorldShardOutputRouter.routeCache(generated, cache)"));
+        assertTrue(basin.contains("private final List<ItemStack> pendingOutput"));
+        assertTrue(basin.contains("WorldShardOutputRouter.routeCacheWithOverflow(generated, cache)"));
+        assertTrue(basin.contains("MachineOutputScheduler.pushItemToFaces"));
+        assertTrue(basin.contains("replacePendingOutput(temporary)"));
+        assertFalse(basin.contains("Block.popResource(level, worldPosition, remainder)"));
+        assertTrue(miner.contains("WorldShardOutputRouter.routeCacheWithOverflow(generated, cache)"));
+        assertTrue(miner.contains("private final List<ItemStack> pendingOutput"));
+        assertTrue(miner.contains("MachineOutputScheduler.pushItemToFaces"));
+        assertTrue(miner.contains("replacePendingOutput(temporary)"));
+        assertFalse(miner.contains("Block.popResource(level, worldPosition, remainder)"));
+        assertTrue(basin.contains("if (!basin.settlePendingOutput(level)) return"));
+        assertTrue(miner.contains("if (!miner.settlePendingOutput(level)) return"));
         assertFalse(basin.contains("miner.routeGenerated"));
         assertFalse(basin.contains("miner.canGenerateOutputs"));
         assertFalse(basin.contains("miner.getMinerCache"));
@@ -122,17 +133,22 @@ final class TreasureBasinDecouplingTest {
         assertTrue(capabilities.contains(
                 "Capabilities.Item.BLOCK, TREASURE_BASIN.get()"));
         assertTrue(basinBlock.contains("basin.getCacheHandler().extractItem"),
-                "breaking the basin must drop only the basin cache");
+                "breaking the basin must recover its visible cache");
+        assertTrue(basinBlock.contains("basin.drainPendingOutputForRemoval()"),
+                "breaking the basin must recover its temporary output cache");
         assertTrue(basinBlock.contains("basin.getCacheHandler().getStackInSlot"),
                 "the basin comparator must inspect only the basin cache");
         assertFalse(basinBlock.contains("getAttachedMiner().getCacheHandler"));
 
         assertTrue(minerBlock.contains("miner.getCacheHandler().extractItem"));
+        assertTrue(minerBlock.contains("miner.drainPendingOutputForRemoval()"));
         assertTrue(minerBlock.contains("miner.getCacheHandler().getStackInSlot"));
         assertFalse(minerBlock.contains("TreasureBasinBlockEntity"));
 
         assertTrue(basin.contains("tag.put(CACHE_TAG, com.immortalstorage.immortalstorage.compat.mc2612.CompatValueIo.serialize(cache, registries))"));
         assertTrue(basin.contains("com.immortalstorage.immortalstorage.compat.mc2612.CompatValueIo.deserialize(cache, registries, tag.getCompoundOrEmpty(CACHE_TAG))"));
+        assertTrue(basin.contains("tag.put(PENDING_OUTPUT_TAG, pending)"));
+        assertTrue(basin.contains("tag.getListOrEmpty(PENDING_OUTPUT_TAG)"));
         assertTrue(basin.contains("tag.putBoolean(CACHE_FULL_TAG, cacheFull)"));
         assertTrue(basin.contains("tag.putBoolean(STORAGE_UNAVAILABLE_TAG, storageUnavailable)"));
         assertTrue(basin.contains("ClientboundBlockEntityDataPacket.create"));

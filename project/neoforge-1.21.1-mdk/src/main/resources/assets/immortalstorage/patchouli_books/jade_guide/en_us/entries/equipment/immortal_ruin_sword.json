@@ -4,9 +4,26 @@
   "category": "immortalstorage:equipment",
   "sortnum": 30,
   "pages": [
-    {"type":"patchouli:smithing","recipe":"immortalstorage:immortal_ruin_forged_spirit_sword","text":"Use Miniature Immortal Ruin as the template, Spirit Sword as the base and Spirit Core as the addition. Enchantments and tempering remain while durability refreshes."},
-    {"type":"patchouli:text","text":"It retains stage damage, Spirit Repair, self-cycling tempering and sword recall. If several supported swords are in the embedded furnace, recall chooses the most recently used."},
-    {"type":"patchouli:text","text":"Each tempering point grants 1.5% damage and sweep range is 50% wider than the Spirit Sword. Tempering still halves after a hit."},
-    {"type":"patchouli:text","text":"Use it to spend five Immortal Yuan and teleport targets in a 13x13x13 region one block in front of the wielder. Their velocity is cleared and they are restrained for one second. The config controls whether other players are affected."}
+    {
+      "type": "patchouli:smithing",
+      "recipe": "immortalstorage:immortal_ruin_forged_spirit_sword",
+      "title": "Forge through a Ruin",
+      "text": "At the Smithing Table, place Miniature Immortal Ruin as template, Spirit Sword as base, and Spirit Core as addition. The upgrade preserves enchantments and tempering while restoring full durability."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Wider Sword Arc",
+      "text": "It inherits stage damage, Aura Repair, continuous tempering, and recall. Each point grants 1.5% damage and sweeping reaches 50% farther than a Spirit Sword. Points still halve after a hit."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Recall Order",
+      "text": "If the embedded furnace holds several recallable swords, the most recently used one wins. Recall only changes the held weapon; it neither duplicates the item nor resets its components."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Draw Enemies Close",
+      "text": "Use it to spend 5 Immortal Yuan and move other targets in a 13x13x13 region one block ahead. Velocity is cleared and targets are restrained for 1 second. Server config decides whether players are affected."
+    }
   ]
 }

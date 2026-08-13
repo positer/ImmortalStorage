@@ -1,8 +1,24 @@
 {
-  "name":"Soul Catcher","icon":"immortalstorage:soul_catcher","category":"immortalstorage:equipment","sortnum":50,
-  "pages":[
-    {"type":"patchouli:smithing","recipe":"immortalstorage:soul_catcher","text":"Forge a Soul Catcher from a Spirit Core template, a Lead base, and Primordial Qi."},
-    {"type":"patchouli:text","text":"Use it on a creature to preserve and contain its full entity data. A filled catcher glints and names its occupant in the tooltip; use it on valid empty ground to release the creature. Creative mode updates the held stack correctly as well."},
-    {"type":"patchouli:text","text":"The Soul Catcher accepts vanilla and modded creatures and can supply a specimen to the Simulated Reincarnation Furnace. Capture and release are disabled during tribulation so its target flow cannot be bypassed."}
+  "name": "Soul Catcher",
+  "icon": "immortalstorage:soul_catcher",
+  "category": "immortalstorage:equipment",
+  "sortnum": 50,
+  "pages": [
+    {
+      "type": "patchouli:smithing",
+      "recipe": "immortalstorage:soul_catcher",
+      "title": "Forge a Vessel for Souls",
+      "text": "At the Smithing Table, place Spirit Core as template, Lead as base, and Primordial Qi as addition. An empty vessel can contain one vanilla or modded creature."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Capture and Release",
+      "text": "Use on a creature to preserve its complete entity data. A filled catcher glints and names the occupant in its tooltip. Use it on valid empty ground to release. Creative mode also replaces the held stack correctly."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Reincarnation Specimen",
+      "text": "A filled catcher can supply the Simulated Reincarnation Furnace with its specimen. Capture and release are disabled during tribulation so the active target flow cannot be bypassed."
+    }
   ]
 }

@@ -25,7 +25,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 /** 54-slot area collector/ejector with bounded offsets and persistent settings. */
-public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity implements Container, MenuProvider {
+public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity implements Container, MenuProvider, ReinforcementPluginHost {
     public static final int SLOT_COUNT = 54;
     protected final ItemStackHandler inventory = new ItemStackHandler(SLOT_COUNT) {
         @Override protected void onContentsChanged(int slot) { setChanged(); }
@@ -43,6 +43,7 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
     protected boolean portableRemoval;
     /** Bit mask of enabled container interaction faces (one bit per Direction ordinal). */
     protected int faceMask = AdvancedRuinScheduler.ALL_FACES;
+    protected ItemStack reinforcementPlugin = ItemStack.EMPTY;
 
     public StabilizedMiniatureImmortalRuinBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), pos, state);
@@ -109,7 +110,10 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
     public void serverTick() {
         if (!(level instanceof ServerLevel serverLevel) || !enabled || frequency <= 0
                 || serverLevel.getGameTime() % frequency != 0) return;
-        if (reversed) eject(serverLevel); else collect(serverLevel);
+        if (reversed) {
+            for (int group = 0; group < reinforcementMultiplier(); group++)
+                if (!eject(serverLevel)) break;
+        } else collect(serverLevel);
     }
 
     private AABB selectedArea() {
@@ -131,8 +135,9 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
         }
     }
 
-    private void eject(ServerLevel level) {
-        if (faceMask == 0) return;
+    private boolean eject(ServerLevel level) {
+        if (faceMask == 0) return false;
+        boolean moved = false;
         BlockPos target = worldPosition.offset(offsetX, offsetY, offsetZ);
         ItemStackHandler sourceInventory = activeInventory();
         for (int slot = 0; slot < SLOT_COUNT; slot++) {
@@ -155,7 +160,9 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
                 removed = ItemStack.EMPTY;
             }
             if (!removed.isEmpty()) sourceInventory.insertItem(slot, removed, false);
+            if (removed.getCount() < stored.getCount()) moved = true;
         }
+        return moved;
     }
 
     protected boolean allows(ItemStack stack) {
@@ -231,14 +238,17 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
         return new com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu(
                 id, playerInventory, this, menuData());
     }
-    @Override public int getContainerSize() { return SLOT_COUNT; }
-    @Override public boolean isEmpty() { for (int i = 0; i < SLOT_COUNT; i++) if (!activeInventory().getStackInSlot(i).isEmpty()) return false; return true; }
-    @Override public ItemStack getItem(int slot) { return activeInventory().getStackInSlot(slot); }
-    @Override public ItemStack removeItem(int slot, int amount) { return activeInventory().extractItem(slot, amount, false); }
-    @Override public ItemStack removeItemNoUpdate(int slot) { ItemStackHandler active = activeInventory(); ItemStack stack = active.getStackInSlot(slot); active.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
-    @Override public void setItem(int slot, ItemStack stack) { activeInventory().setStackInSlot(slot, stack); }
+    @Override public int getContainerSize() { return SLOT_COUNT + 1; }
+    @Override public boolean isEmpty() { if (!reinforcementPlugin.isEmpty()) return false; for (int i = 0; i < SLOT_COUNT; i++) if (!activeInventory().getStackInSlot(i).isEmpty()) return false; return true; }
+    @Override public ItemStack getItem(int slot) { return slot == SLOT_COUNT ? reinforcementPlugin : activeInventory().getStackInSlot(slot); }
+    @Override public ItemStack removeItem(int slot, int amount) { if (slot == SLOT_COUNT) { ItemStack out = reinforcementPlugin.split(amount); setChanged(); return out; } return activeInventory().extractItem(slot, amount, false); }
+    @Override public ItemStack removeItemNoUpdate(int slot) { if (slot == SLOT_COUNT) { ItemStack out = reinforcementPlugin; reinforcementPlugin = ItemStack.EMPTY; return out; } ItemStackHandler active = activeInventory(); ItemStack stack = active.getStackInSlot(slot); active.setStackInSlot(slot, ItemStack.EMPTY); return stack; }
+    @Override public void setItem(int slot, ItemStack stack) { if (slot == SLOT_COUNT) setReinforcementPlugin(stack); else activeInventory().setStackInSlot(slot, stack); }
     @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
-    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) activeInventory().setStackInSlot(i, ItemStack.EMPTY); }
+    @Override public void clearContent() { for (int i = 0; i < SLOT_COUNT; i++) activeInventory().setStackInSlot(i, ItemStack.EMPTY); reinforcementPlugin = ItemStack.EMPTY; }
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) { return slot == SLOT_COUNT && ReinforcementPluginHost.isPlugin(stack); }
+    @Override public ItemStack reinforcementPlugin() { return reinforcementPlugin; }
+    @Override public void setReinforcementPlugin(ItemStack stack) { reinforcementPlugin = ReinforcementPluginHost.isPlugin(stack) ? stack.copyWithCount(1) : ItemStack.EMPTY; setChangedAndSync(); }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
@@ -256,6 +266,7 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
         tag.put("Filters", filterList); tag.putBoolean("FilterMatchComponents", filterMatchComponents);
         tag.putBoolean("FilterWhitelist", filterWhitelist);
         tag.putInt("FaceMask", faceMask);
+        if (!reinforcementPlugin.isEmpty()) tag.put("ReinforcementPlugin", reinforcementPlugin.save(registries));
         if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong());
     }
 
@@ -278,6 +289,8 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends BlockEntity impl
         filterWhitelist = !tag.contains("FilterWhitelist") || tag.getBoolean("FilterWhitelist");
         faceMask = tag.contains("FaceMask") ? tag.getInt("FaceMask") & AdvancedRuinScheduler.ALL_FACES : migrateFace(tag);
         linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null;
+        reinforcementPlugin = tag.contains("ReinforcementPlugin")
+                ? ItemStack.parseOptional(registries, tag.getCompound("ReinforcementPlugin")) : ItemStack.EMPTY;
     }
 
     /** Old single-face tag ({@code -1} = any face): {@code -1} becomes all faces, an ordinal becomes its bit. */

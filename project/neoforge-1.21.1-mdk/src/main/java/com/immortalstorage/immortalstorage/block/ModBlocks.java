@@ -53,12 +53,12 @@ public final class ModBlocks {
             () -> new XianqiaoInterfaceBlock(setBlockId("xianqiao_interface",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_CYAN).strength(4.0f)
-                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
+                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK).noOcclusion())));
     public static final Supplier<Block> ADVANCED_XIANQIAO_INTERFACE = reg("advanced_xianqiao_interface",
             () -> new AdvancedXianqiaoInterfaceBlock(setBlockId("advanced_xianqiao_interface",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_PURPLE).strength(4.0f)
-                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
+                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK).noOcclusion())));
     public static final Supplier<Block> SIMULATED_REINCARNATION_FURNACE = reg("simulated_reincarnation_furnace",
             () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.TRIAL_SPAWNER).strength(5.0F)
@@ -107,7 +107,7 @@ public final class ModBlocks {
     public static final Supplier<Block> TREASURE_BASIN = reg("treasure_basin",
             () -> new TreasureBasinBlock(setBlockId("treasure_basin",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.CAULDRON)
-                            .mapColor(MapColor.GOLD).lightLevel(state -> 4))));
+                            .mapColor(MapColor.GOLD).lightLevel(state -> 15))));
     public static final Supplier<Block> TRUE_YUAN_LIGHT = BLOCKS.register("true_yuan_light",
             () -> new YuanLightBlock(false));
     public static final Supplier<Block> IMMORTAL_YUAN_LIGHT = BLOCKS.register("immortal_yuan_light",

@@ -16,6 +16,7 @@ final class Ae2InstalledAddonRetreatContractTest {
         String addons = Files.readString(root.resolve("InstalledAddonExternalKeyBridges.java"));
         String fallback = Files.readString(root.resolve("ImmortalStorageExternalResourceKeyBridge.java"));
         String init = Files.readString(root.resolve("Ae2Compat.java"));
+        String compatManager = Files.readString(root.getParent().resolve("CompatManager.java"));
 
         assertTrue(addons.contains("\"appflux\""));
         assertTrue(addons.contains("\"appmek\""));
@@ -29,6 +30,10 @@ final class Ae2InstalledAddonRetreatContractTest {
         assertTrue(addonRegistration > initialization);
         assertTrue(addonRegistration > keyRegistration,
                 "addon keys must be resolved after registries bind, not during block registration");
+        assertTrue(init.contains("AECapabilities.ME_STORAGE"));
+        assertTrue(init.contains("ModBlockEntities.XIANQIAO_MANAGER.get()"));
+        assertTrue(init.contains("storage.setActive(true)"));
+        assertTrue(compatManager.contains("modBus.addListener(CompatManager::registerAe2Capabilities)"));
     }
 
     private static Path locateProject() {

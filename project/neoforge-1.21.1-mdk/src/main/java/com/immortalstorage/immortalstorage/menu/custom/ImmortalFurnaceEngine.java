@@ -47,15 +47,22 @@ public final class ImmortalFurnaceEngine {
     }
 
     public boolean tick(long gameTick, Container inventory, FuelResolver fuelResolver, RecipeResolver recipeResolver) {
-        return tick(gameTick, inventory, fuelResolver, recipeResolver, channel -> false);
+        return tick(gameTick, inventory, fuelResolver, recipeResolver, channel -> false, 1);
     }
 
     public boolean tick(long gameTick, Container inventory, FuelResolver fuelResolver,
                         RecipeResolver recipeResolver, IntPredicate suspendedChannel) {
+        return tick(gameTick, inventory, fuelResolver, recipeResolver, suspendedChannel, 1);
+    }
+
+    public boolean tick(long gameTick, Container inventory, FuelResolver fuelResolver,
+                        RecipeResolver recipeResolver, IntPredicate suspendedChannel,
+                        int processingMultiplier) {
         Objects.requireNonNull(inventory, "inventory");
         Objects.requireNonNull(fuelResolver, "fuelResolver");
         Objects.requireNonNull(recipeResolver, "recipeResolver");
         Objects.requireNonNull(suspendedChannel, "suspendedChannel");
+        processingMultiplier = Math.max(1, processingMultiplier);
         if (lastGameTick == gameTick) return false;
         lastGameTick = gameTick;
 
@@ -124,11 +131,17 @@ public final class ImmortalFurnaceEngine {
                 continue; // A blocked result freezes this channel's progress exactly where it is.
             }
 
-            progress[channel]++;
+            progress[channel] = Math.min(Integer.MAX_VALUE, progress[channel] + processingMultiplier);
             changed = true;
-            if (progress[channel] >= totalTime[channel]) {
+            while (progress[channel] >= totalTime[channel]) {
+                input = inventory.getItem(inputSlots[channel]);
+                if (input.isEmpty()) { progress[channel] = 0; break; }
+                operations = plan.cycleInput() ? 1 : activeFuel.wholeStack() ? input.getCount() : 1;
+                result = inventory.getItem(resultSlots[channel]);
+                if (!plan.cycleInput() && !canAcceptResult(result, plan.result(), operations)) break;
                 cook(inventory, channel, plan, operations);
-                progress[channel] = 0;
+                progress[channel] -= totalTime[channel];
+                if (plan.cycleInput()) { progress[channel] = 0; break; }
             }
         }
         return changed;

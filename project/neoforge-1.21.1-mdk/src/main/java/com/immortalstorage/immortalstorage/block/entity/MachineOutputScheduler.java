@@ -8,10 +8,47 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.items.ItemStackHandler;
 
 /** Shared, best-effort item-cache scheduler for the three output machines. */
 final class MachineOutputScheduler {
     private MachineOutputScheduler() {}
+
+    /**
+     * Merges machine-owned output into internal slots without applying the
+     * external automation insertion filter. Output-only handlers deliberately
+     * reject {@link IItemHandler#insertItem}; production must still be able to
+     * populate those slots while preserving stack components and slot limits.
+     */
+    static ItemStack insertIntoInternalSlots(
+            ItemStackHandler target, int firstSlot, int lastSlot, ItemStack offered) {
+        if (target == null || offered == null || offered.isEmpty()) {
+            return offered == null ? ItemStack.EMPTY : offered;
+        }
+        int startSlot = Math.max(0, firstSlot);
+        int endSlot = Math.min(lastSlot, target.getSlots());
+        ItemStack remaining = offered.copy();
+        for (int slot = startSlot; slot < endSlot && !remaining.isEmpty(); slot++) {
+            ItemStack stored = target.getStackInSlot(slot);
+            if (stored.isEmpty()) {
+                int limit = Math.min(target.getSlotLimit(slot), remaining.getMaxStackSize());
+                int moved = Math.min(limit, remaining.getCount());
+                if (moved <= 0) continue;
+                target.setStackInSlot(slot, remaining.copyWithCount(moved));
+                remaining.shrink(moved);
+                continue;
+            }
+            if (!ItemStack.isSameItemSameComponents(stored, remaining)) continue;
+            int limit = Math.min(target.getSlotLimit(slot), stored.getMaxStackSize());
+            int moved = Math.min(remaining.getCount(), Math.max(0, limit - stored.getCount()));
+            if (moved <= 0) continue;
+            ItemStack merged = stored.copy();
+            merged.grow(moved);
+            target.setStackInSlot(slot, merged);
+            remaining.shrink(moved);
+        }
+        return remaining;
+    }
 
     static boolean pushItemsToFaces(
             ServerLevel level, BlockPos pos, boolean enabled, boolean[] outputFaces,

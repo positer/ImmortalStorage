@@ -1,1 +1,18 @@
-{"name":"Core Material Recipes","icon":"immortalstorage:spirit_core","category":"immortalstorage:recipes","sortnum":0,"pages":[{"type":"patchouli:crafting","recipe":"immortalstorage:spirit_core","text":"Spirit Core stacks to 16 and is only a key intermediate material."},{"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_block","recipe2":"immortalstorage:spirit_crystal_block","text":"Spirit Iron and Spirit Crystal storage blocks compress nine materials and unpack again."},{"type":"patchouli:crafting","recipe":"immortalstorage:crude_spirit_iron_block","recipe2":"immortalstorage:immortal_furnace","text":"Crude Spirit Iron Block stores raw material; the Immortal Furnace drives advanced processing."}]}
+{
+  "name":"Essential Spirit Materials",
+  "icon":"immortalstorage:spirit_core",
+  "category":"immortalstorage:recipes",
+  "sortnum":0,
+  "pages":[
+    {"type":"patchouli:text","text":"ImmortalStorage begins with two ores. $(item)Spirit Iron$() forms structures and tools; $(item)Spirit Crystal$() forms cores and advanced processes. Mine, refine, then combine them into a Spirit Core—the thread running through nearly every device."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:spirit_iron_ore,immortalstorage:deepslate_spirit_iron_ore","title":"Spirit Iron Ore","text":"Stone and deepslate Spirit Iron follow vanilla iron-ore generation. Mining yields Crude Spirit Iron. A blast furnace refines it in 100 ticks; an Immortal Furnace needs 50."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:spirit_crystal_ore,immortalstorage:deepslate_spirit_crystal_ore","title":"Spirit Crystal Ore","text":"Stone and deepslate Spirit Crystal follow vanilla diamond-ore generation. Mining yields Spirit Crystals directly. An Immortal Furnace can also refine silk-touched ore blocks for bulk processing."},
+    {"type":"immortalstorage:process_recipe","source_recipe":"immortalstorage:spirit_iron_from_crude_blasting","heading":"Refining Crude Spirit Iron","input_item":"immortalstorage:crude_spirit_iron","station_item":"minecraft:blast_furnace","output_item":"immortalstorage:spirit_iron","station_text":"$(thing)Blast Furnace · 100 ticks · 0.7 XP$()","body":"Stone and deepslate Spirit Iron ores have matching blast-furnace recipes. The furnace catalogue shows the faster Immortal Furnace routes."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_block","recipe2":"immortalstorage:spirit_iron_from_block","title":"Spirit Iron Compression","text":"Nine ingots form a block; one block returns all nine."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_crystal_block","recipe2":"immortalstorage:spirit_crystal_from_block","title":"Spirit Crystal Compression","text":"Nine crystals form a block and can be recovered in full."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:crude_spirit_iron_block","recipe2":"immortalstorage:crude_spirit_iron_from_block","title":"Crude Spirit Iron Compression","text":"Unrefined material may be stored compactly without loss."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_iron_nugget","recipe2":"immortalstorage:spirit_iron_from_nuggets","title":"Spirit Iron Nuggets","text":"One ingot becomes nine nuggets and nine return one ingot. Nuggets appear in the Substitute Puppet, Miniature Ruin and Xianeng Electricity Crystal."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:spirit_core","title":"Spirit Core","text":"Spirit Iron, Spirit Crystals and an Amethyst Shard form the Spirit Core. It stacks to 16 and serves as the common hinge between machines, weapons and advanced smithing."},
+    {"type":"patchouli:text","title":"Where Next","text":"See $(l:immortalstorage:recipes/immortal_furnace_processes)Immortal Furnace Catalogue$(/l) for every furnace process, or $(l:immortalstorage:recipes/nurturing_crystal)The Nurturing Crystal Chain$(/l) for crystal growth and Heavy Cores."}
+  ]
+}

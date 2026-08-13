@@ -38,11 +38,11 @@ final class SpiritStaffModeNameContractTest {
         String zh = source("src/main/resources/assets/immortalstorage/patchouli_books/jade_guide/zh_cn/entries/equipment/instrument.json");
         String en = source("src/main/resources/assets/immortalstorage/patchouli_books/jade_guide/en_us/entries/equipment/instrument.json");
 
-        assertTrue(zh.contains("探索、扳手、挖掘、建筑、传送五种模式"));
-        assertTrue(zh.contains("挖掘模式保留下界合金等级"));
+        assertTrue(zh.contains("探索、扳手、挖掘、建筑与传送"));
+        assertTrue(zh.contains("挖掘模式保持下界合金等级"));
         assertFalse(zh.contains("探索、扳手、镐子、建筑、传送五种模式"));
-        assertTrue(en.contains("Exploration, Wrench, Mining, Building and Teleport"));
-        assertTrue(en.contains("Mining keeps netherite-level breaking"));
+        assertTrue(en.contains("Exploration, Wrench, Mining, Building, and Teleport"));
+        assertTrue(en.contains("Mining retains Netherite-tier breaking"));
         assertFalse(en.contains("Exploration, Wrench, Pickaxe, Building and Teleport"));
     }
 
