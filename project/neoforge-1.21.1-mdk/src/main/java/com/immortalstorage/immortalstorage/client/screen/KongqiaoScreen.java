@@ -18,12 +18,15 @@ import java.util.List;
 public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     private boolean furnaceVisible;
     private boolean smithingVisible;
+    private boolean stonecutterVisible;
+    private final TerminalStonecutterGui stonecutterGui = new TerminalStonecutterGui();
     private TerminalTabButton craftModuleButton;
     private TerminalTabButton smithingModuleButton;
     private TerminalTabButton furnaceModuleButton;
     private Button autoFurnaceFillButton;
     private Button autoFurnaceFuelButton;
     private Button magnetButton;
+    private Button stonecutterToggleButton;
 
     public KongqiaoScreen(KongqiaoMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -60,6 +63,12 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         this.craftModuleButton.active = this.menu.isCraftingUnlocked();
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
         this.furnaceModuleButton.active = this.menu.isFurnaceUnlocked();
+        this.stonecutterToggleButton = this.addRenderableWidget(Button.builder(
+                        stonecutterToggleLabel(), button -> requestMenuButton(KongqiaoMenu.SMITHING_VIEW_BUTTON))
+                .bounds(this.leftPos + 30, this.topPos + TerminalLayout.craftGridY(this.imageHeight) - 8, 76, 16)
+                .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")))
+                .build());
+        updateStonecutterToggle();
         this.autoFurnaceFillButton = this.addRenderableWidget(Button.builder(
                         autoFurnaceFillLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FILL_BUTTON))
                 .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 72, 16)
@@ -103,11 +112,30 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         }
         if (this.smithingVisible) VanillaGuiPainter.terminalSmithingModule(
                 graphics, this.leftPos, this.topPos, this.imageHeight);
+        if (this.stonecutterVisible) {
+            VanillaGuiPainter.terminalStonecutterModule(
+                    graphics, this.leftPos, this.topPos, this.imageHeight);
+            this.stonecutterGui.render(graphics, this, stonecutterAbsoluteSlotY(),
+                    mouseX, mouseY, this.menu.stonecutterSelectedIndex(), this.menu.stonecutterRecipes());
+        }
+    }
+
+    private int stonecutterSlotY() {
+        return TerminalLayout.craftGridY(this.imageHeight) + 18;
+    }
+
+    private int stonecutterAbsoluteSlotY() {
+        return this.topPos + stonecutterSlotY();
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (this.stonecutterVisible && this.stonecutterGui.renderTooltip(
+                graphics, this, stonecutterAbsoluteSlotY(), mouseX, mouseY,
+                this.menu.stonecutterRecipes())) {
+            return;
+        }
         if (!renderExactStorageTooltip(graphics, mouseX, mouseY)) this.renderTooltip(graphics, mouseX, mouseY);
     }
 
@@ -212,6 +240,9 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         if (KongqiaoMenu.isSmithingSlotIndex(menuIndex)) {
             return TerminalLayout.craftGridY(this.imageHeight) + 18;
         }
+        if (KongqiaoMenu.isStonecutterSlotIndex(menuIndex)) {
+            return TerminalLayout.craftGridY(this.imageHeight) + 18;
+        }
         if (menuIndex >= KongqiaoMenu.ARMOR_START && menuIndex < KongqiaoMenu.ARMOR_END) {
             return TerminalLayout.inventoryY(this.imageHeight)
                     + (menuIndex - KongqiaoMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
@@ -231,6 +262,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     @Override
     protected boolean shouldRenderMenuSlot(int menuIndex) {
         if (KongqiaoMenu.isSmithingSlotIndex(menuIndex)) return this.smithingVisible;
+        if (KongqiaoMenu.isStonecutterSlotIndex(menuIndex)) return this.stonecutterVisible;
         if (KongqiaoMenu.isFurnaceSlotIndex(menuIndex)) return this.furnaceVisible;
         return super.shouldRenderMenuSlot(menuIndex);
     }
@@ -249,8 +281,10 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     protected void containerTick() {
         super.containerTick();
         int module = this.menu.getActiveModule();
-        if ((module == 0) != this.craftingVisible || (module == 1) != this.smithingVisible
-                || (module == 2) != this.furnaceVisible) {
+        boolean moduleOneOpen = this.smithingVisible || this.stonecutterVisible;
+        if ((module == 0) != this.craftingVisible || (module == 1) != moduleOneOpen
+                || (module == 2) != this.furnaceVisible
+                || (module == 1 && this.smithingVisible != this.menu.isSmithingViewActive())) {
             applyModuleState(module);
         }
         updateFurnaceButtons();
@@ -281,9 +315,55 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     }
 
     private void applyModuleState(int module) {
-        this.smithingVisible = module == 1;
+        this.smithingVisible = module == 1 && this.menu.isSmithingViewActive();
+        this.stonecutterVisible = module == 1 && !this.menu.isSmithingViewActive();
         this.furnaceVisible = module == 2;
         setWorkspaceState(module == 0, module >= 0 && module <= 2);
+        updateStonecutterToggle();
     }
 
+    private Component stonecutterToggleLabel() {
+        return Component.translatable(this.menu.isSmithingViewActive()
+                ? "container.immortalstorage.terminal.stonecutter_switch"
+                : "container.immortalstorage.terminal.smithing_switch");
+    }
+
+    private void updateStonecutterToggle() {
+        if (this.stonecutterToggleButton == null) return;
+        boolean moduleOne = this.smithingVisible || this.stonecutterVisible;
+        this.stonecutterToggleButton.visible = moduleOne && this.menu.isSmithingUnlocked();
+        this.stonecutterToggleButton.active = this.stonecutterToggleButton.visible;
+        this.stonecutterToggleButton.setMessage(stonecutterToggleLabel());
+        if (!moduleOne) this.stonecutterGui.reset();
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.stonecutterVisible && button == 0) {
+            if (this.stonecutterGui.mouseClicked(mouseX, mouseY, this, stonecutterAbsoluteSlotY(),
+                    this.menu.stonecutterRecipes())) {
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.stonecutterVisible && this.stonecutterGui.mouseDragged(
+                mouseY, stonecutterAbsoluteSlotY(),
+                this.menu.stonecutterRecipeCount())) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.stonecutterVisible && this.stonecutterGui.mouseScrolled(
+                scrollY, this.menu.stonecutterRecipeCount())) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
 }

@@ -87,13 +87,15 @@ public class ImmortalStorageMod {
 
     private static void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(com.immortalstorage.immortalstorage.api.source.ImmortalStorageChargeProviders::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.api.worldshard.WorldShardApi::freezeRegistration);
     }
 
     @SubscribeEvent
     public void onAddReloadListener(net.neoforged.neoforge.event.AddServerReloadListenersEvent event) {
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_miner"), new com.immortalstorage.immortalstorage.worldshard.WorldShardMinerReloadListener(
                 event.getRegistryAccess()));
-        event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener());
+        event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener(
+                event.getRegistryAccess()));
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "source_definitions"), new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
     }

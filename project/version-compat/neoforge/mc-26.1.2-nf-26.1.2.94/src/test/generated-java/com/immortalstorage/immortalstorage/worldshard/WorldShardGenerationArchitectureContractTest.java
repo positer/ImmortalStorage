@@ -22,28 +22,39 @@ final class WorldShardGenerationArchitectureContractTest {
     void oreAndTreasurePreflightIndependentlyBeforeExpensiveGenerationAndUseOneStatelessRouter() throws IOException {
         String minerTick = methodBody(source("WorldShardMinerBlockEntity.java"),
                 "public static void serverTick(");
-        String basinTick = methodBody(source("TreasureBasinBlockEntity.java"),
-                "public static void serverTick(");
+        String basinEntity = source("TreasureBasinBlockEntity.java");
+        String basinTick = methodBody(basinEntity, "public static void serverTick(");
+        String basinRoll = methodBody(basinEntity, "private boolean rollOnce(");
 
         assertOrdered(minerTick, "miner.canGenerateOutputs(level)", "sampleBatch(",
                 "ore sampling must not run while the cache or owner storage blocks output");
-        assertOrdered(basinTick, "basin.canGenerateOutputs(level)", "table.getRandomItems(",
-                "loot rolling must not run while the basin destination blocks output");
+        assertOrdered(basinTick, "basin.canGenerateOutputs(level)", "TreasureBasinSchedule.advance(",
+                "schedule progress must not advance while the basin destination blocks output");
         assertOrdered(basinTick, "if (!basin.hasSelectableLoot()) return;",
                 "basin.canGenerateOutputs(level)",
                 "CALIBRATING must stop before output preflight and must not advance the cycle");
-        assertFalse(basinTick.contains("table.fill("),
+        assertOrdered(basinTick, "TreasureBasinSchedule.advance(",
+                "basin.rollOnce(level, pos)",
+                "an accelerated roll may only run after the schedule advance is recorded");
+        assertFalse(basinRoll.contains("table.fill("),
                 "container filling truncates a loot roll to 27 slots before the transaction sees it");
-        assertFalse(basinTick.contains("SimpleContainer"),
+        assertFalse(basinEntity.contains("ReinforcementPluginHost.multiplyOutputs("),
+                "the basin plugin must accelerate the schedule, never multiply one roll's drops");
+        assertFalse(basinRoll.contains("SimpleContainer"),
                 "the basin must route the complete loot-table result, not an inventory-shaped subset");
-        assertTrue(basinTick.contains("basin.routeGenerated(level, generated)"),
+        assertTrue(basinRoll.contains("table.getRandomItemsRaw("),
+                "the basin must roll the vanilla table through the raw context");
+        assertTrue(basinRoll.contains("CommonHooks.modifyLoot("),
+                "structure chests must honor the NeoForge global-loot-modifier chain");
+        assertTrue(basinRoll.contains("basin.routeGenerated(level, generated)")
+                        || basinRoll.contains("routeGenerated(level, generated)"),
                 "treasure must use the basin-owned dimension-aware transaction");
-        assertFalse(basinTick.contains("miner.routeGenerated"),
+        assertFalse(basinRoll.contains("miner.routeGenerated"),
                 "loot may not publish through the miner cache or miner pause state");
-        assertFalse(basinTick.contains("WorldShardLootOutputRouter"),
+        assertFalse(basinRoll.contains("WorldShardLootOutputRouter"),
                 "the retired cache-only basin route would bypass Xianqiao direct storage");
-        assertOrdered(basinTick, "basin.routeGenerated(level, generated)",
-                "basin.generationCycle =",
+        assertOrdered(basinRoll, "routeGenerated(level, generated)",
+                "generationCycle =",
                 "the basin cycle advances only after its own complete loot transaction succeeds");
     }
 

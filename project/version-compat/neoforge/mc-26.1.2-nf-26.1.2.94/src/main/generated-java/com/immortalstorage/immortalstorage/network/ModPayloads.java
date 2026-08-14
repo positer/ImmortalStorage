@@ -526,6 +526,24 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<ToggleRealm> type() { return TYPE; }
     }
 
+    /** In-realm shift+V: teleport the player to the fixed realm center (0, 56, 0). */
+    public record RealmCenterTeleport() implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, RealmCenterTeleport> STREAM_CODEC =
+                StreamCodec.unit(new RealmCenterTeleport());
+        public static final CustomPacketPayload.Type<RealmCenterTeleport> TYPE =
+                new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "realm_center_teleport"));
+        @Override public CustomPacketPayload.Type<RealmCenterTeleport> type() { return TYPE; }
+    }
+
+    /** Out-of-realm shift+V: toggle the player's Domain Expansion. */
+    public record DomainToggle() implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, DomainToggle> STREAM_CODEC =
+                StreamCodec.unit(new DomainToggle());
+        public static final CustomPacketPayload.Type<DomainToggle> TYPE =
+                new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "domain_toggle"));
+        @Override public CustomPacketPayload.Type<DomainToggle> type() { return TYPE; }
+    }
+
     /** Cycle the held Spirit Staff mode on the authoritative server stack. */
     public record CycleStaffMode(int delta) implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, CycleStaffMode> STREAM_CODEC =

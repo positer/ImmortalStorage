@@ -68,6 +68,7 @@ public final class ClientSetup {
         forgeBus.addListener(ClientRealmSnowfall::onClientTick);
         SpiritStaffBuildPreview.init(forgeBus);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.OneQiBeamRenderer::render);
+        forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.DomainExpansionHighlight::render);
     }
 
     private static void clientSetup(final FMLClientSetupEvent e) {

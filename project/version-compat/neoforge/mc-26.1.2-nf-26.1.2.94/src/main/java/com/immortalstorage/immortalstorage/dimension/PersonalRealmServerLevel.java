@@ -1,5 +1,6 @@
 package com.immortalstorage.immortalstorage.dimension;
 
+import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.server.MinecraftServer;
@@ -124,7 +125,11 @@ final class PersonalRealmServerLevel extends ServerLevel {
     public void tick(BooleanSupplier hasTime) {
         if (this.tickingRealm) return;
         ServerPlayer owner = RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId);
-        if (owner == null || owner.level() != this) {
+        // Only an offline owner restores 1x.  While the owner is online in a
+        // different dimension the realm keeps its activated (possibly
+        // accelerated) tick budget, so a time-flow adjustment made from
+        // anywhere keeps ticking the realm.
+        if (owner == null) {
             this.tickBudget.restore();
         }
         if (owner != null) {
@@ -133,11 +138,21 @@ final class PersonalRealmServerLevel extends ServerLevel {
         }
         applyEnvironmentLock();
         int passes = this.tickBudget.consumePasses();
+        if ((getGameTime() & 0x7F) == 0) {
+            ImmortalStorageMod.LOG.info("[Realm] tick active={} scale={} passes={} ownerInRealm={}",
+                    this.tickBudget.active, this.tickBudget.scale, passes,
+                    owner != null && owner.level() == this);
+        }
         this.tickingRealm = true;
         try {
-            for (int pass = 0; pass < passes; pass++) {
-                if (pass > 0 && !this.tickBudget.active) break;
-                super.tick(hasTime);
+            // First pass is the full dimension tick; extra accelerated passes
+            // tick only block entities so realm machines run faster without
+            // repeating the full dimension tick and stalling the main thread.
+            super.tick(hasTime);
+            applyEnvironmentLock();
+            for (int pass = 1; pass < passes; pass++) {
+                if (!this.tickBudget.active) break;
+                this.tickBlockEntities();
                 applyEnvironmentLock();
             }
         } finally {

@@ -441,6 +441,10 @@ tasks.named('processResources', ProcessResources).configure {
     }
 
     if (target2612) {
+        // Declare the target-only resource tree as an input so a change to
+        // these files invalidates the cached processResources output instead
+        // of leaving a stale overlay in the production JAR.
+        inputs.dir(project.file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources'))
         // A duplicate resource name is intentionally resolved after the
         // canonical source set has been processed.  This makes the target
         // manifest deterministic even when Gradle's source-set merge order

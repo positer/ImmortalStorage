@@ -60,7 +60,7 @@ public final class ImmortalStorageConfig {
         NETHER_BREAKTHROUGH_CHANCE = BUILDER.translation(key("loot.netherBreakthroughChance")).defineInRange("netherBreakthroughChance", 0.20, 0.0, 1.0);
         NETHER_BREAKTHROUGH_MIN = BUILDER.translation(key("loot.netherBreakthroughMin")).defineInRange("netherBreakthroughMin", 2, 0, 16);
         NETHER_BREAKTHROUGH_MAX = BUILDER.translation(key("loot.netherBreakthroughMax")).defineInRange("netherBreakthroughMax", 3, 0, 16);
-        END_CITY_ASCENSION_CHANCE = BUILDER.translation(key("loot.endCityAscensionChance")).defineInRange("endCityAscensionChance", 0.01, 0.0, 1.0);
+        END_CITY_ASCENSION_CHANCE = BUILDER.translation(key("loot.endCityAscensionChance")).defineInRange("endCityAscensionChance", 0.25, 0.0, 1.0);
         END_SHIP_IMMORTAL_CHANCE = BUILDER.translation(key("loot.endShipImmortalChance")).defineInRange("endShipImmortalChance", 0.50, 0.0, 1.0);
         ASCENSION_DAN_CHANCE = BUILDER.translation(key("loot.ascensionDanChance")).defineInRange("ascensionDanChance", 0.05, 0.0, 1.0);
         BUILDER.pop();

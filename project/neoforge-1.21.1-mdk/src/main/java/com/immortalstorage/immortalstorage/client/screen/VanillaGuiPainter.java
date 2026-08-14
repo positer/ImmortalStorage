@@ -221,6 +221,12 @@ final class VanillaGuiPainter {
         craftingResultSlot(g, x + 118, y + slotY - 2);
     }
 
+    static void terminalStonecutterModule(GuiGraphics g, int x, int y, int h) {
+        int slotY = TerminalLayout.craftGridY(h) + 18;
+        slot(g, x + 20, y + slotY, true);
+        slot(g, x + 143, y + slotY, true);
+    }
+
     static void functionTabs(GuiGraphics g, int x, int y, boolean xianqiao, int selected, boolean expanded) {
         functionTabs(g, x, y, xianqiao, selected, expanded, 4);
     }

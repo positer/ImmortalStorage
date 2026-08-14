@@ -95,6 +95,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get());
                         output.accept(ModBlocks.CRUDE_SPIRIT_IRON_BLOCK.get());
+                        output.accept(ModBlocks.WORLD_BARRIER.get());
                     })
                     .build());
 

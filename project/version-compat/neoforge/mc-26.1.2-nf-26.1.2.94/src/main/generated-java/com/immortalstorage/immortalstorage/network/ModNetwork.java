@@ -50,6 +50,8 @@ public final class ModNetwork {
                 ModNetwork::handleTerminalExternalResourceEntryAction);
         registrar.playToServer(ModPayloads.TransferTerminalRecipe.TYPE, ModPayloads.TransferTerminalRecipe.STREAM_CODEC, ModNetwork::handleTransferTerminalRecipe);
         registrar.playToServer(ModPayloads.ToggleRealm.TYPE, ModPayloads.ToggleRealm.STREAM_CODEC, ModNetwork::handleToggleRealm);
+        registrar.playToServer(ModPayloads.RealmCenterTeleport.TYPE, ModPayloads.RealmCenterTeleport.STREAM_CODEC, ModNetwork::handleRealmCenterTeleport);
+        registrar.playToServer(ModPayloads.DomainToggle.TYPE, ModPayloads.DomainToggle.STREAM_CODEC, ModNetwork::handleDomainToggle);
         registrar.playToServer(ModPayloads.CycleStaffMode.TYPE, ModPayloads.CycleStaffMode.STREAM_CODEC, ModNetwork::handleCycleStaffMode);
         registrar.playToServer(ModPayloads.AdjustStaffTeleportDistance.TYPE,
                 ModPayloads.AdjustStaffTeleportDistance.STREAM_CODEC, ModNetwork::handleAdjustStaffTeleportDistance);
@@ -498,6 +500,22 @@ public final class ModNetwork {
             } else {
                 com.immortalstorage.immortalstorage.dimension.RealmHelper.enterRealm(sp);
             }
+        });
+    }
+
+    private static void handleRealmCenterTeleport(ModPayloads.RealmCenterTeleport m, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer sp = serverPlayer(ctx);
+            if (sp == null) return;
+            com.immortalstorage.immortalstorage.dimension.RealmHelper.teleportToRealmCenter(sp);
+        });
+    }
+
+    private static void handleDomainToggle(ModPayloads.DomainToggle m, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer sp = serverPlayer(ctx);
+            if (sp == null) return;
+            com.immortalstorage.immortalstorage.dimension.DomainExpansionManager.toggle(sp);
         });
     }
 

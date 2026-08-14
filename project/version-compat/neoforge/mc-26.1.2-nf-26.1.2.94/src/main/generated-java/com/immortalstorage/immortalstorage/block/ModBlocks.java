@@ -156,6 +156,11 @@ public final class ModBlocks {
     public static final Supplier<Block> CRUDE_SPIRIT_IRON_BLOCK = reg("crude_spirit_iron_block",
             () -> new net.minecraft.world.level.block.Block(setBlockId("crude_spirit_iron_block",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.RAW_IRON_BLOCK))));
+    /** 世界胎壁: translucent white wall, player-only break, hay-bale hardness. */
+    public static final Supplier<Block> WORLD_BARRIER = reg("world_barrier",
+            () -> new WorldBarrierBlock(setBlockId("world_barrier",
+                    BlockBehaviour.Properties.of().mapColor(MapColor.SNOW)
+                            .strength(0.5F).noOcclusion().pushReaction(PushReaction.BLOCK))));
 
     public static final Supplier<Block> WATER_VEIN = reg("water_vein", () -> new SourceVeinBlock(VeinKind.WATER));
     public static final Supplier<Block> MILK_VEIN = reg("milk_vein", () -> new SourceVeinBlock(VeinKind.MILK));

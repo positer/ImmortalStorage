@@ -1,5 +1,6 @@
 package com.immortalstorage.immortalstorage.block.entity;
 
+import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions;
 import com.immortalstorage.immortalstorage.menu.custom.TreasureBasinMenu;
 import com.immortalstorage.immortalstorage.network.storage.PersonalStorageNetwork;
@@ -15,13 +16,11 @@ import com.immortalstorage.immortalstorage.worldshard.TreasureBasinStatus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,17 +33,21 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * Loot-only machine activated by one already-active World Shard Miner directly
@@ -59,10 +62,12 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
     private static final String CACHE_FULL_TAG = "CacheFull";
     private static final String STORAGE_UNAVAILABLE_TAG = "StorageUnavailable";
     private static final String PENDING_OUTPUT_TAG = "PendingOutput";
+    private static final String SCHEDULE_PROGRESS_TAG = "ScheduleProgress";
 
     private final WorldShardMinerCache cache = new WorldShardMinerCache(this::onCacheContentsChanged);
     private UUID basinId = UUID.randomUUID();
     private long generationCycle;
+    private long scheduleProgress;
     private TreasureBasinActivation activation = TreasureBasinActivation.inactive();
     private boolean cacheFull;
     private boolean storageUnavailable;
@@ -123,24 +128,46 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
         basin.pushCacheToFaces(level);
         basin.flushCacheToXianqiao(level);
         if (!basin.settlePendingOutput(level)) return;
-        if (!basin.isActive() || !TreasureBasinSchedule.shouldRun(level.getGameTime())) return;
+        if (!basin.isActive()) return;
         if (!basin.hasSelectableLoot()) return;
-        if (!basin.canGenerateOutputs(level)) return;
 
-        ResourceLocation activeMode = basin.getActiveMode();
-        if (activeMode == null) return;
+        // The reinforcement plugin accelerates the basin: instead of
+        // multiplying one roll's drops, it advances the schedule progress by
+        // the plugin multiplier each tick, so a stronger plugin completes
+        // rolls faster while each roll keeps its vanilla drop size.
+        int speed = Math.max(1, basin.reinforcementMultiplier());
+        if (!basin.canGenerateOutputs(level)) return;
+        TreasureBasinSchedule.Advance advance = TreasureBasinSchedule.advance(
+                basin.scheduleProgress, speed, TreasureBasinSchedule.INTERVAL_TICKS);
+        basin.scheduleProgress = advance.remainder();
+        boolean changed = false;
+        for (long roll = 0L; roll < advance.rolls(); roll++) {
+            if (basin.rollOnce(level, pos)) changed = true;
+        }
+        if (changed) basin.setChanged();
+    }
+
+    /** Rolls exactly one structure-chest loot table and routes its complete result. */
+    private boolean rollOnce(ServerLevel level, BlockPos pos) {
+        ResourceLocation activeMode = getActiveMode();
+        if (activeMode == null) return false;
         long selectionTicket = TreasureBasinSeed.selectionTicket(
-                basin.basinId, level.dimension().location(), pos, basin.generationCycle);
+                basinId, level.dimension().location(), pos, generationCycle);
         WorldShardLootDefinition selected = WorldShardLootCatalog.active()
                 .select(activeMode, selectionTicket, WorldShardLootWeightProvider.configured())
                 .orElse(null);
-        if (selected == null) return;
+        if (selected == null) {
+            ImmortalStorageMod.LOG.warn("[Basin] no selectable loot for mode={}", activeMode);
+            return false;
+        }
 
-        LootTable table = level.getServer().reloadableRegistries().getLootTable(
-                ResourceKey.create(Registries.LOOT_TABLE, selected.lootTable()));
+        LootTable table = WorldShardLootCatalog.active().resolveLootTable(selected.lootTable());
+        if (table == LootTable.EMPTY) {
+            ImmortalStorageMod.LOG.warn("[Basin] resolved EMPTY table for {} (mode={})", selected.lootTable(), activeMode);
+        }
         LootParams.Builder paramsBuilder = new LootParams.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos));
-        UUID ownerId = basin.activation.owner();
+        UUID ownerId = activation.owner();
         if (ownerId != null) {
             ServerPlayer owner = com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.onlinePlayer(level.getServer(), ownerId);
             if (owner != null) {
@@ -150,17 +177,34 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
         }
         LootParams params = paramsBuilder.create(LootContextParamSets.CHEST);
         long lootSeed = TreasureBasinSeed.derive(
-                basin.basinId, level.dimension().location(), pos, basin.generationCycle,
+                basinId, level.dimension().location(), pos, generationCycle,
                 selected.sourceSeed(), selected.lootTable());
 
-        List<ItemStack> generated = multiplyOutputs(
-                table.getRandomItems(params, lootSeed), basin.reinforcementMultiplier());
-        WorldShardOutputRouter.RouteResult routed = basin.routeGenerated(level, generated);
-        if (routed.unaccepted() > 0L || routed.accepted() != routed.offered()) return;
+        // Roll the vanilla table, then run the NeoForge global-loot-modifier
+        // chain (where the 0.1.0 25% Ascension Dan, pill, and other injection
+        // modifiers live) so structure chests honor the same loot rules as a
+        // player opening the real chest.
+        // Set the queried loot-table id so NeoForge's loot_table_id GLM
+        // condition matches (the 25% Ascension Dan and pill injections gate on
+        // it); without this the modifier chain silently no-ops.
+        LootContext context = new LootContext.Builder(params)
+                .withOptionalRandomSeed(lootSeed)
+                .withQueriedLootTableId(selected.lootTable())
+                .create(Optional.empty());
+        ObjectArrayList<ItemStack> rolled = new ObjectArrayList<>();
+        table.getRandomItemsRaw(context, rolled::add);
+        int rolledBeforeGlm = rolled.size();
+        rolled = CommonHooks.modifyLoot(selected.lootTable(), rolled, context);
+        if (rolled.size() != rolledBeforeGlm) {
+            ImmortalStorageMod.LOG.info("[Basin] mode={} table={} glm {}->{} items",
+                    activeMode, selected.lootTable(), rolledBeforeGlm, rolled.size());
+        }
+        List<ItemStack> generated = new ArrayList<>(rolled);
+        WorldShardOutputRouter.RouteResult routed = routeGenerated(level, generated);
+        if (routed.unaccepted() > 0L || routed.accepted() != routed.offered()) return false;
 
-        basin.generationCycle = basin.generationCycle == Long.MAX_VALUE
-                ? 0L : basin.generationCycle + 1L;
-        basin.setChanged();
+        generationCycle = generationCycle == Long.MAX_VALUE ? 0L : generationCycle + 1L;
+        return true;
     }
 
     /** Routes loot through this basin's own state, never through the miner. */
@@ -251,10 +295,6 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
         setOutputBlock(false, false);
         setChanged();
         return drained;
-    }
-
-    static List<ItemStack> multiplyOutputs(List<ItemStack> source, int multiplier) {
-        return ReinforcementPluginHost.multiplyOutputs(source, multiplier);
     }
 
     private boolean pushCacheToFaces(ServerLevel level) {
@@ -420,6 +460,7 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
         tag.put(CACHE_TAG, cache.serializeNBT(registries));
         tag.putUUID(BASIN_ID_TAG, basinId);
         tag.putLong(CYCLE_TAG, generationCycle);
+        tag.putLong(SCHEDULE_PROGRESS_TAG, scheduleProgress);
         if (!plugin.isEmpty()) tag.put("ReinforcementPlugin", plugin.save(registries));
         tag.putBoolean("XianqiaoOutput", xianqiaoOutput);
         tag.putBoolean("AutomaticFaceOutput", automaticOutput);
@@ -442,6 +483,7 @@ public final class TreasureBasinBlockEntity extends BlockEntity implements Conta
         }
         if (tag.hasUUID(BASIN_ID_TAG)) basinId = tag.getUUID(BASIN_ID_TAG);
         generationCycle = Math.max(0L, tag.getLong(CYCLE_TAG));
+        scheduleProgress = Math.max(0L, tag.getLong(SCHEDULE_PROGRESS_TAG));
         plugin = tag.contains("ReinforcementPlugin")
                 ? ItemStack.parseOptional(registries, tag.getCompound("ReinforcementPlugin")) : ItemStack.EMPTY;
         xianqiaoOutput = !tag.contains("XianqiaoOutput") || tag.getBoolean("XianqiaoOutput");

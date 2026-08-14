@@ -1,5 +1,91 @@
 # Changelog
 
+## [0.1.0] - 2026-08-14
+
+### 简体中文（0.0.12 → 0.1.0）
+
+本节完整记录从 `0.0.12` 升级到 `0.1.0` 大版本的用户可见变化，两代 Minecraft（1.21.1 与 26.1.2）同步交付；不收录 0.1.0 开发期间的逐轮调试过程。
+
+#### 世界碎片采集器与聚宝盆
+
+- 聚宝盆结构宝箱战利品改为从世界 `LOOT_TABLE` 注册表动态发现所有 `chests/` 战利品表（替代硬编码白名单），天然覆盖远古城市、末地船、堡垒、村庄、沉船等全部结构宝箱，并自动纳入数据包与其他模组新增的结构宝箱。
+- 聚宝盆每周期战利品 roll 从「每次查询 reloadable 注册表」改为「数据包重载时预解析并缓存战利品表」，roll 变为纯内存查找，同时完整保留 NeoForge 全局战利品修饰器链（GLM）。
+- 修复聚宝盆无法产出末地船飞升丹的问题：战利品上下文的 queried loot-table id 现在正确设置为所 roll 的战利品表，使 `loot_table_id` GLM 条件（飞升丹 25%、各类丹药注入）正确匹配。
+- 飞升丹在末地船宝箱的产出概率调整为 25%，配置默认值与双语手册文案统一为「末地船」。
+- 新增公开附属 API：`api.worldshard.WorldShardApi` 与 `api.worldshard.WorldShardAddonRegistry`。附属模组可在启动阶段注册自定义矿物模式与战利品定义；数据包重载时合并 addon 贡献与数据包覆盖，程序化条目跨重载存活。
+
+#### 领域展开（随身空间）
+
+- 新增「领域展开」：非仙窍维度 shift+V 展开/收起，按修仙阶段提供 3×3×3 / 7×7×7 / 13×13×13 三种体积，中心即仙窍 (0,56,0)。
+- 展开采用无方块更新、无 NBT 变动的双向搬移，与「玩家在仙窍」状态互斥；展开区域边框固定在展开位置，不再跟随玩家移动。
+- 展开移走后仙窍内自动填世界胎壁，移回后移除。
+
+#### 世界胎壁与仙窍保护
+
+- 新增「世界胎壁」方块：混元一气双向合成、仅玩家可破坏、硬度与干草垛一致，模型使用半透明 render_type。
+- 仙窍维度禁止非玩家破坏（TNT、苦力怕、凋零等），保证个人仙窍不被环境破坏。
+
+#### 内置切石机
+
+- 空窍与仙窍终端新增内置切石机，与内置锻造台共用同一 tag 位置，界面内按钮切换；完整复刻原版切石机 UI（结果网格 + 滚动选择），26.1.2 走目标版本专用适配层。
+
+#### 仙窍时间流速与常加载
+
+- 修复跨维度调整时间流速不生效：仙窍维度在其他维度时也保持常加载，复用「中心区块 + 已修改区块」集合而非全维度，1x 与加速均保持加载，直至玩家离线或服务器停机。
+- 修复仙窍加速导致其他维度卡顿：额外加速 pass 只 tick 方块实体（机器），不再重复完整维度 tick，避免阻塞服务器主线程、影响其他维度的动画。
+- 26.1.2 为个人仙窍使用独立的 world clock（`immortalstorage:xianqiao_realm`），隔离玩家之间的仙窍时间与主世界时钟，避免一个玩家的加速影响他人。
+
+#### 阶段与交互
+
+- 1-5 阶进度显示改为可调按键（默认 T）；仙窍维度内 shift+V 传送至 (0,56,0)。
+
+#### 双版本与验证
+
+- 两代同步交付。1.21.1 门禁为 **222 suites / 807 tests / 0 failures**；26.1.2 门禁为 **221 suites / 797 tests / 0 failures**，均通过生产 JAR 边界、版本组成、精确制品与无 AE2 运行时验证。
+- 从 `0.0.12` 升级时请选择与游戏实例完全匹配的 JAR，并备份世界与配置；不要同时安装两个版本制品或保留旧版仙藏 JAR。
+
+### English (0.0.12 → 0.1.0)
+
+This section records the complete user-visible upgrade from `0.0.12` to the `0.1.0` major release, delivered for both Minecraft generations (1.21.1 and 26.1.2). Iterative internal debugging is omitted.
+
+#### World Shard Miner and Treasure Basin
+
+- Treasure Basin structure-chest loot now dynamically discovers every `chests/` loot table in the world `LOOT_TABLE` registry instead of a hard-coded whitelist, covering ancient cities, end ships, bastions, villages, shipwrecks, and datapack or third-party structure chests automatically.
+- The per-cycle Treasure Basin roll changed from a reloadable-registry lookup to eager pre-resolution and caching at datapack reload, making each roll a pure in-memory lookup while fully preserving the NeoForge global loot modifier chain (GLM).
+- Fixed the Treasure Basin failing to produce the End Ascension Dan: the loot context now sets the queried loot-table id to the rolled table, so the `loot_table_id` GLM condition (25% Ascension Dan and the pill injections) matches correctly.
+- The Ascension Dan drop chance in end-ship chests is now 25%, with the config default and bilingual handbook unified around "End Ship".
+- Added a public addon API: `api.worldshard.WorldShardApi` and `api.worldshard.WorldShardAddonRegistry`. Addons can register custom miner modes and loot definitions during startup; reload listeners merge addon contributions beneath datapack overrides, so programmatic entries survive reloads.
+
+#### Domain Expansion (portable space)
+
+- Added "Domain Expansion": press shift+V outside the realm to expand/collapse a 3×3×3 / 7×7×7 / 13×13×13 volume by stage, centered on the realm (0,56,0).
+- Expansion moves blocks bidirectionally with no block updates and no NBT changes, and is mutually exclusive with "player inside the realm"; the expansion border stays anchored to the expanded position instead of following the player.
+- After expansion moves away, the realm is filled with World Barrier; moving back removes it.
+
+#### World Barrier and realm protection
+
+- Added the World Barrier block: craftable both ways with Primordial Qi, only breakable by players, hardness matching hay bales, with a translucent render type.
+- The realm dimension forbids non-player destruction (TNT, creepers, withers, etc.), protecting personal realms from the environment.
+
+#### Built-in Stonecutter
+
+- Kongqiao and Xianqiao terminals now include a built-in stonecutter sharing the smithing-table tag slot, switched by an in-screen button; it reproduces the vanilla stonecutter UI (result grid + scroll selection), with a dedicated 26.1.2 adaptation layer.
+
+#### Xianqiao time flow and keep-loaded
+
+- Fixed cross-dimension time-flow adjustments having no effect: the realm stays force-loaded from other dimensions using the center-chunk-plus-modified-chunks set (not the whole dimension) at both 1x and accelerated rates, until the owner logs out or the server stops.
+- Fixed realm acceleration making other dimensions lag: extra accelerated passes now tick only block entities (machines) instead of repeating the full dimension tick, avoiding main-thread stalls.
+- 26.1.2 gives each personal realm its own world clock (`immortalstorage:xianqiao_realm`), isolating one player realm time and the overworld clock so one player acceleration cannot affect others.
+
+#### Stages and interaction
+
+- Stage 1-5 progression display moved to a configurable keybind (default T); shift+V inside the realm teleports to (0,56,0).
+
+#### Dual generation and verification
+
+- Delivered for both generations. The 1.21.1 gate passed **222 suites / 807 tests / 0 failures**; the 26.1.2 gate passed **221 suites / 797 tests / 0 failures**, each with production-JAR boundary, version-composition, exact-artifact, and no-AE2-runtime verification.
+- When upgrading from `0.0.12`, install only the JAR matching your exact game instance and back up worlds and configuration first; do not install both artifacts together or keep an older ImmortalStorage JAR.
+
 ## [0.0.12] - 2026-08-13
 
 ### 简体中文（0.0.11 → 0.0.12）

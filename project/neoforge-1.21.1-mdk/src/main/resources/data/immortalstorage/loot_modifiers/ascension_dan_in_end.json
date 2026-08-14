@@ -4,7 +4,7 @@
     { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/end_city_treasure" }
   ],
   "item": { "item": "immortalstorage:ascension_dan" },
-  "chance": 0.01,
+  "chance": 0.25,
   "minCount": 1,
   "maxCount": 1
 }

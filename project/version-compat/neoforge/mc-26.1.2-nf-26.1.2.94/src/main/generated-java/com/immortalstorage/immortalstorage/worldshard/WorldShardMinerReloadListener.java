@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.worldshard;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.immortalstorage.immortalstorage.api.worldshard.WorldShardAddonRegistry;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -43,10 +44,13 @@ public final class WorldShardMinerReloadListener extends SimpleJsonResourceReloa
                                 entry.getKey(), error.getMessage());
                     }
                 });
+        List<WorldShardMinerMode> base = new ArrayList<>(WorldShardMinerModes.builtinModes());
+        base.addAll(WorldShardAddonRegistry.minerModeOverrides());
         Map<Identifier, WorldShardMinerMode> merged =
-                WorldShardMinerModes.mergeDefinitions(WorldShardMinerModes.builtinModes(), overrides);
+                WorldShardMinerModes.mergeDefinitions(base, overrides);
         WorldShardMinerModes.install(merged.values(), registryAccess);
-        ImmortalStorageMod.LOG.info("Loaded {} world shard miner mode(s), generation {}",
-                merged.size(), WorldShardMinerModes.generation());
+        ImmortalStorageMod.LOG.info("Loaded {} world shard miner mode(s) ({} addon), generation {}",
+                merged.size(), base.size() - WorldShardMinerModes.builtinModes().size(),
+                WorldShardMinerModes.generation());
     }
 }

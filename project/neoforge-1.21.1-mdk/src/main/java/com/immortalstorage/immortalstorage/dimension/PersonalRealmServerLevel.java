@@ -1,5 +1,6 @@
 package com.immortalstorage.immortalstorage.dimension;
 
+import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkProgressListener;
@@ -106,7 +107,11 @@ final class PersonalRealmServerLevel extends ServerLevel {
         // normal server loop is the sole permitted entry into this scheduler.
         if (this.tickingRealm) return;
         var owner = RealmHelper.onlinePlayerForRealm(getServer(), this.ownerId);
-        if (owner == null || owner.level() != this) {
+        // Only an offline owner restores 1x.  While the owner is online in a
+        // different dimension the realm keeps its activated (possibly
+        // accelerated) tick budget, so a time-flow adjustment made from
+        // anywhere keeps ticking the realm.
+        if (owner == null) {
             this.tickBudget.restore();
         }
         if (owner != null) {
@@ -115,11 +120,23 @@ final class PersonalRealmServerLevel extends ServerLevel {
         }
         applyEnvironmentLock();
         int passes = this.tickBudget.consumePasses();
+        if ((getGameTime() & 0x7F) == 0) {
+            ImmortalStorageMod.LOG.info("[Realm] tick active={} scale={} passes={} ownerInRealm={}",
+                    this.tickBudget.active, this.tickBudget.scale, passes,
+                    owner != null && owner.level() == this);
+        }
         this.tickingRealm = true;
         try {
-            for (int pass = 0; pass < passes; pass++) {
-                if (pass > 0 && !this.tickBudget.active) break;
-                super.tick(hasTime);
+            // First pass is the full dimension tick (chunks/entities/block
+            // entities/weather); extra accelerated passes tick only block
+            // entities so the realm's machines run faster without repeating
+            // the full dimension tick and stalling the main server thread
+            // (which would make every other dimension lag).
+            super.tick(hasTime);
+            applyEnvironmentLock();
+            for (int pass = 1; pass < passes; pass++) {
+                if (!this.tickBudget.active) break;
+                this.tickBlockEntities();
                 applyEnvironmentLock();
             }
         } finally {

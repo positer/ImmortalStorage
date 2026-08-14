@@ -86,13 +86,15 @@ public class ImmortalStorageMod {
 
     private static void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(com.immortalstorage.immortalstorage.api.source.ImmortalStorageChargeProviders::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.api.worldshard.WorldShardApi::freezeRegistration);
     }
 
     @SubscribeEvent
     public void onAddReloadListener(net.neoforged.neoforge.event.AddReloadListenerEvent event) {
         event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardMinerReloadListener(
                 event.getRegistryAccess()));
-        event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener());
+        event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener(
+                event.getRegistryAccess()));
         event.addListener(new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
         event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
     }

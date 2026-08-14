@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.options.controls.ControlsScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
@@ -24,6 +25,8 @@ import org.lwjgl.glfw.GLFW;
 public final class ImmortalStorageKeybinds {
     public static final KeyMapping OPEN_STORAGE = new KeyMapping(
             "key.immortalstorage.open_storage", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.immortalstorage");
+    /** Toggles realm entry at stage 6+; shift+V expands/collapses the domain or
+     *  teleports to the realm center depending on the current dimension. */
     public static final KeyMapping OPEN_LINGQI_OR_REALM = new KeyMapping(
             "key.immortalstorage.lingqi_or_realm", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.immortalstorage");
     public static final KeyMapping TIME_FLOW = new KeyMapping(
@@ -31,6 +34,9 @@ public final class ImmortalStorageKeybinds {
     public static final KeyMapping SPECIAL_OPERATION = new KeyMapping(
             "key.immortalstorage.special_operation", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.immortalstorage");
+    /** Shows the stage-1..5 lingqi progress (and a stage 6+ summary) on request. */
+    public static final KeyMapping SHOW_PROGRESS = new KeyMapping(
+            "key.immortalstorage.show_progress", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_T, "key.categories.immortalstorage");
 
     public static void init(IEventBus modBus, IEventBus forgeBus) {
         modBus.addListener(ImmortalStorageKeybinds::registerKeys);
@@ -44,6 +50,7 @@ public final class ImmortalStorageKeybinds {
         e.register(OPEN_LINGQI_OR_REALM);
         e.register(TIME_FLOW);
         e.register(SPECIAL_OPERATION);
+        e.register(SHOW_PROGRESS);
     }
 
     @SubscribeEvent
@@ -56,18 +63,9 @@ public final class ImmortalStorageKeybinds {
 
         if (OPEN_STORAGE.consumeClick()) requestStorageOpen(p, d, null);
 
-        if (OPEN_LINGQI_OR_REALM.consumeClick()) {
-            if (d.getStage() >= 6) {
-                PacketDistributor.sendToServer(new ModPayloads.ToggleRealm());
-            } else if (d.getStage() >= 1) {
-                int cur = d.getLingqiProgress();
-                int cap = d.getLingqiCap();
-                p.displayClientMessage(Component.literal("Lingqi: " + cur + " / " + cap)
-                        .withStyle(ChatFormatting.AQUA), true);
-            } else {
-                p.displayClientMessage(Component.literal("Not cultivating yet").withStyle(ChatFormatting.RED), true);
-            }
-        }
+        if (OPEN_LINGQI_OR_REALM.consumeClick()) handleRealmOrDomain(p, d);
+
+        if (SHOW_PROGRESS.consumeClick()) showProgress(p, d);
 
         if (TIME_FLOW.consumeClick()) {
             if (d.getStage() < 7) {
@@ -78,6 +76,54 @@ public final class ImmortalStorageKeybinds {
                         .withStyle(ChatFormatting.YELLOW), true);
             }
         }
+    }
+
+    /**
+     * The realm-toggle bind (V).  shift+V expands/collapses the Domain outside
+     * the realm or teleports to the realm center inside it; plain V toggles
+     * realm entry at stage 6+.
+     */
+    private static void handleRealmOrDomain(Player p, ImmortalStoragePlayerData d) {
+        if (hasShiftDown()) {
+            if (inXianqiaoRealm(p)) {
+                PacketDistributor.sendToServer(new ModPayloads.RealmCenterTeleport());
+            } else {
+                PacketDistributor.sendToServer(new ModPayloads.DomainToggle());
+                com.immortalstorage.immortalstorage.client.render.DomainExpansionHighlight.toggle();
+            }
+            return;
+        }
+        if (d.getStage() >= 6) {
+            PacketDistributor.sendToServer(new ModPayloads.ToggleRealm());
+            return;
+        }
+        // Pre-ascension plain-V no longer prints lingqi; point the player at T.
+        if (d.getStage() >= 1) {
+            p.displayClientMessage(Component.literal("Press T for your cultivation progress")
+                    .withStyle(ChatFormatting.AQUA), true);
+        } else {
+            p.displayClientMessage(Component.literal("Not cultivating yet").withStyle(ChatFormatting.RED), true);
+        }
+    }
+
+    private static void showProgress(Player p, ImmortalStoragePlayerData d) {
+        if (d.getStage() >= 1 && d.getStage() <= 5) {
+            int cur = d.getLingqiProgress();
+            int cap = d.getLingqiCap();
+            p.displayClientMessage(Component.literal("Lingqi: " + cur + " / " + cap)
+                    .withStyle(ChatFormatting.AQUA), true);
+        } else if (d.getStage() >= 6) {
+            p.displayClientMessage(Component.literal("Stage " + d.getStage())
+                    .withStyle(ChatFormatting.GOLD), true);
+        } else {
+            p.displayClientMessage(Component.literal("Not cultivating yet").withStyle(ChatFormatting.RED), true);
+        }
+    }
+
+    private static boolean inXianqiaoRealm(Player p) {
+        ResourceLocation loc = p.level().dimension().location();
+        return "immortalstorage".equals(loc.getNamespace())
+                && loc.getPath().startsWith("xianqiao_realm/");
     }
 
     @SubscribeEvent

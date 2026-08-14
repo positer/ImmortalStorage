@@ -1,10 +1,14 @@
 package com.immortalstorage.immortalstorage.worldshard;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.immortalstorage.immortalstorage.api.worldshard.WorldShardAddonRegistry;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -18,8 +22,11 @@ public final class WorldShardLootReloadListener extends SimpleJsonResourceReload
     public static final String DIRECTORY = "world_shard_loot";
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
-    public WorldShardLootReloadListener() {
+    private final net.minecraft.core.RegistryAccess registryAccess;
+
+    public WorldShardLootReloadListener(net.minecraft.core.RegistryAccess registryAccess) {
         super(net.minecraft.util.ExtraCodecs.JSON, net.minecraft.resources.FileToIdConverter.json(DIRECTORY));
+        this.registryAccess = registryAccess;
     }
 
     @Override
@@ -40,10 +47,19 @@ public final class WorldShardLootReloadListener extends SimpleJsonResourceReload
                                 entry.getKey(), error.getMessage());
                     }
                 });
+        // Native discovery of every structure chest loot table (instead of a
+        // hard-coded whitelist); datapack entries override weights on top, and
+        // addon programmatic definitions sit beneath the datapack overrides.
+        List<WorldShardLootDefinition> discovered = WorldShardStructureLootScanner.discover(registryAccess);
+        List<WorldShardLootDefinition> base = new ArrayList<>(discovered);
+        base.addAll(WorldShardAddonRegistry.lootOverrides());
         Map<Identifier, WorldShardLootDefinition> merged = WorldShardLootCatalog.mergeDefinitions(
-                WorldShardLootCatalog.builtinDefinitions(), overrides);
-        WorldShardLootCatalog.install(merged.values());
-        ImmortalStorageMod.LOG.info("Loaded {} world shard loot-table entries from {} definitions",
-                merged.size(), resources.size());
+                base, overrides);
+        // Eagerly resolve every loot table once so the basin's per-cycle roll
+        // is a catalog lookup instead of a reloadable-registry lookup.
+        Registry<LootTable> lootTables = registryAccess.lookupOrThrow(Registries.LOOT_TABLE);
+        WorldShardLootCatalog.install(merged.values(), lootTables);
+        ImmortalStorageMod.LOG.info("Loaded {} world shard loot-table entries ({} discovered, {} addon, {} datapack override)",
+                merged.size(), discovered.size(), base.size() - discovered.size(), resources.size());
     }
 }

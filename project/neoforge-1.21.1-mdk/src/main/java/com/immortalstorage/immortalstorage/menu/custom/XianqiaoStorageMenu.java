@@ -48,6 +48,7 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidUtil;
 import net.neoforged.neoforge.items.wrapper.PlayerInvWrapper;
@@ -74,6 +75,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public static final int DEPOSIT_PLAYER_INVENTORY_BUTTON = 16;
     public static final int WITHDRAW_FILTERED_BUTTON = 17;
     public static final int MAGNET_BUTTON = 18;
+    /** Toggles the module-3 workspace between smithing and stonecutter views. */
+    public static final int SMITHING_VIEW_BUTTON = 19;
     public static final int CRAFT_START = VISIBLE_STORAGE_SLOTS;
     public static final int CRAFT_END = CRAFT_START + 9;
     public static final int CRAFT_RESULT_SLOT = CRAFT_END;
@@ -83,7 +86,11 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public static final int SMITHING_ADDITION_SLOT = SMITHING_START + 2;
     public static final int SMITHING_RESULT_SLOT = SMITHING_START + 3;
     public static final int SMITHING_END = SMITHING_START + 4;
-    public static final int FURNACE_START = SMITHING_END;
+    public static final int STONECUTTER_START = SMITHING_END;
+    public static final int STONECUTTER_INPUT_SLOT = STONECUTTER_START;
+    public static final int STONECUTTER_RESULT_SLOT = STONECUTTER_START + 1;
+    public static final int STONECUTTER_END = STONECUTTER_START + 2;
+    public static final int FURNACE_START = STONECUTTER_END;
     public static final int FURNACE_INPUT_SLOT = FURNACE_START;
     public static final int FURNACE_FUEL_SLOT = FURNACE_INPUT_SLOT + 1;
     public static final int FURNACE_RESULT_SLOT = FURNACE_FUEL_SLOT + 1;
@@ -116,7 +123,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 3, 3);
     private final ResultContainer resultSlots = new ResultContainer();
     private final EmbeddedSmithingBackend smithing;
+    private final EmbeddedStonecutterBackend stonecutter;
     private final EmbeddedImmortalFurnaceBackend furnace;
+    private boolean smithingViewActive = true;
     private final Player player;
     private TerminalQuery terminalQuery = TerminalQuery.DEFAULT;
     private List<TerminalEntry> filteredEntries = List.of();
@@ -164,6 +173,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         this.player = player;
         this.smithing = new EmbeddedSmithingBackend(this, player, data, true,
                 SMITHING_RESULT_SLOT, this::extractCraftingIngredient);
+        this.stonecutter = new EmbeddedStonecutterBackend(this, player, data, true,
+                STONECUTTER_RESULT_SLOT);
         this.storage = new AggregatedContainer(this);
         net.minecraft.server.MinecraftServer server = player instanceof ServerPlayer serverPlayer
                 ? serverPlayer.server : null;
@@ -205,6 +216,11 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
                 activeModule = value - 1;
             }
         });
+        this.addDataSlot(new DataSlot() {
+            @Override public int get() { return smithingViewActive ? 1 : 0; }
+            @Override public void set(int value) { smithingViewActive = value != 0; }
+        });
+        this.addDataSlot(stonecutter.selectedRecipeIndexSlot());
         this.addDataSlots(furnace.dataAccess());
         this.addDataSlot(new DataSlot() {
             @Override public int get() { return data.isCraftAutofillMatchComponents() ? 1 : 0; }
@@ -240,6 +256,8 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.BASE, 48, 129));
         addSlot(new SmithingModuleSlot(smithing.inputs, EmbeddedSmithingBackend.ADDITION, 66, 129));
         addSlot(new SmithingModuleResultSlot(smithing.result, 0, 120, 129));
+        addSlot(new StonecutterInputSlot(stonecutter.input, 0, 20, 129));
+        addSlot(new StonecutterResultSlot(stonecutter.result, 0, 143, 129));
         addSlot(new FurnaceModuleInputSlot(furnace, EmbeddedImmortalFurnaceBackend.INPUT,
                 FURNACE_INPUT_X, FURNACE_INPUT_Y));
         addSlot(new FurnaceModuleFuelSlot(furnace, EmbeddedImmortalFurnaceBackend.FUEL,
@@ -323,6 +341,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             if (!moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
         } else if (isSmithingSlotIndex(slotIndex)) {
             if (!isSmithingVisible() || !moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
+        } else if (isStonecutterSlotIndex(slotIndex)) {
+            if (!isStonecutterVisible() || !moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
+            if (slotIndex == STONECUTTER_RESULT_SLOT) slot.onQuickCraft(source, original);
         } else if (isFurnaceSlotIndex(slotIndex)) {
             if (!isFurnaceVisible()) return ItemStack.EMPTY;
             if (!moveItemStackTo(source, PLAYER_START, slots.size(), true)) return ItemStack.EMPTY;
@@ -330,6 +351,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         } else if (slotIndex >= PLAYER_START) {
             if (isSmithingVisible() && moveItemStackToSmithingInput(source)) {
                 // Inserted into the first compatible empty smithing slot.
+            } else if (isStonecutterVisible() && stonecutter.accepts(source)
+                    && moveItemStackTo(source, STONECUTTER_INPUT_SLOT, STONECUTTER_INPUT_SLOT + 1, false)) {
+                // Routed into the embedded stonecutter input.
             } else if (isFurnaceVisible()
                     && com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(source)) {
                 if (!moveItemStackTo(source, FURNACE_PLUGIN_SLOT, FURNACE_PLUGIN_SLOT + 1, false)) {
@@ -383,6 +407,30 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
 
     public static boolean isSmithingSlotIndex(int slotIndex) {
         return slotIndex >= SMITHING_START && slotIndex < SMITHING_END;
+    }
+
+    public static boolean isStonecutterSlotIndex(int slotIndex) {
+        return slotIndex >= STONECUTTER_START && slotIndex < STONECUTTER_END;
+    }
+
+    public java.util.List<RecipeHolder<StonecutterRecipe>> stonecutterRecipes() {
+        return stonecutter.getRecipes();
+    }
+
+    public int stonecutterRecipeCount() {
+        return stonecutter.getNumRecipes();
+    }
+
+    public int stonecutterSelectedIndex() {
+        return stonecutter.getSelectedRecipeIndex();
+    }
+
+    public boolean stonecutterHasInput() {
+        return stonecutter.hasInputItem();
+    }
+
+    public boolean selectStonecutterRecipe(int index) {
+        return stonecutter.selectRecipe(index);
     }
 
     public static boolean isFurnaceSlotIndex(int slotIndex) {
@@ -716,7 +764,10 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     }
     public boolean isFurnaceVisible() { return activeModule == 2; }
     public boolean isSmithingUnlocked() { return data.getStage() >= 4; }
-    public boolean isSmithingVisible() { return activeModule == 3 && isSmithingUnlocked(); }
+    public boolean isSmithingVisible() { return activeModule == 3 && isSmithingUnlocked() && smithingViewActive; }
+    public boolean isStonecutterUnlocked() { return data.getStage() >= 4; }
+    public boolean isStonecutterVisible() { return activeModule == 3 && isStonecutterUnlocked() && !smithingViewActive; }
+    public boolean isSmithingViewActive() { return smithingViewActive; }
     public boolean isFurnaceLit() { return furnace.isLit(); }
     public boolean isFurnaceAutoConsume() { return furnace.isAutoConsume(); }
     public boolean isFurnaceAutoFill() { return furnace.isAutoFill(); }
@@ -795,6 +846,16 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
             data.setMagnetEnabled(!data.isMagnetEnabled());
             broadcastChanges();
             return true;
+        }
+        if (buttonId == SMITHING_VIEW_BUTTON) {
+            if (activeModule != 3 || !isSmithingUnlocked()) return false;
+            smithingViewActive = !smithingViewActive;
+            broadcastChanges();
+            return true;
+        }
+        if (buttonId >= 20) {
+            if (!isStonecutterVisible()) return false;
+            return selectStonecutterRecipe(buttonId - 20);
         }
         if (buttonId < 0 || buttonId > 3) return false;
         if (buttonId == 3 && !isSmithingUnlocked()) return false;
@@ -937,6 +998,7 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         data.batchXianqiaoMutations(() -> {
             TerminalMenuSupport.returnCraftingItems(this, actor, craftSlots, data, true);
             smithing.returnInputs();
+            stonecutter.returnInputs();
         });
         if (!actor.level().isClientSide()) rebuildCatalog();
     }
@@ -1410,6 +1472,26 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         @Override public boolean mayPickup(Player actor) { return isActive() && smithing.mayTake(); }
         @Override public void onTake(Player actor, ItemStack stack) {
             smithing.onTake(actor, stack);
+            rebuildCatalog();
+            super.onTake(actor, stack);
+        }
+    }
+
+    private final class StonecutterInputSlot extends Slot {
+        private StonecutterInputSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isStonecutterVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return isActive() && stonecutter.accepts(stack); }
+        @Override public boolean mayPickup(Player actor) { return isActive() && super.mayPickup(actor); }
+        @Override public void setChanged() { super.setChanged(); if (isActive()) stonecutter.slotsChanged(); }
+    }
+
+    private final class StonecutterResultSlot extends Slot {
+        private StonecutterResultSlot(Container container, int index, int x, int y) { super(container, index, x, y); }
+        @Override public boolean isActive() { return isStonecutterVisible(); }
+        @Override public boolean mayPlace(ItemStack stack) { return false; }
+        @Override public boolean mayPickup(Player actor) { return isActive() && stonecutter.mayTake(); }
+        @Override public void onTake(Player actor, ItemStack stack) {
+            stonecutter.onTake(actor, stack);
             rebuildCatalog();
             super.onTake(actor, stack);
         }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "immortalstorage:primordial_qi" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:world_barrier"
+  }
+}

@@ -19,7 +19,7 @@ class ModDescriptionContractTest {
 
         assertTrue(properties.contains("cultivation progression, personal storage, automation"));
         assertTrue(properties.contains("persistent-player-bound realm"));
-        assertTrue(properties.contains("Version 0.0.12"));
+        assertTrue(properties.contains("Version 0.1.0"));
         assertTrue(properties.contains("stack-scaled simulated processing"));
         assertTrue(properties.contains("three reinforcement plugins"));
         assertTrue(properties.contains("configurable Treasure Basin output"));

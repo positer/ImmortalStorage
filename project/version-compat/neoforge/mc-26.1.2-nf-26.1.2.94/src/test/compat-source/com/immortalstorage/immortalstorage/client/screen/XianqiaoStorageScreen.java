@@ -41,6 +41,9 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     private boolean realmVisible;
     private boolean furnaceVisible;
     private boolean smithingVisible;
+    private boolean stonecutterVisible;
+    private final TerminalStonecutterGui stonecutterGui = new TerminalStonecutterGui();
+    private Button stonecutterToggleButton;
     private TerminalTabButton craftModuleButton;
     private TerminalTabButton furnaceModuleButton;
     private TerminalTabButton realmModuleButton;
@@ -101,6 +104,12 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         this.craftModuleButton.active = terminalUnlocked;
         this.furnaceModuleButton.active = terminalUnlocked;
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
+        this.stonecutterToggleButton = this.addRenderableWidget(Button.builder(
+                        stonecutterToggleLabel(), button -> requestMenuButton(XianqiaoStorageMenu.SMITHING_VIEW_BUTTON))
+                .bounds(this.leftPos + 30, this.topPos + TerminalLayout.craftGridY(this.imageHeight) - 8, 76, 16)
+                .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")))
+                .build());
+        updateStonecutterToggle();
         this.tribulateButton = this.addRenderableWidget(Button.builder(
                         Component.translatable("container.immortalstorage.terminal.tribulate"),
                         button -> ClientPacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)))
@@ -207,6 +216,12 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         }
         if (this.smithingVisible) VanillaGuiPainter.terminalSmithingModule(
                 graphics, this.leftPos, this.topPos, this.imageHeight);
+        if (this.stonecutterVisible) {
+            VanillaGuiPainter.terminalStonecutterModule(
+                    graphics, this.leftPos, this.topPos, this.imageHeight);
+            this.stonecutterGui.render(graphics, this, stonecutterAbsoluteSlotY(),
+                    mouseX, mouseY, this.menu.stonecutterSelectedIndex(), this.menu.stonecutterRecipes());
+        }
         if (this.realmVisible) {
             int panelX = this.leftPos + this.imageWidth + REALM_GAP;
             VanillaGuiPainter.panel(graphics, panelX, this.topPos + 18, REALM_WIDTH, REALM_HEIGHT);
@@ -231,6 +246,11 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     @Override
     public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
+        if (this.stonecutterVisible && this.stonecutterGui.renderTooltip(
+                graphics, this, stonecutterAbsoluteSlotY(), mouseX, mouseY,
+                this.menu.stonecutterRecipes())) {
+            return;
+        }
         Optional<FluidHover> fluidHover = immortalstorage$getFluidAt(mouseX, mouseY);
         if (fluidHover.isPresent()) {
             FluidHover hover = fluidHover.get();
@@ -347,6 +367,9 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         if (XianqiaoStorageMenu.isSmithingSlotIndex(menuIndex)) {
             return TerminalLayout.craftGridY(this.imageHeight) + 18;
         }
+        if (XianqiaoStorageMenu.isStonecutterSlotIndex(menuIndex)) {
+            return TerminalLayout.craftGridY(this.imageHeight) + 18;
+        }
         if (menuIndex >= XianqiaoStorageMenu.ARMOR_START && menuIndex < XianqiaoStorageMenu.ARMOR_END) {
             return TerminalLayout.inventoryY(this.imageHeight)
                     + (menuIndex - XianqiaoStorageMenu.ARMOR_START) * TerminalLayout.SLOT_PITCH;
@@ -366,6 +389,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     @Override
     protected boolean shouldRenderMenuSlot(int menuIndex) {
         if (XianqiaoStorageMenu.isSmithingSlotIndex(menuIndex)) return this.smithingVisible;
+        if (XianqiaoStorageMenu.isStonecutterSlotIndex(menuIndex)) return this.stonecutterVisible;
         if (XianqiaoStorageMenu.isFurnaceSlotIndex(menuIndex)) {
             return this.furnaceVisible;
         }
@@ -384,6 +408,11 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.stonecutterVisible && button == 0
+                && this.stonecutterGui.mouseClicked(mouseX, mouseY, this,
+                stonecutterAbsoluteSlotY(), this.menu.stonecutterRecipes())) {
+            return true;
+        }
         if (button == 0 || button == 1) {
             FluidCell cell = fluidCellAt(mouseX, mouseY);
             if (cell != null) {
@@ -732,8 +761,10 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         super.containerTick();
         reconcileServerViewport(this.menu.getVisibleRows(), this.menu.getBaseRow());
         int module = this.menu.getActiveModule();
+        boolean moduleThreeOpen = this.smithingVisible || this.stonecutterVisible;
         if ((module == 0) != this.craftingVisible || (module == 1) != this.realmVisible
-                || (module == 2) != this.furnaceVisible || (module == 3) != this.smithingVisible) applyModuleState(module);
+                || (module == 2) != this.furnaceVisible || (module == 3) != moduleThreeOpen
+                || (module == 3 && this.smithingVisible != this.menu.isSmithingViewActive())) applyModuleState(module);
         updateRealmWidgets();
     }
 
@@ -760,12 +791,55 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         boolean realmChanged = this.realmVisible != (module == 1);
         this.realmVisible = module == 1;
         this.furnaceVisible = module == 2;
-        this.smithingVisible = module == 3;
+        this.smithingVisible = module == 3 && this.menu.isSmithingViewActive();
+        this.stonecutterVisible = module == 3 && !this.menu.isSmithingViewActive();
         boolean rebuilt = setWorkspaceState(module == 0, module == 0 || module == 2 || module == 3);
         if (realmChanged && !rebuilt && this.minecraft != null) {
             this.rebuildWidgets();
         }
+        updateStonecutterToggle();
         updateRealmWidgets();
+    }
+
+    private int stonecutterSlotY() {
+        return TerminalLayout.craftGridY(this.imageHeight) + 18;
+    }
+
+    private int stonecutterAbsoluteSlotY() {
+        return this.topPos + stonecutterSlotY();
+    }
+
+    private Component stonecutterToggleLabel() {
+        return Component.translatable(this.menu.isSmithingViewActive()
+                ? "container.immortalstorage.terminal.stonecutter_switch"
+                : "container.immortalstorage.terminal.smithing_switch");
+    }
+
+    private void updateStonecutterToggle() {
+        if (this.stonecutterToggleButton == null) return;
+        boolean moduleThree = this.smithingVisible || this.stonecutterVisible;
+        this.stonecutterToggleButton.visible = moduleThree && this.menu.isSmithingUnlocked();
+        this.stonecutterToggleButton.active = this.stonecutterToggleButton.visible;
+        this.stonecutterToggleButton.setMessage(stonecutterToggleLabel());
+        if (!moduleThree) this.stonecutterGui.reset();
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (this.stonecutterVisible && this.stonecutterGui.mouseDragged(
+                mouseY, stonecutterAbsoluteSlotY(), this.menu.stonecutterRecipeCount())) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.stonecutterVisible && this.stonecutterGui.mouseScrolled(
+                scrollY, this.menu.stonecutterRecipeCount())) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private record FluidCell(int index,

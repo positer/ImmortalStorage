@@ -131,6 +131,9 @@ public final class RealmHelper {
             player.sendSystemMessage(Component.literal("You are not ready to enter the realm (need stage 6+)."));
             return false;
         }
+        // Mutual exclusion: a player whose domain is expanded must first collapse
+        // it before entering the realm, so both states can never coexist.
+        DomainExpansionManager.collapseFor(player);
         MinecraftServer server = player.level().getServer();
         if (server == null) return false;
         UUID realmId = realmId(player);
@@ -156,12 +159,27 @@ public final class RealmHelper {
 
         forceChunkIfNeeded(realm, realmId, CENTER_CHUNK_X, CENTER_CHUNK_Z, true);
 
-        // Teleport to the surface of this player's independent dimension origin.
-        double surfaceY = XianqiaoRealmChunkGenerator.TOP_Y + 1.0;
-        Set<Relative> rel = Relative.ALL;
-        player.teleportTo(realm, 8.0, surfaceY, 8.0,
+        // Teleport to the realm center. grass tops out at y=55 (XianqiaoRealmChunkGenerator.TOP_Y);
+        // the (0, 56, 0) center requested by the 0.1.0 spec refers to the air block above the grass.
+        double centerY = XianqiaoRealmChunkGenerator.TOP_Y;
+        Set<Relative> rel = Relative.ROTATION;
+        player.teleportTo(realm, 0.5, centerY, 0.5,
                 rel, player.getYRot(), player.getXRot(), false);
         player.sendSystemMessage(Component.literal("You have entered your Xianqiao (Realm)."));
+        return true;
+    }
+
+    /**
+     * Teleport the player to the fixed realm center (0, 56, 0).  Used by the
+     * in-realm shift+V bind.  No-op unless the player is already inside their
+     * own realm.
+     */
+    public static boolean teleportToRealmCenter(ServerPlayer player) {
+        if (player == null || !isInOwnRealm(player)) return false;
+        ServerLevel realm = (ServerLevel) player.level();
+        double centerY = XianqiaoRealmChunkGenerator.TOP_Y;
+        player.teleportTo(realm, 0.5, centerY, 0.5,
+                Relative.ROTATION, player.getYRot(), player.getXRot(), false);
         return true;
     }
 
@@ -190,14 +208,16 @@ public final class RealmHelper {
             target = server.overworld();
         }
 
-        // Restore normal time flow before leaving and release all owner tickets.
-        releaseRealmTickRate(server, realmId(player));
+        // Reconcile the tick rate and realm force-load before leaving; the
+        // dimension-change event re-applies it from the destination (the realm
+        // stays loaded at 1x as well as accelerated).
+        refreshRealmTickRate(player);
 
         BlockPos fallback = target.getRespawnData().pos();
         double x = data.hasExitPosition() ? data.getLastExitX() : fallback.getX() + 0.5;
         double y = data.hasExitPosition() ? data.getLastExitY() : fallback.getY() + 1.0;
         double z = data.hasExitPosition() ? data.getLastExitZ() : fallback.getZ() + 0.5;
-        Set<Relative> rel = Relative.ALL;
+        Set<Relative> rel = Relative.ROTATION;
         player.teleportTo(target, x, y, z, rel, player.getYRot(), player.getXRot(), false);
         data.clearExitPosition();
         player.sendSystemMessage(Component.literal("You have left your Xianqiao (Realm)."));
@@ -213,6 +233,16 @@ public final class RealmHelper {
         if (ADMIN_SUSPENDED_REALMS.contains(realmId)) return;
         if (!(player.level() instanceof ServerLevel realm)) return;
         if (!ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId)) return;
+        forceRealmChunksForced(player, realm);
+    }
+
+    /**
+     * Force-load the center chunk plus every player-modified chunk for {@code realm}.
+     * This is the authoritative "keep the realm ticking" set: only blocks the
+     * player has actually changed are held loaded, never the whole dimension.
+     */
+    private static void forceRealmChunksForced(ServerPlayer player, ServerLevel realm) {
+        UUID realmId = realmId(player);
         ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(player);
         forceChunkIfNeeded(realm, realmId, CENTER_CHUNK_X, CENTER_CHUNK_Z, false);
         for (long packed : data.getModifiedRealmChunks()) {
@@ -287,16 +317,33 @@ public final class RealmHelper {
         }
     }
 
-    /** Apply the stored scale only when the owner is inside their bound realm. */
+    /**
+     * Apply the stored scale and keep the owner's realm force-loaded.  Inside
+     * the realm this behaves as before.  From another dimension it reuses the
+     * center-chunk-plus-modified-chunks set (not the whole dimension) and stays
+     * loaded at 1x as well as accelerated, so a time-flow adjustment made from
+     * anywhere keeps affecting the realm.
+     */
     public static boolean refreshRealmTickRate(ServerPlayer player) {
         UUID realmId = realmId(player);
         if (ADMIN_SUSPENDED_REALMS.contains(realmId)) return false;
-        if (!(player.level() instanceof ServerLevel realm)
-                || !ImmortalStorageDimensions.isPersonalRealmFor(realm.dimension(), realmId)) {
-            releaseRealmTickRate(com.immortalstorage.immortalstorage.compat.mc2612.CompatLevel.server(player.level()), realmId);
+        ServerLevel current = player.level() instanceof ServerLevel level ? level : null;
+        boolean inRealm = current != null
+                && ImmortalStorageDimensions.isPersonalRealmFor(current.dimension(), realmId);
+        ServerLevel realm = inRealm ? current
+                : PersonalRealmLevelFactory.getOrCreate(com.immortalstorage.immortalstorage.compat.mc2612.CompatLevel.server(player.level()), realmId);
+        if (!(realm instanceof PersonalRealmServerLevel personal) || !personal.isBoundTo(realmId)) {
             return false;
         }
-        return activateRealmTickRate(player, realm);
+        if (!inRealm) {
+            // Hold the realm loaded from another dimension using the same
+            // center-chunk-plus-modified-chunks set as ensureChunksForced.
+            forceRealmChunksForced(player, realm);
+        }
+        boolean activated = activateRealmTickRate(player, realm);
+        ImmortalStorageMod.LOG.info("[Realm] refreshTickRate inRealm={} permille={} activated={}",
+                inRealm, ImmortalStoragePlayerData.get(player).getRealmTimeRatePermille(), activated);
+        return activated;
     }
 
     /** Apply the owner's persisted day/weather selection immediately when its realm is loaded. */

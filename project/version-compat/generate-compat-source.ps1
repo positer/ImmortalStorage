@@ -424,6 +424,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_miner"), new com.immortalstorage.immortalstorage.worldshard.WorldShardMinerReloadListener('),
         @('event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener())'),
+        @('event.addListener(new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener(',
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener('),
         @('event.addListener(new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "source_definitions"), new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener())'),
         @('event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())',
@@ -574,6 +576,20 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = [regex]::Replace($text,
             'biomeRegistry\.getTag\(mode\.targetBiomeTag\(\)\.orElseThrow\(\)\)\s*\.ifPresent\(tag -> tag\.forEach\(fromTag::add\)\);',
             'biomeRegistry.getTagOrEmpty(mode.targetBiomeTag().orElseThrow()).forEach(fromTag::add);')
+    }
+
+    if ($relativePath -match '[\\/]worldshard[\\/]WorldShardStructureLootScanner\.java$' -or
+        $relativePath -match '[\\/]worldshard[\\/]WorldShardLootReloadListener\.java$') {
+        # 26.1.2 把 RegistryAccess.registryOrThrow 重命名为 lookupOrThrow；
+        # 战利品目录和重载监听器都从 LOOT_TABLE registry 解析真实战利品表。
+        $text = $text.Replace('registryAccess.registryOrThrow(', 'registryAccess.lookupOrThrow(')
+    }
+
+    if ($relativePath -match '[\\/]worldshard[\\/]WorldShardLootCatalog\.java$') {
+        # 26.1.2 的 Registry#get(ResourceKey) 返回 Optional<Holder.Reference<T>> 而非
+        # 1.21.1 的 @Nullable T；把战利品表解析映射回可空表引用。
+        $text = $text.Replace('lootTables.get(ResourceKey.create(Registries.LOOT_TABLE, id))',
+            'lootTables.get(ResourceKey.create(Registries.LOOT_TABLE, id)).map(net.minecraft.core.Holder.Reference::value).orElse(null)')
     }
 
     if ($relativePath -match '[\\/]dimension[\\/]RealmHelper\.java$') {
@@ -1031,6 +1047,14 @@ function Transform-2612([string] $text, [string] $relativePath) {
             '')
         $text = [regex]::Replace($text,
             '(?s)\s*if\s*\(ModBlocks\.SOURCE_CRYSTAL\s*!=\s*null\)\s*\{.*?ItemBlockRenderTypes\.setRenderLayer\(.*?\);\s*\}',
+            '')
+        # World barrier follows the same 26.1 model-material pipeline; drop the
+        # removed global layer hook and rely on the block model's render_type.
+        $text = [regex]::Replace($text,
+            '(?s)\s*net\.minecraft\.client\.renderer\.ItemBlockRenderTypes\.setRenderLayer\(\s*ModBlocks\.WORLD_BARRIER\.get\(\),\s*net\.minecraft\.client\.renderer\.rendertype\.RenderType\.translucent\(\)\);',
+            '')
+        $text = [regex]::Replace($text,
+            '(?s)\s*ItemBlockRenderTypes\.setRenderLayer\(\s*ModBlocks\.WORLD_BARRIER\.get\(\),\s*(?:net\.minecraft\.client\.renderer\.)?RenderType\.translucent\(\)\);',
             '')
         $text = $text.Replace('import net.minecraft.client.renderer.item.ItemProperties;', '')
         $text = $text.Replace('import net.neoforged.neoforge.client.event.ModelEvent;',
@@ -2439,7 +2463,11 @@ $targetExcludedFragments = @(
       '/recipe/yuansubstitutionshapelessrecipe.java',
       '/recipe/yuansubstitutionrecipesupport.java',
       '/recipe/immortalfurnacerecipe.java',
-      '/recipe/modrecipes.java'
+      '/recipe/modrecipes.java',
+      # 结构模板矿石扫描器在 26.1.2 依赖已移除的 NbtIo.readCompressed/NbtAccounter，
+      # 且 canonical 端尚未被任何调用方接入（孤立半成品）；设计文档第 4 节的被动
+      # 区块观测才是结构矿物的完整解法，故目标版本不生成该文件。
+      '/worldshard/worldshardstructureorescanner.java'
   )
 $canonicalFiles = @(Get-ChildItem -LiteralPath $canonical -Filter '*.java' -Recurse -File |
     Where-Object {

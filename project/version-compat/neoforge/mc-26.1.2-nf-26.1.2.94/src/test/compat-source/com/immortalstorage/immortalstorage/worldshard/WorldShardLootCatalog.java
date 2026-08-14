@@ -1,11 +1,16 @@
 package com.immortalstorage.immortalstorage.worldshard;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,27 +19,83 @@ import java.util.Optional;
 public final class WorldShardLootCatalog {
     private static volatile WorldShardLootCatalog active = of(builtinDefinitions());
     private final Map<Identifier, List<WorldShardLootDefinition>> byMode;
+    private final Map<Identifier, LootTable> resolvedTables;
+    private final long generation;
 
-    private WorldShardLootCatalog(Map<Identifier, List<WorldShardLootDefinition>> byMode) {
+    private WorldShardLootCatalog(Map<Identifier, List<WorldShardLootDefinition>> byMode,
+                                  Map<Identifier, LootTable> resolvedTables, long generation) {
         this.byMode = byMode;
+        this.resolvedTables = resolvedTables;
+        this.generation = generation;
     }
 
     public static WorldShardLootCatalog active() {
         return active;
     }
 
+    /** Monotonic stamp incremented on every install; lets addons/UI detect a reload. */
+    public long generation() {
+        return generation;
+    }
+
     public static synchronized void install(Collection<WorldShardLootDefinition> definitions) {
-        active = of(definitions);
+        install(definitions, null);
+    }
+
+    /**
+     * Installs the catalog and eagerly resolves every referenced loot table from
+     * the current datapack registry so a roll never performs a per-cycle
+     * registry lookup. A {@code null} registry keeps the empty-lookup fallback
+     * for tests that build a catalog without a live server registry.
+     */
+    public static synchronized void install(Collection<WorldShardLootDefinition> definitions,
+                                            Registry<LootTable> lootTables) {
+        active = of(definitions, resolveTables(definitions, lootTables), nextGeneration(active));
     }
 
     public static WorldShardLootCatalog of(Collection<WorldShardLootDefinition> definitions) {
+        return of(definitions, Map.of(), 0L);
+    }
+
+    private static WorldShardLootCatalog of(Collection<WorldShardLootDefinition> definitions,
+                                            Map<Identifier, LootTable> resolvedTables,
+                                            long generation) {
         Map<Identifier, List<WorldShardLootDefinition>> grouped = new LinkedHashMap<>();
         definitions.stream().filter(definition -> definition.weight() > 0L)
                 .sorted(Comparator.comparing(d -> d.id().toString())).forEach(definition ->
                         grouped.computeIfAbsent(definition.mode(), ignored -> new ArrayList<>()).add(definition));
         Map<Identifier, List<WorldShardLootDefinition>> immutable = new LinkedHashMap<>();
         grouped.forEach((mode, entries) -> immutable.put(mode, List.copyOf(entries)));
-        return new WorldShardLootCatalog(Map.copyOf(immutable));
+        return new WorldShardLootCatalog(Map.copyOf(immutable),
+                Map.copyOf(resolvedTables), generation);
+    }
+
+    /** Returns the eagerly-resolved table for {@code id}, or {@link LootTable#EMPTY}. */
+    public LootTable resolveLootTable(Identifier id) {
+        LootTable table = resolvedTables.get(id);
+        return table != null ? table : LootTable.EMPTY;
+    }
+
+    /** All selectable definitions registered for {@code mode}, in stable id order. */
+    public List<WorldShardLootDefinition> definitions(Identifier mode) {
+        return byMode.getOrDefault(mode, List.of());
+    }
+
+    private static Map<Identifier, LootTable> resolveTables(
+            Collection<WorldShardLootDefinition> definitions, Registry<LootTable> lootTables) {
+        if (lootTables == null) return Map.of();
+        Map<Identifier, LootTable> resolved = new HashMap<>();
+        for (WorldShardLootDefinition definition : definitions) {
+            Identifier id = definition.lootTable();
+            if (resolved.containsKey(id)) continue;
+            LootTable table = lootTables.get(ResourceKey.create(Registries.LOOT_TABLE, id)).map(net.minecraft.core.Holder.Reference::value).orElse(null);
+            if (table != null) resolved.put(id, table);
+        }
+        return resolved;
+    }
+
+    private static long nextGeneration(WorldShardLootCatalog previous) {
+        return previous.generation() == Long.MAX_VALUE ? 0L : previous.generation() + 1L;
     }
 
     public Optional<WorldShardLootDefinition> select(Identifier mode, long randomTicket,

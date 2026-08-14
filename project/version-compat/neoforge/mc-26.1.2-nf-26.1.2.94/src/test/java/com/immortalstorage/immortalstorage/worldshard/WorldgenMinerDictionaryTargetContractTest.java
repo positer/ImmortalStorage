@@ -38,7 +38,8 @@ final class WorldgenMinerDictionaryTargetContractTest {
         assertTrue(dimension.get("attributes").getAsJsonObject()
                 .has("minecraft:gameplay/bed_rule"));
         assertEquals(false, dimension.get("has_ender_dragon_fight").getAsBoolean());
-        assertEquals("minecraft:overworld", dimension.get("default_clock").getAsString());
+        assertEquals("immortalstorage:xianqiao_realm", dimension.get("default_clock").getAsString(),
+                "the personal realm must own an isolated world clock so its accelerated tick never advances the overworld clock");
         assertEquals("#minecraft:in_overworld", dimension.get("timelines").getAsString());
         assertEquals(-64, dimension.get("min_y").getAsInt());
         assertEquals(384, dimension.get("height").getAsInt());
@@ -87,10 +88,18 @@ final class WorldgenMinerDictionaryTargetContractTest {
 
         String basin = Files.readString(generated.resolve(Path.of(
                 "block", "entity", "TreasureBasinBlockEntity.java")));
-        assertTrue(basin.contains("WorldShardLootCatalog.active()"));
-        assertTrue(basin.contains("reloadableRegistries().getLootTable("));
-        assertTrue(basin.contains("ResourceKey.create(Registries.LOOT_TABLE"));
-        assertTrue(basin.contains("table.getRandomItems(params, lootSeed)"));
+        // 聚宝盆每周期从世界碎片战利品目录的预解析表读取，不再每次 roll 都查
+        // reloadable registry；真实战利品表解析已下沉到 WorldShardLootCatalog。
+        assertTrue(basin.contains("WorldShardLootCatalog.active().resolveLootTable("));
+        assertFalse(basin.contains("reloadableRegistries().getLootTable("),
+                "the basin must resolve loot from the eager catalog, not per-roll reloadable registries");
+        assertTrue(basin.contains("table.getRandomItemsRaw(context, rolled::add)"));
+        assertTrue(basin.contains("CommonHooks.modifyLoot(selected.lootTable(), rolled, context)"));
+
+        String catalog = Files.readString(generated.resolve(Path.of(
+                "worldshard", "WorldShardLootCatalog.java")));
+        assertTrue(catalog.contains("ResourceKey.create(Registries.LOOT_TABLE, id)"),
+                "the catalog must eagerly resolve each loot table from the LOOT_TABLE registry");
     }
 
     @Test
@@ -105,6 +114,10 @@ final class WorldgenMinerDictionaryTargetContractTest {
         assertTrue(Files.isRegularFile(workspace.resolve(TARGET_ROOT).resolve(Path.of(
                 "src", "main", "resources", "data", "immortalstorage",
                 "worldgen", "biome", "xianqiao_realm.json"))));
+        assertTrue(Files.isRegularFile(workspace.resolve(TARGET_ROOT).resolve(Path.of(
+                "src", "main", "resources", "data", "immortalstorage",
+                "world_clock", "xianqiao_realm.json"))),
+                "the isolated realm world clock must be present in the target resources");
     }
 
     private static void assertOreTargets(JsonObject configured, String stone, String deepslate) {

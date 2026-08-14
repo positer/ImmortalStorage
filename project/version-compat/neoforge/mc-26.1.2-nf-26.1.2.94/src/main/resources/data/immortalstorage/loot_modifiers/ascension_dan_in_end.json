@@ -10,7 +10,7 @@
     "id": "immortalstorage:ascension_dan",
     "components": {}
   },
-  "chance": 0.01,
+  "chance": 0.25,
   "minCount": 1,
   "maxCount": 1
 }

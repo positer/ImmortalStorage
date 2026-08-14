@@ -157,16 +157,33 @@ public class CommonEvents {
     @SubscribeEvent
     public void onBlockBreak(BlockEvent.BreakEvent e) {
         markPersonalRealmModified(e.getLevel(), e.getPos());
+        Player player = e.getPlayer();
+        // World Barrier is player-only: reject every non-player breaker.
+        if (player == null && e.getLevel().getBlockState(e.getPos())
+                .is(com.immortalstorage.immortalstorage.block.ModBlocks.WORLD_BARRIER.get())) {
+            e.setCanceled(true);
+            return;
+        }
+        // Inside a personal realm, non-player breakers (wither, dragon, etc.) are rejected.
+        if (player == null && isPersonalRealm(e.getLevel())) {
+            e.setCanceled(true);
+            return;
+        }
         if (ImmortalStorageConfig.SOURCE_ALLOW_OTHER_PLAYER_BREAK.get()) return;
         if (!(e.getLevel() instanceof Level level)) return;
         if (level.isClientSide) return;
         if (!(level.getBlockEntity(e.getPos()) instanceof SourceVeinBlockEntity source)) return;
-        Player player = e.getPlayer();
         if (player instanceof ServerPlayer sp && sp.hasPermissions(2)) return;
         if (!source.isUnowned() && !com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.matches(player, source.getOwner())) {
             e.setCanceled(true);
             player.displayClientMessage(net.minecraft.network.chat.Component.literal("Only the source block owner can break it."), true);
         }
+    }
+
+    private static boolean isPersonalRealm(net.minecraft.world.level.LevelAccessor level) {
+        if (!(level instanceof ServerLevel serverLevel)) return false;
+        return com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions
+                .personalRealmOwner(serverLevel.dimension()).isPresent();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -243,6 +260,15 @@ public class CommonEvents {
         }
         if (ImmortalStorageConfig.SOURCE_ALLOW_MOB_BREAK.get()) return;
         if (e.getExplosion().getDirectSourceEntity() instanceof Player) return;
+        // World barrier is never destroyed by a non-player explosion, in any dimension.
+        e.getAffectedBlocks().removeIf(pos -> level.getBlockState(pos)
+                .is(com.immortalstorage.immortalstorage.block.ModBlocks.WORLD_BARRIER.get()));
+        // Inside a personal realm, non-player explosions (TNT, creeper, wither)
+        // may not destroy any block.
+        if (level instanceof ServerLevel && isPersonalRealm(level)) {
+            e.getAffectedBlocks().clear();
+            return;
+        }
         e.getAffectedBlocks().removeIf(pos -> level.getBlockEntity(pos) instanceof SourceVeinBlockEntity);
     }
 

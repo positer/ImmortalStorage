@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.worldshard;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class WorldShardLootCatalogTest {
@@ -92,6 +94,38 @@ final class WorldShardLootCatalogTest {
                 WorldShardLootCatalog.mergeDefinitions(List.of(builtin), List.of(removal));
 
         assertTrue(merged.isEmpty());
+    }
+
+    @Test
+    void definitionsListsOnlyTheRequestedModeInStableOrder() {
+        WorldShardLootDefinition overworldA = new WorldShardLootDefinition(
+                id("test:ow_a"), WorldShardMinerModes.OVERWORLD, id("test:table_a"), 2L);
+        WorldShardLootDefinition overworldB = new WorldShardLootDefinition(
+                id("test:ow_b"), WorldShardMinerModes.OVERWORLD, id("test:table_b"), 3L);
+        WorldShardLootDefinition nether = new WorldShardLootDefinition(
+                id("test:nether_a"), WorldShardMinerModes.NETHER, id("test:table_c"), 4L);
+        WorldShardLootCatalog catalog = WorldShardLootCatalog.of(
+                List.of(overworldB, overworldA, nether));
+
+        assertEquals(List.of(overworldA, overworldB), catalog.definitions(WorldShardMinerModes.OVERWORLD));
+        assertEquals(List.of(nether), catalog.definitions(WorldShardMinerModes.NETHER));
+        assertTrue(catalog.definitions(WorldShardMinerModes.END).isEmpty());
+    }
+
+    @Test
+    void resolveLootTableFallsBackToEmptyWithoutAServerRegistry() {
+        WorldShardLootCatalog catalog = WorldShardLootCatalog.of(List.of(
+                new WorldShardLootDefinition(id("test:ow"), WorldShardMinerModes.OVERWORLD,
+                        id("test:table_a"), 2L)));
+
+        assertSame(LootTable.EMPTY, catalog.resolveLootTable(id("test:table_a")));
+        assertSame(LootTable.EMPTY, catalog.resolveLootTable(id("test:missing")));
+    }
+
+    @Test
+    void generationStartsAtZeroForDirectlyBuiltCatalogs() {
+        WorldShardLootCatalog catalog = WorldShardLootCatalog.of(List.of());
+        assertEquals(0L, catalog.generation());
     }
 
 }

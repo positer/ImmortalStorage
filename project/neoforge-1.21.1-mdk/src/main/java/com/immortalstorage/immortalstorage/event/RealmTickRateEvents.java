@@ -31,10 +31,11 @@ public final class RealmTickRateEvents {
     @SubscribeEvent
     public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getFrom(), RealmHelper.realmId(player))) {
-            RealmHelper.releaseRealmTickRate(player.server, RealmHelper.realmId(player));
-        }
-        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getTo(), RealmHelper.realmId(player))) {
+        // Reconcile on both leaving and entering the realm: a non-1x stored rate
+        // keeps the realm force-loaded so the accelerated tick keeps running
+        // from another dimension, while 1x releases it.
+        if (ImmortalStorageDimensions.isPersonalRealmFor(event.getFrom(), RealmHelper.realmId(player))
+                || ImmortalStorageDimensions.isPersonalRealmFor(event.getTo(), RealmHelper.realmId(player))) {
             RealmHelper.refreshRealmTickRate(player);
         }
     }
