@@ -2,89 +2,129 @@
 
 ## [0.1.0] - 2026-08-14
 
-### 简体中文（0.0.12 → 0.1.0）
+### 简体中文（0.0.0 → 0.1.0 · 版本总览）
 
-本节完整记录从 `0.0.12` 升级到 `0.1.0` 大版本的用户可见变化，两代 Minecraft（1.21.1 与 26.1.2）同步交付；不收录 0.1.0 开发期间的逐轮调试过程。
+仙藏（ImmortalStorage）`0.1.0` 是首个大版本，面向 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94 双版本同步交付。以下按系统汇总从首个公开构建到 `0.1.0` 的全部内容。
 
-#### 世界碎片采集器与聚宝盆
+#### 一、修仙阶段与个人仙窍
 
-- 聚宝盆结构宝箱战利品改为从世界 `LOOT_TABLE` 注册表动态发现所有 `chests/` 战利品表（替代硬编码白名单），天然覆盖远古城市、末地船、堡垒、村庄、沉船等全部结构宝箱，并自动纳入数据包与其他模组新增的结构宝箱。
-- 聚宝盆每周期战利品 roll 从「每次查询 reloadable 注册表」改为「数据包重载时预解析并缓存战利品表」，roll 变为纯内存查找，同时完整保留 NeoForge 全局战利品修饰器链（GLM）。
-- 修复聚宝盆无法产出末地船飞升丹的问题：战利品上下文的 queried loot-table id 现在正确设置为所 roll 的战利品表，使 `loot_table_id` GLM 条件（飞升丹 25%、各类丹药注入）正确匹配。
-- 飞升丹在末地船宝箱的产出概率调整为 25%，配置默认值与双语手册文案统一为「末地船」。
-- 新增公开附属 API：`api.worldshard.WorldShardApi` 与 `api.worldshard.WorldShardAddonRegistry`。附属模组可在启动阶段注册自定义矿物模式与战利品定义；数据包重载时合并 addon 贡献与数据包覆盖，程序化条目跨重载存活。
+- 修仙阶段 1-10 阶，进度显示使用可调按键（默认 T）；阶段决定仙窍权限、外部资源与时间流速上限。
+- 个人仙窍：每位玩家独立的私人维度，绑定稳定持久玩家身份，可在其他维度间自由进出、传送至中心 (0,56,0)。
+- 仙窍存储终端：物品、流体、长整型额外资源统一管理，支持整理、存入、筛选取出。
+- 普通 / 高级仙窍接口：面向 AE2、Refined Storage 等外部存储的桥接。
+- 渡劫：阶段突破玩法。
+- 仙窍时间流速：加速仙窍内机器，跨维度生效并保持常加载；26.1.2 使用独立 world clock 隔离不同玩家。
+- 领域展开（0.1.0 新增）：非仙窍维度 shift+V 展开 3×3×3 / 7×7×7 / 13×13×13 随身空间，中心即仙窍 (0,56,0)，无方块更新、无 NBT 变动双向搬移。
 
-#### 领域展开（随身空间）
+#### 二、能量与源方块
 
-- 新增「领域展开」：非仙窍维度 shift+V 展开/收起，按修仙阶段提供 3×3×3 / 7×7×7 / 13×13×13 三种体积，中心即仙窍 (0,56,0)。
-- 展开采用无方块更新、无 NBT 变动的双向搬移，与「玩家在仙窍」状态互斥；展开区域边框固定在展开位置，不再跟随玩家移动。
-- 展开移走后仙窍内自动填世界胎壁，移回后移除。
+- 仙元 / 真元货币与能量体系。
+- 源方块：将世界中的方块 / 流体 / 物品转化为资源，输出 FE、魔力（Mana）、魔源（Source）等。
+- 免费资源源方块放置在仙窍中自动绑定所属玩家并进入存储索引。
 
-#### 世界胎壁与仙窍保护
+#### 三、机器
 
-- 新增「世界胎壁」方块：混元一气双向合成、仅玩家可破坏、硬度与干草垛一致，模型使用半透明 render_type。
-- 仙窍维度禁止非玩家破坏（TNT、苦力怕、凋零等），保证个人仙窍不被环境破坏。
+- 模拟灵田：加速作物生长。
+- 模拟轮回炼化炉：物品处理与淬火。
+- 仙能水晶：电力 / 魔力 / 魔源三种，共享 800,000,000 容量与 1,000/tick 产出。
+- 世界碎片采集器：按维度采集矿物。
+- 聚宝盆：采集结构宝箱战利品，动态发现世界战利品表（覆盖远古城市、末地船、堡垒等）。
+- 内置锻造台与内置切石机（0.1.0 新增）：空窍 / 仙窍终端内复用原版 UI。
 
-#### 内置切石机
+#### 四、灵器与物品
 
-- 空窍与仙窍终端新增内置切石机，与内置锻造台共用同一 tag 位置，界面内按钮切换；完整复刻原版切石机 UI（结果网格 + 滚动选择），26.1.2 走目标版本专用适配层。
+- 灵剑：一气归元剑（0%/淬火点）、普通灵剑（1%/淬火点）、仙墟锻灵剑（1.5%/淬火点）。
+- 拘灵器、替死傀儡、仙灵驱动器。
+- 强化插件：次元窥令（×4）、次元平行法符（×16）、大千世界并行敕令（×256），加速机器处理。
 
-#### 仙窍时间流速与常加载
+#### 五、丹药
 
-- 修复跨维度调整时间流速不生效：仙窍维度在其他维度时也保持常加载，复用「中心区块 + 已修改区块」集合而非全维度，1x 与加速均保持加载，直至玩家离线或服务器停机。
-- 修复仙窍加速导致其他维度卡顿：额外加速 pass 只 tick 方块实体（机器），不再重复完整维度 tick，避免阻塞服务器主线程、影响其他维度的动画。
-- 26.1.2 为个人仙窍使用独立的 world clock（`immortalstorage:xianqiao_realm`），隔离玩家之间的仙窍时间与主世界时钟，避免一个玩家的加速影响他人。
+- 飞升丹：末地船宝箱 25% 产出，用于突破阶段。
+- 突破丹、不朽丹、精炼丹：分别来自末地 / 下界 / 村庄战利品。
+- 玉简：考古战利品。
 
-#### 阶段与交互
+#### 六、迷你仙墟
 
-- 1-5 阶进度显示改为可调按键（默认 T）；仙窍维度内 shift+V 传送至 (0,56,0)。
+- 迷你仙墟系列：稳定化迷你仙墟、高级稳定化、纠缠、高级纠缠，作用范围 13×1×13 单层。
 
-#### 双版本与验证
+#### 七、世界胎壁与保护（0.1.0 新增）
 
-- 两代同步交付。1.21.1 门禁为 **222 suites / 807 tests / 0 failures**；26.1.2 门禁为 **221 suites / 797 tests / 0 failures**，均通过生产 JAR 边界、版本组成、精确制品与无 AE2 运行时验证。
-- 从 `0.0.12` 升级时请选择与游戏实例完全匹配的 JAR，并备份世界与配置；不要同时安装两个版本制品或保留旧版仙藏 JAR。
+- 世界胎壁：混元一气双向合成、仅玩家可破坏、硬度同干草垛。
+- 仙窍维度禁止非玩家破坏（TNT / 苦力怕 / 凋零等）。
 
-### English (0.0.12 → 0.1.0)
+#### 八、附属兼容
 
-This section records the complete user-visible upgrade from `0.0.12` to the `0.1.0` major release, delivered for both Minecraft generations (1.21.1 and 26.1.2). Iterative internal debugging is omitted.
+- Applied Energistics 2、Refined Storage：长整型 FE / 额外资源存储与交换磁盘。
+- Mekanism：化学品容器交互（阶段 8+）。
+- Botania：仙能魔力水晶、火花联动；Ars Nouveau：仙能魔源水晶、支配之杖。
+- JEI / EMI 配方查看；双语帕秋莉手册内置全部玩法说明。
 
-#### World Shard Miner and Treasure Basin
+#### 九、双版本与验证
 
-- Treasure Basin structure-chest loot now dynamically discovers every `chests/` loot table in the world `LOOT_TABLE` registry instead of a hard-coded whitelist, covering ancient cities, end ships, bastions, villages, shipwrecks, and datapack or third-party structure chests automatically.
-- The per-cycle Treasure Basin roll changed from a reloadable-registry lookup to eager pre-resolution and caching at datapack reload, making each roll a pure in-memory lookup while fully preserving the NeoForge global loot modifier chain (GLM).
-- Fixed the Treasure Basin failing to produce the End Ascension Dan: the loot context now sets the queried loot-table id to the rolled table, so the `loot_table_id` GLM condition (25% Ascension Dan and the pill injections) matches correctly.
-- The Ascension Dan drop chance in end-ship chests is now 25%, with the config default and bilingual handbook unified around "End Ship".
-- Added a public addon API: `api.worldshard.WorldShardApi` and `api.worldshard.WorldShardAddonRegistry`. Addons can register custom miner modes and loot definitions during startup; reload listeners merge addon contributions beneath datapack overrides, so programmatic entries survive reloads.
+- 两代同步交付：1.21.1 门禁 **222 suites / 807 tests / 0 failures**；26.1.2 门禁 **221 suites / 797 tests / 0 failures**，均通过生产 JAR 边界、版本组成、精确制品与无 AE2 运行时验证。
+- 从旧版升级时请选择与游戏实例完全匹配的 JAR，并备份世界与配置。
 
-#### Domain Expansion (portable space)
+### English (0.0.0 → 0.1.0 · release overview)
 
-- Added "Domain Expansion": press shift+V outside the realm to expand/collapse a 3×3×3 / 7×7×7 / 13×13×13 volume by stage, centered on the realm (0,56,0).
-- Expansion moves blocks bidirectionally with no block updates and no NBT changes, and is mutually exclusive with "player inside the realm"; the expansion border stays anchored to the expanded position instead of following the player.
-- After expansion moves away, the realm is filled with World Barrier; moving back removes it.
+ImmortalStorage `0.1.0` is the first major release, delivered for both Minecraft 1.21.1 / NeoForge 21.1.235 and Minecraft 26.1.2 / NeoForge 26.1.2.94. The sections below summarize everything from the first public build through `0.1.0`.
 
-#### World Barrier and realm protection
+#### 1. Cultivation stages and the personal realm
 
-- Added the World Barrier block: craftable both ways with Primordial Qi, only breakable by players, hardness matching hay bales, with a translucent render type.
-- The realm dimension forbids non-player destruction (TNT, creepers, withers, etc.), protecting personal realms from the environment.
+- Ten cultivation stages; the progression display uses a configurable key (default T). Stages gate realm access, external resources, and time-flow limits.
+- Personal Xianqiao: a private dimension per player, bound to a stable persistent identity, with entry/exit and a center teleport to (0,56,0).
+- Xianqiao storage terminal: unified items, fluids, and long-valued external resources with sort, deposit, and filtered withdraw.
+- Plain / Advanced Xianqiao Interfaces bridge to AE2, Refined Storage, and other external storage.
+- Tribulation: stage-breakthrough gameplay.
+- Realm time flow accelerates realm machines across dimensions and stays loaded; 26.1.2 uses isolated world clocks per player.
+- Domain Expansion (new in 0.1.0): shift+V outside the realm expands a 3×3×3 / 7×7×7 / 13×13×13 portable space centered on the realm, with no block updates and no NBT changes.
 
-#### Built-in Stonecutter
+#### 2. Energy and source veins
 
-- Kongqiao and Xianqiao terminals now include a built-in stonecutter sharing the smithing-table tag slot, switched by an in-screen button; it reproduces the vanilla stonecutter UI (result grid + scroll selection), with a dedicated 26.1.2 adaptation layer.
+- Immortal Yuan / True Yuan currency and energy.
+- Source Veins convert world blocks / fluids / items into FE, Mana, Source, and other resources.
+- Free-resource source veins placed in a realm bind to the owner and enter the storage index.
 
-#### Xianqiao time flow and keep-loaded
+#### 3. Machines
 
-- Fixed cross-dimension time-flow adjustments having no effect: the realm stays force-loaded from other dimensions using the center-chunk-plus-modified-chunks set (not the whole dimension) at both 1x and accelerated rates, until the owner logs out or the server stops.
-- Fixed realm acceleration making other dimensions lag: extra accelerated passes now tick only block entities (machines) instead of repeating the full dimension tick, avoiding main-thread stalls.
-- 26.1.2 gives each personal realm its own world clock (`immortalstorage:xianqiao_realm`), isolating one player realm time and the overworld clock so one player acceleration cannot affect others.
+- Simulated Spirit Field: accelerated crop growth.
+- Simulated Reincarnation Furnace: item processing and tempering.
+- Immortal Energy Crystals: electricity / mana / source variants sharing 800,000,000 capacity and 1,000/tick output.
+- World Shard Miner: dimension-scoped ore collection.
+- Treasure Basin: structure-chest loot collection with dynamic world loot-table discovery.
+- Built-in smithing table and stonecutter (new in 0.1.0) inside the Kongqiao / Xianqiao terminals.
 
-#### Stages and interaction
+#### 4. Instruments and items
 
-- Stage 1-5 progression display moved to a configurable keybind (default T); shift+V inside the realm teleports to (0,56,0).
+- Spirit swords: One-Qi Returning Origin Sword (0%/point), ordinary Spirit Sword (1%/point), Immortal-Ruin-Forged Spirit Sword (1.5%/point).
+- Soul Catcher, Substitute Puppet, Spirit Drive.
+- Reinforcement plugins: Dimensional Peeking Order (×4), Dimensional Parallel Talisman (×16), Great Thousand-World Parallel Edict (×256).
 
-#### Dual generation and verification
+#### 5. Pills
 
-- Delivered for both generations. The 1.21.1 gate passed **222 suites / 807 tests / 0 failures**; the 26.1.2 gate passed **221 suites / 797 tests / 0 failures**, each with production-JAR boundary, version-composition, exact-artifact, and no-AE2-runtime verification.
-- When upgrading from `0.0.12`, install only the JAR matching your exact game instance and back up worlds and configuration first; do not install both artifacts together or keep an older ImmortalStorage JAR.
+- Ascension Dan: 25% from end-ship chests, for stage breakthrough.
+- Breakthrough Pill, Immortal Pill, Refined Pill from end / nether / village loot.
+- Jade Guide from archaeology.
+
+#### 6. Miniature Immortal Ruins
+
+- Stabilized, Advanced Stabilized, Entangled, and Advanced Entangled ruins, each influencing a 13×1×13 single layer.
+
+#### 7. World Barrier and protection (new in 0.1.0)
+
+- World Barrier: Primordial Qi two-way craftable, player-only breakable, hay-bale hardness.
+- The realm dimension forbids non-player destruction (TNT, creepers, withers, etc.).
+
+#### 8. Addon compatibility
+
+- Applied Energistics 2 and Refined Storage: long-valued FE / external-resource storage and exchange media.
+- Mekanism: chemical container interaction (stage 8+).
+- Botania: Immortal Mana Crystal and Spark; Ars Nouveau: Immortal Source Crystal and Dominion Wand.
+- JEI / EMI recipe viewing; a bilingual Patchouli handbook documents all systems.
+
+#### 9. Dual generation and verification
+
+- Delivered for both generations: the 1.21.1 gate passed **222 suites / 807 tests / 0 failures**; the 26.1.2 gate passed **221 suites / 797 tests / 0 failures**, each with production-JAR boundary, version-composition, exact-artifact, and no-AE2-runtime verification.
+- When upgrading, install only the JAR matching your exact game instance and back up worlds and configuration first.
 
 ## [0.0.12] - 2026-08-13
 
