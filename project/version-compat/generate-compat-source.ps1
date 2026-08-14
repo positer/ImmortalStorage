@@ -86,10 +86,7 @@ function Convert-2612LootModifierNode([object] $node) {
             if ($property.Name -eq 'item' -and $property.Value -is [pscustomobject]) {
                 $itemProperties = @($property.Value.PSObject.Properties)
                 if ($itemProperties.Count -eq 1 -and $itemProperties[0].Name -eq 'item') {
-                    $converted['item'] = [ordered]@{
-                        id = [string] $itemProperties[0].Value
-                        components = [ordered]@{}
-                    }
+                    $converted['item'] = [string] $itemProperties[0].Value
                     continue
                 }
             }

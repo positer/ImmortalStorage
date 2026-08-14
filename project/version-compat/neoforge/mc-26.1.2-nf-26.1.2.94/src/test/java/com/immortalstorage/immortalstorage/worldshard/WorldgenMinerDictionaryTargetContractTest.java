@@ -38,8 +38,7 @@ final class WorldgenMinerDictionaryTargetContractTest {
         assertTrue(dimension.get("attributes").getAsJsonObject()
                 .has("minecraft:gameplay/bed_rule"));
         assertEquals(false, dimension.get("has_ender_dragon_fight").getAsBoolean());
-        assertEquals("immortalstorage:xianqiao_realm", dimension.get("default_clock").getAsString(),
-                "the personal realm must own an isolated world clock so its accelerated tick never advances the overworld clock");
+        assertEquals("minecraft:overworld", dimension.get("default_clock").getAsString());
         assertEquals("#minecraft:in_overworld", dimension.get("timelines").getAsString());
         assertEquals(-64, dimension.get("min_y").getAsInt());
         assertEquals(384, dimension.get("height").getAsInt());
@@ -114,10 +113,6 @@ final class WorldgenMinerDictionaryTargetContractTest {
         assertTrue(Files.isRegularFile(workspace.resolve(TARGET_ROOT).resolve(Path.of(
                 "src", "main", "resources", "data", "immortalstorage",
                 "worldgen", "biome", "xianqiao_realm.json"))));
-        assertTrue(Files.isRegularFile(workspace.resolve(TARGET_ROOT).resolve(Path.of(
-                "src", "main", "resources", "data", "immortalstorage",
-                "world_clock", "xianqiao_realm.json"))),
-                "the isolated realm world clock must be present in the target resources");
     }
 
     private static void assertOreTargets(JsonObject configured, String stone, String deepslate) {

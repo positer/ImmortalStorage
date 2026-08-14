@@ -145,9 +145,14 @@ final class PersonalRealmServerLevel extends ServerLevel {
         }
         this.tickingRealm = true;
         try {
-            for (int pass = 0; pass < passes; pass++) {
-                if (pass > 0 && !this.tickBudget.active) break;
-                super.tick(hasTime);
+            // First pass is the full dimension tick; extra accelerated passes
+            // tick only block entities so realm machines run faster without
+            // repeating the full dimension tick and stalling the main thread.
+            super.tick(hasTime);
+            applyEnvironmentLock();
+            for (int pass = 1; pass < passes; pass++) {
+                if (!this.tickBudget.active) break;
+                this.tickBlockEntities();
                 applyEnvironmentLock();
             }
         } finally {

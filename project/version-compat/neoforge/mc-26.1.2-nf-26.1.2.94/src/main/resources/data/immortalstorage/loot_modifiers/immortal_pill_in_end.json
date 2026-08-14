@@ -6,10 +6,7 @@
       "loot_table_id": "minecraft:chests/end_city_treasure"
     }
   ],
-  "item": {
-    "id": "immortalstorage:immortal_pill",
-    "components": {}
-  },
+  "item": "immortalstorage:immortal_pill",
   "chance": 0.5,
   "minCount": 1,
   "maxCount": 1

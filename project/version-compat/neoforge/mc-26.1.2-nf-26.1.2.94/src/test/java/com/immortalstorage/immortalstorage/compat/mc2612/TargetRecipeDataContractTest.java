@@ -51,7 +51,7 @@ final class TargetRecipeDataContractTest {
     }
 
     @Test
-    void targetLootModifiersAreIndividualFilesWithItemStackIds() throws IOException {
+    void targetLootModifiersAreIndividualFilesWithStringItemIds() throws IOException {
         Path workspace = locateWorkspace();
         Path targetLoot = workspace.resolve(TARGET_ROOT).resolve(Path.of(
                 "src", "main", "resources", "data", "immortalstorage", "loot_modifiers"));
@@ -67,11 +67,10 @@ final class TargetRecipeDataContractTest {
                     JsonObject modifier = json(file);
                     assertTrue(modifier.has("type"), file.toString());
                     if (modifier.has("item")) {
-                        JsonObject item = modifier.getAsJsonObject("item");
-                        assertTrue(item.has("id"), "26.1 ItemStack codec requires item.id");
-                        assertTrue(item.has("components"), "26.1 ItemStack codec requires item.components");
-                        assertTrue(item.get("components").isJsonObject(), "item.components must be an object");
-                        assertFalse(item.has("item"));
+                        assertTrue(modifier.get("item").isJsonPrimitive(),
+                                "26.1 add_item must use a string item id (holderByNameCodec, no bound components): " + file);
+                        assertTrue(modifier.get("item").getAsString().contains(":"),
+                                "item must be a namespaced id: " + file);
                     }
                 } catch (IOException exception) {
                     throw new RuntimeException(exception);

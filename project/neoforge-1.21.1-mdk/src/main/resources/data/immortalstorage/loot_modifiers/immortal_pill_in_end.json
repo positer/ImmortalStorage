@@ -3,7 +3,7 @@
   "conditions": [
     { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/end_city_treasure" }
   ],
-  "item": { "item": "immortalstorage:immortal_pill" },
+  "item": "immortalstorage:immortal_pill",
   "chance": 0.50,
   "minCount": 1,
   "maxCount": 1

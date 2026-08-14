@@ -3,7 +3,7 @@
   "conditions": [
     { "condition": "neoforge:loot_table_id", "loot_table_id": "minecraft:chests/nether_bridge" }
   ],
-  "item": { "item": "immortalstorage:breakthrough_pill" },
+  "item": "immortalstorage:breakthrough_pill",
   "chance": 0.20,
   "minCount": 2,
   "maxCount": 3

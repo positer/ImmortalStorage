@@ -6,10 +6,7 @@
       "loot_table_id": "minecraft:chests/end_city_treasure"
     }
   ],
-  "item": {
-    "id": "immortalstorage:ascension_dan",
-    "components": {}
-  },
+  "item": "immortalstorage:ascension_dan",
   "chance": 0.25,
   "minCount": 1,
   "maxCount": 1

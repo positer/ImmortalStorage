@@ -39,8 +39,7 @@ final class AscensionDanLootContractTest {
         JsonObject modifier = read("data/immortalstorage/loot_modifiers/ascension_dan_in_end.json");
         assertEquals("immortalstorage:add_item", modifier.get("type").getAsString());
         assertEquals(0.25f, modifier.get("chance").getAsFloat());
-        assertEquals("immortalstorage:ascension_dan",
-                modifier.getAsJsonObject("item").get("item").getAsString());
+        assertEquals("immortalstorage:ascension_dan", modifier.get("item").getAsString());
         String condition = modifier.getAsJsonArray("conditions").get(0).getAsJsonObject()
                 .get("loot_table_id").getAsString();
         assertEquals("minecraft:chests/end_city_treasure", condition);

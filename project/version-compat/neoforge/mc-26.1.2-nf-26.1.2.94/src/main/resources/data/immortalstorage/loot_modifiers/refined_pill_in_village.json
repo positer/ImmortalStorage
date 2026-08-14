@@ -27,10 +27,7 @@
       ]
     }
   ],
-  "item": {
-    "id": "immortalstorage:refined_pill",
-    "components": {}
-  },
+  "item": "immortalstorage:refined_pill",
   "chance": 0.2,
   "minCount": 3,
   "maxCount": 5
