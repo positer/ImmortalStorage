@@ -353,7 +353,7 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
         return slotIndex >= STONECUTTER_START && slotIndex < STONECUTTER_END;
     }
 
-    public java.util.List<RecipeHolder<StonecutterRecipe>> stonecutterRecipes() {
+    public net.minecraft.world.item.crafting.SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {
         return stonecutter.getRecipes();
     }
 
@@ -484,6 +484,10 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
     public boolean isStonecutterUnlocked() { return data.getStage() >= 4; }
     public boolean isStonecutterVisible() { return activeModule == 1 && isStonecutterUnlocked() && !smithingViewActive; }
     public boolean isSmithingViewActive() { return smithingViewActive; }
+
+    public void applyClientSmithingViewActive(boolean active) {
+        if (player.level().isClientSide()) smithingViewActive = active;
+    }
     public boolean isFurnaceUnlocked() { return isFurnaceUnlockedAtStage(data.getStage()); }
     public boolean isFurnaceVisible() { return activeModule == 2 && isFurnaceUnlocked(); }
     public boolean isFurnaceLit() { return furnace.isLit(); }

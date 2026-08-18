@@ -42,7 +42,6 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     private boolean smithingVisible;
     private boolean stonecutterVisible;
     private final TerminalStonecutterGui stonecutterGui = new TerminalStonecutterGui();
-    private Button stonecutterToggleButton;
     private TerminalTabButton craftModuleButton;
     private TerminalTabButton furnaceModuleButton;
     private TerminalTabButton realmModuleButton;
@@ -86,8 +85,10 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         this.smithingModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(1),
                 TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 4),
-                new ItemStack(Items.SMITHING_TABLE), smithingLabel, Tooltip.create(smithingLabel),
-                () -> this.smithingVisible, button -> selectModule(3)));
+                new ItemStack(Items.SMITHING_TABLE), smithingLabel,
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")),
+                () -> this.smithingVisible || this.stonecutterVisible,
+                button -> selectSmithingModule()));
         this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(2),
                 TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(2, 4),
@@ -103,12 +104,6 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         this.craftModuleButton.active = terminalUnlocked;
         this.furnaceModuleButton.active = terminalUnlocked;
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
-        this.stonecutterToggleButton = this.addRenderableWidget(Button.builder(
-                        stonecutterToggleLabel(), button -> requestMenuButton(XianqiaoStorageMenu.SMITHING_VIEW_BUTTON))
-                .bounds(this.leftPos + 30, this.topPos + TerminalLayout.craftGridY(this.imageHeight) - 8, 76, 16)
-                .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")))
-                .build());
-        updateStonecutterToggle();
         this.tribulateButton = this.addRenderableWidget(Button.builder(
                         Component.translatable("container.immortalstorage.terminal.tribulate"),
                         button -> PacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)))
@@ -277,7 +272,10 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, this.title, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
+        Component workspaceTitle = this.stonecutterVisible
+                ? Component.translatable("container.immortalstorage.terminal.stonecutter_title")
+                : this.title;
+        graphics.drawString(this.font, workspaceTitle, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
                 0xFF404040, false);
         graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX,
                 this.inventoryLabelY, 0xFF404040, false);
@@ -792,6 +790,16 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         applyModuleState(next);
     }
 
+    private void selectSmithingModule() {
+        if (this.menu.getActiveModule() != 3) {
+            selectModule(3);
+            return;
+        }
+        requestMenuButton(XianqiaoStorageMenu.SMITHING_VIEW_BUTTON);
+        this.menu.applyClientSmithingViewActive(!this.menu.isSmithingViewActive());
+        applyModuleState(3);
+    }
+
     private void applyModuleState(int module) {
         boolean realmChanged = this.realmVisible != (module == 1);
         this.realmVisible = module == 1;
@@ -802,7 +810,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         if (realmChanged && !rebuilt && this.minecraft != null) {
             this.rebuildWidgets();
         }
-        updateStonecutterToggle();
+        if (module != 3) this.stonecutterGui.reset();
         updateRealmWidgets();
     }
 
@@ -812,21 +820,6 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
 
     private int stonecutterAbsoluteSlotY() {
         return this.topPos + stonecutterSlotY();
-    }
-
-    private Component stonecutterToggleLabel() {
-        return Component.translatable(this.menu.isSmithingViewActive()
-                ? "container.immortalstorage.terminal.stonecutter_switch"
-                : "container.immortalstorage.terminal.smithing_switch");
-    }
-
-    private void updateStonecutterToggle() {
-        if (this.stonecutterToggleButton == null) return;
-        boolean moduleThree = this.smithingVisible || this.stonecutterVisible;
-        this.stonecutterToggleButton.visible = moduleThree && this.menu.isSmithingUnlocked();
-        this.stonecutterToggleButton.active = this.stonecutterToggleButton.visible;
-        this.stonecutterToggleButton.setMessage(stonecutterToggleLabel());
-        if (!moduleThree) this.stonecutterGui.reset();
     }
 
     @Override

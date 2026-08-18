@@ -10,12 +10,11 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 import net.minecraft.world.level.Level;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** 26.1.2 target override: stonecutter backend adapted to the 26.1 recipe APIs. */
@@ -31,7 +30,7 @@ final class EmbeddedStonecutterBackend {
     private final DataSlot selectedRecipeIndex = DataSlot.standalone();
     private final Level level;
     private boolean refreshing;
-    private List<RecipeHolder<StonecutterRecipe>> recipes = new ArrayList<>();
+    private SelectableRecipe.SingleInputSet<StonecutterRecipe> recipes = SelectableRecipe.SingleInputSet.empty();
     private ItemStack trackedInput = ItemStack.EMPTY;
 
     final SimpleContainer input = new SimpleContainer(1) {
@@ -56,10 +55,7 @@ final class EmbeddedStonecutterBackend {
 
     boolean accepts(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        if (!(player instanceof ServerPlayer serverPlayer)) return false;
-        var manager = com.immortalstorage.immortalstorage.compat.mc2612.CompatLevel.server(serverPlayer.level()).getRecipeManager();
-        return com.immortalstorage.immortalstorage.compat.mc2612.CompatRecipeAccess.getAllRecipesFor(manager, RecipeType.STONECUTTING).stream()
-                .anyMatch(holder -> holder.value().matches(new SingleRecipeInput(stack), level));
+        return level.recipeAccess().stonecutterRecipes().acceptsInput(stack);
     }
 
     DataSlot selectedRecipeIndexSlot() {
@@ -70,7 +66,7 @@ final class EmbeddedStonecutterBackend {
         return selectedRecipeIndex.get();
     }
 
-    List<RecipeHolder<StonecutterRecipe>> getRecipes() {
+    SelectableRecipe.SingleInputSet<StonecutterRecipe> getRecipes() {
         return recipes;
     }
 
@@ -106,25 +102,27 @@ final class EmbeddedStonecutterBackend {
     }
 
     private void setupRecipeList(ItemStack itemstack) {
-        recipes = new ArrayList<>();
+        recipes = SelectableRecipe.SingleInputSet.empty();
         selectedRecipeIndex.set(-1);
         result.setItem(RESULT, ItemStack.EMPTY);
         pushResultToRemote();
-        if (!itemstack.isEmpty() && player instanceof ServerPlayer serverPlayer) {
-            var manager = com.immortalstorage.immortalstorage.compat.mc2612.CompatLevel.server(serverPlayer.level()).getRecipeManager();
-            recipes = new ArrayList<>(com.immortalstorage.immortalstorage.compat.mc2612.CompatRecipeAccess
-                    .getRecipesFor(manager, RecipeType.STONECUTTING, createRecipeInput(input), level));
+        if (!itemstack.isEmpty()) {
+            recipes = level.recipeAccess().stonecutterRecipes().selectByInput(itemstack);
         }
     }
 
     void setupResultSlot() {
         ItemStack resultStack = ItemStack.EMPTY;
         if (!recipes.isEmpty() && isValidRecipeIndex(selectedRecipeIndex.get())) {
-            RecipeHolder<StonecutterRecipe> holder = recipes.get(selectedRecipeIndex.get());
-            ItemStack assembled = holder.value().assemble(createRecipeInput(input));
-            if (assembled.isItemEnabled(level.enabledFeatures())) {
-                result.setRecipeUsed(holder);
-                resultStack = assembled;
+            java.util.Optional<RecipeHolder<StonecutterRecipe>> selected = recipes.entries()
+                    .get(selectedRecipeIndex.get()).recipe().recipe();
+            if (selected.isPresent()) {
+                RecipeHolder<StonecutterRecipe> holder = selected.get();
+                ItemStack assembled = holder.value().assemble(createRecipeInput(input));
+                if (assembled.isItemEnabled(level.enabledFeatures())) {
+                    result.setRecipeUsed(holder);
+                    resultStack = assembled;
+                }
             }
         }
         result.setItem(RESULT, resultStack);

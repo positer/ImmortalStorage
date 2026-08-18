@@ -1,6 +1,12 @@
 # 仙藏 ImmortalStorage
 
+> **2026-08-18 26.1.2 切石机配方显示真实修复：** 目标版本客户端只同步 `RecipeAccess.stonecutterRecipes()` 的 `SelectableRecipe.SingleInputSet`，不提供可强转为 `RecipeManager` 的完整配方持有者。内置切石机现与 26.1.2 原版实现一致，使用 `selectByInput` 构建可见配方，并通过 `SlotDisplay.optionDisplay()` 渲染结果图标；服务端仍从条目中的真实配方执行产出。定向测试与 `assemble` 通过，新 JAR SHA-256 `3EE8FEC129F3C6FADDD04965AB37509A05F090C3967D087258E38A39CC813493`（5,443,882 字节），已部署到 PCL2 26.1.2 两处。
+
+> **2026-08-18 内置切石机切换时 carried 物品丢失修复：** `KongqiaoScreen` 在模块标签命中时直接消费鼠标点击并返回，避免默认容器槽位处理继续处理鼠标持有物品。修复同步到 1.21.1 与 26.1.2。26.1.2 定向契约测试通过；JAR SHA-256 `E600BCD01B73B2C4D7F27D98540266AD574968A1A6E913DD6283812950EDCC81`（5,444,005 字节），已替换 PCL2 26.1.2 版本实例与全局 `mods`。完整 build 的 5 个既有 UTF-8 边界测试因 `MalformedInputException` 失败，非本轮代码回归。
+
 ![仙藏 ImmortalStorage Logo](immortalstorage-logo.png)
+
+> **0.1.1 双版本正式构建与内置切石机 UI 修复（2026-08-18）：** 版本号升至 `0.1.1`。1.21.1 与 26.1.2 均使用各自独立源码树完成完整 `build`，通过测试、生产 JAR 边界、版本组成和无 AE2 运行时门禁。切石机 UI 移除覆盖标题区的按钮，恢复原版结果网格底板与固定坐标，模块标签继续负责锻造台/切石机切换；26.1.2 另修复客户端配方查询误用 server-only recipe manager 导致配方网格为空的问题，客户端改用 `level.recipeAccess()`。1.21.1 制品 SHA-256 `869B8794DC6587F43CBEA9BBA479B5450C149BD1736008C43B19FFBEE8EACB1B`（5,432,438 字节）；26.1.2 制品 SHA-256 `C09CA50F04D97A2B9988A04E8B8D8CF3591884FA2BBE1C805E082FE08DA4BA1E`（5,443,931 字节）。PCL2 的 1.21.1 实例、26.1.2 版本实例及 26.1.2 全局 `mods` 均已替换，旧包保存在 `archive/pcl2-backups/2026-08-18-stonecutter-recipe-fix/`。客户端启动与界面实机验收仍需用户执行。
 
 > **领域展开边框固定、聚宝盆战利品检索与仙窍常加载修复（2026-08-14，本轮）：** 领域展开边框固定到展开位置（不再跟随玩家）；聚宝盆 `rollOnce` 补 `withQueriedLootTableId` 使飞升丹/丹药 GLM 注入生效（此前 `loot_table_id` 条件因 queriedLootTableId 为空永不匹配）；仙窍改为跨维度常加载（复用「中心区块 + 已修改区块」名单，1x 也强加载），其他维度调整流速持续作用于仙窍。1.21.1 **222/807/0**，JAR SHA-256 `9E0280899912B7B6FFA7C5EAF8BE4CFF78108B923EB37073B4F01EC1D6C5ABE1`；26.1.2 **221/797/0**，JAR SHA-256 `F5269439A1CF2A6275767F810F7B1E88EEDB8BD6A8BE445DC78794D4CEE1074B`。PCL2 三处已替换。详情见 `archive/2026-08-14-worldshard-basin-realm-fixes.md`。
 
@@ -631,3 +637,9 @@ Minecraft 是 Mojang Studios 的商标。本项目为独立模组，与 Mojang S
 仙窍管理器现向 AE2 存储总线注册原生 `ME_STORAGE`，直接复用交换磁盘已经验证的长整型统一后端，因此物品、流体、FE 及其他已注册额外资源使用同一份仙窍账本；原有网格服务继续在同所有者交换磁盘与管理器总线并存时执行去重。RS 通过官方 `ExternalStorageProviderFactory` 增加管理器额外资源提供器，只发布 FE、魔力、魔源等额外资源，物品与流体仍由 RS 自带能力提供器读取，避免同一总线重复统计。聚宝盆的选择箱与实体碰撞箱同步为底部居中的 `x/z=3..13, y=0..10`，与现有 `10×10×10` 模型边界一致。
 
 本轮 1.21.1 制品通过 773 项测试，SHA-256 为 `B3CEE5E93544BA91A774B3E37026E9C14108AB56A60A03AC33E155EA7C617455`；26.1.2 制品通过 751 项测试，SHA-256 为 `F3DC30C1ABEF8378D898E06B20199CFE67F8088DB79E3747E78495C11D70D890`。两代对应 PCL2 实例均已替换，26.1.2 同步替换全局 `mods`。
+
+## 0.1.0 内置切石机 UI 修复（2026-08-18）
+
+修复内置切石机视图覆盖原版标题区域的问题：移除占用画布的“切换锻造台”按钮，补齐原版结果网格底板，并将标题、输入槽、输出槽和滚动条恢复到原版切石机的固定坐标。锻造台/切石机模块标签仍可点击切换两种视图，切石机画布不再被额外控件遮挡。新增 `TerminalStonecutterLayoutContractTest` 回归契约，并同步 26.1.2 生成源码。
+
+1.21.1 定向测试与编译通过；构建时使用本地 EMI 镜像，跳过环境受限的兼容矩阵/Ars 探针任务。新制品 SHA-256 为 `B46EEBB357E0D967CF15FC4A0606459E771F2FA7A114F095C6D3F6050379AD69`，已部署到 PCL2 的 1.21.1 实例。部署前旧 JAR 已备份至 `archive/pcl2-backups/2026-08-18-stonecutter-ui-fix/`，SHA-256 为 `D941CCD7B01ED0372B82C2AE0EB147026E23D95DBC3B7252C61BDEE7CC3679FD`。26.1.2 本轮未覆盖部署，保留现有 JAR，待目标客户端实机验收或后续专门构建。

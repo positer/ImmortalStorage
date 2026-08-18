@@ -487,6 +487,7 @@
   "container.immortalstorage.terminal.smithing": "Smithing Table",
   "container.immortalstorage.terminal.smithing_locked": "Smithing Table (Stage 4)",
   "container.immortalstorage.terminal.stonecutter_switch": "Stonecutter",
+  "container.immortalstorage.terminal.stonecutter_title": "Stonecutter",
   "container.immortalstorage.terminal.smithing_switch": "Smithing Table",
   "container.immortalstorage.terminal.stonecutter_toggle_hint": "Switch between smithing and stonecutter",
   "container.immortalstorage.terminal.magnet_on": "Magnet: On",

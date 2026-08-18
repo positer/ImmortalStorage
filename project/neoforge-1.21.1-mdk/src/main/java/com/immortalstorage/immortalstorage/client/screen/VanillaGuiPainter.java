@@ -223,6 +223,8 @@ final class VanillaGuiPainter {
 
     static void terminalStonecutterModule(GuiGraphics g, int x, int y, int h) {
         int slotY = TerminalLayout.craftGridY(h) + 18;
+        int gridTop = slotY - 19;
+        vanillaInset(g, x + 52, y + gridTop, 66, 56);
         slot(g, x + 20, y + slotY, true);
         slot(g, x + 143, y + slotY, true);
     }

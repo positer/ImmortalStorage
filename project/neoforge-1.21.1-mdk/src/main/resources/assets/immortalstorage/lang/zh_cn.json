@@ -487,6 +487,7 @@
   "container.immortalstorage.terminal.smithing": "锻造台",
   "container.immortalstorage.terminal.smithing_locked": "锻造台（四阶段启用）",
   "container.immortalstorage.terminal.stonecutter_switch": "切石机",
+  "container.immortalstorage.terminal.stonecutter_title": "切石机",
   "container.immortalstorage.terminal.smithing_switch": "锻造台",
   "container.immortalstorage.terminal.stonecutter_toggle_hint": "在锻造台与切石机之间切换",
   "container.immortalstorage.terminal.magnet_on": "磁铁：开启",

@@ -7,12 +7,12 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
-import java.util.List;
 
 /**
  * 26.1.2 target override: vanilla stonecutter result grid, scrollbar and
@@ -43,12 +43,14 @@ final class TerminalStonecutterGui {
         scrolling = false;
     }
 
-    private static ItemStack resultIcon(RecipeHolder<StonecutterRecipe> holder) {
-        return holder.value().assemble(new SingleRecipeInput(ItemStack.EMPTY));
+    private static ItemStack resultIcon(SelectableRecipe.SingleInputSet<StonecutterRecipe> recipes, int index) {
+        ContextMap context = SlotDisplayContext.fromLevel(Minecraft.getInstance().level);
+        return recipes.entries().get(index).recipe().optionDisplay().resolveForFirstStack(context);
     }
 
     void render(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, int absoluteSlotY,
-                int mouseX, int mouseY, int selectedIndex, List<RecipeHolder<StonecutterRecipe>> recipes) {
+                int mouseX, int mouseY, int selectedIndex,
+                SelectableRecipe.SingleInputSet<StonecutterRecipe> recipes) {
         int left = screen.getGuiLeft();
         int gridTop = absoluteSlotY - GRID_TOP_OFFSET;
         int recipesX = left + 52;
@@ -76,12 +78,12 @@ final class TerminalStonecutterGui {
                 background = RECIPE;
             }
             com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(graphics, background, x, y, IMAGE_W, IMAGE_H);
-            graphics.item(resultIcon(recipes.get(i)), x, y);
+            graphics.item(resultIcon(recipes, i), x, y);
         }
     }
 
     boolean renderTooltip(GuiGraphicsExtractor graphics, AbstractContainerScreen<?> screen, int absoluteSlotY,
-                          int mouseX, int mouseY, List<RecipeHolder<StonecutterRecipe>> recipes) {
+                          int mouseX, int mouseY, SelectableRecipe.SingleInputSet<StonecutterRecipe> recipes) {
         int left = screen.getGuiLeft();
         int gridTop = absoluteSlotY - GRID_TOP_OFFSET;
         for (int i = startIndex; i < startIndex + 12 && i < recipes.size(); i++) {
@@ -90,7 +92,7 @@ final class TerminalStonecutterGui {
             int y = gridTop + relative / COLUMNS * IMAGE_H + 1;
             if (mouseX >= x && mouseX < x + IMAGE_W && mouseY >= y && mouseY < y + IMAGE_H) {
                 Minecraft mc = Minecraft.getInstance();
-                ItemStack result = resultIcon(recipes.get(i));
+                ItemStack result = resultIcon(recipes, i);
                 com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(
                         graphics, mc.font, result.getHoverName(), mouseX, mouseY);
                 return true;
@@ -100,7 +102,7 @@ final class TerminalStonecutterGui {
     }
 
     boolean mouseClicked(double mouseX, double mouseY, AbstractContainerScreen<?> screen,
-                         int absoluteSlotY, List<RecipeHolder<StonecutterRecipe>> recipes) {
+                         int absoluteSlotY, SelectableRecipe.SingleInputSet<StonecutterRecipe> recipes) {
         scrolling = false;
         int left = screen.getGuiLeft();
         int gridTop = absoluteSlotY - GRID_TOP_OFFSET;

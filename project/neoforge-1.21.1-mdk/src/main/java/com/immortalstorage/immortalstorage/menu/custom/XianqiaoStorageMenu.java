@@ -768,6 +768,10 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     public boolean isStonecutterUnlocked() { return data.getStage() >= 4; }
     public boolean isStonecutterVisible() { return activeModule == 3 && isStonecutterUnlocked() && !smithingViewActive; }
     public boolean isSmithingViewActive() { return smithingViewActive; }
+
+    public void applyClientSmithingViewActive(boolean active) {
+        if (player.level().isClientSide()) smithingViewActive = active;
+    }
     public boolean isFurnaceLit() { return furnace.isLit(); }
     public boolean isFurnaceAutoConsume() { return furnace.isAutoConsume(); }
     public boolean isFurnaceAutoFill() { return furnace.isAutoFill(); }

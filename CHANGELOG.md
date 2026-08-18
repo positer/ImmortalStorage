@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.1] - 2026-08-18
+
+### 中文：双版本发布与内置切石机表现修复
+
+- 版本号升级至 `0.1.1`，同时交付 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94 制品。
+- 26.1.2 完成独立目标源码迁移构建，使用目标版本已发布联动 API/JAR，不编译或打包无官方目标制品的可选旧代联动。
+- 修复内置切石机 UI：移除覆盖标题区的额外切换按钮，恢复原版结果网格背景、标题、输入槽、输出槽和滚动条坐标。
+- 锻造台/切石机继续通过模块标签切换；新增切石机布局回归契约。
+- 修复内置切石机表现问题：恢复原版标题、输入槽、输出槽、滚动条及 4×3 配方网格背景与布局。
+- 修复 26.1.2 客户端配方读取：改用同步的 `SelectableRecipe.SingleInputSet` 与 `SlotDisplay`，现在输入物品后能正确显示配方图标。
+- 修复切换内置切石机时鼠标持有物品被误处理/丢失的问题；模块标签点击不再进入默认槽位点击路径。
+- 两代制品均已整理为正式发布资产；26.1.2 通过定向契约测试与 `assemble`，客户端实机验收待用户执行。
+
+### English: Dual-version release and embedded stonecutter behavior fixes
+
+- Version `0.1.1` ships artifacts for Minecraft 1.21.1 / NeoForge 21.1.235 and Minecraft 26.1.2 / NeoForge 26.1.2.94.
+- The embedded stonecutter presentation is fixed: vanilla title, input slot, output slot, scrollbar, and the 4×3 recipe-grid background/layout are restored.
+- The 26.1.2 client recipe path now uses the synchronized `SelectableRecipe.SingleInputSet` and `SlotDisplay` data, so recipe icons appear when an input is inserted.
+- Switching the embedded stonecutter while holding an item no longer routes the module-tab click through vanilla slot handling, preventing the carried item from being lost.
+- Both version artifacts are prepared as release assets; the 26.1.2 target passed the focused contract test and `assemble`. In-game acceptance remains user-side.
+
 ## [0.1.0] - 2026-08-14
 
 ### 简体中文（0.0.0 → 0.1.0 · 版本总览）

@@ -5,8 +5,8 @@ import com.immortalstorage.immortalstorage.block.ModBlocks;
 import com.immortalstorage.immortalstorage.menu.custom.KongqiaoMenu;
 import com.immortalstorage.immortalstorage.api.storage.terminal.TerminalQuery;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,7 +27,6 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
     private Button autoFurnaceFillButton;
     private Button autoFurnaceFuelButton;
     private Button magnetButton;
-    private Button stonecutterToggleButton;
 
     public KongqiaoScreen(KongqiaoMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -54,8 +53,10 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         this.smithingModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(1),
                 TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(1, 3),
-                new ItemStack(Items.SMITHING_TABLE), smithingLabel, Tooltip.create(smithingLabel),
-                () -> this.smithingVisible, button -> selectModule(1)));
+                new ItemStack(Items.SMITHING_TABLE), smithingLabel,
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")),
+                () -> this.smithingVisible || this.stonecutterVisible,
+                button -> selectSmithingModule()));
         this.furnaceModuleButton = this.addRenderableWidget(new TerminalTabButton(
                 railX, this.topPos + TerminalLayout.moduleTabY(2),
                 TerminalTabStyle.Side.LEFT, TerminalTabStyle.segment(2, 3),
@@ -64,12 +65,6 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         this.craftModuleButton.active = this.menu.isCraftingUnlocked();
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
         this.furnaceModuleButton.active = this.menu.isFurnaceUnlocked();
-        this.stonecutterToggleButton = this.addRenderableWidget(Button.builder(
-                        stonecutterToggleLabel(), button -> requestMenuButton(KongqiaoMenu.SMITHING_VIEW_BUTTON))
-                .bounds(this.leftPos + 30, this.topPos + TerminalLayout.craftGridY(this.imageHeight) - 8, 76, 16)
-                .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.terminal.stonecutter_toggle_hint")))
-                .build());
-        updateStonecutterToggle();
         this.autoFurnaceFillButton = this.addRenderableWidget(Button.builder(
                         autoFurnaceFillLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FILL_BUTTON))
                 .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 72, 16)
@@ -167,7 +162,10 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, this.title, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
+        Component workspaceTitle = this.stonecutterVisible
+                ? Component.translatable("container.immortalstorage.terminal.stonecutter_title")
+                : this.title;
+        graphics.text(this.font, workspaceTitle, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
                 0xFF404040, false);
         graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX,
                 this.inventoryLabelY, 0xFF404040, false);
@@ -315,31 +313,35 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         applyModuleState(next);
     }
 
+    private void selectSmithingModule() {
+        if (this.menu.getActiveModule() != 1) {
+            selectModule(1);
+            return;
+        }
+        requestMenuButton(KongqiaoMenu.SMITHING_VIEW_BUTTON);
+        this.menu.applyClientSmithingViewActive(!this.menu.isSmithingViewActive());
+        applyModuleState(1);
+    }
+
     private void applyModuleState(int module) {
         this.smithingVisible = module == 1 && this.menu.isSmithingViewActive();
         this.stonecutterVisible = module == 1 && !this.menu.isSmithingViewActive();
         this.furnaceVisible = module == 2;
         setWorkspaceState(module == 0, module >= 0 && module <= 2);
-        updateStonecutterToggle();
-    }
-
-    private Component stonecutterToggleLabel() {
-        return Component.translatable(this.menu.isSmithingViewActive()
-                ? "container.immortalstorage.terminal.stonecutter_switch"
-                : "container.immortalstorage.terminal.smithing_switch");
-    }
-
-    private void updateStonecutterToggle() {
-        if (this.stonecutterToggleButton == null) return;
-        boolean moduleOne = this.smithingVisible || this.stonecutterVisible;
-        this.stonecutterToggleButton.visible = moduleOne && this.menu.isSmithingUnlocked();
-        this.stonecutterToggleButton.active = this.stonecutterToggleButton.visible;
-        this.stonecutterToggleButton.setMessage(stonecutterToggleLabel());
-        if (!moduleOne) this.stonecutterGui.reset();
+        if (module != 1) this.stonecutterGui.reset();
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Module tabs are controls, never container slots. Consume the click
+        // before AbstractContainerScreen can run carried-item slot handling;
+        // otherwise switching views while holding an item may clear the
+        // client carried stack.
+        if (button == 0 && this.smithingModuleButton != null
+                && this.smithingModuleButton.isMouseOver(mouseX, mouseY)) {
+            selectSmithingModule();
+            return true;
+        }
         if (this.stonecutterVisible && button == 0) {
             if (this.stonecutterGui.mouseClicked(mouseX, mouseY, this, stonecutterAbsoluteSlotY(),
                     this.menu.stonecutterRecipes())) {
