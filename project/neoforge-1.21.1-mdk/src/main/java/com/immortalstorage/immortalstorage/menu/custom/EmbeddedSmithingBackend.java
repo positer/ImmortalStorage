@@ -89,6 +89,9 @@ final class EmbeddedSmithingBackend {
         crafted.onCraftedBy(actor.level(), actor, crafted.getCount());
         result.awardUsedRecipes(actor, before);
         for (int slot = 0; slot < inputs.getContainerSize(); slot++) {
+            if (slot == BASE && crafted.is(com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get())) {
+                continue;
+            }
             ItemStack stack = inputs.getItem(slot);
             if (!stack.isEmpty()) stack.shrink(1);
         }

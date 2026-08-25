@@ -1,0 +1,13 @@
+{
+  "name":"Create: Nurturing Airflow",
+  "icon":"create:encased_fan",
+  "category":"immortalstorage:compat",
+  "sortnum":20,
+  "flag":"mod:create",
+  "pages":[
+    {"type":"patchouli:text","text":"When Create is installed, ImmortalStorage registers the independent $(thing)Nurturing$() fan-processing type. Create is not a prerequisite: without it, this entry, the processing type, and its displays are all hidden."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:true_yuan_light,immortalstorage:immortal_yuan_light","title":"Placed Catalysts","text":"Place the True Yuan or Immortal Yuan world form in front of an Encased Fan to create a cyan-white airflow with matching particles."},
+    {"type":"patchouli:text","title":"Processing and Creatures","text":"Nurturing airflow reads every Immortal Furnace recipe from the active datapacks, so recipe additions and removals are reflected automatically. Players and other living creatures inside its affected range continuously receive Regeneration V."},
+    {"type":"patchouli:text","title":"Version Boundary","text":"Create 6.0.10 is officially available for Minecraft 1.21.1 / NeoForge, so that target enables this integration. No official Minecraft 26.1.2 NeoForge Create artifact currently exists; the target does not borrow the old API and keeps the integration hidden until one is published."}
+  ]
+}

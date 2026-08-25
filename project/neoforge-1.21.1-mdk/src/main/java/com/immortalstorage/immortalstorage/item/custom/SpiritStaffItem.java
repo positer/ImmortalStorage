@@ -12,6 +12,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -21,13 +22,17 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -41,11 +46,25 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.Slot;
+import net.neoforged.neoforge.common.ItemAbility;
 
 import java.util.List;
 
 /** Five-mode server-authoritative Spirit Staff. */
 public class SpiritStaffItem extends Item {
+    private static final ResourceLocation ARTIFACT_WRENCH_ENTITY_REACH_ID = ResourceLocation.fromNamespaceAndPath(
+            "immortalstorage", "immortal_artifact_wrench_entity_reach");
+    private static final ResourceLocation ARTIFACT_WRENCH_BLOCK_REACH_ID = ResourceLocation.fromNamespaceAndPath(
+            "immortalstorage", "immortal_artifact_wrench_block_reach");
+    private static final AttributeModifier ARTIFACT_WRENCH_ENTITY_REACH = new AttributeModifier(
+            ARTIFACT_WRENCH_ENTITY_REACH_ID, 5.0D, AttributeModifier.Operation.ADD_VALUE);
+    private static final AttributeModifier ARTIFACT_WRENCH_BLOCK_REACH = new AttributeModifier(
+            ARTIFACT_WRENCH_BLOCK_REACH_ID, 5.0D, AttributeModifier.Operation.ADD_VALUE);
+    private static final ItemAbility PICKAXE_DIG = ItemAbility.get("pickaxe_dig");
+    private static final ItemAbility AXE_DIG = ItemAbility.get("axe_dig");
+    private static final ItemAbility SHOVEL_DIG = ItemAbility.get("shovel_dig");
+    private static final ItemAbility HOE_DIG = ItemAbility.get("hoe_dig");
+    private static final ItemAbility SHEARS_DIG = ItemAbility.get("shears_dig");
     public static final int MODE_EXPLORE = 0;
     public static final int MODE_WRENCH = 1;
     public static final int MODE_PICK = 2;
@@ -55,7 +74,11 @@ public class SpiritStaffItem extends Item {
     public static final int DEFAULT_TELEPORT_DISTANCE = 20;
 
     public SpiritStaffItem(Item.Properties props) {
-        super(props.durability(3000));
+        this(props, false);
+    }
+
+    protected SpiritStaffItem(Item.Properties props, boolean immortalArtifact) {
+        super(immortalArtifact ? props.stacksTo(1) : props.durability(3000));
     }
 
     @Override
@@ -66,6 +89,42 @@ public class SpiritStaffItem extends Item {
     @Override
     public int getEnchantmentValue(ItemStack stack) {
         return 0;
+    }
+
+    @Override
+    public ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        if (!isArtifactWrench(stack)) return super.getDefaultAttributeModifiers(stack);
+        return ItemAttributeModifiers.builder()
+                .add(Attributes.ENTITY_INTERACTION_RANGE,
+                        ARTIFACT_WRENCH_ENTITY_REACH, EquipmentSlotGroup.HAND)
+                .add(Attributes.BLOCK_INTERACTION_RANGE,
+                        ARTIFACT_WRENCH_BLOCK_REACH, EquipmentSlotGroup.HAND)
+                .build();
+    }
+
+    /**
+     * Item component changes do not necessarily rebuild the held-equipment
+     * attribute map. Reconcile the mode-sensitive reach explicitly on both
+     * logical sides so switching this same stack to wrench mode immediately
+     * updates the client crosshair and the server interaction check.
+     */
+    public static void reconcileArtifactWrenchReach(Player player) {
+        boolean active = isArtifactWrench(player.getMainHandItem())
+                || isArtifactWrench(player.getOffhandItem());
+        reconcileReach(player.getAttribute(Attributes.ENTITY_INTERACTION_RANGE),
+                ARTIFACT_WRENCH_ENTITY_REACH_ID, ARTIFACT_WRENCH_ENTITY_REACH, active);
+        reconcileReach(player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE),
+                ARTIFACT_WRENCH_BLOCK_REACH_ID, ARTIFACT_WRENCH_BLOCK_REACH, active);
+    }
+
+    private static void reconcileReach(net.minecraft.world.entity.ai.attributes.AttributeInstance attribute,
+                                       ResourceLocation id, AttributeModifier modifier, boolean active) {
+        if (attribute == null) return;
+        if (active) {
+            if (attribute.getModifier(id) == null) attribute.addTransientModifier(modifier);
+        } else if (attribute.getModifier(id) != null) {
+            attribute.removeModifier(id);
+        }
     }
 
     @Override
@@ -148,7 +207,7 @@ public class SpiritStaffItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)
                 || !(context.getLevel() instanceof ServerLevel serverLevel)
                 || player.isSpectator()
-                || player.distanceToSqr(context.getClickedPos().getCenter()) > 64.0D) {
+                || !player.canInteractWithBlock(context.getClickedPos(), 1.0D)) {
             return InteractionResult.CONSUME;
         }
 
@@ -182,19 +241,26 @@ public class SpiritStaffItem extends Item {
         }
         if (inserted <= 0) return;
         menu.broadcastChanges();
-        held.hurtAndBreak(1, player, LivingEntity.getSlotForHand(
+        damageIfMortal(held, player, LivingEntity.getSlotForHand(
                 player.getMainHandItem() == held ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND));
         player.getCooldowns().addCooldown(held.getItem(), 4);
         player.displayClientMessage(Component.translatable(
                 "message.immortalstorage.spirit_staff.explore.transferred", inserted), true);
     }
 
+    private static boolean isArtifactWrench(ItemStack stack) {
+        return stack.getItem() instanceof ImmortalArtifactItem && getMode(stack) == MODE_WRENCH;
+    }
+
     private static ItemStack enabledExploreInstrument(Player player) {
         ItemStack main = player.getMainHandItem();
         if (main.getItem() instanceof SpiritStaffItem && isExploreEnabled(main)) return main;
         ItemStack offhand = player.getOffhandItem();
-        return offhand.getItem() instanceof SpiritStaffItem && isExploreEnabled(offhand)
-                ? offhand : ItemStack.EMPTY;
+        if (offhand.getItem() instanceof SpiritStaffItem && isExploreEnabled(offhand)) return offhand;
+        for (ItemStack stack : player.getInventory().items) {
+            if (stack.getItem() instanceof ImmortalArtifactItem && isExploreEnabled(stack)) return stack;
+        }
+        return ItemStack.EMPTY;
     }
 
     static boolean isLootPageMenu(AbstractContainerMenu menu, Player player) {
@@ -246,8 +312,7 @@ public class SpiritStaffItem extends Item {
         // an optional module that is loaded only when Mekanism is present.
         InteractionResult result = SpiritStaffWrenchCompat.interact(context, player);
         if (result.consumesAction()) {
-            context.getItemInHand().hurtAndBreak(
-                    1, player, LivingEntity.getSlotForHand(context.getHand()));
+            damageIfMortal(context.getItemInHand(), player, LivingEntity.getSlotForHand(context.getHand()));
             player.getCooldowns().addCooldown(context.getItemInHand().getItem(), 4);
         }
         return result;
@@ -301,8 +366,10 @@ public class SpiritStaffItem extends Item {
         SpiritStaffBuildExecutor.Result result = SpiritStaffBuildExecutor.execute(
                 context, ImmortalStorageConfig.SPIRIT_STAFF_BUILD_LIMIT.get());
         if (result.succeeded()) {
-            player.displayClientMessage(Component.translatable(
-                    "message.immortalstorage.spirit_staff.build.placed", result.placed()), true);
+            player.displayClientMessage(result.planned() < 0
+                    ? Component.translatable("message.immortalstorage.spirit_staff.build.queued")
+                    : Component.translatable(
+                            "message.immortalstorage.spirit_staff.build.placed", result.placed()), true);
             return InteractionResult.CONSUME;
         }
         String key = switch (result.failure()) {
@@ -352,7 +419,7 @@ public class SpiritStaffItem extends Item {
             dropped.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(blockData));
             context.getLevel().removeBlock(pos, false);
             Block.popResource(context.getLevel(), pos, dropped);
-            context.getItemInHand().hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
+            damageIfMortal(context.getItemInHand(), player, LivingEntity.getSlotForHand(context.getHand()));
             return InteractionResult.CONSUME;
         }
         if (blockEntity instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity) {
@@ -361,7 +428,7 @@ public class SpiritStaffItem extends Item {
             context.getLevel().removeBlock(pos, false);
             Block.popResource(context.getLevel(), pos, new ItemStack(
                     com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get()));
-            context.getItemInHand().hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
+            damageIfMortal(context.getItemInHand(), player, LivingEntity.getSlotForHand(context.getHand()));
             return InteractionResult.CONSUME;
         }
         return player.gameMode.destroyBlock(pos)
@@ -395,7 +462,8 @@ public class SpiritStaffItem extends Item {
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         if (getMode(stack) == MODE_PICK) {
-            return Items.NETHERITE_PICKAXE.getDestroySpeed(new ItemStack(Items.NETHERITE_PICKAXE), state);
+            ItemStack tool = bestMiningTool(state);
+            return tool.getDestroySpeed(state);
         }
         if (getMode(stack) == MODE_WRENCH && isSafeWrenchState(state)) return 8.0F;
         return super.getDestroySpeed(stack, state);
@@ -404,10 +472,19 @@ public class SpiritStaffItem extends Item {
     @Override
     public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
         if (getMode(stack) == MODE_PICK) {
-            return Items.NETHERITE_PICKAXE.isCorrectToolForDrops(
-                    new ItemStack(Items.NETHERITE_PICKAXE), state);
+            return bestMiningTool(state).isCorrectToolForDrops(state);
         }
         return getMode(stack) == MODE_WRENCH && isSafeWrenchState(state);
+    }
+
+    @Override
+    public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {
+        if (getMode(stack) != MODE_PICK) return false;
+        return itemAbility == PICKAXE_DIG
+                || itemAbility == AXE_DIG
+                || itemAbility == SHOVEL_DIG
+                || itemAbility == HOE_DIG
+                || itemAbility == SHEARS_DIG;
     }
 
     @Override
@@ -416,7 +493,7 @@ public class SpiritStaffItem extends Item {
         int mode = getMode(stack);
         if (!level.isClientSide && (mode == MODE_PICK
                 || mode == MODE_WRENCH && isSafeWrenchState(state))) {
-            stack.hurtAndBreak(1, miner, EquipmentSlot.MAINHAND);
+            damageIfMortal(stack, miner, EquipmentSlot.MAINHAND);
         }
         return true;
     }
@@ -430,6 +507,21 @@ public class SpiritStaffItem extends Item {
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 40, 1, true, false, true));
             player.addEffect(new MobEffectInstance(MobEffects.SATURATION, 40, 0, true, false, true));
         }
+    }
+
+    @Override
+    public InteractionResult interactLivingEntity(ItemStack stack, Player player,
+                                                   LivingEntity target, InteractionHand hand) {
+        if (!(stack.getItem() instanceof ImmortalArtifactItem) || getMode(stack) != MODE_PICK
+                || !(target instanceof net.neoforged.neoforge.common.IShearable shearable)) {
+            return super.interactLivingEntity(stack, player, target, hand);
+        }
+        if (!player.level().isClientSide) {
+            for (ItemStack drop : shearable.onSheared(player, stack, player.level(), target.blockPosition())) {
+                shearable.spawnShearedDrop(player.level(), target.blockPosition(), drop);
+            }
+        }
+        return InteractionResult.sidedSuccess(player.level().isClientSide);
     }
 
     @Override
@@ -468,13 +560,17 @@ public class SpiritStaffItem extends Item {
     public static int getTeleportDistance(ItemStack stack) {
         int stored = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
                 .copyTag().getInt("teleportDistance");
-        return stored <= 0 ? DEFAULT_TELEPORT_DISTANCE : Math.max(1, Math.min(20, stored));
+        int maximum = stack.getItem() instanceof ImmortalArtifactItem
+                ? ImmortalArtifactItem.MAX_TELEPORT_DISTANCE : 20;
+        return stored <= 0 ? DEFAULT_TELEPORT_DISTANCE : Math.max(1, Math.min(maximum, stored));
     }
 
     public static void adjustTeleportDistance(Player player, int delta) {
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof SpiritStaffItem) || getMode(stack) != MODE_TELEPORT) return;
-        int next = Math.max(1, Math.min(20, getTeleportDistance(stack) + (delta >= 0 ? 1 : -1)));
+        int maximum = stack.getItem() instanceof ImmortalArtifactItem
+                ? ImmortalArtifactItem.MAX_TELEPORT_DISTANCE : 20;
+        int next = Math.max(1, Math.min(maximum, getTeleportDistance(stack) + (delta >= 0 ? 1 : -1)));
         CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tag.putInt("teleportDistance", next);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
@@ -505,5 +601,44 @@ public class SpiritStaffItem extends Item {
 
     public static void cycleMode(Player player) {
         cycleMode(player, 1);
+    }
+
+    private static void damageIfMortal(ItemStack stack, LivingEntity entity, EquipmentSlot slot) {
+        if (!(stack.getItem() instanceof ImmortalArtifactItem)) stack.hurtAndBreak(1, entity, slot);
+    }
+
+    public static int miningVisual(ItemStack stack, BlockState state) {
+        if (!(stack.getItem() instanceof ImmortalArtifactItem) || getMode(stack) != MODE_PICK) return 0;
+        net.minecraft.world.item.Item selected = bestMiningTool(state).getItem();
+        if (selected == Items.NETHERITE_AXE) return 1;
+        if (selected == Items.NETHERITE_SHOVEL) return 2;
+        if (selected == Items.NETHERITE_HOE) return 3;
+        if (selected == Items.SHEARS) return 4;
+        return 0; // pickaxe
+    }
+
+    private static ItemStack bestMiningTool(BlockState state) {
+        ItemStack best = new ItemStack(Items.NETHERITE_PICKAXE);
+        float bestSpeed = effectiveMiningScore(best, state);
+        for (net.minecraft.world.item.Item candidate : new net.minecraft.world.item.Item[]{
+                Items.NETHERITE_AXE, Items.NETHERITE_SHOVEL, Items.NETHERITE_HOE, Items.SHEARS}) {
+            ItemStack tool = new ItemStack(candidate);
+            float score = effectiveMiningScore(tool, state);
+            if (score > bestSpeed) {
+                best = tool;
+                bestSpeed = score;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Reads each vanilla tool's real state response instead of assuming only
+     * vanilla mineable tags. Modded blocks that expose normal NeoForge/Minecraft
+     * tool semantics therefore select their actual fastest compatible tool.
+     */
+    private static float effectiveMiningScore(ItemStack tool, BlockState state) {
+        float speed = Math.max(0.0F, tool.getDestroySpeed(state));
+        return speed + (tool.isCorrectToolForDrops(state) ? 0.001F : 0.0F);
     }
 }

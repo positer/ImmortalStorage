@@ -62,6 +62,8 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::clientSetup);
         modBus.addListener(ClientSetup::registerScreens);
         modBus.addListener(ClientSetup::registerRenderers);
+        modBus.addListener(com.immortalstorage.immortalstorage.client.AuraGuardClientCompat::addLayers);
+        modBus.addListener(com.immortalstorage.immortalstorage.client.AuraGuardClientCompat::registerStateModifier);
         modBus.addListener(ClientSetup::registerSpecialModelRenderers);
         modBus.addListener(ClientSetup::registerStaffModelProperties);
         modBus.addListener(ClientSetup::registerItemDecorations);
@@ -120,7 +122,6 @@ public final class ClientSetup {
         event.registerBlockEntityRenderer(ModBlockEntities.SIMULATED_SPIRIT_FIELD.get(),
                 SimulatedSpiritFieldRenderer::new);
     }
-
     private static void registerStaffModelProperties(RegisterSelectItemModelPropertyEvent event) {
         event.register(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),
                 SpiritStaffModeProperty.TYPE);

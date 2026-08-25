@@ -1,0 +1,14 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {"layer0": "immortalstorage:item/immortal_artifact_explore"},
+  "overrides": [
+    {"predicate":{"immortalstorage:staff_mode":1},"model":"immortalstorage:item/immortal_artifact_wrench"},
+    {"predicate":{"immortalstorage:staff_mode":2},"model":"immortalstorage:item/immortal_artifact_pick"},
+    {"predicate":{"immortalstorage:staff_mode":2,"immortalstorage:artifact_tool":1},"model":"immortalstorage:item/immortal_artifact_axe"},
+    {"predicate":{"immortalstorage:staff_mode":2,"immortalstorage:artifact_tool":2},"model":"immortalstorage:item/immortal_artifact_shovel"},
+    {"predicate":{"immortalstorage:staff_mode":2,"immortalstorage:artifact_tool":3},"model":"immortalstorage:item/immortal_artifact_hoe"},
+    {"predicate":{"immortalstorage:staff_mode":2,"immortalstorage:artifact_tool":4},"model":"immortalstorage:item/immortal_artifact_shears"},
+    {"predicate":{"immortalstorage:staff_mode":3},"model":"immortalstorage:item/immortal_artifact_build"},
+    {"predicate":{"immortalstorage:staff_mode":4},"model":"immortalstorage:item/immortal_artifact_teleport"}
+  ]
+}

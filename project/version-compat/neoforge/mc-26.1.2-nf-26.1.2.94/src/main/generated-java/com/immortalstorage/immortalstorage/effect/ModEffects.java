@@ -19,5 +19,10 @@ public final class ModEffects {
             EFFECTS.register("lingqi_saturation", () -> new com.immortalstorage.immortalstorage.effect.custom.LingqiSaturationEffect(
                     net.minecraft.world.effect.MobEffectCategory.BENEFICIAL, 0x88ffcc));
 
+    public static final Supplier<MobEffect> SPIRITUAL_AURA_GUARD =
+            EFFECTS.register("spiritual_aura_guard", () ->
+                    new com.immortalstorage.immortalstorage.effect.custom.SpiritualAuraGuardEffect(
+                            net.minecraft.world.effect.MobEffectCategory.BENEFICIAL, 0x9fffe8));
+
     private ModEffects() {}
 }

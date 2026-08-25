@@ -55,12 +55,21 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.CycleStaffMode.TYPE, ModPayloads.CycleStaffMode.STREAM_CODEC, ModNetwork::handleCycleStaffMode);
         registrar.playToServer(ModPayloads.AdjustStaffTeleportDistance.TYPE,
                 ModPayloads.AdjustStaffTeleportDistance.STREAM_CODEC, ModNetwork::handleAdjustStaffTeleportDistance);
+        registrar.playToServer(ModPayloads.AuraGuardLeap.TYPE,
+                ModPayloads.AuraGuardLeap.STREAM_CODEC, ModNetwork::handleAuraGuardLeap);
+        registrar.playToServer(ModPayloads.AuraGuardFlightState.TYPE,
+                ModPayloads.AuraGuardFlightState.STREAM_CODEC, ModNetwork::handleAuraGuardFlightState);
+        registrar.playToServer(ModPayloads.AuraGuardBoost.TYPE,
+                ModPayloads.AuraGuardBoost.STREAM_CODEC, ModNetwork::handleAuraGuardBoost);
         registrar.playToServer(ModPayloads.RequestSpiritStaffBuildPreview.TYPE,
                 ModPayloads.RequestSpiritStaffBuildPreview.STREAM_CODEC,
                 ModNetwork::handleSpiritStaffBuildPreview);
         registrar.playToServer(ModPayloads.RemoveSpiritStaffBuildLayer.TYPE,
                 ModPayloads.RemoveSpiritStaffBuildLayer.STREAM_CODEC,
                 ModNetwork::handleSpiritStaffBuildRemoval);
+        registrar.playToServer(ModPayloads.RestoreImmortalArtifactBuildLayer.TYPE,
+                ModPayloads.RestoreImmortalArtifactBuildLayer.STREAM_CODEC,
+                ModNetwork::handleImmortalArtifactBuildRestore);
         registrar.playToServer(ModPayloads.SpiritSwordFurnaceOperation.TYPE,
                 ModPayloads.SpiritSwordFurnaceOperation.STREAM_CODEC,
                 ModNetwork::handleSpiritSwordFurnaceOperation);
@@ -581,6 +590,59 @@ public final class ModNetwork {
         });
     }
 
+    private static void handleAuraGuardLeap(ModPayloads.AuraGuardLeap payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || player.isSpectator() || player.getAbilities().mayfly
+                    || !com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.hasAuraGuard(player)
+                    || player.getCooldowns().isOnCooldown(com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get())) {
+                return;
+            }
+            var velocity = player.getDeltaMovement();
+            // Vanilla vertical drag/gravity integrates an initial 0.91 velocity
+            // to approximately five blocks of ascent. Keep horizontal motion.
+            player.setDeltaMovement(velocity.x, Math.max(0.91D, velocity.y + 0.91D), velocity.z);
+            player.hurtMarked = true;
+            player.resetFallDistance();
+            player.startFallFlying();
+            player.getCooldowns().addCooldown(
+                    com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get(), 8);
+        });
+    }
+
+    private static void handleAuraGuardFlightState(
+            ModPayloads.AuraGuardFlightState payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null) return;
+            if (!payload.expanded()) {
+                if (player.isFallFlying()
+                        && player.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")) {
+                    player.stopFallFlying();
+                }
+                player.getPersistentData().remove("ImmortalStorageVirtualElytra");
+                return;
+            }
+            if (player.isSpectator() || player.onGround() || player.isPassenger()
+                    || player.isInWater() || player.isFallFlying()
+                    || player.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION)
+                    || !com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.hasAuraGuard(player)) {
+                return;
+            }
+            player.tryToStartFallFlying();
+        });
+    }
+
+    private static void handleAuraGuardBoost(ModPayloads.AuraGuardBoost payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || !player.isFallFlying()
+                    || !player.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")) return;
+            player.setDeltaMovement(player.getDeltaMovement().add(player.getLookAngle().scale(1.5D)));
+            player.hurtMarked = true;
+        });
+    }
+
     private static void handleSpiritStaffBuildPreview(
             ModPayloads.RequestSpiritStaffBuildPreview request, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
@@ -623,6 +685,22 @@ public final class ModNetwork {
             player.displayClientMessage(result.succeeded()
                     ? Component.translatable("message.immortalstorage.spirit_staff.build.removed", result.placed())
                     : Component.translatable("message.immortalstorage.spirit_staff.build.blocked"), true);
+        });
+    }
+
+    private static void handleImmortalArtifactBuildRestore(
+            ModPayloads.RestoreImmortalArtifactBuildLayer request, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || request.hand() < 0
+                    || request.hand() >= net.minecraft.world.InteractionHand.values().length) return;
+            var hand = net.minecraft.world.InteractionHand.values()[request.hand()];
+            ItemStack stack = player.getItemInHand(hand);
+            int restored = com.immortalstorage.immortalstorage.item.custom.ImmortalArtifactRestorationLog
+                    .restore(player, stack);
+            player.displayClientMessage(Component.translatable(restored > 0
+                    ? "message.immortalstorage.immortal_artifact.build.restored"
+                    : "message.immortalstorage.immortal_artifact.build.restore_failed", restored), true);
         });
     }
 

@@ -1,0 +1,20 @@
+{
+  "name":"仙锻与仙器",
+  "icon":"immortalstorage:immortal_master_talisman",
+  "category":"immortalstorage:equipment",
+  "sortnum":20,
+  "pages":[
+    {"type":"patchouli:text","text":"仙锻路线始于末地外岛的$(item)仙法遗骸$()。它以原生矿脉生成，需要下界合金镐等级开采，也会进入世界碎片采集器的末地矿物目录；末地模式结构的激活方块同样是仙法遗骸。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_art_remains","title":"仙法遗骸","text":"在末地外岛寻找原生矿脉。其硬度与挖掘速度沿用远古残骸，不能用低于下界合金等级的工具取得掉落。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:immortal_art_remains_immortal_furnace","title":"仙炉煅烧","text":"此页借用原版熔炉的配方材质展示，但实际工位是$(thing)仙炉$()。熔炉和高炉也有对应路线，三者都将仙法遗骸炼成仙锻合金碎片。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_forged_alloy_scrap","title":"仙锻合金碎片","text":"仙法遗骸的煅烧产物。它可与灵晶合成蕴灵晶，也是仙锻合金的四份核心组分。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:nurturing_crystal_from_alloy_scrap","title":"蕴灵晶捷径","text":"一枚仙锻合金碎片与一枚灵晶无序合成一枚蕴灵晶。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:immortal_forged_alloy","title":"仙锻合金","text":"一枚蕴灵晶、四枚仙锻合金碎片与四枚灵铁锭无序合成。仙锻合金与下界合金一样不会在火焰或熔岩中烧毁。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_master_talisman","title":"仙师度","text":"锻造台使用灵核作为模板、古玉作为不会消耗的基底、仙锻合金作为材料。成品无耐久、不可燃，可装备于胸甲、护腿或生物BODY护甲槽；安装Curios时也可放入charm护符槽。任意通道只计一次10点护甲与效果；生物获得生命恢复V和抗性提升IV。"},
+    {"type":"patchouli:text","title":"灵气护体","text":"伤害先按1:1消耗真元；真元不足时，仙元按每枚64真元兑换并把余量留在仙窍。两种资源都不足后，只有剩余部分扣除生命。该状态提供不占栏位的鞘翅、免疫摔落与鞘翅碰撞伤害；无法创造飞行时双击跳跃可向上跃升。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:immortal_artifact","title":"仙器","text":"锻造台以灵核为模板、灵器为基底、仙锻合金为材料，保留灵器附魔与状态。仙器无耐久、不可燃，继承扳手、建筑、挖掘、传送和探索五种模式并获得强化。"},
+    {"type":"patchouli:text","title":"仙器模式速查","text":"扳手模式手持时额外增加5格方块与实体触及距离，客户端准星选取和服务端交互校验同步生效；灵器扳手没有此强化。建筑模式不设总数量上限，会按服务器tick预算分批铺满相连表面，并可用特殊键+潜行+使用恢复上一批消除方块；挖掘模式读取目标方块的真实工具速度与掉落判定，在镐、斧、铲、锄或剪刀中选择，右键精准采集；传送上限50格；探索模式开启后只需放在背包中，开箱内容自动进入仙窍。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:information_storage_crystal","title":"信息存储水晶","text":"最大堆叠1。Shift右键本模组机器保存配置、状态与插件，按机器类型只保留最新记录；手持水晶不会打开机器界面。普通右键将记录粘贴到同类机器，背包或仙窍中存在的同插件会自动同步，没有则跳过。对无状态方块或空气Shift右键可清空全部记录；tooltip显示已保存的方块名称。兼容其他模组机器的配置与插件接口。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:information_storage_crystal","title":"信息存储水晶配方","text":"仙锻合金碎片与蕴灵晶无序合成。"}
+  ]
+}

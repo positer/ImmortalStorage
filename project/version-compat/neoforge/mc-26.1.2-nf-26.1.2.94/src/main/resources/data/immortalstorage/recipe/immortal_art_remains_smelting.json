@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "group": "immortalstorage:immortal_forged_alloy_scrap",
+  "cookingtime": 200,
+  "experience": 2.0,
+  "ingredient": "immortalstorage:immortal_art_remains",
+  "result": {
+    "count": 1,
+    "id": "immortalstorage:immortal_forged_alloy_scrap"
+  }
+}

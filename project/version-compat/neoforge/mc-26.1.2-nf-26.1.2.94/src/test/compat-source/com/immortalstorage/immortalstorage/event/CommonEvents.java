@@ -23,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.MobSpawnEvent;
 import net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
@@ -51,10 +52,26 @@ public class CommonEvents {
         event.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
     }
 
+    /** Crystal capture/paste owns the click and must never open the machine UI. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onInformationStorageCrystalUse(PlayerInteractEvent.RightClickBlock event) {
+        ItemStack held = event.getEntity().getItemInHand(event.getHand());
+        if (!held.is(ModItems.INFORMATION_STORAGE_CRYSTAL.get())) return;
+        event.setCanceled(true);
+        if (event.getEntity() instanceof ServerPlayer player) {
+            held.getItem().useOn(new net.minecraft.world.item.context.UseOnContext(
+                    player, event.getHand(), new net.minecraft.world.phys.BlockHitResult(
+                    event.getPos().getCenter(), event.getFace(), event.getPos(), false)));
+        }
+    }
+
     @SubscribeEvent
     public void onEntityTick(EntityTickEvent.Post event) {
         com.immortalstorage.immortalstorage.entity.PrimordialQiConversion.tick(event.getEntity());
         com.immortalstorage.immortalstorage.entity.AbsoluteRestraint.tick(event.getEntity());
+        if (!event.getEntity().level().isClientSide() && event.getEntity() instanceof LivingEntity living) {
+            com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.tick(living);
+        }
     }
 
     @SubscribeEvent
@@ -152,6 +169,7 @@ public class CommonEvents {
     public void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent e) {
         if (e.getEntity() instanceof ServerPlayer player) {
             com.immortalstorage.immortalstorage.player.HeldItemAutoRefill.clear(player);
+            com.immortalstorage.immortalstorage.item.custom.SpiritStaffBuildExecutor.clear(player);
         }
     }
 
@@ -438,13 +456,25 @@ public class CommonEvents {
         // Reserved for cultivation-specific incoming-damage rules.
     }
 
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onLivingDamagePre(LivingDamageEvent.Pre event) {
+        com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.intercept(event);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onLivingDamagePost(LivingDamageEvent.Post event) {
+        com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.repairBypassedDamage(event);
+    }
+
     @SubscribeEvent
     public void onPlayerTick(PlayerTickEvent.Post e) {
         if (e.getEntity().level().isClientSide()) return;
         if (!(e.getEntity() instanceof ServerPlayer p)) return;
         ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
+        com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem.reconcileArtifactWrenchReach(p);
         tickPersonalStorageMagnet(p, d);
         com.immortalstorage.immortalstorage.player.HeldItemAutoRefill.tick(p, d);
+        com.immortalstorage.immortalstorage.item.custom.SpiritStaffBuildExecutor.tick(p);
         if (d.tickJadeInitiation(hasJadeGuide(p))) {
             com.immortalstorage.immortalstorage.advancement.ImmortalStorageCriteriaTriggers.STAGE_1.trigger(p);
         }

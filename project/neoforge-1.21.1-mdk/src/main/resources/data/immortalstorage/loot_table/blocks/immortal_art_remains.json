@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "bonus_rolls": 0.0,
+    "entries": [{"type":"minecraft:item","name":"immortalstorage:immortal_art_remains"}],
+    "conditions": [{"condition":"minecraft:survives_explosion"}],
+    "rolls": 1.0
+  }],
+  "random_sequence": "immortalstorage:blocks/immortal_art_remains"
+}

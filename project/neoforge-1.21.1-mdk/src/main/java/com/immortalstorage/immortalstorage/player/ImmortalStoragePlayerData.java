@@ -115,6 +115,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
     private boolean jadeSleepTriggered = false;
     private boolean startingJadeGranted = false;
     private boolean consumedSpiritPill = false;
+    private long auraGuardCredit;
 
     private boolean hasKongqiao = false;
     private boolean hasXianqiao = false;
@@ -367,6 +368,12 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
 
     public long getTrueYuan() { return visibleYuanTotal(YuanKind.TRUE); }
     public long getImmortalYuan() { return visibleYuanTotal(YuanKind.IMMORTAL); }
+    public long getAuraGuardCredit() { return auraGuardCredit; }
+    public void setAuraGuardCredit(long credit) {
+        auraGuardCredit = Math.max(0L, Math.min(
+                com.immortalstorage.core.combat.AuraGuardSettlement.CREDIT_SCALE - 1L, credit));
+        syncOwner();
+    }
     public int getTrueYuanCap() { return legacyIntCap(yuanAccount.profile().trueYuan().cap()); }
     public int getImmortalYuanCap() {
         return isInfiniteImmortalYuan() ? Integer.MAX_VALUE
@@ -1693,6 +1700,7 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         tag.putBoolean("jadeSleepTriggered", jadeSleepTriggered);
         tag.putBoolean("startingJadeGranted", startingJadeGranted);
         tag.putBoolean("consumedSpiritPill", consumedSpiritPill);
+        tag.putLong("auraGuardCredit", auraGuardCredit);
         tag.putBoolean("hasKongqiao", hasKongqiao);
         tag.putBoolean("hasXianqiao", hasXianqiao);
         tag.putBoolean("hasXianqiaoRealm", hasXianqiaoRealm);
@@ -1800,6 +1808,9 @@ public final class ImmortalStoragePlayerData implements INBTSerializable<Compoun
         jadeSleepTriggered = tag.getBoolean("jadeSleepTriggered");
         startingJadeGranted = tag.getBoolean("startingJadeGranted");
         consumedSpiritPill = tag.getBoolean("consumedSpiritPill");
+        auraGuardCredit = Math.max(0L, Math.min(
+                com.immortalstorage.core.combat.AuraGuardSettlement.CREDIT_SCALE - 1L,
+                tag.getLong("auraGuardCredit")));
         hasKongqiao = tag.getBoolean("hasKongqiao");
         hasXianqiao = tag.getBoolean("hasXianqiao");
         hasXianqiaoRealm = tag.getBoolean("hasXianqiaoRealm");

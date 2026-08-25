@@ -176,5 +176,6 @@
       "title": "Dragon Egg Source",
       "text": "The Dragon Egg vein closes the built-in chain. Like every item source, its core stays opaque, upright, centered, and rotates around Y."
     }
+    ,{"type":"patchouli:text","title":"Complete Source Registry","text":"Crude Spirit Iron, Raw Copper, Raw Iron, and Raw Gold also have dedicated source blocks: immortalstorage:crude_spirit_iron_vein, immortalstorage:raw_copper_vein, immortalstorage:raw_iron_vein, and immortalstorage:raw_gold_vein. They follow the same supply, charging, cache, and manager rules in this chapter."}
   ]
 }

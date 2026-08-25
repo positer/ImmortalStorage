@@ -65,6 +65,11 @@ final class TerminalStonecutterLayoutContractTest {
         assertTrue(source.contains("level.recipeAccess().stonecutterRecipes().acceptsInput(stack)"));
         assertTrue(source.contains("level.recipeAccess().stonecutterRecipes().selectByInput(itemstack)"));
         assertFalse(source.contains("(net.minecraft.world.item.crafting.RecipeManager) level.recipeAccess()"));
+        assertFalse(source.contains("if (!mayTake()) return;"),
+                "the target backend must not reject onTake after vanilla clears the result slot");
+        assertTrue(source.contains("isValidRecipeIndex(selectedRecipeIndex.get()) || input.getItem(INPUT).isEmpty()"));
+        assertTrue(source.contains("setupResultSlot();"),
+                "the target backend must regenerate the selected output while input remains");
     }
 
     private static Path locateMainSources() {

@@ -1,5 +1,111 @@
 # Changelog
 
+## [0.1.2] - 2026-08-26
+
+### 简体中文（0.1.1 → 0.1.2）
+
+#### 新矿物与仙锻材料链
+
+- 新增“仙法遗骸”，使用末地原生矿脉机制生成于外岛末地石中，拥有下界合金镐挖掘等级和远古残骸挖掘速度，并写入通用矿物标签及世界碎片采集目录。
+- 仙法遗骸可在熔炉、高炉或仙炉煅烧为“仙锻合金碎片”；新增“仙锻合金”无序配方，以及仙锻合金碎片与灵晶合成蕴灵晶的新配方。
+- 仙师度、仙锻合金和仙器与下界合金一致，不会被火或熔岩烧毁。
+- 世界碎片采集器的末地模式激活方块由紫珀块改为仙法遗骸。
+
+#### 仙师度与灵气护体
+
+- 新增“仙师度”（英文名 `Immortal One's Rule`）：以灵核为锻造模板、古玉为不消耗的基础材料、仙锻合金为追加材料。提供 10 点护甲、无耐久，可作为胸甲、护腿、狼铠、马铠、26.1.2 鹦鹉螺护甲及可选饰品护符装备。
+- 玩家装备后获得灵气护体：受伤前按 1:1 消耗真元抵挡，真元不足时按 1 仙元兑换 64 真元并保留余量；真元与仙元均不足时，仅把剩余部分结算为生命伤害。绕过前置拦截而实际降低的生命值会立即按同一资源规则补回。其他生物装备时获得生命恢复 V 与抗性提升 IV。
+- 灵气护体提供不占装备栏的虚拟鞘翅。地面空格保持普通跳跃，空中空格展开，再次空格收起；展开节点检查灵气护体，展开中保持状态。展开时拥有半透明青白鞘翅、普通鞘翅两倍飞行速度，并可用 Ctrl+Z 触发烟花式加速；同时免疫摔落和鞘翅碰撞伤害。
+- 仙师度图标严格采用用户原图透明内容区域的 16×16 BOX 像素采样，不重绘、不补充细节。
+
+#### 仙器五模式强化
+
+- 新增无耐久“仙器”，由灵核、灵器与仙锻合金在锻造台升级并继承附魔；五种模式使用指定原版/灵器材质的逐像素精准换色，只改变色系。
+- 扳手模式额外增加 5 格方块与实体触及距离。
+- 建筑模式取消玩法总放置上限，64 仅作为每 tick 的服务器批处理预算；建造优先消耗仙窍中的对应资源，再使用副手和背包。建筑/破坏模式支持特殊键+Shift+右键恢复此前消除的方块。
+- 挖掘模式按准星目标和模组能力自动选择镐、锄、铲、斧或剪刀并切换贴图；左键使用对应下界合金级工具行为，方块右键保持精准采集且不触发锄/铲右键动作。对可剪生物切换为剪刀并直接取得剪取结果。
+- 传送模式上限提高到 50 格。探索模式开启后只需位于背包即可在开箱时自动把内容收入仙窍，仍需手持右键切换开关。
+
+#### 信息存储水晶
+
+- 新增最大堆叠 1 的“信息存储水晶”，由仙锻合金碎片和蕴灵晶无序合成。
+- Shift+右键机器按机器类型把最新配置、运行状态和插件信息保存到物品数据；普通右键同类机器粘贴。背包或仙窍中存在相同插件时自动插入，缺失插件时跳过插件但继续同步其他配置。
+- 手持水晶交互不会打开机器界面；对无状态方块或空气 Shift+右键可清空记录。提示、反馈与 tooltip 均显示本地化方块名称而非注册 ID。
+- 覆盖本模组模拟机器、仙窍接口、五类迷你仙墟和仙能水晶系列，并提供其他模组方块实体的通用配置/插件保存路径；Mekanism 机器已作为明确兼容目标。
+
+#### 渲染、手册与成就
+
+- 重构五类迷你仙墟渲染：核心只显示当前视角的纯黑/纯白实体轮廓，不渲染纹理、明暗、面或内部棱线；外边界使用不透过世界方块的发亮白/黑反色轮廓，并保留呼吸和缓慢旋转。
+- 古玉指导书完成中英双语重构，形成从资源、材料、装备、机器到自动化的完整流程，补齐全部物品配方、用途、仙炉煅烧说明和可选模组联动行为。
+- 新增五项双语成就：“他们去哪了？”、“这算作弊吗”、“遗留的世界命令”、“天上天下，唯我独尊”和“又轻又重”；图标分别使用对应物品，“这算作弊吗”使用末影龙刷怪蛋，“天上天下，唯我独尊”使用白日惊雷。
+- 所有 0.1.2 换色资源都以指定原材质为唯一像素模板，严格保持尺寸、alpha、轮廓、坐标、明暗分区和像素细节，只替换要求的色系。
+
+#### 可选联动与稳定性修复
+
+- Curios 存在时注册仙师度护符槽能力；联动保持可选，不安装时不产生硬依赖。
+- Minecraft 1.21.1 安装 Create 时新增鼓风“蕴灵”处理类型：使用仙元/真元放置形态作为触媒处理仙炉配方，显示青白粒子，并为范围内玩家和生物提供生命恢复 V。注册改用合法的延迟注册流程，避免冻结注册表启动崩溃。
+- 修复空窍/仙窍终端大容量菜单点击产生超过原版 128 changed-slots 上限的数据包并断连；菜单改为服务端权威执行与同步。
+- 修复 JEI `+` 无法向内置合成台/锻造台填充材料的问题，配方放置不再依赖滞后的客户端材料快照。
+- 修复内置切石机每次取出后必须重新选择配方的问题；输入仍有材料时保留选择并立即重建下一份结果，支持普通与 Shift 连续合成。
+
+#### 双版本与验证
+
+- 同步发布 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94 两个独立 JAR，不可跨版本混用。
+- 两代最终门禁均通过 235 suites / 836 tests，0 failures、0 errors、0 skipped，并通过兼容矩阵、生产 JAR 边界、版本组成、精确制品和无 AE2 运行时检查。
+- 1.21.1 JAR：SHA-256 `B1823C27832E8A2937FC8E7A0CAEE9656E6A2198CA5341DCBE6386D2C2DE7627`；26.1.2 JAR：SHA-256 `1BB2CEE62C6ADF78F43484555B5ADFF060AC2B26F6F824D8765BE1D1B214E043`。
+
+### English (0.1.1 → 0.1.2)
+
+#### New ore and Immortal-Forged material chain
+
+- Added Immortal Art Remains, generated through vanilla ore-vein placement in End outer-island end stone. It uses netherite-tier mining requirements and Ancient Debris mining speed, and is registered in common ore tags and the World Shard Miner catalog.
+- Immortal Art Remains can be processed in a furnace, blast furnace, or Immortal Furnace into Immortal-Forged Alloy Scrap. Added the shapeless Immortal-Forged Alloy recipe and a new Alloy Scrap + Spirit Crystal recipe for Nurturing Crystals.
+- Immortal One's Rule, Immortal-Forged Alloy, and Immortal Artifacts are fireproof like netherite items.
+- End-mode World Shard Miners now use Immortal Art Remains instead of Purpur Blocks as their activation block.
+
+#### Immortal One's Rule and Spiritual Aura Guard
+
+- Added Immortal One's Rule: smith a Spirit Core template, reusable Ancient Jade base, and Immortal-Forged Alloy addition. It grants 10 armor, has no durability, and supports chest, leg, wolf-armor, horse-armor, 26.1.2 nautilus-armor, and optional accessory-charm equipment paths.
+- Player wearers gain Spiritual Aura Guard. Incoming damage consumes True Yuan 1:1 before health; shortages convert Immortal Yuan at 1:64 while preserving excess True Yuan. Only the uncovered remainder reaches health when both stores are insufficient. Health lost through damage paths that bypass the first interception is restored immediately through the same resource settlement. Non-player wearers receive Regeneration V and Resistance IV.
+- Spiritual Aura Guard provides a slotless virtual elytra. Space performs a normal ground jump, toggles deployment while airborne, and checks the effect at deployment boundaries without repeatedly invalidating an active glide. Deployed flight uses translucent cyan-white wings, runs at twice normal elytra speed, supports a Ctrl+Z firework-style boost, and ignores fall and elytra-collision damage.
+- The talisman icon is a strict 16×16 BOX pixel sample of the transparent content in the supplied source image, with no redraw or invented detail.
+
+#### Five-mode Immortal Artifact upgrades
+
+- Added the indestructible Immortal Artifact, smithing a Spirit Core, Spirit Artifact, and Immortal-Forged Alloy while preserving enchantments. All five modes use exact palette replacement of their specified vanilla/Spirit Artifact source textures.
+- Wrench mode adds 5 blocks of block and entity reach.
+- Build mode has no gameplay placement cap; 64 is only a per-tick server work budget. It consumes matching Xianqiao resources before offhand or inventory items. Build and destroy modes can restore removed blocks with Special+Shift+right-click.
+- Mining mode reads the targeted block and modded tool actions to select and render a pickaxe, hoe, shovel, axe, or shears. Left-click uses the matching netherite-tier tool behavior; block right-click remains Silk Touch collection and never invokes hoe/shovel use actions. Shearable entities select shears and directly yield their shearing drops.
+- Teleport range is increased to 50 blocks. Enabled explore mode works from the inventory and automatically moves opened-container contents into the Xianqiao, while toggling still requires a held right-click.
+
+#### Information Storage Crystal
+
+- Added the non-stackable Information Storage Crystal, crafted shapelessly from Immortal-Forged Alloy Scrap and a Nurturing Crystal.
+- Shift-right-click stores the latest configuration, runtime state, and plugin data per machine type in item data; right-click pastes it into another machine of that type. Matching plugins are inserted from inventory or Xianqiao storage when available, while missing plugins are skipped without blocking other settings.
+- Crystal interaction suppresses the machine UI. Shift-right-clicking a stateless block or air clears stored records. Feedback and tooltips use localized block names instead of registry IDs.
+- Supports the mod's simulated machines, Xianqiao interfaces, all five Miniature Immortal Ruins, and Immortal Energy Crystals, plus a generic block-entity state/plugin path for other mods. Mekanism machines are an explicit compatibility target.
+
+#### Rendering, handbook, and advancements
+
+- Reworked all five Miniature Immortal Ruin renderers. The core is a pure black/white view silhouette with no texture, shading, faces, or internal edges; the outer glow is a white/black inverted outline that remains occluded by world blocks. Breathing and slow rotation remain intact.
+- Rebuilt the bilingual Jade Guide into a complete resource-to-automation progression guide, covering every item recipe and use, Immortal Furnace processing, and optional mod integrations.
+- Added five bilingual advancements: “Where Did They Go?”, “Does This Count as Cheating?”, “Command Left by the World”, “Above Heaven and Earth, I Alone Am Honored”, and “Both Light and Heavy”. Icons use their corresponding items; the dragon challenge uses the Ender Dragon spawn egg, and the stage-10 advancement uses White Day Thunder.
+- Every recolored 0.1.2 asset uses the required source texture as its sole pixel template and preserves dimensions, alpha, silhouette, coordinates, value regions, and pixel detail, changing only the requested palette.
+
+#### Optional integrations and stability fixes
+
+- Registers Immortal One's Rule as an accessory charm when Curios is present, without making Curios a hard dependency.
+- On Minecraft 1.21.1 with Create installed, adds the Nurturing fan-processing type. Placed Immortal/True Yuan acts as the catalyst for Immortal Furnace recipes, produces cyan-white particles, and grants Regeneration V in range. Registration uses the proper deferred path to avoid frozen-registry startup crashes.
+- Fixed Kongqiao/Xianqiao terminal clicks disconnecting clients when large menus exceeded vanilla's 128 changed-slot packet limit; terminal actions now use server-authoritative execution and synchronization.
+- Fixed JEI `+` transfers failing to populate the embedded crafting and smithing tables by removing reliance on stale client-side ingredient snapshots.
+- Fixed the embedded stonecutter requiring recipe reselection after every output. The selection persists and the next result is rebuilt while input remains, including normal and Shift-click crafting.
+
+#### Dual-version delivery and verification
+
+- Ships separate JARs for Minecraft 1.21.1 / NeoForge 21.1.235 and Minecraft 26.1.2 / NeoForge 26.1.2.94; they are not interchangeable.
+- Both final gates passed 235 suites / 836 tests with 0 failures, 0 errors, and 0 skipped, plus compatibility-matrix, production-JAR-boundary, version-composition, exact-artifact, and no-AE2-runtime checks.
+- 1.21.1 JAR SHA-256: `B1823C27832E8A2937FC8E7A0CAEE9656E6A2198CA5341DCBE6386D2C2DE7627`; 26.1.2 JAR SHA-256: `1BB2CEE62C6ADF78F43484555B5ADFF060AC2B26F6F824D8765BE1D1B214E043`.
+
 ## [0.1.1] - 2026-08-18
 
 ### 中文：双版本发布与内置切石机表现修复

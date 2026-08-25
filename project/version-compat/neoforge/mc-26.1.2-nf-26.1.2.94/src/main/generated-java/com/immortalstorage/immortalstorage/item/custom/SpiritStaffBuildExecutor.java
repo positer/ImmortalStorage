@@ -20,14 +20,28 @@ import net.minecraft.world.level.GameType;
 import net.neoforged.neoforge.common.CommonHooks;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Server-only material escrow and placement commit for Spirit Staff build mode. */
 public final class SpiritStaffBuildExecutor {
+    private static final int ARTIFACT_PLACEMENTS_PER_TICK = 64;
+    private static final int ARTIFACT_SCANS_PER_TICK = 1024;
+    private static final Map<UUID, UnboundedArtifactJob> ARTIFACT_JOBS = new ConcurrentHashMap<>();
+
     public static Result execute(UseOnContext context, int configuredLimit) {
         if (!(context.getLevel() instanceof ServerLevel level)
                 || !(context.getPlayer() instanceof ServerPlayer player)) {
             return Result.failed(Failure.INVALID_CONTEXT);
+        }
+        if (context.getItemInHand().getItem() instanceof ImmortalArtifactItem) {
+            return startUnboundedArtifactJob(player, context.getHand(), context.getClickedPos(),
+                    context.getClickedFace());
         }
         PreparedJob job = prepare(player, context.getHand(), context.getClickedPos(),
                 context.getClickedFace(), configuredLimit);
@@ -64,12 +78,47 @@ public final class SpiritStaffBuildExecutor {
         }
 
         if (placed > 0) {
-            context.getItemInHand().hurtAndBreak(
+            if (!(context.getItemInHand().getItem() instanceof ImmortalArtifactItem)) context.getItemInHand().hurtAndBreak(
                     1, player, com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.slotForHand(context.getHand()));
             player.getCooldowns().addCooldown(context.getItemInHand(), 4);
             return new Result(job.plan().size(), placementBudget, placed, Failure.NONE);
         }
         return new Result(job.plan().size(), placementBudget, 0, Failure.BLOCKED);
+    }
+
+    /** Advances an ascended build across ticks; the connected surface, not a count cap, ends it. */
+    public static void tick(ServerPlayer player) {
+        UnboundedArtifactJob job = ARTIFACT_JOBS.get(player.getUUID());
+        if (job == null) return;
+        if (!job.tick(player)) ARTIFACT_JOBS.remove(player.getUUID(), job);
+    }
+
+    public static void clear(ServerPlayer player) {
+        if (player != null) ARTIFACT_JOBS.remove(player.getUUID());
+    }
+
+    private static Result startUnboundedArtifactJob(
+            ServerPlayer player, net.minecraft.world.InteractionHand hand,
+            BlockPos clicked, Direction face) {
+        if (player == null || player.isSpectator() || clicked == null || face == null
+                || !(player.getItemInHand(hand).getItem() instanceof ImmortalArtifactItem)
+                || SpiritStaffItem.getMode(player.getItemInHand(hand)) != SpiritStaffItem.MODE_BUILD
+                || !((net.minecraft.server.level.ServerLevel) player.level()).hasChunkAt(clicked)
+                || !((net.minecraft.server.level.ServerLevel) player.level()).mayInteract(player, clicked)
+                || !com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.canInteractWithBlock(player, clicked, 1.0D)) {
+            return Result.failed(Failure.INVALID_CONTEXT);
+        }
+        Material material = selectMaterial(player, ((net.minecraft.server.level.ServerLevel) player.level()).getBlockState(clicked));
+        if (material == null) return Result.failed(Failure.NOT_A_BLOCK_ITEM);
+        if (!player.isCreative() && countAvailable(player, material.template(), 1) <= 0) {
+            return Result.failed(Failure.NO_MATERIALS);
+        }
+        UnboundedArtifactJob job = new UnboundedArtifactJob(
+                (net.minecraft.server.level.ServerLevel) player.level(), hand, clicked, face,
+                ((net.minecraft.server.level.ServerLevel) player.level()).getBlockState(clicked), material);
+        ARTIFACT_JOBS.put(player.getUUID(), job);
+        player.getCooldowns().addCooldown(player.getItemInHand(hand), 4);
+        return new Result(-1, 1, 0, Failure.NONE);
     }
 
     /** Non-mutating server snapshot used by the client build preview. */
@@ -101,17 +150,25 @@ public final class SpiritStaffBuildExecutor {
         }
         ServerLevel level = (net.minecraft.server.level.ServerLevel) player.level();
         int removed = 0;
+        List<ImmortalArtifactRestorationLog.Entry> restoration = new java.util.ArrayList<>();
         for (BlockPos pos : preview.positions()) {
             BlockState state = level.getBlockState(pos);
             if (state.isAir() || state.hasBlockEntity() || !level.mayInteract(player, pos)
                     || !com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.canInteractWithBlock(player, pos, 1.0D)) continue;
             GameType gameType = player.gameMode.getGameModeForPlayer();
             if (CommonHooks.fireBlockBreak(level, gameType, player, pos, state).isCanceled()) continue;
-            if (level.removeBlock(pos, false)) removed++;
+            if (level.removeBlock(pos, false)) {
+                removed++;
+                restoration.add(new ImmortalArtifactRestorationLog.Entry(pos, state));
+            }
         }
         if (removed > 0) {
             ItemStack staff = player.getItemInHand(hand);
-            staff.hurtAndBreak(1, player, com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.slotForHand(hand));
+            if (staff.getItem() instanceof ImmortalArtifactItem) {
+                ImmortalArtifactRestorationLog.replace(staff, player, restoration);
+            }
+            if (!(staff.getItem() instanceof ImmortalArtifactItem)) staff.hurtAndBreak(
+                    1, player, com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.slotForHand(hand));
             player.getCooldowns().addCooldown(staff, 4);
             return new Result(preview.positions().size(), removed, removed, Failure.NONE);
         }
@@ -159,9 +216,9 @@ public final class SpiritStaffBuildExecutor {
 
     private static @Nullable Material selectMaterial(ServerPlayer player, BlockState clickedState) {
         ItemStack offhand = player.getOffhandItem();
+        ItemStack clickedTemplate = new ItemStack(clickedState.getBlock().asItem());
         ItemStack template = offhand.getItem() instanceof BlockItem
-                ? offhand.copyWithCount(1)
-                : new ItemStack(clickedState.getBlock().asItem());
+                ? offhand.copyWithCount(1) : clickedTemplate;
         if (template.isEmpty() || !(template.getItem() instanceof BlockItem blockItem)) return null;
         // Construction Wand defaults to rejecting block entities. This avoids
         // cloning configuration-bearing machine items through a bulk plan.
@@ -206,7 +263,7 @@ public final class SpiritStaffBuildExecutor {
         }
 
         public boolean succeeded() {
-            return placed > 0;
+            return failure == Failure.NONE && (placed > 0 || reserved > 0);
         }
     }
 
@@ -231,6 +288,84 @@ public final class SpiritStaffBuildExecutor {
         }
     }
 
+    private static final class UnboundedArtifactJob {
+        private final ServerLevel level;
+        private final net.minecraft.world.InteractionHand hand;
+        private final Direction face;
+        private final BlockState supportingTemplate;
+        private final Material material;
+        private final ArrayDeque<BlockPos> pending = new ArrayDeque<>();
+        private final Set<BlockPos> visited = new HashSet<>();
+        private long totalPlaced;
+
+        private UnboundedArtifactJob(
+                ServerLevel level, net.minecraft.world.InteractionHand hand,
+                BlockPos clicked, Direction face, BlockState supportingTemplate, Material material) {
+            this.level = level;
+            this.hand = hand;
+            this.face = face;
+            this.supportingTemplate = supportingTemplate;
+            this.material = material;
+            pending.add(clicked.immutable());
+        }
+
+        private boolean tick(ServerPlayer player) {
+            ItemStack held = player.getItemInHand(hand);
+            if ((net.minecraft.server.level.ServerLevel) player.level() != level || player.isSpectator()
+                    || !(held.getItem() instanceof ImmortalArtifactItem)
+                    || SpiritStaffItem.getMode(held) != SpiritStaffItem.MODE_BUILD) return false;
+
+            MaterialEscrow escrow = MaterialEscrow.reserve(
+                    player, material.template(), ARTIFACT_PLACEMENTS_PER_TICK);
+            int placementBudget = player.isCreative()
+                    ? ARTIFACT_PLACEMENTS_PER_TICK : escrow.available();
+            if (placementBudget <= 0) {
+                escrow.refund(player);
+                com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(player, net.minecraft.network.chat.Component.translatable(
+                        "message.immortalstorage.spirit_staff.build.no_materials"), true);
+                return false;
+            }
+
+            int scanned = 0;
+            int placed = 0;
+            try {
+                while (!pending.isEmpty() && scanned < ARTIFACT_SCANS_PER_TICK
+                        && placed < placementBudget) {
+                    BlockPos source = pending.removeFirst();
+                    if (!visited.add(source)) continue;
+                    scanned++;
+                    if (!level.hasChunkAt(source)
+                            || !SpiritStaffBuildPlan.sameBlock(level.getBlockState(source), supportingTemplate)) {
+                        continue;
+                    }
+                    for (Direction neighbor : Direction.values()) {
+                        if (neighbor.getAxis() != face.getAxis()) {
+                            pending.addLast(source.relative(neighbor).immutable());
+                        }
+                    }
+                    BlockPos target = source.relative(face).immutable();
+                    if (!level.getWorldBorder().isWithinBounds(target)
+                            || !level.mayInteract(player, target)) continue;
+                    BlockPlaceContext placeContext = SpiritStaffBuildPlan.placementContext(
+                            level, player, hand, target, face, material.template());
+                    InteractionResult result = material.blockItem().place(placeContext);
+                    if (!result.consumesAction()) continue;
+                    escrow.consumeOne();
+                    placed++;
+                    totalPlaced++;
+                }
+            } finally {
+                escrow.refund(player);
+            }
+            if (pending.isEmpty()) {
+                com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(player, net.minecraft.network.chat.Component.translatable(
+                        "message.immortalstorage.spirit_staff.build.placed", totalPlaced), true);
+                return false;
+            }
+            return true;
+        }
+    }
+
     private static final class MaterialEscrow {
         private final ItemStack template;
         private final @Nullable PersonalStorageEndpoint endpoint;
@@ -251,13 +386,13 @@ public final class SpiritStaffBuildExecutor {
                     com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(player));
             if (player.isCreative()) return new MaterialEscrow(template, endpoint, 0, 0);
 
-            int fromInventory = removeFromPlayer(player, template, requested);
+            int fromStorage = extractFromStorage(endpoint, template, requested);
             try {
-                int remaining = requested - fromInventory;
-                int fromStorage = remaining <= 0 ? 0 : extractFromStorage(endpoint, template, remaining);
+                int remaining = requested - fromStorage;
+                int fromInventory = remaining <= 0 ? 0 : removeFromPlayer(player, template, remaining);
                 return new MaterialEscrow(template, endpoint, fromInventory, fromStorage);
             } catch (RuntimeException failure) {
-                MaterialEscrow rollback = new MaterialEscrow(template, endpoint, fromInventory, 0);
+                MaterialEscrow rollback = new MaterialEscrow(template, endpoint, 0, fromStorage);
                 rollback.refund(player);
                 throw failure;
             }
@@ -268,10 +403,10 @@ public final class SpiritStaffBuildExecutor {
         }
 
         void consumeOne() {
-            if (inventoryRemaining > 0) {
-                inventoryRemaining--;
-            } else if (storageRemaining > 0) {
+            if (storageRemaining > 0) {
                 storageRemaining--;
+            } else if (inventoryRemaining > 0) {
+                inventoryRemaining--;
             }
         }
 

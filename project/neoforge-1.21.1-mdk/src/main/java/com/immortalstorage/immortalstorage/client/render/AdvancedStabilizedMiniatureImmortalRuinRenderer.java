@@ -21,10 +21,10 @@ public final class AdvancedStabilizedMiniatureImmortalRuinRenderer implements Bl
                        MultiBufferSource buffers, int light, int overlay) {
         float time = (entity.getLevel() == null ? 0 : entity.getLevel().getGameTime()) + partialTick;
         float scale = 0.27F + Mth.sin(time * 0.12F) * 0.03F;
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
         poses.pushPose();
         poses.translate(0.5F, 0.5F, 0.5F);
-        poses.mulPose(camera.rotation());
+        poses.mulPose(com.mojang.math.Axis.YP.rotation(time * 0.018F));
+        poses.mulPose(com.mojang.math.Axis.XP.rotation(time * 0.011F));
         MiniatureImmortalRuinRenderer.drawDisc(poses, buffers, scale, entity.reversed());
         poses.popPose();
         RuinLinkRenderer.render(poses, buffers, entity.getBlockPos(), entity.linkedPos());

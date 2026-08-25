@@ -37,16 +37,13 @@ public final class EntangledRuinCoreItemDecorator implements IItemDecorator {
         int by = centerY + (int) Math.round(Mth.sin(angle) * ORBIT);
         int edge = reversed ? 0x96000000 : 0x96FFFFFF;
         int core = reversed ? 0xFFFFFFFF : 0xFF000000;
-        drawDisc(graphics, bx, by, radius, edge);
-        drawDisc(graphics, bx, by, Math.max(1, radius - 1), core);
+        drawSquare(graphics, bx, by, radius, edge);
+        drawSquare(graphics, bx, by, Math.max(1, radius - 1), core);
     }
 
-    private static void drawDisc(GuiGraphicsExtractor graphics, int centerX, int centerY, int radius, int color) {
-        int radiusSquared = radius * radius;
-        for (int dy = -radius; dy <= radius; dy++) {
-            int width = Mth.floor(Math.sqrt(Math.max(0, radiusSquared - dy * dy)));
-            graphics.fill(centerX - width, centerY + dy, centerX + width + 1, centerY + dy + 1, color);
-        }
+    private static void drawSquare(GuiGraphicsExtractor graphics, int centerX, int centerY, int radius, int color) {
+        graphics.fill(centerX - radius, centerY - radius,
+                centerX + radius + 1, centerY + radius + 1, color);
     }
 
     private EntangledRuinCoreItemDecorator() {}

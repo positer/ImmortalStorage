@@ -1,0 +1,17 @@
+{
+  "name":"Complete Recipe Appendix",
+  "icon":"minecraft:crafting_table",
+  "category":"immortalstorage:recipes",
+  "sortnum":99,
+  "pages":[
+    {"type":"patchouli:text","text":"This appendix covers alternate stations, reversible crafts, and optional-integration recipes not expanded page by page in the main flow. Every other recipe is displayed directly in the materials, pills, equipment, storage, or automation chapters."},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:spirit_iron_ore_blasting","recipe2":"immortalstorage:deepslate_spirit_iron_ore_blasting","title":"Spirit-Iron Blasting","text":"Both normal and deepslate Spirit Iron Ore can be rapidly refined in a blast furnace."},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:immortal_art_remains_smelting","recipe2":"immortalstorage:immortal_art_remains_blasting","title":"Alternative Remains Firing","text":"A furnace or blast furnace produces alloy scrap; see Immortal Forging for Immortal-Furnace firing."},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:spirit_sword_tempering_smelting","recipe2":"immortalstorage:spirit_sword_tempering_blasting","title":"Alternative Tempering","text":"Furnace and blast-furnace routes also temper Spirit Swords; the Immortal Furnace is faster."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:world_barrier","recipe2":"immortalstorage:primordial_qi_from_world_barrier","title":"World-Barrier Reversal","text":"Primordial Qi shapelessly condenses into World Barrier and converts back without loss."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:reset_stabilized_miniature_immortal_ruin","title":"Stabilized Reset","text":"Craft a Stabilized Miniature Immortal Ruin alone to clear its saved state and receive a reset copy."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:mana_crystal_from_electric","recipe2":"immortalstorage:source_crystal_from_electric","title":"Integration Crystal Cycle I","flag":"mod:botania","text":"Cycle the electric crystal into Mana or Source according to the integrations currently installed."},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:source_crystal_from_mana","title":"Integration Crystal Cycle II","flag":"mod:ars_nouveau","text":"With both Botania and Ars Nouveau installed, the Mana crystal cycles into the Source crystal."},
+    {"type":"patchouli:spotlight","item":"immortalstorage:energy_crystal","title":"Six Stonecutter Conversions","text":"Stonecutter recipes: immortalstorage:crystal_electric_from_mana_stonecutting, immortalstorage:crystal_electric_from_source_stonecutting, immortalstorage:crystal_mana_from_electric_stonecutting, immortalstorage:crystal_mana_from_source_stonecutting, immortalstorage:crystal_source_from_electric_stonecutting, and immortalstorage:crystal_source_from_mana_stonecutting. Each is hidden unless its required mod exists."}
+  ]
+}

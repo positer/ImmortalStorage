@@ -398,6 +398,9 @@ public class KongqiaoMenu extends AbstractContainerMenu implements StorageTermin
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player actor) {
+        // This menu exposes more proxy slots than vanilla's 128-entry click packet budget.
+        // Let the client send only the original click and keep every mutation authoritative.
+        if (actor.level().isClientSide()) return;
         if (slotId >= 0 && slotId < PLAYER_START && !this.slots.get(slotId).isActive()) {
             return;
         }

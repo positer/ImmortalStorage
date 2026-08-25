@@ -61,6 +61,7 @@ public final class ClientSetup {
         modBus.addListener(ClientSetup::clientSetup);
         modBus.addListener(ClientSetup::registerScreens);
         modBus.addListener(ClientSetup::registerRenderers);
+        modBus.addListener(ClientSetup::addEntityLayers);
         modBus.addListener(ClientSetup::registerAdditionalModels);
         modBus.addListener(ClientSetup::registerItemDecorations);
         ImmortalStorageKeybinds.init(modBus, forgeBus);
@@ -87,6 +88,24 @@ public final class ClientSetup {
                     ModItems.SPIRIT_STAFF.get(),
                     ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),
                     (stack, level, entity, seed) -> SpiritStaffItem.getMode(stack));
+            ItemProperties.register(
+                    ModItems.IMMORTAL_ARTIFACT.get(),
+                    ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),
+                    (stack, level, entity, seed) -> SpiritStaffItem.getMode(stack));
+            ItemProperties.register(
+                    ModItems.IMMORTAL_ARTIFACT.get(),
+                    ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "artifact_tool"),
+                    (stack, level, entity, seed) -> {
+                        if (!(entity instanceof net.minecraft.world.entity.player.Player player) || level == null) return 0.0F;
+                        var clientHit = net.minecraft.client.Minecraft.getInstance().hitResult;
+                        if (clientHit instanceof net.minecraft.world.phys.EntityHitResult entityHit
+                                && entityHit.getEntity() instanceof net.neoforged.neoforge.common.IShearable) {
+                            return 4.0F;
+                        }
+                        var hit = clientHit;
+                        if (!(hit instanceof net.minecraft.world.phys.BlockHitResult blockHit)) return 0.0F;
+                        return SpiritStaffItem.miningVisual(stack, level.getBlockState(blockHit.getBlockPos()));
+                    });
             com.immortalstorage.immortalstorage.compat.CompatManager.initializeClientIntegrations();
         });
     }
@@ -132,7 +151,22 @@ public final class ClientSetup {
                 SimulatedSpiritFieldRenderer::new);
     }
 
+    private static void addEntityLayers(EntityRenderersEvent.AddLayers event) {
+        for (var skin : event.getSkins()) {
+            var renderer = event.getSkin(skin);
+            if (renderer instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer playerRenderer) {
+                playerRenderer.addLayer(new com.immortalstorage.immortalstorage.client.render.AuraGuardElytraLayer(
+                        playerRenderer, event.getEntityModels()));
+            }
+        }
+    }
+
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+        for (String model : new String[]{"immortal_artifact_pick", "immortal_artifact_axe",
+                "immortal_artifact_shovel", "immortal_artifact_hoe", "immortal_artifact_shears"}) {
+            event.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(
+                    ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "item/" + model)));
+        }
         for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
             if (!(item instanceof com.immortalstorage.immortalstorage.item.SourceVeinBlockItem)) continue;
             ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);

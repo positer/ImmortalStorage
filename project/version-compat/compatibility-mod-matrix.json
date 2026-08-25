@@ -7,7 +7,7 @@
     "probe_property": "compatibility_api_probe",
     "probe_rule": "A probe may inspect released API jars, but probe output is never a release claim and never supplies runtime dependencies for a release artifact.",
     "required_integration_interfaces": ["ae2", "refinedstorage", "jei"],
-    "optional_integration_interfaces": ["mekanism", "emi"],
+    "optional_integration_interfaces": ["mekanism", "emi", "create", "curios"],
     "official_sources": {
       "neoforge_versioning": "https://docs.neoforged.net/docs/gettingstarted/versioning/",
       "neoforge_26_1_primer": "https://docs.neoforged.net/primer/docs/26.1/",
@@ -15,7 +15,9 @@
       "mekanism_maven": "https://modmaven.dev/mekanism/Mekanism/maven-metadata.xml",
       "jei_maven": "https://maven.blamejared.com/mezz/jei/",
       "refinedstorage_maven": "https://maven.creeperhost.net/com/refinedmods/refinedstorage/refinedstorage-neoforge/maven-metadata.xml",
-      "emi_tags": "https://github.com/emilyploszaj/emi/tags"
+      "emi_tags": "https://github.com/emilyploszaj/emi/tags",
+      "create_modrinth": "https://modrinth.com/mod/create/versions",
+      "curios_modrinth": "https://modrinth.com/mod/curios/versions"
     }
   },
   "profiles": [
@@ -88,6 +90,37 @@
             "dev.emi.emi.api.EmiPlugin": ["void register("]
           }
         },
+        "create": {
+          "status": "available",
+          "compile": "maven.modrinth:create:6.0.10+mc1.21.1",
+          "runtime": "maven.modrinth:create:6.0.10+mc1.21.1",
+          "api_classes": [
+            "com/simibubi/create/content/kinetics/fan/processing/FanProcessingType.class",
+            "com/simibubi/create/api/registry/CreateBuiltInRegistries.class"
+          ],
+          "api_methods": {
+            "com.simibubi.create.content.kinetics.fan.processing.FanProcessingType": [
+              "boolean isValidAt(",
+              "boolean canProcess(",
+              "void affectEntity("
+            ]
+          }
+        },
+        "curios": {
+          "status": "available",
+          "compile": "maven.modrinth:curios:9.5.1+1.21.1",
+          "runtime": "maven.modrinth:curios:9.5.1+1.21.1",
+          "api_classes": [
+            "top/theillusivec4/curios/api/CuriosApi.class",
+            "top/theillusivec4/curios/api/type/capability/ICurioItem.class"
+          ],
+          "api_methods": {
+            "top.theillusivec4.curios.api.CuriosApi": [
+              "void registerCurio(",
+              "getCuriosInventory("
+            ]
+          }
+        },
         "refined_types": {
           "status": "available",
           "compile": "maven.modrinth:refined-types:1.21.1-0.3.2"
@@ -107,7 +140,7 @@
         "Repeated PCL2 all-mod client validation covered the migrated storage, machine, rendering, Patchouli, AE2, Refined Storage, and JEI paths during the 0.0.12 cycle."
       ],
       "known_optional_gaps": [
-        "No matching Mekanism 26.1.2 or EMI 26.1.2 artifact is published; these optional integrations remain excluded until an official target API line exists."
+        "No matching Mekanism 26.1.2, EMI 26.1.2, or Create 26.1.2 artifact is published; these optional integrations remain excluded until an official target API line exists."
       ],
       "mods": {
         "ae2": {
@@ -177,6 +210,25 @@
         "emi": {
           "status": "unavailable",
           "reason": "No official EMI 26.1.2 API artifact or tag was found; do not borrow 1.21.1 classes in a release build."
+        },
+        "create": {
+          "status": "unavailable",
+          "reason": "Create 6.0.10 is officially published for NeoForge 1.21.1, but no official Minecraft 26.1.2 NeoForge artifact exists. Keep the Nurturing fan-processing integration hidden and excluded on this target rather than borrowing the 1.21.1 API."
+        },
+        "curios": {
+          "status": "available",
+          "compile": "maven.modrinth:curios:15.0.0+26.1.2",
+          "runtime": "maven.modrinth:curios:15.0.0+26.1.2",
+          "api_classes": [
+            "top/theillusivec4/curios/api/CuriosApi.class",
+            "top/theillusivec4/curios/api/type/capability/ICurioItem.class"
+          ],
+          "api_methods": {
+            "top.theillusivec4.curios.api.CuriosApi": [
+              "void registerCurio(",
+              "getCuriosInventory("
+            ]
+          }
         },
         "refined_types": {
           "status": "unavailable",

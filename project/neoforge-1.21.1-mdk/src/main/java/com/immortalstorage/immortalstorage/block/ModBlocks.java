@@ -43,6 +43,9 @@ public final class ModBlocks {
             () -> new net.minecraft.world.level.block.DropExperienceBlock(
                     net.minecraft.util.valueproviders.UniformInt.of(3, 7),
                     setBlockId("deepslate_spirit_crystal_ore", BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_DIAMOND_ORE))));
+    public static final Supplier<Block> IMMORTAL_ART_REMAINS = reg("immortal_art_remains",
+            () -> new Block(setBlockId("immortal_art_remains",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.ANCIENT_DEBRIS))));
 
     public static final Supplier<Block> IMMORTAL_FURNACE = reg("immortal_furnace",
             () -> new ImmortalFurnaceBlock(setBlockId("immortal_furnace", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PURPLE).strength(3.5f).requiresCorrectToolForDrops().lightLevel(s -> 7))));

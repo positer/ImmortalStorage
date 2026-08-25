@@ -62,7 +62,7 @@ final class TerminalStonecutterLayoutContractTest {
         }
         assertTrue(workspace != null);
         Path target = workspace.resolve(Path.of("project", "version-compat", "neoforge",
-                "mc-26.1.2-nf-26.1.2.94", "src", "main", "java", "com", "immortalstorage",
+                "mc-26.1.2-nf-26.1.2.94", "..", "version-compat", "neoforge", "mc-26.1.2-nf-26.1.2.94", "src", "test", "compat-source", "com", "immortalstorage",
                 "immortalstorage", "menu", "custom", "EmbeddedStonecutterBackend.java"));
         if (!Files.isRegularFile(target)) return;
         String source = Files.readString(target);
@@ -70,9 +70,11 @@ final class TerminalStonecutterLayoutContractTest {
         assertTrue(source.contains("level.recipeAccess().stonecutterRecipes().acceptsInput(stack)"));
         assertTrue(source.contains("level.recipeAccess().stonecutterRecipes().selectByInput(itemstack)"));
         assertFalse(source.contains("(net.minecraft.world.item.crafting.RecipeManager) level.recipeAccess()"));
-
-        String gui = Files.readString(SCREENS.resolve("TerminalStonecutterGui.java"));
-        assertTrue(gui.contains("optionDisplay().resolveForFirstStack(context)"));
+        assertFalse(source.contains("if (!mayTake()) return;"),
+                "the target backend must not reject onTake after vanilla clears the result slot");
+        assertTrue(source.contains("isValidRecipeIndex(selectedRecipeIndex.get()) || input.getItem(INPUT).isEmpty()"));
+        assertTrue(source.contains("setupResultSlot();"),
+                "the target backend must regenerate the selected output while input remains");
     }
 
     private static Path locateMainSources() {

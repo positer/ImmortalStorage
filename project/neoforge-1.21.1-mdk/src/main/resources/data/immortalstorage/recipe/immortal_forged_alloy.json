@@ -1,0 +1,16 @@
+{
+  "type":"minecraft:crafting_shapeless",
+  "category":"misc",
+  "ingredients":[
+    {"item":"immortalstorage:nurturing_crystal"},
+    {"item":"immortalstorage:immortal_forged_alloy_scrap"},
+    {"item":"immortalstorage:immortal_forged_alloy_scrap"},
+    {"item":"immortalstorage:immortal_forged_alloy_scrap"},
+    {"item":"immortalstorage:immortal_forged_alloy_scrap"},
+    {"item":"immortalstorage:spirit_iron"},
+    {"item":"immortalstorage:spirit_iron"},
+    {"item":"immortalstorage:spirit_iron"},
+    {"item":"immortalstorage:spirit_iron"}
+  ],
+  "result":{"count":1,"id":"immortalstorage:immortal_forged_alloy"}
+}

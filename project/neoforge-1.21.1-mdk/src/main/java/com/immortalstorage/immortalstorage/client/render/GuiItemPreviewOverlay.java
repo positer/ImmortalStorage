@@ -66,8 +66,8 @@ public final class GuiItemPreviewOverlay {
         boolean reversed = reversed(stack);
         graphics.pose().pushPose();
         graphics.pose().translate(0.0F, 0.0F, 180.0F);
-        drawDisc(graphics, x + 8, y + 8, radius, reversed ? 0x96000000 : 0x96FFFFFF);
-        drawDisc(graphics, x + 8, y + 8, Math.max(2, radius - 1), reversed ? 0xFFFFFFFF : 0xFF000000);
+        drawSquare(graphics, x + 8, y + 8, radius, reversed ? 0x96000000 : 0x96FFFFFF);
+        drawSquare(graphics, x + 8, y + 8, Math.max(2, radius - 1), reversed ? 0xFFFFFFFF : 0xFF000000);
         graphics.pose().popPose();
     }
 
@@ -107,12 +107,9 @@ public final class GuiItemPreviewOverlay {
         return tag.getBoolean("Reversed");
     }
 
-    private static void drawDisc(GuiGraphics graphics, int centerX, int centerY, int radius, int color) {
-        int radiusSquared = radius * radius;
-        for (int dy = -radius; dy <= radius; dy++) {
-            int width = Mth.floor(Math.sqrt(Math.max(0, radiusSquared - dy * dy)));
-            graphics.fill(centerX - width, centerY + dy, centerX + width + 1, centerY + dy + 1, color);
-        }
+    private static void drawSquare(GuiGraphics graphics, int centerX, int centerY, int radius, int color) {
+        graphics.fill(centerX - radius, centerY - radius,
+                centerX + radius + 1, centerY + radius + 1, color);
     }
 
     private GuiItemPreviewOverlay() {}

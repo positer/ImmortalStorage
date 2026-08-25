@@ -1,0 +1,9 @@
+{
+  "parent":"minecraft:item/handheld","textures":{"layer0":"immortalstorage:item/immortal_artifact_pick"},
+  "overrides":[
+    {"predicate":{"immortalstorage:artifact_tool":1},"model":"immortalstorage:item/immortal_artifact_axe"},
+    {"predicate":{"immortalstorage:artifact_tool":2},"model":"immortalstorage:item/immortal_artifact_shovel"},
+    {"predicate":{"immortalstorage:artifact_tool":3},"model":"immortalstorage:item/immortal_artifact_hoe"},
+    {"predicate":{"immortalstorage:artifact_tool":4},"model":"immortalstorage:item/immortal_artifact_shears"}
+  ]
+}

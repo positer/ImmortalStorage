@@ -1,0 +1,13 @@
+{
+  "name":"机械动力：蕴灵鼓风",
+  "icon":"create:encased_fan",
+  "category":"immortalstorage:compat",
+  "sortnum":20,
+  "flag":"mod:create",
+  "pages":[
+    {"type":"patchouli:text","text":"安装机械动力后，仙藏注册独立鼓风处理类型$(thing)蕴灵$()。它不是前置依赖：未安装机械动力时，本条目、处理类型和相关显示全部隐藏。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:true_yuan_light,immortalstorage:immortal_yuan_light","title":"放置触媒","text":"把真元或仙元的放置形态置于鼓风气流前方即可形成蕴灵气流。气流呈青白色并伴随青白粒子。"},
+    {"type":"patchouli:text","title":"处理与生物效果","text":"蕴灵气流直接读取当前数据包中的全部仙炉配方，因此配方增删会自动同步。玩家或其他生物位于气流影响范围内时持续获得生命恢复V。"},
+    {"type":"patchouli:text","title":"版本边界","text":"Create 6.0.10 已为 Minecraft 1.21.1 / NeoForge 发布，因此该版本启用联动。当前没有 Create 的 Minecraft 26.1.2 NeoForge 官方制品；在其发布前，26.1.2 不借用旧 API并保持隐藏。"}
+  ]
+}

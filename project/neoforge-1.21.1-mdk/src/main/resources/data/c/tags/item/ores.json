@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "#c:ores/spirit_iron",
-    "#c:ores/spirit_crystal"
+    "#c:ores/spirit_crystal",
+    "#c:ores/immortal_art_remains"
   ]
 }

@@ -28,8 +28,8 @@ public final class RuinCoreItemDecorator implements IItemDecorator {
         int core = reversed ? 0xFFFFFFFF : 0xFF000000;
         graphics.pose().pushPose();
         graphics.pose().translate(0.0F, 0.0F, 150.0F);
-        drawDisc(graphics, centerX, centerY, radius, edge);
-        drawDisc(graphics, centerX, centerY, Math.max(2, radius - 1), core);
+        drawSquare(graphics, centerX, centerY, radius, edge);
+        drawSquare(graphics, centerX, centerY, Math.max(2, radius - 1), core);
         graphics.pose().popPose();
         return false;
     }
@@ -41,12 +41,9 @@ public final class RuinCoreItemDecorator implements IItemDecorator {
         return tag.getBoolean("Reversed");
     }
 
-    private static void drawDisc(GuiGraphics graphics, int centerX, int centerY, int radius, int color) {
-        int radiusSquared = radius * radius;
-        for (int dy = -radius; dy <= radius; dy++) {
-            int width = Mth.floor(Math.sqrt(Math.max(0, radiusSquared - dy * dy)));
-            graphics.fill(centerX - width, centerY + dy, centerX + width + 1, centerY + dy + 1, color);
-        }
+    private static void drawSquare(GuiGraphics graphics, int centerX, int centerY, int radius, int color) {
+        graphics.fill(centerX - radius, centerY - radius,
+                centerX + radius + 1, centerY + radius + 1, color);
     }
 
     private RuinCoreItemDecorator() {}

@@ -43,7 +43,7 @@ final class ExternalResourceCatalogTest {
 
     @Test
     void lateDefinitionsResolvePerConcreteResourceKeyAndSupplyFormalNames() {
-        ResourceChannelKey oxygen = ExternalResourceChannels.mekanismChemical("mekanism:oxygen");
+        ResourceChannelKey oxygen = ExternalResourceChannels.mekanismChemical("cultivation_test:late_oxygen");
         ExternalResourceCatalog.registerDefinitionProvider(id("late_chemical_definition"), key ->
                 oxygen.equals(key) ? new ExternalResourceCatalog.Definition(
                         id("textures/oxygen.png"), "mB", 0xFF55AAFF,

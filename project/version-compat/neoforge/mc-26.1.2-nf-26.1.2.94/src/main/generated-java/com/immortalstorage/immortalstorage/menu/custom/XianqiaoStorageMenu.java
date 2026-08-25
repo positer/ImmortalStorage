@@ -459,6 +459,9 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
     @Override
     public void clicked(int slotId, int button, ContainerInput clickType, Player actor) {
         if (!hasLiveTerminalAccess(actor)) return;
+        // Client prediction can rebuild more slots than ServerboundContainerClickPacket permits.
+        // The server processes the original click and then synchronizes the authoritative result.
+        if (actor.level().isClientSide()) return;
         if (slotId >= 0 && slotId < VISIBLE_STORAGE_SLOTS) {
             // Aggregated proxy slots are operated only through TerminalEntryAction.
             // Ignoring vanilla container clicks prevents stale client slot indices from becoming authority.
@@ -963,6 +966,13 @@ public class XianqiaoStorageMenu extends AbstractContainerMenu implements Storag
         clientRevision = Math.max(0L, revision);
         filteredEntries = entries == null ? List.of() : List.copyOf(entries);
         filteredEntriesInitialized = true;
+        // Storage proxy slots are rendered from the custom snapshot protocol, not
+        // vanilla slot clicks. Keep AbstractContainerMenu's remote baseline in
+        // lockstep so a crafting click never serializes all 144 proxy entries
+        // into the vanilla 128-entry changed-slot packet.
+        for (int index = 0; index < BUFFERED_STORAGE_SLOTS; index++) {
+            setRemoteSlot(index, storageProxyDisplayStack(true, entryAtViewIndex(index)));
+        }
     }
 
     public void applyClientFluidSnapshot(long revision, int rows, int snapshotBaseRow, int snapshotBufferBaseRow,

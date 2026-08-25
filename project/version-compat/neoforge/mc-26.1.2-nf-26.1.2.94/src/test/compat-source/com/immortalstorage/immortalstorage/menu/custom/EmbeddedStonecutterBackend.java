@@ -144,8 +144,10 @@ final class EmbeddedStonecutterBackend {
     }
 
     void onTake(Player actor, ItemStack crafted) {
-        if (!mayTake()) return;
-        crafted.onCraftedBy(actor, crafted.getCount());
+        // The result container is already empty when Slot.onTake is invoked.
+        // Preserve the selected recipe while input remains and rebuild the next output.
+        if (!isValidRecipeIndex(selectedRecipeIndex.get()) || input.getItem(INPUT).isEmpty()) return;
+        if (!crafted.isEmpty()) crafted.onCraftedBy(actor, crafted.getCount());
         result.awardUsedRecipes(actor, List.of(input.getItem(INPUT)));
         ItemStack current = input.getItem(INPUT);
         if (!current.isEmpty()) current.shrink(1);

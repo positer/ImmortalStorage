@@ -35,7 +35,8 @@ public final class ModItems {
                     "dragon_egg_vein" -> Rarity.EPIC;
             case "immortal_yuan", "breakthrough_pill_embryo", "breakthrough_pill",
                     "immortal_pill", "nurturing_crystal", "nurturing_crystal_bedrock",
-                    "qi_collecting_bottle", "primordial_qi",
+                    "immortal_art_remains", "immortal_forged_alloy_scrap", "immortal_forged_alloy",
+                    "qi_collecting_bottle", "primordial_qi", "immortal_master_talisman", "immortal_artifact",
                     "premixed_heavy_compound", "substitute_puppet", "miniature_immortal_ruin",
                     "soul_catcher",
                     "xianqiao_manager", "xianqiao_interface", "xianqiao_exchange_cell",
@@ -90,6 +91,13 @@ public final class ModItems {
     public static final Supplier<Item> CRUDE_SPIRIT_IRON = registerItem("crude_spirit_iron", Item::new);
     public static final Supplier<Item> SPIRIT_CRYSTAL = registerItem("spirit_crystal", Item::new);
     public static final Supplier<Item> NURTURING_CRYSTAL = registerItem("nurturing_crystal", Item::new);
+    public static final Supplier<Item> IMMORTAL_FORGED_ALLOY_SCRAP = registerItem(
+            "immortal_forged_alloy_scrap", Item::new);
+    public static final Supplier<Item> IMMORTAL_FORGED_ALLOY = registerItem(
+            "immortal_forged_alloy", Item::new, new Item.Properties().fireResistant());
+    public static final Supplier<Item> INFORMATION_STORAGE_CRYSTAL = registerItem(
+            "information_storage_crystal", InformationStorageCrystalItem::new,
+            new Item.Properties().stacksTo(1));
     public static final Supplier<Item> QI_COLLECTING_BOTTLE = registerItem("qi_collecting_bottle",
             p -> new QiCollectingBottleItem(p, true), new Item.Properties().stacksTo(1).durability(1024));
     public static final Supplier<Item> DISPOSABLE_QI_COLLECTING_BOTTLE = registerItem(
@@ -98,6 +106,9 @@ public final class ModItems {
     public static final Supplier<Item> PRIMORDIAL_QI = registerItem("primordial_qi", PrimordialQiItem::new,
             new Item.Properties().stacksTo(64));
     public static final Supplier<Item> SPIRIT_CORE = registerItem("spirit_core", p -> new SpiritCoreItem(p.stacksTo(16)));
+    public static final Supplier<Item> IMMORTAL_MASTER_TALISMAN = registerItem(
+            "immortal_master_talisman", ImmortalMasterTalismanItem::new,
+            new Item.Properties().stacksTo(1).fireResistant());
     public static final Supplier<Item> PREMIXED_HEAVY_COMPOUND = registerItem("premixed_heavy_compound", Item::new);
     public static final Supplier<Item> SUBSTITUTE_PUPPET = registerItem("substitute_puppet", SubstitutePuppetItem::new,
             new Item.Properties().stacksTo(1).durability(SubstitutePuppetItem.MAX_DURABILITY));
@@ -119,6 +130,9 @@ public final class ModItems {
             "soul_catcher", SoulCatcherItem::new, new Item.Properties().stacksTo(1));
     public static final Supplier<Item> SPIRIT_STAFF = registerItem("spirit_staff", SpiritStaffItem::new,
             new Item.Properties().attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)));
+    public static final Supplier<Item> IMMORTAL_ARTIFACT = registerItem("immortal_artifact", ImmortalArtifactItem::new,
+            new Item.Properties().fireResistant()
+                    .attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)));
     public static final Supplier<Item> SPIRIT_DRIVE = registerItem("spirit_drive", SpiritDriveItem::new);
     public static final Supplier<Item> XIANQIAO_EXCHANGE_CELL = registerItem(
             "xianqiao_exchange_cell", XianqiaoExchangeCellItem::new);

@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -35,6 +36,8 @@ public final class CompatManager {
             modPresent("industrialforegoingsouls");
     public static final boolean NATURES_AURA_LOADED = modPresent("naturesaura");
     public static final boolean BEYOND_DIMENSIONS_LOADED = modPresent("beyonddimensions");
+    public static final boolean CREATE_LOADED = modPresent("create");
+    public static final boolean CURIOS_LOADED = modPresent("curios");
 
     private static boolean modPresent(String id) {
         try {
@@ -59,7 +62,9 @@ public final class CompatManager {
                 + ", Ars Nouveau=" + ARS_NOUVEAU_LOADED
                 + ", Industrial Foregoing Souls=" + INDUSTRIAL_FOREGOING_SOULS_LOADED
                 + ", Nature's Aura=" + NATURES_AURA_LOADED
-                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED;
+                + ", Beyond Dimensions=" + BEYOND_DIMENSIONS_LOADED
+                + ", Create=" + CREATE_LOADED
+                + ", Curios=" + CURIOS_LOADED;
     }
 
     public static void logCompat() {
@@ -108,6 +113,19 @@ public final class CompatManager {
             modBus.addListener(CompatManager::initializeArsNouveau);
             modBus.addListener(CompatManager::registerArsNouveauCapabilities);
         }
+        if (CREATE_LOADED) {
+            invokeOptionalMethod(
+                    "com.immortalstorage.immortalstorage.compat.create.CreateNurturingCompat",
+                    "register",
+                    new Class<?>[]{IEventBus.class},
+                    modBus);
+        }
+        if (CURIOS_LOADED) modBus.addListener(CompatManager::initializeCurios);
+    }
+
+    private static void initializeCurios(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> invokeOptionalBootstrap(
+                "com.immortalstorage.immortalstorage.compat.curios.CuriosTalismanCompat"));
     }
 
     private static void registerExternalResourceCatalogues() {

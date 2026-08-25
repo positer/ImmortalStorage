@@ -1,0 +1,17 @@
+{
+  "name":"完整配方补遗",
+  "icon":"minecraft:crafting_table",
+  "category":"immortalstorage:recipes",
+  "sortnum":99,
+  "pages":[
+    {"type":"patchouli:text","text":"本章补齐主流程章节未逐页展开的替代工位、可逆合成和可选联动配方。其余配方已在材料、丹药、装备、存储与自动化各章直接展示。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:spirit_iron_ore_blasting","recipe2":"immortalstorage:deepslate_spirit_iron_ore_blasting","title":"灵铁矿高炉路线","text":"普通与深层灵铁矿都可由高炉快速精炼。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:immortal_art_remains_smelting","recipe2":"immortalstorage:immortal_art_remains_blasting","title":"仙法遗骸替代路线","text":"普通熔炉与高炉都能得到仙锻合金碎片；仙炉煅烧见“仙锻与仙器”。"},
+    {"type":"patchouli:smelting","recipe":"immortalstorage:spirit_sword_tempering_smelting","recipe2":"immortalstorage:spirit_sword_tempering_blasting","title":"灵剑淬火替代路线","text":"熔炉与高炉也可淬火灵剑；仙炉路线更快。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:world_barrier","recipe2":"immortalstorage:primordial_qi_from_world_barrier","title":"世界胎壁可逆转换","text":"混元一气可无序凝为世界胎壁，世界胎壁也可完整还原。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:reset_stabilized_miniature_immortal_ruin","title":"稳定化重置","text":"单独无序合成稳定化迷你仙墟可清除其保存状态并获得重置后的同类物品。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:mana_crystal_from_electric","recipe2":"immortalstorage:source_crystal_from_electric","title":"联动水晶轮换 I","flag":"mod:botania","text":"按当前已安装联动把电力水晶转换为魔力或魔源水晶。"},
+    {"type":"patchouli:crafting","recipe":"immortalstorage:source_crystal_from_mana","title":"联动水晶轮换 II","flag":"mod:ars_nouveau","text":"同时存在植物魔法与新生魔艺时，魔力水晶可轮换为魔源水晶。"},
+    {"type":"patchouli:spotlight","item":"immortalstorage:energy_crystal","title":"六张切石机互转","text":"切石机配方：immortalstorage:crystal_electric_from_mana_stonecutting、immortalstorage:crystal_electric_from_source_stonecutting、immortalstorage:crystal_mana_from_electric_stonecutting、immortalstorage:crystal_mana_from_source_stonecutting、immortalstorage:crystal_source_from_electric_stonecutting、immortalstorage:crystal_source_from_mana_stonecutting。只有对应模组存在时显示。"}
+  ]
+}

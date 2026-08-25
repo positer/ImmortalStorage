@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": { "item": "immortalstorage:spirit_core" },
+  "base": { "item": "immortalstorage:spirit_staff" },
+  "addition": { "item": "immortalstorage:immortal_forged_alloy" },
+  "result": { "id": "immortalstorage:immortal_artifact" }
+}

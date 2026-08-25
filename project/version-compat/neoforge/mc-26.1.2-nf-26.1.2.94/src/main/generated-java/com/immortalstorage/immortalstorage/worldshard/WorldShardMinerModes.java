@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import com.immortalstorage.immortalstorage.block.ModBlocks;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +35,7 @@ public final class WorldShardMinerModes {
                 new WorldShardMinerMode(NETHER, WorldShardMinerActivation.forBlock(Blocks.ANCIENT_DEBRIS),
                         Optional.of(Level.NETHER.identifier()), Optional.of(BiomeTags.IS_NETHER),
                         0xFFFF5555, 1.0D, false, Map.of()),
-                new WorldShardMinerMode(END, WorldShardMinerActivation.forBlock(Blocks.PURPUR_BLOCK),
+                new WorldShardMinerMode(END, WorldShardMinerActivation.forBlock(ModBlocks.IMMORTAL_ART_REMAINS.get()),
                         Optional.of(Level.END.identifier()), Optional.of(BiomeTags.IS_END),
                         0xFFAA55FF, 1.0D, false, Map.of()));
     }

@@ -61,10 +61,14 @@ final class XianqiaoContainerClickBoundaryTest {
     }
 
     @Test
-    void largeProxyDirectoryNeverParticipatesInClientPlayerQuickMovePrediction() throws IOException {
-        String menu = Files.readString(MAIN.resolve(Path.of(
+    void largeProxyMenusNeverPerformAnyClientClickPrediction() throws IOException {
+        String xianqiao = Files.readString(MAIN.resolve(Path.of(
                 "menu", "custom", "XianqiaoStorageMenu.java")));
-        String quickMove = methodBody(menu, "public ItemStack quickMoveStack(");
+        String kongqiao = Files.readString(MAIN.resolve(Path.of(
+                "menu", "custom", "KongqiaoMenu.java")));
+        String quickMove = methodBody(xianqiao, "public ItemStack quickMoveStack(");
+        String xianqiaoClicked = methodBody(xianqiao, "public void clicked(");
+        String kongqiaoClicked = methodBody(kongqiao, "public void clicked(");
 
         assertTrue(XianqiaoStorageMenu.BUFFERED_STORAGE_SLOTS > 128,
                 "the regression requires more proxies than vanilla's changed-slot map accepts");
@@ -74,6 +78,14 @@ final class XianqiaoContainerClickBoundaryTest {
                 "client prediction must stop before storage insertion");
         assertTrue(serverOnlyGuard < quickMove.indexOf("rebuildCatalog()"),
                 "client prediction must stop before rebuilding every proxy stack");
+        assertTrue(xianqiaoClicked.contains("if (actor.level().isClientSide()) return;"));
+        assertTrue(kongqiaoClicked.contains("if (actor.level().isClientSide()) return;"));
+        assertTrue(xianqiaoClicked.indexOf("if (actor.level().isClientSide()) return;")
+                        < xianqiaoClicked.indexOf("super.clicked("),
+                "client clicks must stop before vanilla records an oversized changed-slot map");
+        assertTrue(kongqiaoClicked.indexOf("if (actor.level().isClientSide()) return;")
+                        < kongqiaoClicked.indexOf("super.clicked("),
+                "Kongqiao must also leave all click mutations to the server");
     }
 
     private static Path locateMainSources() {

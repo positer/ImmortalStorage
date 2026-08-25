@@ -41,7 +41,6 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
-import java.util.List;
 import java.util.Optional;
 
 @JeiPlugin
@@ -185,57 +184,11 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
             if (recipeSlots.getSlotViews(RecipeIngredientRole.INPUT).size() > 9) {
                 return helper.createInternalError();
             }
-            int transferableSets = maxTransferableSets(menu, recipe.value().placementInfo().ingredients());
-            if (transferableSets <= 0) {
-                return helper.createUserErrorForMissingSlots(
-                        Component.translatable("container.immortalstorage.terminal.recipe_transfer_missing"),
-                        recipeSlots.getSlotViews(RecipeIngredientRole.INPUT));
-            }
             if (doTransfer) {
                 ClientPacketDistributor.sendToServer(new com.immortalstorage.immortalstorage.network.ModPayloads.TransferTerminalRecipe(
-                        menu.containerId, menu.viewport().revision(), recipe.id().identifier(), maxTransfer ? transferableSets : 1));
+                        menu.containerId, menu.viewport().revision(), recipe.id().identifier(), maxTransfer ? 64 : 1));
             }
             return null;
-        }
-
-        private int maxTransferableSets(M menu, List<net.minecraft.world.item.crafting.Ingredient> ingredients) {
-            List<AvailableStack> available = new java.util.ArrayList<>();
-            for (Slot slot : menu.craftingSourceSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
-            for (Slot slot : menu.craftingInputSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
-            for (CraftingTransferTarget.TransferIngredient entry : menu.craftingStorageIngredients()) {
-                available.add(new AvailableStack(entry.stack(), entry.amount()));
-            }
-            int limit = ingredients.stream().filter(ingredient -> !ingredient.isEmpty())
-                    .flatMap(ingredient -> ingredient.items())
-                    .mapToInt(holder -> holder.value().getMaxStackSize(new ItemStack(holder.value()))).max().orElse(1);
-            for (int sets = limit; sets > 0; sets--) {
-                List<AvailableStack> simulation = available.stream().map(AvailableStack::copy).toList();
-                boolean complete = true;
-                for (net.minecraft.world.item.crafting.Ingredient ingredient : ingredients) {
-                    if (ingredient.isEmpty()) continue;
-                    int remaining = sets;
-                    for (AvailableStack stack : simulation) {
-                        if (remaining <= 0) break;
-                        if (!ingredient.test(stack.stack)) continue;
-                        int take = (int) Math.min(remaining, stack.amount);
-                        stack.amount -= take;
-                        remaining -= take;
-                    }
-                    if (remaining > 0) { complete = false; break; }
-                }
-                if (complete) return sets;
-            }
-            return 0;
-        }
-
-        private static final class AvailableStack {
-            private final ItemStack stack;
-            private long amount;
-            private AvailableStack(ItemStack stack, long amount) {
-                this.stack = stack.copyWithCount(1);
-                this.amount = amount;
-            }
-            private AvailableStack copy() { return new AvailableStack(stack, amount); }
         }
     }
 
@@ -255,28 +208,9 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
                 boolean maxTransfer, boolean doTransfer) {
             if (!menu.isSmithingUnlocked() || !menu.isSmithingVisible()) return helper.createUserErrorWithTooltip(
                     Component.translatable("container.immortalstorage.terminal.recipe_transfer_locked"));
-            if (!hasSmithingIngredients(menu, recipe.value())) return helper.createUserErrorForMissingSlots(
-                    Component.translatable("container.immortalstorage.terminal.recipe_transfer_missing"),
-                    recipeSlots.getSlotViews(RecipeIngredientRole.INPUT));
             if (doTransfer) ClientPacketDistributor.sendToServer(new com.immortalstorage.immortalstorage.network.ModPayloads.TransferTerminalRecipe(
                     menu.containerId, menu.viewport().revision(), recipe.id().identifier(), 1));
             return null;
-        }
-        private boolean hasSmithingIngredients(M menu, SmithingRecipe recipe) {
-            List<AvailableStack> available = new java.util.ArrayList<>();
-            for (Slot slot : menu.smithingSourceSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
-            for (Slot slot : menu.smithingInputSlots()) if (slot.hasItem()) available.add(new AvailableStack(slot.getItem(), slot.getItem().getCount()));
-            for (CraftingTransferTarget.TransferIngredient entry : menu.smithingStorageIngredients()) available.add(new AvailableStack(entry.stack(), entry.amount()));
-            return reserve(available, stack -> recipe.templateIngredient().map(ingredient -> ingredient.test(stack)).orElse(false)) && reserve(available, stack -> recipe.baseIngredient().test(stack))
-                    && reserve(available, stack -> recipe.additionIngredient().map(ingredient -> ingredient.test(stack)).orElse(false));
-        }
-        private boolean reserve(List<AvailableStack> available, java.util.function.Predicate<ItemStack> test) {
-            for (AvailableStack entry : available) if (entry.amount > 0 && test.test(entry.stack)) { entry.amount--; return true; }
-            return false;
-        }
-        private static final class AvailableStack {
-            final ItemStack stack; long amount;
-            AvailableStack(ItemStack stack, long amount) { this.stack = stack.copyWithCount(1); this.amount = amount; }
         }
     }
 }

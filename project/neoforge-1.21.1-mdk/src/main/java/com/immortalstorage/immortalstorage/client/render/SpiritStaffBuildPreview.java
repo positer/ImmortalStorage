@@ -2,6 +2,7 @@ package com.immortalstorage.immortalstorage.client.render;
 
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem;
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffBuildExecutor;
+import com.immortalstorage.immortalstorage.item.custom.ImmortalArtifactItem;
 import com.immortalstorage.immortalstorage.item.custom.SpiritSwordItem;
 import com.immortalstorage.immortalstorage.client.keybind.ImmortalStorageKeybinds;
 import com.immortalstorage.immortalstorage.network.ModPayloads;
@@ -33,6 +34,7 @@ public final class SpiritStaffBuildPreview {
     private static int requestId;
     private static long lastRequestTick = Long.MIN_VALUE;
     private static List<BlockPos> serverPositions = List.of();
+    private static boolean artifactBuild;
 
     public static void init(IEventBus forgeBus) {
         forgeBus.addListener(SpiritStaffBuildPreview::renderWorldPreview);
@@ -45,7 +47,12 @@ public final class SpiritStaffBuildPreview {
         if (!event.isUseItem() || !ImmortalStorageKeybinds.SPECIAL_OPERATION.isDown()
                 || minecraft.player == null || minecraft.screen != null) return;
         ItemStack held = minecraft.player.getItemInHand(event.getHand());
-        if (held.getItem() instanceof SpiritStaffItem
+        if (held.getItem() instanceof ImmortalArtifactItem
+                && minecraft.player.isShiftKeyDown()
+                && SpiritStaffItem.getMode(held) == SpiritStaffItem.MODE_BUILD) {
+            PacketDistributor.sendToServer(new ModPayloads.RestoreImmortalArtifactBuildLayer(
+                    event.getHand().ordinal()));
+        } else if (held.getItem() instanceof SpiritStaffItem
                 && SpiritStaffItem.getMode(held) == SpiritStaffItem.MODE_BUILD
                 && minecraft.hitResult instanceof BlockHitResult hit) {
             PacketDistributor.sendToServer(new ModPayloads.RemoveSpiritStaffBuildLayer(
@@ -75,6 +82,7 @@ public final class SpiritStaffBuildPreview {
             reset();
             return;
         }
+        artifactBuild = minecraft.player.getItemInHand(hand).getItem() instanceof ImmortalArtifactItem;
 
         BlockHitResult hit = event.getTarget();
         boolean removal = ImmortalStorageKeybinds.SPECIAL_OPERATION.isDown();
@@ -119,6 +127,8 @@ public final class SpiritStaffBuildPreview {
         if (previewCount > 0) {
             key = requestedTarget != null && requestedTarget.removal()
                     ? "message.immortalstorage.spirit_staff.build.preview_removal"
+                    : artifactBuild
+                    ? "message.immortalstorage.immortal_artifact.build.preview_unbounded"
                     : "message.immortalstorage.spirit_staff.build.preview";
         } else if (previewFailure == SpiritStaffBuildExecutor.Failure.NO_MATERIALS) {
             key = "message.immortalstorage.spirit_staff.build.preview_no_materials";
@@ -127,7 +137,7 @@ public final class SpiritStaffBuildPreview {
         } else {
             key = "message.immortalstorage.spirit_staff.build.preview_empty";
         }
-        Component label = previewCount > 0
+        Component label = previewCount > 0 && !artifactBuild || requestedTarget != null && requestedTarget.removal()
                 ? Component.translatable(key, previewCount)
                 : Component.translatable(key);
         event.getGuiGraphics().drawCenteredString(
@@ -157,6 +167,7 @@ public final class SpiritStaffBuildPreview {
         serverPositions = List.of();
         previewCount = -1;
         previewFailure = null;
+        artifactBuild = false;
         lastRequestTick = Long.MIN_VALUE;
     }
 

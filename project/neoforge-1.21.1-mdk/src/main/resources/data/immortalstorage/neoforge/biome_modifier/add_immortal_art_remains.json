@@ -1,0 +1,6 @@
+{
+  "type":"neoforge:add_features",
+  "biomes":"#immortalstorage:is_end_outer_island",
+  "features":["immortalstorage:immortal_art_remains"],
+  "step":"underground_ores"
+}

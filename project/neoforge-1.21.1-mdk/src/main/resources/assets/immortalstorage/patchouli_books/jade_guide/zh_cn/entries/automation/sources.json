@@ -176,5 +176,6 @@
       "title": "龙蛋源",
       "text": "龙蛋源位于内置源链末端。它和其他物品源一样保持物品本体不透明、竖直居中旋转。"
     }
+    ,{"type":"patchouli:text","title":"源方块注册补全","text":"粗灵铁、粗铜、粗铁与粗金同样拥有独立源方块：immortalstorage:crude_spirit_iron_vein、immortalstorage:raw_copper_vein、immortalstorage:raw_iron_vein、immortalstorage:raw_gold_vein。它们遵循本章相同的供给、收费、缓存和管理器规则。"}
   ]
 }

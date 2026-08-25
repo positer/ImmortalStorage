@@ -563,6 +563,34 @@ public enum ModPayloads {
         @Override public CustomPacketPayload.Type<AdjustStaffTeleportDistance> type() { return TYPE; }
     }
 
+    /** Server-authoritative upward impulse requested by a client jump double-tap. */
+    public record AuraGuardLeap() implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, AuraGuardLeap> STREAM_CODEC =
+                StreamCodec.unit(new AuraGuardLeap());
+        public static final CustomPacketPayload.Type<AuraGuardLeap> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "aura_guard_leap"));
+        @Override public CustomPacketPayload.Type<AuraGuardLeap> type() { return TYPE; }
+    }
+
+    public record AuraGuardFlightState(boolean expanded) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, AuraGuardFlightState> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.BOOL, AuraGuardFlightState::expanded,
+                        AuraGuardFlightState::new);
+        public static final CustomPacketPayload.Type<AuraGuardFlightState> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "aura_guard_flight_state"));
+        @Override public CustomPacketPayload.Type<AuraGuardFlightState> type() { return TYPE; }
+    }
+
+    public record AuraGuardBoost() implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, AuraGuardBoost> STREAM_CODEC =
+                StreamCodec.unit(new AuraGuardBoost());
+        public static final CustomPacketPayload.Type<AuraGuardBoost> TYPE = new CustomPacketPayload.Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "aura_guard_boost"));
+        @Override public CustomPacketPayload.Type<AuraGuardBoost> type() { return TYPE; }
+    }
+
     /** Request one non-mutating, server-authoritative Spirit Staff build job. */
     public record RequestSpiritStaffBuildPreview(int requestId, long pos, int face, int hand, boolean removal)
             implements CustomPacketPayload {
@@ -602,6 +630,17 @@ public enum ModPayloads {
                 new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
                         ImmortalStorageMod.MODID, "remove_spirit_staff_build_layer"));
         @Override public CustomPacketPayload.Type<RemoveSpiritStaffBuildLayer> type() { return TYPE; }
+    }
+
+    /** Shift + special-operation + use: restore the held artifact's last removed layer. */
+    public record RestoreImmortalArtifactBuildLayer(int hand) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, RestoreImmortalArtifactBuildLayer> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.VAR_INT, RestoreImmortalArtifactBuildLayer::hand,
+                        RestoreImmortalArtifactBuildLayer::new);
+        public static final CustomPacketPayload.Type<RestoreImmortalArtifactBuildLayer> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "restore_immortal_artifact_build_layer"));
+        @Override public CustomPacketPayload.Type<RestoreImmortalArtifactBuildLayer> type() { return TYPE; }
     }
 
     /** Idempotent intent for summoning or returning a Spirit Sword. */

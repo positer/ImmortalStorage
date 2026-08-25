@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.client.keybind;
 
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem;
+import com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService;
 import com.immortalstorage.immortalstorage.network.ModPayloads;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -23,6 +24,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 public final class ImmortalStorageKeybinds {
+    private static boolean jumpWasDown;
+    private static boolean boostWasDown;
     public static final KeyMapping OPEN_STORAGE = new KeyMapping(
             "key.immortalstorage.open_storage", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.immortalstorage");
     /** Toggles realm entry at stage 6+; shift+V expands/collapses the domain or
@@ -40,7 +43,8 @@ public final class ImmortalStorageKeybinds {
 
     public static void init(IEventBus modBus, IEventBus forgeBus) {
         modBus.addListener(ImmortalStorageKeybinds::registerKeys);
-        forgeBus.addListener(ImmortalStorageKeybinds::onClientTick);
+        forgeBus.addListener(ImmortalStorageKeybinds::onClientTickPre);
+        forgeBus.addListener(ImmortalStorageKeybinds::onClientTickPost);
         forgeBus.addListener(ImmortalStorageKeybinds::onScreenKeyPressed);
         forgeBus.addListener(ImmortalStorageKeybinds::onMouseScroll);
     }
@@ -54,11 +58,41 @@ public final class ImmortalStorageKeybinds {
     }
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post e) {
+    public static void onClientTickPre(ClientTickEvent.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        boolean jumpDown = mc.options.keyJump.isDown();
+        boolean jumpPressed = jumpDown && !jumpWasDown;
+        jumpWasDown = jumpDown;
+        if (!jumpPressed || mc.player == null || mc.screen != null) return;
+
+        Player player = mc.player;
+        // Pre runs before vanilla turns a grounded jump into an airborne state.
+        // That press remains an ordinary jump; a later airborne press toggles flight.
+        if (player.onGround()) return;
+
+        boolean virtualExpanded = player.isFallFlying()
+                && player.getPersistentData().getBoolean("ImmortalStorageVirtualElytra");
+        if (virtualExpanded) {
+            player.stopFallFlying();
+            player.getPersistentData().remove("ImmortalStorageVirtualElytra");
+            PacketDistributor.sendToServer(new ModPayloads.AuraGuardFlightState(false));
+            return;
+        }
+        if (!player.isFallFlying() && !player.isPassenger() && !player.isInWater()
+                && !player.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION)
+                && ImmortalMasterTalismanService.hasAuraGuard(player)
+                && player.tryToStartFallFlying()) {
+            PacketDistributor.sendToServer(new ModPayloads.AuraGuardFlightState(true));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onClientTickPost(ClientTickEvent.Post e) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.screen != null) return;
 
         Player p = mc.player;
+        SpiritStaffItem.reconcileArtifactWrenchReach(p);
         ImmortalStoragePlayerData d = ImmortalStoragePlayerData.get(p);
 
         if (OPEN_STORAGE.consumeClick()) requestStorageOpen(p, d, null);
@@ -66,6 +100,14 @@ public final class ImmortalStorageKeybinds {
         if (OPEN_LINGQI_OR_REALM.consumeClick()) handleRealmOrDomain(p, d);
 
         if (SHOW_PROGRESS.consumeClick()) showProgress(p, d);
+
+        boolean boostDown = InputConstants.isKeyDown(mc.getWindow().getWindow(), GLFW.GLFW_KEY_Z) && hasControlDown();
+        if (boostDown && !boostWasDown
+                && p.isFallFlying()
+                && p.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")) {
+            PacketDistributor.sendToServer(new ModPayloads.AuraGuardBoost());
+        }
+        boostWasDown = boostDown;
 
         if (TIME_FLOW.consumeClick()) {
             if (d.getStage() < 7) {
@@ -76,6 +118,7 @@ public final class ImmortalStorageKeybinds {
                         .withStyle(ChatFormatting.YELLOW), true);
             }
         }
+
     }
 
     /**
@@ -158,6 +201,12 @@ public final class ImmortalStorageKeybinds {
         long h = Minecraft.getInstance().getWindow().getWindow();
         return InputConstants.isKeyDown(h, GLFW.GLFW_KEY_LEFT_SHIFT)
                 || InputConstants.isKeyDown(h, GLFW.GLFW_KEY_RIGHT_SHIFT);
+    }
+
+    private static boolean hasControlDown() {
+        long h = Minecraft.getInstance().getWindow().getWindow();
+        return InputConstants.isKeyDown(h, GLFW.GLFW_KEY_LEFT_CONTROL)
+                || InputConstants.isKeyDown(h, GLFW.GLFW_KEY_RIGHT_CONTROL);
     }
 
     @SubscribeEvent

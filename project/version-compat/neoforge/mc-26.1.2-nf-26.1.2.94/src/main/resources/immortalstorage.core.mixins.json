@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.immortalstorage.immortalstorage.mixin.core",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["MerchantMenuMixin", "AbstractFurnaceSpiritDriveMixin", "AbstractFurnaceSpiritSwordTemperingMixin"],
+  "mixins": ["MerchantMenuMixin", "LivingEntityAuraElytraMixin", "PlayerAuraElytraMixin", "AbstractFurnaceSpiritDriveMixin", "AbstractFurnaceSpiritSwordTemperingMixin"],
   "client": ["ItemInHandRendererOneQiMuzzleMixin"],
   "injectors": {"defaultRequire": 1}
 }

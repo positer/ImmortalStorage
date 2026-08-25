@@ -26,6 +26,31 @@ def compatibilityApiProbe = providers.gradleProperty('compatibility_api_probe')
 def compatibilityMigration = providers.gradleProperty('compatibility_migration')
         .map(String::toBoolean)
         .getOrElse(false)
+def localCompatModDirProperty = providers.gradleProperty('local_compat_mod_dir')
+def localCompatModDir = localCompatModDirProperty.isPresent()
+        ? file(localCompatModDirProperty.get()) : null
+def localCompatPrefixes = [
+        ae2: 'appliedenergistics2-',
+        refinedstorage: 'refinedstorage-neoforge-',
+        jei: 'jei-',
+        mekanism: 'Mekanism-',
+        emi: 'emi-neoforge-',
+        create: 'create-',
+        curios: 'curios-neoforge-',
+        botania: 'botania-neoforge-',
+        ifsouls: 'industrial-foregoing-souls-',
+        beyonddimensions: 'beyonddimensions-',
+        ars_nouveau: 'ars_nouveau-',
+        guideme: 'guideme-'
+]
+def localCompatJar = { String module ->
+    if (localCompatModDir == null || !localCompatModDir.isDirectory()) return null
+    def prefix = localCompatPrefixes[module]
+    if (prefix == null) return null
+    localCompatModDir.listFiles()?.find { candidate ->
+        candidate.isFile() && candidate.name.startsWith(prefix) && candidate.name.endsWith('.jar')
+    }
+}
 def target2612 = minecraft_version == '26.1.2'
 
 version = mod_version
@@ -148,6 +173,7 @@ sourceSets.main {
             exclude 'com/immortalstorage/immortalstorage/compat/botania/**'
             exclude 'com/immortalstorage/immortalstorage/compat/arsnouveau/**'
             exclude 'com/immortalstorage/immortalstorage/compat/ifsouls/**'
+            exclude 'com/immortalstorage/immortalstorage/compat/create/**'
             exclude 'com/immortalstorage/immortalstorage/mixin/appliedbotanics/**'
             exclude 'com/immortalstorage/immortalstorage/mixin/arsnouveau/**'
             exclude 'com/immortalstorage/immortalstorage/mixin/buildinggadgets/**'
@@ -204,6 +230,11 @@ def compatibilitySlot = { String module, String slot ->
 }
 
 def addCompatDependency = { String configurationName, String module, String slot ->
+    def localJar = localCompatJar(module)
+    if (localJar != null) {
+        project.dependencies.add(configurationName, files(localJar))
+        return
+    }
     def coordinate = compatibilitySlot(module, slot)
     if (coordinate != null && coordinate != 'unavailable') {
         project.dependencies.add(configurationName, coordinate.toString())
@@ -211,6 +242,11 @@ def addCompatDependency = { String configurationName, String module, String slot
 }
 
 def addCompatNoTransitive = { String configurationName, String module, String slot ->
+    def localJar = localCompatJar(module)
+    if (localJar != null) {
+        project.dependencies.add(configurationName, files(localJar))
+        return
+    }
     def coordinate = compatibilitySlot(module, slot)
     if (coordinate != null && coordinate != 'unavailable') {
         def dependency = project.dependencies.add(configurationName, coordinate.toString())
@@ -236,21 +272,21 @@ dependencies {
     addCompatDependency('compileOnly', 'ae2', 'compile')
     addCompatNoTransitive('compileOnly', 'refinedstorage', 'compile')
     addCompatNoTransitive('compileOnly', 'mekanism', 'compile')
+    addCompatNoTransitive('compileOnly', 'create', 'compile')
+    addCompatNoTransitive('compileOnly', 'curios', 'compile')
 
     if (legacyOptionalIntegrations) {
         addCompatNoTransitive('compileOnly', 'refined_types', 'compile')
         addCompatNoTransitive('compileOnly', 'rs_mekanism_integration', 'compile')
-        compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') {
-            transitive = false
+        ['botania', 'ifsouls', 'beyonddimensions', 'ars_nouveau'].each { module ->
+            def localJar = localCompatJar(module)
+            if (localJar != null) compileOnly files(localJar)
         }
-        compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') {
-            transitive = false
-        }
-        compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
-            transitive = false
-        }
-        compileOnly('curse.maven:ars-nouveau-401955:6640732') {
-            transitive = false
+        if (localCompatModDir == null) {
+            compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') { transitive = false }
+            compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') { transitive = false }
+            compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') { transitive = false }
+            compileOnly('curse.maven:ars-nouveau-401955:6640732') { transitive = false }
         }
         compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
         implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
@@ -275,6 +311,8 @@ dependencies {
     addCompatDependency('testRuntimeOnly', 'ae2', 'runtime')
     addCompatNoTransitive('testRuntimeOnly', 'refinedstorage', 'runtime')
     addCompatNoTransitive('testRuntimeOnly', 'mekanism', 'runtime')
+    def localGuideMe = localCompatJar('guideme')
+    if (localGuideMe != null) testRuntimeOnly files(localGuideMe)
 
     if (legacyOptionalIntegrations) {
         rsAddonProbe('maven.modrinth:refined-types:1.21.1-0.3.2') {
@@ -283,11 +321,21 @@ dependencies {
         rsAddonProbe('maven.modrinth:refined-storage-mekanism-integration:1.1.1') {
             transitive = false
         }
-        testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
-            transitive = false
+        def localBeyondDimensions = localCompatJar('beyonddimensions')
+        if (localBeyondDimensions != null) {
+            testRuntimeOnly files(localBeyondDimensions)
+        } else {
+            testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
+                transitive = false
+            }
         }
-        arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
-            transitive = false
+        def localArsNouveau = localCompatJar('ars_nouveau')
+        if (localArsNouveau != null) {
+            arsNouveauProbe files(localArsNouveau)
+        } else {
+            arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
+                transitive = false
+            }
         }
     }
 
@@ -369,7 +417,8 @@ tasks.register('verifyCompatibilityModMatrix') {
                     def coordinate = compatibilitySlot(moduleName, slot)
                     if (coordinate != null && coordinate != 'unavailable') {
                         def normalized = normalizedCoordinate(coordinate.toString())
-                        if (!resolvedCoordinates.any { resolved ->
+                        def suppliedByLocalTargetJar = localCompatJar(moduleName) != null
+                        if (!suppliedByLocalTargetJar && !resolvedCoordinates.any { resolved ->
                             resolved.toString() == normalized || resolved.toString().startsWith(normalized + ':')
                         }) {
                             throw new GradleException("${profile.id} ${moduleName} ${slot} did not resolve the declared target coordinate ${coordinate} (normalized=${normalized}); resolved=${resolvedCoordinates.findAll { it.startsWith(normalized.split(':')[0] + ':') }}")
@@ -397,6 +446,7 @@ tasks.register('verifyCompatibilityModMatrix') {
 }
 
 tasks.named('processResources', ProcessResources).configure {
+    filteringCharset = 'UTF-8'
     def targetDependencyRange = { String legacyRange, String targetRange ->
         target2612 ? targetRange : legacyRange
     }
@@ -451,6 +501,7 @@ tasks.named('processResources', ProcessResources).configure {
         // changes between ModDevGradle versions.
         doLast {
             copy {
+                filteringCharset = 'UTF-8'
                 duplicatesStrategy = DuplicatesStrategy.INCLUDE
                 from file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/resources/immortalstorage.core.mixins.json')
                 into destinationDir

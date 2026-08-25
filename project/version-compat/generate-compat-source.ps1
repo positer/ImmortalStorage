@@ -109,6 +109,42 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('ResourceLocation.read', 'Identifier.read')
     $text = $text.Replace('ResourceLocation', 'Identifier')
 
+    if ($relativePath -match '[\\/]combat[\\/]ImmortalMasterTalismanService\.java$') {
+        # Pre still exposes the mutable incoming damage as getNewDamage(); only
+        # Post renamed the actually applied health loss in 26.1.
+        $text = $text.Replace('float lostHealth = event.getNewDamage();',
+            'float lostHealth = event.getHealthDamage();')
+    }
+    if ($relativePath -match '[\\/]item[\\/]custom[\\/]ImmortalArtifactRestorationLog\.java$') {
+        $text = $text.Replace('root.putUUID(OWNER, owner.getUUID());',
+            'root.putString(OWNER, owner.getUUID().toString());')
+        $text = $text.Replace('!root.hasUUID(OWNER) || !root.getUUID(OWNER).equals(player.getUUID())',
+            '!player.getUUID().toString().equals(root.getString(OWNER))')
+    }
+    if ($relativePath -match '[\\/]client[\\/]keybind[\\/]ImmortalStorageKeybinds\.java$') {
+        $text = $text.Replace('net.minecraft.Util.getMillis()', 'System.currentTimeMillis()')
+    }
+    if ($relativePath -match '[\\/]item[\\/]custom[\\/]SpiritStaffItem\.java$') {
+        $text = $text.Replace('shearable.spawnShearedDrop(player.level(), target.blockPosition(), drop);',
+            'shearable.spawnShearedDrop((net.minecraft.server.level.ServerLevel) player.level(), target.blockPosition(), drop);')
+        $text = $text.Replace('public boolean canPerformAction(ItemStack stack, ItemAbility itemAbility) {',
+            'public boolean canPerformAction(net.minecraft.world.item.ItemInstance stack, ItemAbility itemAbility) {')
+        $text = $text.Replace('if (getMode(stack) != MODE_PICK) return false;',
+            'if (!(stack instanceof ItemStack itemStack) || getMode(itemStack) != MODE_PICK) return false;')
+    }
+    if ($relativePath -match '[\\/]network[\\/]ModNetwork\.java$') {
+        $text = $text.Replace('player.getCooldowns().isOnCooldown(com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get())',
+            'player.getCooldowns().isOnCooldown(new ItemStack(com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get()))')
+        $text = [regex]::Replace($text,
+            'player\.getCooldowns\(\)\.addCooldown\(\s*com\.immortalstorage\.immortalstorage\.item\.ModItems\.IMMORTAL_MASTER_TALISMAN\.get\(\),\s*8\);',
+            'player.getCooldowns().addCooldown(' + $newline +
+            '                    new ItemStack(com.immortalstorage.immortalstorage.item.ModItems.IMMORTAL_MASTER_TALISMAN.get()), 8);')
+    }
+    if ($relativePath -match '[\\/]menu[\\/]custom[\\/](KongqiaoMenu|XianqiaoStorageMenu)\.java$') {
+        $text = $text.Replace('public java.util.List<RecipeHolder<StonecutterRecipe>> stonecutterRecipes()',
+            'public net.minecraft.world.item.crafting.SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes()')
+    }
+
     # 26.1 restores Mojang's official package spelling for advancement
     # predicates.  This is an official package move, not a local alias.
     $text = $text.Replace('net.minecraft.advancements.critereon', 'net.minecraft.advancements.criterion')
@@ -130,6 +166,13 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = $text.Replace(
             'renderBackground(graphics, mouseX, mouseY, partialTick); super.render(',
             'super.render(')
+    }
+    if ($relativePath -match '[\\/]client[\\/]ClientSetup\.java$') {
+        $text = $text.Replace('modBus.addListener(ClientSetup::addEntityLayers);',
+            'modBus.addListener(com.immortalstorage.immortalstorage.client.AuraGuardClientCompat::addLayers);' + $newline +
+            '        modBus.addListener(com.immortalstorage.immortalstorage.client.AuraGuardClientCompat::registerStateModifier);')
+        $text = [regex]::Replace($text,
+            '(?s)\s+private static void addEntityLayers\(EntityRenderersEvent\.AddLayers event\) \{.*?\n    \}\n', '')
     }
 
     # The 1.21.1 source uses CustomData for arbitrary block/item payloads.
@@ -483,6 +526,9 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = [regex]::Replace($text,
         '(?<![\w.])(\w+)\.getCooldowns\(\)\.addCooldown\((\w+)\.getItem\(\),',
         { param($match) "$($match.Groups[1].Value).getCooldowns().addCooldown($($match.Groups[2].Value)," })
+    $text = [regex]::Replace($text,
+        'player\.getCooldowns\(\)\.addCooldown\(player\.getItemInHand\(([^)]+)\)\.getItem\(\),',
+        'player.getCooldowns().addCooldown(player.getItemInHand($1),')
 
     $text = $text.Replace('player.getInventory().selected',
         'player.getInventory().getSelectedSlot()')
@@ -2454,7 +2500,11 @@ $targetExcludedFragments = @(
     '/mixin/appliedbotanics/',
       '/mixin/arsnouveau/',
       '/mixin/buildinggadgets/',
-    '/mixin/core/itemrendereroneqimuzzlemixin.java',
+      '/mixin/core/itemrendereroneqimuzzlemixin.java',
+      '/mixin/core/localplayerauraelytramixin.java',
+      '/mixin/core/livingentityauraelytramixin.java',
+      '/mixin/core/playerauraelytramixin.java',
+      '/client/render/auraguardelytralayer.java',
       '/client/render/sourceveinmodelbounds.java',
       '/recipe/yuansubstitutionshapedrecipe.java',
       '/recipe/yuansubstitutionshapelessrecipe.java',

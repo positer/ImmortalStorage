@@ -12,5 +12,6 @@
     {"type":"patchouli:text","title":"Scheduling Order","text":"Advanced pages choose skip or forced access, per-item or per-stack distribution, and near-first or far-first order. The working region exactly matches its preview. Every position and enabled face is a separate target; all faces disabled means no container interaction."},
     {"type":"patchouli:text","title":"Reinforce Reversed Output","text":"All four stabilized machines accept one reinforcement plugin. It multiplies only the number of reversed output groups attempted per round by 4, 16, or 256. Attempts stop as soon as the cache empties or every target rejects. The plain ruin has no plugin slot."},
     {"type":"patchouli:text","title":"Reading the Preview","text":"Six-face previews preserve each face direction. White is the ordinary interactable face, and reversed state uses bright white. Boundary and offset match the server region exactly; a missing texture or magenta-black face is never a valid state."}
+    ,{"type":"patchouli:text","title":"Internal Core Block","text":"immortalstorage:miniature_immortal_ruin_block is the internal core placed by the Miniature Immortal Ruin item, not a separate crafting target. Obtain and progress it through the item and the stabilized, entangled, and advanced recipes documented here."}
   ]
 }

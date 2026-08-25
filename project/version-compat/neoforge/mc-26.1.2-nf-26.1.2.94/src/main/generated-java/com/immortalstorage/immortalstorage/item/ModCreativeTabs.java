@@ -39,7 +39,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.CRUDE_SPIRIT_IRON.get());
                         output.accept(ModItems.SPIRIT_CRYSTAL.get());
                         output.accept(ModItems.NURTURING_CRYSTAL.get());
+                        output.accept(ModItems.IMMORTAL_FORGED_ALLOY_SCRAP.get());
+                        output.accept(ModItems.IMMORTAL_FORGED_ALLOY.get());
+                        output.accept(ModItems.INFORMATION_STORAGE_CRYSTAL.get());
                         output.accept(ModItems.SPIRIT_CORE.get());
+                        output.accept(ModItems.IMMORTAL_MASTER_TALISMAN.get());
                         output.accept(ModItems.PREMIXED_HEAVY_COMPOUND.get());
                         output.accept(ModItems.SUBSTITUTE_PUPPET.get());
                         output.accept(ModItems.MINIATURE_IMMORTAL_RUIN.get());
@@ -51,6 +55,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get());
                         output.accept(ModItems.SOUL_CATCHER.get());
                         output.accept(ModItems.SPIRIT_STAFF.get());
+                        output.accept(ModItems.IMMORTAL_ARTIFACT.get());
                         params.holders().lookupOrThrow(Registries.ENCHANTMENT)
                                 .get(com.immortalstorage.immortalstorage.enchantment.ModEnchantments.SPIRIT_REPAIR)
                                 .ifPresent(enchantment -> output.accept(net.minecraft.world.item.enchantment.EnchantmentHelper.createBook(
@@ -70,6 +75,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.SPIRIT_CRYSTAL_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_SPIRIT_IRON_ORE.get());
                         output.accept(ModBlocks.DEEPSLATE_SPIRIT_CRYSTAL_ORE.get());
+                        output.accept(ModBlocks.IMMORTAL_ART_REMAINS.get());
                         output.accept(ModBlocks.IMMORTAL_FURNACE.get());
                         output.accept(ModBlocks.SIMULATED_REINCARNATION_FURNACE.get());
                         output.accept(ModBlocks.SIMULATED_SPIRIT_FIELD.get());

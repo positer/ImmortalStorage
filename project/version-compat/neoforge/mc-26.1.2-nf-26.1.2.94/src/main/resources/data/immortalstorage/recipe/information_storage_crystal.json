@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "immortalstorage:immortal_forged_alloy_scrap",
+    "immortalstorage:nurturing_crystal"
+  ],
+  "result": {
+    "id": "immortalstorage:information_storage_crystal",
+    "count": 1
+  }
+}

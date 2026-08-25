@@ -149,8 +149,11 @@ final class EmbeddedStonecutterBackend {
     }
 
     void onTake(Player actor, ItemStack crafted) {
-        if (!mayTake()) return;
-        crafted.onCraftedBy(actor.level(), actor, crafted.getCount());
+        // Vanilla removes the result stack before Slot.onTake runs. Checking
+        // mayTake() here would therefore reject every completed craft and leave
+        // the selected recipe without a regenerated result.
+        if (!isValidRecipeIndex(selectedRecipeIndex.get()) || input.getItem(INPUT).isEmpty()) return;
+        if (!crafted.isEmpty()) crafted.onCraftedBy(actor.level(), actor, crafted.getCount());
         result.awardUsedRecipes(actor, List.of(input.getItem(INPUT)));
         ItemStack current = input.getItem(INPUT);
         if (!current.isEmpty()) current.shrink(1);
