@@ -1,6 +1,6 @@
 # 仙藏 ImmortalStorage
 
-> **0.1.2 双版本正式发布（2026-08-26）：** 完整更新说明见 [CHANGELOG 0.1.2](CHANGELOG.md#012---2026-08-26)，下载见 [GitHub Release 0.1.2](https://github.com/positer/ImmortalStorage/releases/tag/0.1.2)。分别提供 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94 制品，请勿跨版本混用。
+> **0.1.2 双版本正式发布（2026-08-26）：** 标签与 GitHub Release 已发布并指向提交 `6e4dccb`。完整更新说明见 [CHANGELOG 0.1.2](CHANGELOG.md#012---2026-08-26)，下载见 [GitHub Release 0.1.2](https://github.com/positer/ImmortalStorage/releases/tag/0.1.2)。分别提供 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94 制品，请勿跨版本混用；两项 Release 资产的大小与 SHA-256 已和本地最终制品核验一致。
 
 > **2026-08-26 内置切石机连续合成修复：** 修复结果槽取出物品后配方不再产出、必须重新选择的问题。根因是结果槽在调用 `onTake` 前已被原版清空，旧实现随后用空结果执行 `mayTake()` 并提前返回；两代后端现依据仍有效的配方索引与输入执行结算，输入尚有剩余时保留选择并立即重建同一结果，普通点击与 Shift 连续取出均适用。1.21.1 与 26.1.2 完整 `build` 均通过 235 suites / 836 tests，零失败、零错误、零跳过；新包已替换 `dist/0.1.2`、两个 PCL 实例及 26.1.2 全局 `mods`，未启动客户端。1.21.1 SHA-256 `B1823C27832E8A2937FC8E7A0CAEE9656E6A2198CA5341DCBE6386D2C2DE7627`；26.1.2 SHA-256 `1BB2CEE62C6ADF78F43484555B5ADFF060AC2B26F6F824D8765BE1D1B214E043`。详见 `archive/2026-08-26-stonecutter-continuity-fix.md`。
 
