@@ -33,6 +33,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("simulated_spirit_field", () ->
                     BlockEntityType.Builder.of(SimulatedSpiritFieldBlockEntity::new,
                             ModBlocks.SIMULATED_SPIRIT_FIELD.get()).build(null));
+    public static final Supplier<BlockEntityType<XianqiaoRedstoneInterfaceBlockEntity>> XIANQIAO_REDSTONE_INTERFACE =
+            BLOCK_ENTITIES.register("xianqiao_redstone_interface", () ->
+                    BlockEntityType.Builder.of(XianqiaoRedstoneInterfaceBlockEntity::new,
+                            ModBlocks.XIANQIAO_REDSTONE_INTERFACE.get()).build(null));
     public static final Supplier<BlockEntityType<EnergyCrystalBlockEntity>> ENERGY_CRYSTAL =
             BLOCK_ENTITIES.register("energy_crystal", () ->
                     BlockEntityType.Builder.of(EnergyCrystalBlockEntity::new,

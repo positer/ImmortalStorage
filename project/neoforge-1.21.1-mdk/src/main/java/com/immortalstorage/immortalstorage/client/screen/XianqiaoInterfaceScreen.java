@@ -78,6 +78,7 @@ public class XianqiaoInterfaceScreen
     private boolean amountDialogOpen;
     private boolean externalDialogOpen;
     private int externalResourceOffset;
+    private Button redstoneModeButton;
 
     public XianqiaoInterfaceScreen(
             XianqiaoInterfaceMenu menu, Inventory inventory, Component title) {
@@ -90,6 +91,8 @@ public class XianqiaoInterfaceScreen
     @Override
     protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 18, menu));
         sideButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
@@ -152,6 +155,7 @@ public class XianqiaoInterfaceScreen
     @Override
     protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         updateControls();
         if (amountDialogOpen && menu.getConfiguredAmount(selectedTarget) <= 0L) {
             closeAmountDialog();

@@ -113,7 +113,7 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
         };
     }
     @Override public Component getDisplayName() { return Component.translatable("item.immortalstorage.miniature_immortal_ruin"); }
-    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu(id, inventory, menuData()); }
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu(id, inventory, menuData(), this); }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putBoolean("AffectPlayers", affectPlayers); tag.putBoolean("EntityDamage", entityDamage); tag.putBoolean("PlayerDamage", playerDamage); tag.putInt("ForceMode", forceMode); tag.putBoolean("WarpEnabled", warpEnabled); if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong()); }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); affectPlayers = tag.getBoolean("AffectPlayers"); entityDamage = !tag.contains("EntityDamage") || tag.getBoolean("EntityDamage"); playerDamage = tag.getBoolean("PlayerDamage"); forceMode = Math.max(0, Math.min(4, tag.getInt("ForceMode"))); warpEnabled = tag.getBoolean("WarpEnabled"); linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null; }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }

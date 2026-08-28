@@ -24,6 +24,7 @@ import java.util.Optional;
  * with the two simulated machines, including the static processing arrow.
  */
 public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCrystalMenu> {
+    private Button redstoneModeButton;
     private static final ResourceLocation FURNACE = ResourceLocation.withDefaultNamespace(
             "textures/gui/container/furnace.png");
     private static final List<Direction> SIDE_ORDER = List.of(
@@ -52,6 +53,9 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
     @Override protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 16, topPos + 18, menu));
+        settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(menu.uiKey("settings")))).build());
@@ -118,6 +122,7 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
     @Override protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         faceButtons.forEach((side, button) -> button.setAlpha(
                 menu.outputFace(side.get3DDataValue()) ? 1.0F : 0.45F));
         refreshSwitchButtons();
@@ -194,7 +199,7 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
                 menu.uiKey("settings")), panelX + 8, topPos + 7,
                 0x404040, false);
         graphics.drawString(font, Component.translatable(
-                menu.uiKey("faces")), panelX + 8, topPos + 27,
+                menu.uiKey("faces")), panelX + 8, topPos + 38,
                 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 menu.uiKey("switches")),

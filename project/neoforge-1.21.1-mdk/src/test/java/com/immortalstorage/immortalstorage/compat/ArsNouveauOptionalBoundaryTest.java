@@ -33,7 +33,8 @@ final class ArsNouveauOptionalBoundaryTest {
     @Test
     void buildAndMetadataPinTheAuditedOfficialRelease() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
-        assertTrue(build.contains("compileOnly('curse.maven:ars-nouveau-401955:6640732')"));
+        assertTrue(build.contains("localCompatJar(module)"));
+        assertFalse(build.contains("curse.maven:ars-nouveau"));
         String mods = Files.readString(PROJECT.resolve(Path.of(
                 "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         int dependency = mods.indexOf("modId=\"ars_nouveau\"");

@@ -67,7 +67,7 @@ public final class StabilizedMiniatureImmortalRuinBlock extends BaseEntityBlock 
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return level.isClientSide ? null : createTickerHelper(type,
                 com.immortalstorage.immortalstorage.block.entity.ModBlockEntities.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
-                (tickLevel, pos, tickState, ruin) -> ruin.serverTick());
+                (tickLevel, pos, tickState, ruin) -> { if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(ruin)) ruin.serverTick(); });
     }
 
     @Override

@@ -30,11 +30,23 @@ final class RuinPreviewRenderContractTest {
         assertFalse(core.contains("GREATER_DEPTH_TEST"));
         assertTrue(core.contains("LEQUAL_DEPTH_TEST") || core.contains("CompareOp.LESS_THAN_OR_EQUAL"));
         assertTrue(core.contains("COLOR_WRITE") || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)"));
-        assertTrue(core.contains("COLOR_DEPTH_WRITE") || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
-        assertTrue(core.contains("SILHOUETTE_RIM_LAYER"));
+        boolean canonicalDualLayer = core.contains("SILHOUETTE_RIM_LAYER")
+                && core.contains("OPAQUE_CORE_LAYER");
+        boolean targetSingleSubmission = core.contains("PROJECTED_SILHOUETTE_LAYER")
+                && core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)")
+                && !core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)");
+        assertTrue(canonicalDualLayer || targetSingleSubmission);
         assertFalse(core.contains("entityTranslucentEmissive"));
-        assertTrue(core.indexOf("buffers.getBuffer(SILHOUETTE_RIM_LAYER)")
-                < core.indexOf("buffers.getBuffer(OPAQUE_CORE_LAYER)"));
+        if (canonicalDualLayer) {
+            assertTrue(core.contains("COLOR_DEPTH_WRITE")
+                    || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
+            assertTrue(core.indexOf("buffers.getBuffer(SILHOUETTE_RIM_LAYER)")
+                    < core.indexOf("buffers.getBuffer(OPAQUE_CORE_LAYER)"));
+        } else {
+            assertTrue(core.indexOf("drawCube(consumer, poses, radius, edgeColor)")
+                    < core.indexOf("drawCube(consumer, poses, radius * 0.78F, coreColor)"));
+            assertFalse(core.contains("drawBoundaryBeams"));
+        }
         assertFalse(core.contains("edgeColor, 112"));
         for (String itemRenderer : new String[]{"RuinCoreItemDecorator.java",
                 "EntangledRuinCoreItemDecorator.java", "GuiItemPreviewOverlay.java"}) {

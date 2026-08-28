@@ -75,7 +75,7 @@ public final class SimulatedReincarnationFurnaceBlock extends BaseEntityBlock {
                 ModBlockEntities.SIMULATED_REINCARNATION_FURNACE.get(),
                 (tickLevel, pos, tickState, furnace) -> {
                     if (tickLevel instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                        SimulatedReincarnationFurnaceBlockEntity.serverTick(
+                        if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(furnace)) SimulatedReincarnationFurnaceBlockEntity.serverTick(
                                 serverLevel, pos, tickState, furnace);
                     }
                 });

@@ -161,7 +161,7 @@ public final class AdvancedXianqiaoInterfaceBlock extends Block implements Entit
         if (level.isClientSide() || type != ModBlockEntities.ADVANCED_XIANQIAO_INTERFACE.get()) return null;
         return (tickLevel, pos, tickState, blockEntity) -> {
             if (blockEntity instanceof AdvancedXianqiaoInterfaceBlockEntity interfaceEntity) {
-                interfaceEntity.serverTick();
+                if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(interfaceEntity)) interfaceEntity.serverTick();
             }
         };
     }

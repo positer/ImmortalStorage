@@ -15,11 +15,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** Slot-for-slot equivalent of the Simulated Reincarnation Furnace menu. */
-public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
+public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     private final Container container;
     private final SimulatedSpiritFieldBlockEntity field;
     private final ContainerData data;
     private final BlockPos blockPos;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public SimulatedSpiritFieldMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, resolve(inventory, buffer), true);
@@ -37,6 +38,7 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
                                      SimulatedSpiritFieldBlockEntity field, ContainerData data, BlockPos blockPos) {
         super(ModMenus.SIMULATED_SPIRIT_FIELD.get(), id);
         this.container = container; this.field = field; this.data = data; this.blockPos = blockPos;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(field);
         checkContainerSize(container, SimulatedSpiritFieldBlockEntity.SLOT_COUNT);
         checkContainerDataCount(data, SimulatedSpiritFieldBlockEntity.DATA_COUNT);
         addSlot(new SeedSlot(container, 0, 26, 26));
@@ -49,8 +51,10 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, col + row * 9 + 9, 26 + col * 18, 105 + row * 18));
         }
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 26 + col * 18, 163));
-        container.startOpen(inventory.player); addDataSlots(data);
+        container.startOpen(inventory.player); addDataSlots(data); addDataSlot(redstoneMode);
     }
+
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
 
     public int progress() { return data.get(0); }
     public int burnTicks() { return data.get(1); }
@@ -60,6 +64,7 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu {
     public boolean outputFace(int side) { return data.get(5 + side) != 0; }
     public BlockPos blockPos() { return blockPos; }
     @Override public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(field);
         if (field == null) return false;
         if (id == 0) { field.toggleXianqiaoOutput(); return true; }
         if (id == 1) { field.toggleAutomaticOutput(); return true; }

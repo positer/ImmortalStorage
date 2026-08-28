@@ -40,7 +40,7 @@ import java.util.List;
  * real output buffers. Clicking a ghost slot copies the carried stack without
  * consuming it; clicking it with an empty cursor clears the target.</p>
  */
-public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
+public class XianqiaoInterfaceMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     public static final long DEFAULT_EXTERNAL_CACHE_AMOUNT = 1_000L;
     public static final int CONFIG_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
     public static final int BUFFER_SLOT_COUNT = XianqiaoInterfaceInventory.SLOT_COUNT;
@@ -71,6 +71,7 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
     public static final String EXTERNAL_DISPLAY_TAG = "ImmortalStorageInterfaceExternalResource";
 
     private final XianqiaoInterfaceBlockEntity blockEntity;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
     private final XianqiaoInterfaceInventory backend;
     private final Player openingPlayer;
     private final SimpleContainer configurationMirror = new SimpleContainer(CONFIG_SLOT_COUNT);
@@ -92,6 +93,7 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                                     XianqiaoInterfaceBlockEntity blockEntity) {
         super(type, id);
         this.blockEntity = blockEntity;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(blockEntity);
         this.openingPlayer = inventory.player;
         this.backend = blockEntity == null ? disconnectedBackend() : blockEntity.getInventory();
         this.configurationData = blockEntity == null || blockEntity.getLevel() == null
@@ -152,6 +154,7 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
                     @Override public int getCount() { return configurationDataCount(); }
                 };
         addDataSlots(configurationData);
+        addDataSlot(redstoneMode);
 
         for (int column = 0; column < CONFIG_SLOT_COUNT; column++) {
             configurationMirror.setItem(column, displayTarget(backend, column));
@@ -171,6 +174,13 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
         for (int column = 0; column < 9; column++) {
             addSlot(new Slot(inventory, column, 8 + column * 18, HOTBAR_Y));
         }
+    }
+
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
+
+    @Override
+    public boolean clickMenuButton(Player player, int id) {
+        return id == MachineRedstoneMenu.CYCLE_BUTTON_ID && MachineRedstoneMenu.cycle(blockEntity);
     }
 
     @Override
@@ -384,7 +394,7 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
         return backend.setTarget(slot, configured);
     }
 
-    static boolean configureTargetFromCarried(
+    public static boolean configureTargetFromCarried(
             XianqiaoInterfaceInventory backend, int slot, ItemStack carried, int button) {
         if (backend == null || carried == null || slot < 0 || slot >= CONFIG_SLOT_COUNT) return false;
         if (carried.isEmpty()) return backend.clearSlot(slot);
@@ -406,7 +416,7 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu {
         return configureTarget(backend, slot, carried);
     }
 
-    private ItemStack displayTarget(XianqiaoInterfaceInventory backend, int slot) {
+    public ItemStack displayTarget(XianqiaoInterfaceInventory backend, int slot) {
         ItemStack item = backend.getTarget(slot);
         if (!item.isEmpty()) return item.copyWithCount(1);
         FluidStack fluid = backend.getFluidTarget(slot);

@@ -62,6 +62,10 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_PURPLE).strength(4.0f)
                             .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK).noOcclusion())));
+    public static final Supplier<Block> XIANQIAO_REDSTONE_INTERFACE = reg("xianqiao_redstone_interface",
+            () -> new XianqiaoRedstoneInterfaceBlock(setBlockId("xianqiao_redstone_interface",
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK).strength(3.5f)
+                            .requiresCorrectToolForDrops().lightLevel(state -> state.getValue(XianqiaoRedstoneInterfaceBlock.ACTIVATED) ? 15 : 0))));
     public static final Supplier<Block> SIMULATED_REINCARNATION_FURNACE = reg("simulated_reincarnation_furnace",
             () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.TRIAL_SPAWNER).strength(5.0F)

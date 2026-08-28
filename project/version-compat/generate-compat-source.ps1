@@ -873,6 +873,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
         "$script:compatCodec.saveItemStack(registries, resource.itemKey.prototype().copyWithCount(1))")
     $text = $text.Replace('fluid.copyWithAmount(1).saveOptional(blockEntity.getLevel().registryAccess())',
         "$script:compatCodec.saveFluidStack(blockEntity.getLevel().registryAccess(), fluid.copyWithAmount(1))")
+    $text = $text.Replace("fluid.copyWithAmount(1)`n                        .saveOptional(blockEntity.getLevel().registryAccess())",
+        "$script:compatCodec.saveFluidStack(blockEntity.getLevel().registryAccess(), fluid.copyWithAmount(1))")
     $text = $text.Replace('filters.get(slot).save(registries)',
         "$script:compatCodec.saveItemStack(registries, filters.get(slot))")
     $text = $text.Replace('reinforcementPlugin.save(registries)',

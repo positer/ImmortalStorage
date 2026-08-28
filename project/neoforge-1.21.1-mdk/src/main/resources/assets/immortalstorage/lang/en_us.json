@@ -683,5 +683,16 @@
   "container.immortalstorage.world_shard_miner.settings": "World Shard Miner Settings",
   "container.immortalstorage.world_shard_miner.xianqiao_output": "Xianqiao Output: %s",
   "container.immortalstorage.world_shard_miner.automatic_output": "Automatic Output: %s",
-  "container.immortalstorage.world_shard_miner.running": "Running · Level %s Base"
+  "container.immortalstorage.world_shard_miner.running": "Running · Level %s Base",
+  "block.immortalstorage.xianqiao_redstone_interface": "Xianqiao Redstone Interface",
+  "container.immortalstorage.xianqiao_redstone_interface": "Xianqiao Redstone Interface",
+  "container.immortalstorage.xianqiao_redstone_interface.above": "Cache Above",
+  "container.immortalstorage.xianqiao_redstone_interface.below": "Cache Below",
+  "container.immortalstorage.xianqiao_redstone_interface.activate": "Activate",
+  "container.immortalstorage.xianqiao_redstone_interface.exit": "Exit",
+  "container.immortalstorage.redstone_mode.signal_work": "Run With Signal",
+  "container.immortalstorage.redstone_mode.title": "Redstone Control",
+  "container.immortalstorage.redstone_mode.no_signal_work": "Run Without Signal",
+  "container.immortalstorage.redstone_mode.ignore": "Ignore Redstone",
+  "container.immortalstorage.redstone_mode.tooltip": "Cycle: run with signal / run without signal / ignore redstone"
 }

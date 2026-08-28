@@ -83,7 +83,7 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
             Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
         return level.isClientSide() ? null : createTickerHelper(type,
                 com.immortalstorage.immortalstorage.block.entity.ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(),
-                (tickLevel, pos, tickState, ruin) -> ruin.serverTick());
+                (tickLevel, pos, tickState, ruin) -> { if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(ruin)) ruin.serverTick(); });
     }
 
     @Override

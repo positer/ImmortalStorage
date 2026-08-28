@@ -1,0 +1,1 @@
+{"name":"仙窍红石接口","icon":"immortalstorage:xianqiao_redstone_interface","category":"immortalstorage:automation","sortnum":12,"pages":[{"type":"patchouli:text","title":"施密特红石检测","text":"右键打开严格两行的小型界面。第一行虚拟配置槽与仙窍接口配置槽行为一致，用于选择仙窍内资源；缓存大于高阈值时按正相激活。第二行红绿按钮切换正相/反相，缓存小于低阈值时按正相退出。反相时两种结果互换。"}]}

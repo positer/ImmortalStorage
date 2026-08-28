@@ -28,6 +28,7 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
     private Button previewButton;
     private Button enabledButton;
     private final List<Button> faceButtons = new ArrayList<>();
+    private Button redstoneModeButton;
 
     public EntangledMiniatureRuinScreen(EntangledMiniatureRuinMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -38,6 +39,9 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
     @Override
     protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 6, topPos + 194, menu));
+        redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
@@ -156,6 +160,7 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
     @Override
     protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         if (!settings) return;
         syncingValues = true;
         for (int index = 0; index < valueBoxes.size(); index++) {

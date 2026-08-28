@@ -26,6 +26,7 @@ import com.immortalstorage.immortalstorage.client.screen.SourceVeinScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoStorageScreen;
 import com.immortalstorage.immortalstorage.client.screen.XianqiaoInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.AdvancedXianqiaoInterfaceScreen;
+import com.immortalstorage.immortalstorage.client.screen.XianqiaoRedstoneInterfaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.TreasureBasinScreen;
 import com.immortalstorage.immortalstorage.client.screen.WorldShardMinerScreen;
 import com.immortalstorage.immortalstorage.client.screen.SourceVeinManagerScreen;
@@ -115,6 +116,7 @@ public final class ClientSetup {
         e.register(ModMenus.XIANQIAO_STORAGE.get(), XianqiaoStorageScreen::new);
         e.register(ModMenus.XIANQIAO_INTERFACE.get(), XianqiaoInterfaceScreen::new);
         e.register(ModMenus.ADVANCED_XIANQIAO_INTERFACE.get(), AdvancedXianqiaoInterfaceScreen::new);
+        e.register(ModMenus.XIANQIAO_REDSTONE_INTERFACE.get(), XianqiaoRedstoneInterfaceScreen::new);
         e.register(ModMenus.IMMORTAL_FURNACE.get(), ImmortalFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_REINCARNATION_FURNACE.get(), SimulatedReincarnationFurnaceScreen::new);
         e.register(ModMenus.SIMULATED_SPIRIT_FIELD.get(), SimulatedSpiritFieldScreen::new);

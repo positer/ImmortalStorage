@@ -34,8 +34,8 @@ final class BeyondDimensionsOptionalBoundaryTest {
     @Test
     void dependencyAndMetadataPinTheAuditedOfficialRelease() throws IOException {
         String gradle = Files.readString(PROJECT.resolve("build.gradle"));
-        assertTrue(gradle.contains(
-                "compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge')"));
+        assertTrue(gradle.contains("localCompatJar(module)"));
+        assertFalse(gradle.contains("maven.modrinth:beyonddimensions"));
         assertFalse(gradle.contains(
                 "implementation 'maven.modrinth:beyonddimensions"));
 

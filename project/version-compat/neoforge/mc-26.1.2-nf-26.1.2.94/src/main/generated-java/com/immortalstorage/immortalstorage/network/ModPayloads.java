@@ -17,6 +17,51 @@ import java.util.List;
 public enum ModPayloads {
     ;
 
+    public record ConfigureXianqiaoRedstone(long pos, long low, long high, boolean inverted,
+                                             int action, String channel, String resourceId) implements CustomPacketPayload {
+        public ConfigureXianqiaoRedstone(int containerIdIgnored, BlockPos pos, long low, long high, boolean inverted) { this(pos.asLong(), low, high, inverted, 0, "", ""); }
+        public ConfigureXianqiaoRedstone(BlockPos pos, String channel, String resourceId) { this(pos.asLong(), 0, 0, false, 1, channel, resourceId); }
+        public BlockPos blockPos() { return BlockPos.of(pos); }
+        public static final StreamCodec<RegistryFriendlyByteBuf, ConfigureXianqiaoRedstone> STREAM_CODEC = new StreamCodec<>() {
+            public ConfigureXianqiaoRedstone decode(RegistryFriendlyByteBuf b) { return new ConfigureXianqiaoRedstone(b.readVarLong(), b.readVarLong(), b.readVarLong(), b.readBoolean(), b.readVarInt(), b.readUtf(64), b.readUtf(256)); }
+            public void encode(RegistryFriendlyByteBuf b, ConfigureXianqiaoRedstone p) { b.writeVarLong(p.pos); b.writeVarLong(p.low); b.writeVarLong(p.high); b.writeBoolean(p.inverted); b.writeVarInt(p.action); b.writeUtf(p.channel,64); b.writeUtf(p.resourceId,256); }
+        };
+        public static final Type<ConfigureXianqiaoRedstone> TYPE = new Type<>(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "configure_xianqiao_redstone"));
+        @Override public Type<ConfigureXianqiaoRedstone> type() { return TYPE; }
+    }
+
+    public record ConfigureXianqiaoRedstoneExternalTarget(
+            int containerId, long pos, long configRevision, String channel,
+            String resourceId, long requestedAmount) implements CustomPacketPayload {
+        public ConfigureXianqiaoRedstoneExternalTarget(
+                int containerId, BlockPos pos, long configRevision, String channel,
+                String resourceId, long requestedAmount) {
+            this(containerId, pos.asLong(), configRevision, channel, resourceId, requestedAmount);
+        }
+        public BlockPos blockPos() { return BlockPos.of(pos); }
+        public static final StreamCodec<RegistryFriendlyByteBuf, ConfigureXianqiaoRedstoneExternalTarget>
+                STREAM_CODEC = new StreamCodec<>() {
+            @Override public ConfigureXianqiaoRedstoneExternalTarget decode(RegistryFriendlyByteBuf buffer) {
+                return new ConfigureXianqiaoRedstoneExternalTarget(
+                        buffer.readVarInt(), buffer.readVarLong(), buffer.readVarLong(),
+                        buffer.readUtf(64), buffer.readUtf(256), buffer.readVarLong());
+            }
+            @Override public void encode(
+                    RegistryFriendlyByteBuf buffer, ConfigureXianqiaoRedstoneExternalTarget payload) {
+                buffer.writeVarInt(payload.containerId());
+                buffer.writeVarLong(payload.pos());
+                buffer.writeVarLong(payload.configRevision());
+                buffer.writeUtf(payload.channel(), 64);
+                buffer.writeUtf(payload.resourceId(), 256);
+                buffer.writeVarLong(payload.requestedAmount());
+            }
+        };
+        public static final Type<ConfigureXianqiaoRedstoneExternalTarget> TYPE = new Type<>(
+                Identifier.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "configure_xianqiao_redstone_external_target"));
+        @Override public Type<ConfigureXianqiaoRedstoneExternalTarget> type() { return TYPE; }
+    }
+
     /** Request to open the player's kongqiao (1 ?  ? inventory. */
     public record OpenKongqiao() implements CustomPacketPayload {
         public static final StreamCodec<RegistryFriendlyByteBuf, OpenKongqiao> STREAM_CODEC =

@@ -25,6 +25,7 @@ import java.util.Optional;
  * with the two simulated machines, including the static processing arrow.
  */
 public final class EnergyCrystalScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<EnergyCrystalMenu> {
+    private Button redstoneModeButton;
     private static final Identifier FURNACE = Identifier.withDefaultNamespace(
             "textures/gui/container/furnace.png");
     private static final List<Direction> SIDE_ORDER = List.of(
@@ -53,6 +54,9 @@ public final class EnergyCrystalScreen extends com.immortalstorage.immortalstora
 
     @Override protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 16, topPos + 18, menu));
+        settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(menu.uiKey("settings")))).build());
@@ -119,6 +123,7 @@ public final class EnergyCrystalScreen extends com.immortalstorage.immortalstora
 
     @Override protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         faceButtons.forEach((side, button) -> button.setAlpha(
                 menu.outputFace(side.get3DDataValue()) ? 1.0F : 0.45F));
         refreshSwitchButtons();
@@ -195,7 +200,7 @@ public final class EnergyCrystalScreen extends com.immortalstorage.immortalstora
                 menu.uiKey("settings")), panelX + 8, topPos + 7,
                 0x404040, false);
         graphics.text(font, Component.translatable(
-                menu.uiKey("faces")), panelX + 8, topPos + 27,
+                menu.uiKey("faces")), panelX + 8, topPos + 38,
                 0x404040, false);
         graphics.text(font, Component.translatable(
                 menu.uiKey("switches")),

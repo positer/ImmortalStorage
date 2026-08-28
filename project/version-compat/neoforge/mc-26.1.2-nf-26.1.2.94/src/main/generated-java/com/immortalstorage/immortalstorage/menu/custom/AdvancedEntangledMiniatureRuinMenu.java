@@ -20,13 +20,14 @@ import net.minecraft.world.item.ItemStack;
  * (0-11 range steppers, 12/13 preview/enabled, 14/15 frequency, 16/17/18
  * access/split/order cycling). Filter mutations carry a side selector.
  */
-public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerMenu implements SideFilterMenu {
+public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerMenu implements SideFilterMenu, MachineRedstoneMenu {
     private static final int SIDE_SPAN = 100;
     private final Container container;
     private final ContainerData data;
     private final AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity blockEntity;
     private final net.minecraft.core.BlockPos blockPos;
     private boolean pluginVisible;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public AdvancedEntangledMiniatureRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, new SimpleContainer(55), new SimpleContainerData(26), null,
@@ -47,6 +48,7 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
         this.data = data;
         this.blockEntity = blockEntity;
         this.blockPos = blockPos;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(blockEntity);
         checkContainerSize(container, 55);
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
@@ -60,11 +62,13 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
             addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 8 + col * 18, 198));
         addDataSlots(data);
+        addDataSlot(redstoneMode);
     }
 
     public int value(int index) { return data.get(index); }
     public net.minecraft.core.BlockPos blockPos() { return blockPos; }
     public AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity blockEntity() { return blockEntity; }
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
     public void setPluginVisible(boolean visible) { pluginVisible = visible; }
     public void setAuthoritativeValue(int side, int index, int value) {
         if (blockEntity != null && index >= 0 && index < 13) blockEntity.setMenuValue(side, index, value);
@@ -79,6 +83,7 @@ public final class AdvancedEntangledMiniatureRuinMenu extends AbstractContainerM
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(blockEntity);
         int side = id >= SIDE_SPAN ? 1 : 0;
         int local = id >= SIDE_SPAN ? id - SIDE_SPAN : id;
         int base = side * 13;

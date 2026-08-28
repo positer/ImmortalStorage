@@ -16,11 +16,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** Simulated-machine menu geometry with the right 3x4 output footprint reserved for FE memory. */
-public final class EnergyCrystalMenu extends AbstractContainerMenu {
+public final class EnergyCrystalMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     private final Container container;
     private final EnergyCrystalBlockEntity crystal;
     private final ContainerData data;
     private final BlockPos blockPos;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public EnergyCrystalMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, resolve(inventory, buffer), true);
@@ -47,6 +48,7 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu {
         this.crystal = crystal;
         this.data = data;
         this.blockPos = blockPos;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(crystal);
         checkContainerSize(container, EnergyCrystalBlockEntity.SLOT_COUNT);
         checkContainerDataCount(data, EnergyCrystalBlockEntity.DATA_COUNT);
         addSlot(new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 26, 26));
@@ -60,7 +62,10 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 26 + col * 18, 163));
         container.startOpen(inventory.player);
         addDataSlots(data);
+        addDataSlot(redstoneMode);
     }
+
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
 
     public int processTicks() { return data.get(0); }
     public int burnTicks() { return data.get(1); }
@@ -81,6 +86,7 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu {
     public String uiKey(String suffix) { return kind().uiTranslationKey(suffix); }
 
     @Override public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(crystal);
         if (crystal == null) return false;
         if (id == 0) {
             return crystal.toggleXianqiaoOutput();

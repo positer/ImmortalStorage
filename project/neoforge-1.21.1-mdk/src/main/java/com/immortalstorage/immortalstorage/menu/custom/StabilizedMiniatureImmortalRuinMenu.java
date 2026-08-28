@@ -14,12 +14,13 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** Six-row inventory plus server-validated configuration button actions. */
-public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
+public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     protected final Container container;
     protected final ContainerData data;
     protected final StabilizedMiniatureImmortalRuinBlockEntity blockEntity;
     protected final net.minecraft.core.BlockPos blockPos;
     private boolean pluginVisible;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public StabilizedMiniatureImmortalRuinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(ModMenus.STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), id, inventory, clientContainer(),
@@ -42,6 +43,7 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
         this.data = data;
         this.blockEntity = blockEntity;
         this.blockPos = blockPos;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(blockEntity);
         checkContainerSize(container, 55);
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
@@ -55,6 +57,7 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 140 + row * 18));
         for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 8 + col * 18, 198));
         addDataSlots(data);
+        addDataSlot(redstoneMode);
     }
 
     private static Container clientContainer() { return new SimpleContainer(55); }
@@ -64,6 +67,7 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
     }
     public net.minecraft.core.BlockPos blockPos() { return blockPos; }
     public StabilizedMiniatureImmortalRuinBlockEntity blockEntity() { return blockEntity; }
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
     public void setPluginVisible(boolean visible) { pluginVisible = visible; }
     public void setFilter(int slot, ItemStack stack) { if (blockEntity != null) blockEntity.setFilter(slot, stack); }
     public void toggleFilterMode(int mode) { if (blockEntity != null) { if (mode == 0) blockEntity.toggleFilterMatchComponents(); else blockEntity.toggleFilterWhitelist(); } }
@@ -73,6 +77,7 @@ public class StabilizedMiniatureImmortalRuinMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(blockEntity);
         if (id >= 0 && id < 12) {
             int index = id / 2;
             data.set(index, data.get(index) + (id % 2 == 0 ? -1 : 1));

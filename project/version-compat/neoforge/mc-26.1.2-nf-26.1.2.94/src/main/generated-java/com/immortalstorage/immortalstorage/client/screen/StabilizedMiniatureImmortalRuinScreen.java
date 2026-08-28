@@ -25,6 +25,7 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
     private Button previewButton;
     private Button enabledButton;
     private final List<Button> faceButtons = new ArrayList<>();
+    private Button redstoneModeButton;
 
     public StabilizedMiniatureImmortalRuinScreen(M menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -35,6 +36,9 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
     @Override
     protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                redstoneButtonX(), redstoneButtonY(), menu));
+        redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
@@ -48,6 +52,9 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
     }
 
     private void refreshWidgets() { clearWidgets(); init(); }
+
+    protected int redstoneButtonX() { return leftPos + imageWidth + 6; }
+    protected int redstoneButtonY() { return topPos + 194; }
 
     private void addSettingsButtons() {
         valueBoxes.clear();
@@ -150,6 +157,7 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
     @Override
     protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         if (!settings) return;
         syncingValues = true;
         for (int index = 0; index < valueBoxes.size(); index++) {

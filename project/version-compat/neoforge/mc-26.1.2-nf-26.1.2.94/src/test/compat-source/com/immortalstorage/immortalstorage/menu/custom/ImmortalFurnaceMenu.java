@@ -16,7 +16,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** One server-authoritative menu containing all three furnace channels. */
-public class ImmortalFurnaceMenu extends AbstractContainerMenu {
+public class ImmortalFurnaceMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     public static final int MACHINE_SLOT_COUNT = ImmortalFurnaceBlockEntity.SLOT_COUNT;
     public static final int PLAYER_SLOT_COUNT = 36;
     private static final int PLAYER_START = MACHINE_SLOT_COUNT;
@@ -26,6 +26,7 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
     private final Container container;
     private final ContainerData data;
     private final ImmortalFurnaceBlockEntity blockEntity;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public ImmortalFurnaceMenu(int id, Inventory inventory, FriendlyByteBuf ignored) {
         this(id, inventory, new SimpleContainer(MACHINE_SLOT_COUNT),
@@ -48,6 +49,7 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
         this.container = container;
         this.data = data;
         this.blockEntity = blockEntity;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(blockEntity);
 
         addSlot(new InputSlot(container, ImmortalFurnaceBlockEntity.INPUT_1, 53, 20));
         addSlot(new FuelSlot(container, ImmortalFurnaceBlockEntity.FUEL, 17, 58));
@@ -71,6 +73,12 @@ public class ImmortalFurnaceMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, column, 17 + column * 18, 192));
         }
         addDataSlots(data);
+        addDataSlot(redstoneMode);
+    }
+
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
+    @Override public boolean clickMenuButton(Player player, int id) {
+        return id == MachineRedstoneMenu.CYCLE_BUTTON_ID && MachineRedstoneMenu.cycle(blockEntity);
     }
 
     @Override

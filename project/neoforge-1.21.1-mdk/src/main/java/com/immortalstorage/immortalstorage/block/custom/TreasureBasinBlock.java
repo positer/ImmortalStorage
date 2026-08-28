@@ -68,7 +68,7 @@ public final class TreasureBasinBlock extends BaseEntityBlock {
         return level.isClientSide ? null : createTickerHelper(type, ModBlockEntities.TREASURE_BASIN.get(),
                 (tickLevel, pos, tickState, basin) -> {
                     if (tickLevel instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                        TreasureBasinBlockEntity.serverTick(serverLevel, pos, basin);
+                        if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(basin)) TreasureBasinBlockEntity.serverTick(serverLevel, pos, basin);
                     }
                 });
     }

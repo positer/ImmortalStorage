@@ -27,8 +27,12 @@ def compatibilityMigration = providers.gradleProperty('compatibility_migration')
         .map(String::toBoolean)
         .getOrElse(false)
 def localCompatModDirProperty = providers.gradleProperty('local_compat_mod_dir')
+def pclVersionsRoot = file('C:/Users/12252/Desktop/Files/Minecraft/PCL/.minecraft/versions')
+def defaultPclVersionDir = minecraft_version == '1.21.1'
+        ? new File(pclVersionsRoot, 'ImmortalStorage-1.21.1')
+        : new File(pclVersionsRoot, 'ImmortalStorage-26.1.2')
 def localCompatModDir = localCompatModDirProperty.isPresent()
-        ? file(localCompatModDirProperty.get()) : null
+        ? file(localCompatModDirProperty.get()) : new File(defaultPclVersionDir, 'mods')
 def localCompatPrefixes = [
         ae2: 'appliedenergistics2-',
         refinedstorage: 'refinedstorage-neoforge-',
@@ -236,9 +240,8 @@ def addCompatDependency = { String configurationName, String module, String slot
         return
     }
     def coordinate = compatibilitySlot(module, slot)
-    if (coordinate != null && coordinate != 'unavailable') {
-        project.dependencies.add(configurationName, coordinate.toString())
-    }
+    if (coordinate != null && coordinate != 'unavailable') throw new GradleException(
+            "Compatibility module '${module}' must come from compiled PCL JARs under ${localCompatModDir}; external resolution is forbidden")
 }
 
 def addCompatNoTransitive = { String configurationName, String module, String slot ->
@@ -248,10 +251,8 @@ def addCompatNoTransitive = { String configurationName, String module, String sl
         return
     }
     def coordinate = compatibilitySlot(module, slot)
-    if (coordinate != null && coordinate != 'unavailable') {
-        def dependency = project.dependencies.add(configurationName, coordinate.toString())
-        dependency.transitive = false
-    }
+    if (coordinate != null && coordinate != 'unavailable') throw new GradleException(
+            "Compatibility module '${module}' must come from compiled PCL JARs under ${localCompatModDir}; external resolution is forbidden")
 }
 
 // The remaining optional integrations in this project are pinned to the
@@ -276,17 +277,15 @@ dependencies {
     addCompatNoTransitive('compileOnly', 'curios', 'compile')
 
     if (legacyOptionalIntegrations) {
-        addCompatNoTransitive('compileOnly', 'refined_types', 'compile')
-        addCompatNoTransitive('compileOnly', 'rs_mekanism_integration', 'compile')
-        ['botania', 'ifsouls', 'beyonddimensions', 'ars_nouveau'].each { module ->
+        // Optional RS resource addons are compiled only when their already-built
+        // target JARs are installed in the selected PCL instance.
+        ['refined_types', 'rs_mekanism_integration'].each { module ->
             def localJar = localCompatJar(module)
             if (localJar != null) compileOnly files(localJar)
         }
-        if (localCompatModDir == null) {
-            compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT') { transitive = false }
-            compileOnly('maven.modrinth:industrial-foregoing-souls:1.21-1.10.7') { transitive = false }
-            compileOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') { transitive = false }
-            compileOnly('curse.maven:ars-nouveau-401955:6640732') { transitive = false }
+        ['botania', 'ifsouls', 'beyonddimensions', 'ars_nouveau'].each { module ->
+            def localJar = localCompatJar(module)
+            if (localJar != null) compileOnly files(localJar)
         }
         compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
         implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
@@ -315,27 +314,13 @@ dependencies {
     if (localGuideMe != null) testRuntimeOnly files(localGuideMe)
 
     if (legacyOptionalIntegrations) {
-        rsAddonProbe('maven.modrinth:refined-types:1.21.1-0.3.2') {
-            transitive = false
-        }
-        rsAddonProbe('maven.modrinth:refined-storage-mekanism-integration:1.1.1') {
-            transitive = false
-        }
         def localBeyondDimensions = localCompatJar('beyonddimensions')
         if (localBeyondDimensions != null) {
             testRuntimeOnly files(localBeyondDimensions)
-        } else {
-            testRuntimeOnly('maven.modrinth:beyonddimensions:0.7.24-1.21.1-neoforge') {
-                transitive = false
-            }
         }
         def localArsNouveau = localCompatJar('ars_nouveau')
         if (localArsNouveau != null) {
             arsNouveauProbe files(localArsNouveau)
-        } else {
-            arsNouveauProbe('curse.maven:ars-nouveau-401955:6640732') {
-                transitive = false
-            }
         }
     }
 
@@ -370,11 +355,13 @@ tasks.register('verifyArsSourceAdapter', JavaExec) {
     dependsOn tasks.named('testClasses')
     onlyIf { legacyOptionalIntegrations }
     mainClass = 'com.immortalstorage.immortalstorage.compat.arsnouveau.XianqiaoArsSourceAdapterProbe'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(javaToolchainVersion) }
     classpath = sourceSets.test.runtimeClasspath + configurations.arsNouveauProbe
 }
 
 tasks.register('verifyCompatibilityModMatrix') {
     doLast {
+        if (!localCompatModDir.isDirectory()) throw new GradleException("PCL compiled mod directory is required: ${localCompatModDir}")
         def profile = compatibilityProfile
         def requiredModules = compatibilityModMatrix.policy.required_integration_interfaces
         def missingProfiles = requiredModules.findAll { !profile.mods.containsKey(it) }
@@ -418,14 +405,15 @@ tasks.register('verifyCompatibilityModMatrix') {
                     if (coordinate != null && coordinate != 'unavailable') {
                         def normalized = normalizedCoordinate(coordinate.toString())
                         def suppliedByLocalTargetJar = localCompatJar(moduleName) != null
-                        if (!suppliedByLocalTargetJar && !resolvedCoordinates.any { resolved ->
+                        def optionalInstalledAddon = moduleName in ['refined_types', 'rs_mekanism_integration']
+                        if (!suppliedByLocalTargetJar && !optionalInstalledAddon && !resolvedCoordinates.any { resolved ->
                             resolved.toString() == normalized || resolved.toString().startsWith(normalized + ':')
                         }) {
                             throw new GradleException("${profile.id} ${moduleName} ${slot} did not resolve the declared target coordinate ${coordinate} (normalized=${normalized}); resolved=${resolvedCoordinates.findAll { it.startsWith(normalized.split(':')[0] + ':') }}")
                         }
                     }
                 }
-                (module.api_classes ?: []).each { classEntry ->
+                if (localCompatJar(moduleName) != null || !(moduleName in ['refined_types', 'rs_mekanism_integration'])) (module.api_classes ?: []).each { classEntry ->
                     if (!jarContains(classEntry.toString())) {
                         throw new GradleException("${profile.id} ${moduleName} API surface is missing ${classEntry}; target interface jar was not actually inspected")
                     }

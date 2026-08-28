@@ -11,6 +11,9 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Vanilla-pixel-language screen with three furnace lanes in one menu. */
 public class ImmortalFurnaceScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<ImmortalFurnaceMenu> {
+    private net.minecraft.client.gui.components.Button redstoneModeButton;
+    private net.minecraft.client.gui.components.Button settingsButton;
+    private boolean settingsOpen;
     private static final Identifier FURNACE_TEXTURE =
             Identifier.withDefaultNamespace("textures/gui/container/furnace.png");
 private static final int TEXT = 0xFF404040;
@@ -26,11 +29,33 @@ private static final int TEXT = 0xFF404040;
         inventoryLabelY = 122;
     }
 
+    @Override protected void init() {
+        super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 13, topPos + 30, menu));
+        settingsButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                Component.literal("⚙"), button -> {
+                    settingsOpen = !settingsOpen;
+                    redstoneModeButton.visible = settingsOpen;
+                }).bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20).build());
+        redstoneModeButton.visible = settingsOpen;
+    }
+
+    @Override protected void containerTick() {
+        super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
+    }
+
     @Override
     protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
         VanillaGuiPainter.panel(graphics, x, y, imageWidth, imageHeight);
+        if (settingsOpen) {
+            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 4, topPos, 104, 62);
+            graphics.text(font, Component.translatable("container.immortalstorage.redstone_mode.title"),
+                    leftPos + imageWidth + 12, topPos + 10, TEXT, false);
+        }
         graphics.fill(x + 2, y + 2, x + imageWidth - 2, y + 16, 0xFFD8D8D8);
         graphics.horizontalLine(x + 2, x + imageWidth - 3, y + 16, 0xFF8B8B8B);
         graphics.horizontalLine(x + 7, x + imageWidth - 8, y + 116, 0xFF8B8B8B);

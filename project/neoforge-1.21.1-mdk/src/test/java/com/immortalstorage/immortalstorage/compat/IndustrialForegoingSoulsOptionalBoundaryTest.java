@@ -31,8 +31,8 @@ final class IndustrialForegoingSoulsOptionalBoundaryTest {
     @Test
     void officialVersionCapabilityAndLifecycleArePinned() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
-        assertTrue(build.contains(
-                "maven.modrinth:industrial-foregoing-souls:1.21-1.10.7"));
+        assertTrue(build.contains("localCompatJar(module)"));
+        assertFalse(build.contains("maven.modrinth:industrial-foregoing-souls"));
         String metadata = Files.readString(PROJECT.resolve(Path.of(
                 "build", "resources", "main", "META-INF", "neoforge.mods.toml")));
         assertTrue(metadata.contains("modId=\"industrialforegoingsouls\""));

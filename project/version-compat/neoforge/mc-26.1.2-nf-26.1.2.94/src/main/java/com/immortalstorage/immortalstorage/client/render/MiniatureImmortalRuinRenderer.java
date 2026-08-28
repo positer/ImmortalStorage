@@ -18,24 +18,16 @@ import net.minecraft.util.Mth;
 
 /** Target-compatible pure-color projected silhouette renderer. */
 public final class MiniatureImmortalRuinRenderer extends LegacyBlockEntityRenderer<MiniatureImmortalRuinBlockEntity> {
-    private static final RenderPipeline SILHOUETTE_RIM_PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
-            .withLocation("immortalstorage/pipeline/ruin_silhouette_rim")
+    private static final RenderPipeline PROJECTED_SILHOUETTE_PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+            .withLocation("immortalstorage/pipeline/ruin_projected_silhouette")
             .withCull(false)
             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR,
                     com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS)
             .build();
-    private static final RenderPipeline OPAQUE_CORE_PIPELINE = RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
-            .withLocation("immortalstorage/pipeline/ruin_opaque_core")
-            .withCull(false)
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true))
-            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR,
-                    com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS)
-            .build();
-    private static final RenderType SILHOUETTE_RIM_LAYER = RenderType.create(
-            "immortalstorage_ruin_silhouette_rim", RenderSetup.builder(SILHOUETTE_RIM_PIPELINE).createRenderSetup());
-    private static final RenderType OPAQUE_CORE_LAYER = RenderType.create(
-            "immortalstorage_ruin_opaque_core", RenderSetup.builder(OPAQUE_CORE_PIPELINE).createRenderSetup());
+    private static final RenderType PROJECTED_SILHOUETTE_LAYER = RenderType.create(
+            "immortalstorage_ruin_projected_silhouette",
+            RenderSetup.builder(PROJECTED_SILHOUETTE_PIPELINE).createRenderSetup());
 
     public MiniatureImmortalRuinRenderer(BlockEntityRendererProvider.Context context) {}
 
@@ -59,17 +51,22 @@ public final class MiniatureImmortalRuinRenderer extends LegacyBlockEntityRender
                          float radius, boolean reversed) {
         int coreColor = reversed ? 0xFFFFFF : 0x000000;
         int edgeColor = reversed ? 0x000000 : 0xFFFFFF;
-        drawCube(buffers.getBuffer(SILHOUETTE_RIM_LAYER), poses, radius, edgeColor);
-        drawCube(buffers.getBuffer(OPAQUE_CORE_LAYER), poses, radius * 0.78F, coreColor);
+        // Match 1.21.1's projected silhouette exactly inside one collector node:
+        // outer shell first, smaller core second. With no depth writes between
+        // them, the core covers the shell centre while the shell remains only
+        // on the screen-space outer silhouette. This is not a mesh-edge frame.
+        VertexConsumer consumer = buffers.getBuffer(PROJECTED_SILHOUETTE_LAYER);
+        drawCube(consumer, poses, radius, edgeColor);
+        drawCube(consumer, poses, radius * 0.78F, coreColor);
     }
 
     private static void drawCube(VertexConsumer consumer, PoseStack poses, float radius, int color) {
         face(consumer, poses, -radius,-radius,radius, radius,-radius,radius, radius,radius,radius,-radius,radius,radius,0,0,1,color);
-        face(consumer, poses, radius,-radius,-radius, -radius,-radius,-radius, -radius,radius,-radius, radius,radius,-radius,0,0,-1,color);
-        face(consumer, poses, radius,-radius,radius, radius,-radius,-radius, radius,radius,-radius, radius,radius,radius,1,0,0,color);
-        face(consumer, poses, -radius,-radius,-radius, -radius,-radius,radius, -radius,radius,radius, -radius,radius,-radius,-1,0,0,color);
-        face(consumer, poses, -radius,radius,radius, radius,radius,radius, radius,radius,-radius, -radius,radius,-radius,0,1,0,color);
-        face(consumer, poses, -radius,-radius,-radius, radius,-radius,-radius, radius,-radius,radius, -radius,-radius,radius,0,-1,0,color);
+        face(consumer, poses, radius,-radius,-radius, -radius,-radius,-radius, -radius,radius,-radius,radius,radius,-radius,0,0,-1,color);
+        face(consumer, poses, radius,-radius,radius, radius,-radius,-radius, radius,radius,-radius,radius,radius,radius,1,0,0,color);
+        face(consumer, poses, -radius,-radius,-radius, -radius,-radius,radius, -radius,radius,radius,-radius,radius,-radius,-1,0,0,color);
+        face(consumer, poses, -radius,radius,radius, radius,radius,radius, radius,radius,-radius,-radius,radius,-radius,0,1,0,color);
+        face(consumer, poses, -radius,-radius,-radius, radius,-radius,-radius, radius,-radius,radius,-radius,-radius,radius,0,-1,0,color);
     }
 
     private static void face(VertexConsumer c, PoseStack p, float x0,float y0,float z0,float x1,float y1,float z1,

@@ -12,8 +12,9 @@ import java.util.List;
 
 public final class MiniatureImmortalRuinScreen extends AbstractContainerScreen<MiniatureImmortalRuinMenu> {
     private final List<Button> optionButtons = new ArrayList<>();
+    private Button redstoneModeButton;
     public MiniatureImmortalRuinScreen(MiniatureImmortalRuinMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = 132; }
-    @Override protected void init() { super.init(); optionButtons.clear(); button(0, 22); button(1, 44); button(2, 66); button(3, 88); button(4, 110); }
+    @Override protected void init() { super.init(); optionButtons.clear(); redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 18, menu)); button(0, 22); button(1, 44); button(2, 66); button(3, 88); button(4, 110); }
     private void button(int id, int y) {
         Button button = Button.builder(label(id), b -> {
             if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -25,6 +26,7 @@ public final class MiniatureImmortalRuinScreen extends AbstractContainerScreen<M
     private static String on(int value) { return value == 0 ? "Off" : "On"; }
     @Override protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         for (int id = 0; id < optionButtons.size(); id++) {
             Button button = optionButtons.get(id);
             button.setMessage(label(id));

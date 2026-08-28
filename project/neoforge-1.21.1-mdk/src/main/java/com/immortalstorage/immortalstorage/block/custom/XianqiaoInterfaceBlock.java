@@ -164,7 +164,7 @@ public final class XianqiaoInterfaceBlock extends HorizontalDirectionalBlock imp
         if (level.isClientSide || type != ModBlockEntities.XIANQIAO_INTERFACE.get()) return null;
         return (tickLevel, pos, tickState, blockEntity) -> {
             if (blockEntity instanceof XianqiaoInterfaceBlockEntity interfaceEntity) {
-                interfaceEntity.serverTick();
+                if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(interfaceEntity)) interfaceEntity.serverTick();
             }
         };
     }

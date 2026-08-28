@@ -32,6 +32,7 @@ public final class SimulatedReincarnationFurnaceScreen
     private final Map<Direction, FacePreviewButton> faceButtons = new EnumMap<>(Direction.class);
     private final List<Button> settingsWidgets = new ArrayList<>();
     private Button xianqiaoButton;
+    private Button redstoneModeButton;
     private Button automaticButton;
     private boolean settingsOpen;
 
@@ -48,6 +49,9 @@ public final class SimulatedReincarnationFurnaceScreen
 
     @Override protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 16, topPos + 18, menu));
+        settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
@@ -112,6 +116,7 @@ public final class SimulatedReincarnationFurnaceScreen
 
     @Override protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         faceButtons.forEach((side, button) -> button.setAlpha(
                 menu.outputFace(side.get3DDataValue()) ? 1.0F : 0.45F));
         refreshSwitchButtons();
@@ -153,7 +158,7 @@ public final class SimulatedReincarnationFurnaceScreen
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
         graphics.drawString(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 27, 0x404040, false);
+                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
                 0x404040, false);

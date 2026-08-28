@@ -20,6 +20,7 @@ import com.immortalstorage.immortalstorage.menu.custom.AdvancedStabilizedMiniatu
 import com.immortalstorage.immortalstorage.menu.custom.AdvancedEntangledMiniatureRuinMenu;
 import com.immortalstorage.immortalstorage.menu.custom.SimulatedSpiritFieldMenu;
 import com.immortalstorage.immortalstorage.menu.custom.EnergyCrystalMenu;
+import com.immortalstorage.immortalstorage.menu.custom.XianqiaoRedstoneInterfaceMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -41,6 +42,8 @@ public final class ModMenus {
 
     public static final Supplier<MenuType<AdvancedXianqiaoInterfaceMenu>> ADVANCED_XIANQIAO_INTERFACE =
             MENUS.register("advanced_xianqiao_interface", () -> IMenuTypeExtension.create(AdvancedXianqiaoInterfaceMenu::new));
+    public static final Supplier<MenuType<XianqiaoRedstoneInterfaceMenu>> XIANQIAO_REDSTONE_INTERFACE =
+            MENUS.register("xianqiao_redstone_interface", () -> IMenuTypeExtension.create(XianqiaoRedstoneInterfaceMenu::new));
 
     public static final Supplier<MenuType<ImmortalFurnaceMenu>> IMMORTAL_FURNACE =
             MENUS.register("immortal_furnace", () -> IMenuTypeExtension.create(ImmortalFurnaceMenu::new));

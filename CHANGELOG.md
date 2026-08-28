@@ -1,5 +1,48 @@
 # Changelog
 
+## [0.1.3] - 2026-08-28
+
+### 简体中文（0.1.2 → 0.1.3）
+
+#### 机器标签与统一红石控制
+
+- 为生产机器、存储机器、接口机器和三类仙能水晶增加独立方块标签，并统一纳入 `immortalstorage:machines`。
+- 所有机器配置页加入服务端权威的三态红石工作模式：有信号工作、无信号工作、忽略红石。机器原有启用条件与红石许可执行 AND 逻辑；旧存档默认忽略红石。
+- 仙窍红石接口是信号输出源，因此不包含机器输入侧的三态红石控制。
+
+#### 仙窍红石接口
+
+- 新增仙窍红石接口方块。激活时输出 15 级红石信号和 15 级亮度；未激活时不输出、不发光。
+- 使用提供的 Blockbench 模型与两态嵌入材质，确定性导出标准方块世界、物品栏及手持模型；修复非 16×16 图集 UV、状态材质反转和 26.1.2 模型烘焙问题。
+- 配置界面顶部严格保留两行：虚拟资源槽、缓存大于阈值和结果；红绿正反相开关、缓存小于阈值和结果。下方显示标准玩家背包与快捷栏。
+- 虚拟配置槽复用仙窍接口语义，支持携带物拖放配置、容器右键识别，以及空槽右键选择额外资源。
+- 高低阈值和正反相状态由服务端同步并写入方块实体 NBT。主 Enter 或小键盘 Enter 会立即保存、应用施密特触发判定并刷新红石输出；重开界面不会被客户端默认零值覆盖。
+
+#### UI、模型与双版本修复
+
+- 高级稳定化迷你仙墟及其纠缠版的红石状态按钮移到右侧设置面板顶部；数值、预览、启用、频率和调度控件保持原坐标。
+- 1.21.1 迷你仙墟渲染器保持原实现。26.1.2 适配器恢复相同的纯色外壳与 0.78 倍核心投影轮廓，正反相交换黑白，不使用物理梁、面框、网络边或线几何。
+- 兼容编译、断言和调试只读取 PCL `versions` 下对应实例的现成编译 JAR；构建全程使用离线模式，不下载、克隆或编译外部兼容模组源码。
+
+#### 发布制品
+
+- Minecraft 1.21.1 / NeoForge 21.1.235：5,562,267 字节，SHA-256 `4296DECE9E8A3D7166A875DCB775740946BF987D449CA4517D4974B0B2250F21`。
+- Minecraft 26.1.2 / NeoForge 26.1.2.94：5,575,350 字节，SHA-256 `731A8C1DDABB6B82AD96717E744BEA03FE25604E3DB6F8924044AB013FF15647`。
+- 两代完整 `build --offline`、兼容矩阵、生产 JAR 边界、版本制品、版本组成及无 AE2 运行时门禁均通过。
+- 本 Release 只包含仙藏 `ImmortalStorage` 的源码与两项版本制品，不包含同一开发工作区中的其他模组。
+
+### English (0.1.2 → 0.1.3)
+
+- Added categorized block tags plus the shared `immortalstorage:machines` tag.
+- Added a server-authoritative three-state redstone work mode to machine configuration screens: run with signal, run without signal, or ignore redstone. Existing machine enable conditions remain combined with redstone permission through AND logic.
+- Added the Xianqiao Redstone Interface. It emits redstone strength 15 and light level 15 while active, and no signal or light while inactive.
+- Imported the supplied Blockbench model deterministically, including normalized atlas UVs, standard block-item transforms, corrected active/inactive texture mapping, and compatible 1.21.1/26.1.2 resources.
+- Added the compact two-row threshold UI with Xianqiao ghost-resource semantics, external-resource selection, red/green inversion state, player inventory, persisted thresholds, and immediate Enter/keypad-Enter save and evaluation.
+- Moved the redstone mode control for Advanced Stabilized Miniature Immortal Ruins and their entangled variant to the top of the right settings panel while retaining all value and scheduling coordinates.
+- Preserved the canonical 1.21.1 Miniature Immortal Ruin renderer and restored its projected shell/core silhouette semantics in the 26.1.2 adapter without physical beams, face frames, mesh edges, or line geometry.
+- Both version artifacts passed full offline builds and release gates. Compatibility checks use only already-compiled JARs installed under the matching PCL `versions` instance.
+- This repository and Release contain only ImmortalStorage source and artifacts; no other mod from the surrounding development workspace is included.
+
 ## [0.1.2] - 2026-08-26
 
 ### 简体中文（0.1.1 → 0.1.2）

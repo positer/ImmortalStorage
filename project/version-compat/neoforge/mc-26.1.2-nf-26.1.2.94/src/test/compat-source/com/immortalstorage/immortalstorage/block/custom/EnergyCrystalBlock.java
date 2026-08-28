@@ -85,7 +85,7 @@ public final class EnergyCrystalBlock extends BaseEntityBlock {
                 ModBlockEntities.typeFor(kind).get(),
                 (tickLevel, pos, tickState, crystal) -> {
                     if (tickLevel instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                        EnergyCrystalBlockEntity.serverTick(serverLevel, pos, tickState, crystal);
+                        if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(crystal)) EnergyCrystalBlockEntity.serverTick(serverLevel, pos, tickState, crystal);
                     }
                 });
     }

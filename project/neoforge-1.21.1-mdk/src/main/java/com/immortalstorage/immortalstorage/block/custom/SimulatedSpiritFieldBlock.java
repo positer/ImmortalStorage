@@ -42,7 +42,7 @@ public final class SimulatedSpiritFieldBlock extends BaseEntityBlock {
         return level.isClientSide ? null : createTickerHelper(type, ModBlockEntities.SIMULATED_SPIRIT_FIELD.get(),
                 (tickLevel, pos, tickState, field) -> {
                     if (tickLevel instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                        SimulatedSpiritFieldBlockEntity.serverTick(serverLevel, pos, tickState, field);
+                        if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(field)) SimulatedSpiritFieldBlockEntity.serverTick(serverLevel, pos, tickState, field);
                     }
                 });
     }

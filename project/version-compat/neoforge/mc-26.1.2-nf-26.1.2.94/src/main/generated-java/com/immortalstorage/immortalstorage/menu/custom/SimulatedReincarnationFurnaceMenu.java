@@ -14,11 +14,12 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 
-public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMenu {
+public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     private final Container container;
     private final SimulatedReincarnationFurnaceBlockEntity blockEntity;
     private final ContainerData data;
     private final BlockPos blockPos;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
 
     public SimulatedReincarnationFurnaceMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
         this(id, inventory, resolve(inventory, buffer), true);
@@ -42,6 +43,7 @@ public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMe
                                               ContainerData data, BlockPos blockPos) {
         super(ModMenus.SIMULATED_REINCARNATION_FURNACE.get(), id);
         this.container = container; this.blockEntity = blockEntity; this.data = data; this.blockPos = blockPos;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(blockEntity);
         checkContainerSize(container, SimulatedReincarnationFurnaceBlockEntity.SLOT_COUNT);
         checkContainerDataCount(data, SimulatedReincarnationFurnaceBlockEntity.DATA_COUNT);
         addSlot(new Slot(container, 0, 26, 26));
@@ -56,7 +58,9 @@ public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMe
         for(int col=0;col<9;col++) addSlot(new Slot(inventory, col, 26 + col*18, 163));
         container.startOpen(inventory.player);
         addDataSlots(data);
+        addDataSlot(redstoneMode);
     }
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
     public int progress() { return data.get(0); }
     public int burnTicks() { return data.get(1); }
     public int storedExperience() { return data.get(2); }
@@ -69,6 +73,7 @@ public final class SimulatedReincarnationFurnaceMenu extends AbstractContainerMe
     public void toggleAutomaticOutput() { if (blockEntity != null) blockEntity.toggleAutomaticOutput(); }
     public void releaseExperience(Player player) { if(blockEntity != null && player instanceof net.minecraft.server.level.ServerPlayer sp) blockEntity.releaseExperience(sp); }
     @Override public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(blockEntity);
         if (id == 0) { toggleXianqiaoOutput(); return true; }
         if (id == 1) { toggleAutomaticOutput(); return true; }
         if (id == 2) { releaseExperience(player); return true; }

@@ -19,6 +19,7 @@ import java.util.Map;
 
 /** Main panel geometry and slot layout exactly match the Simulated Reincarnation Furnace. */
 public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<SimulatedSpiritFieldMenu> {
+    private Button redstoneModeButton;
     private static final ResourceLocation FURNACE = ResourceLocation.withDefaultNamespace(
             "textures/gui/container/furnace.png");
     private static final ResourceLocation BURN_PROGRESS = ResourceLocation.withDefaultNamespace(
@@ -41,6 +42,9 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
 
     @Override protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 16, topPos + 18, menu));
+        settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
@@ -105,6 +109,7 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
 
     @Override protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         faceButtons.forEach((side, button) -> button.setAlpha(
                 menu.outputFace(side.get3DDataValue()) ? 1.0F : 0.45F));
         refreshSwitchButtons();
@@ -144,7 +149,7 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
         graphics.drawString(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 27, 0x404040, false);
+                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
                 0x404040, false);

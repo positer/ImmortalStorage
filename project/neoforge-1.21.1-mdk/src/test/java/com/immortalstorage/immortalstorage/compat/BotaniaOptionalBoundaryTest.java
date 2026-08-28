@@ -33,9 +33,8 @@ final class BotaniaOptionalBoundaryTest {
     @Test
     void buildAndMetadataPinTheAuditedOptionalBotaniaRange() throws IOException {
         String build = Files.readString(PROJECT.resolve("build.gradle"));
-        assertTrue(build.contains(
-                "compileOnly('vazkii.botania:botania-neoforge-1.21.1:454-SNAPSHOT')"));
-        assertTrue(build.contains("transitive = false"));
+        assertTrue(build.contains("localCompatJar(module)"));
+        assertFalse(build.contains("vazkii.botania:botania-neoforge"));
 
         String mods = Files.readString(PROJECT.resolve(Path.of(
                 "build", "resources", "main", "META-INF", "neoforge.mods.toml")));

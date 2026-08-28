@@ -83,6 +83,10 @@ public final class ModNetwork {
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceItemTarget.TYPE, ModPayloads.SetXianqiaoInterfaceItemTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceItemTarget);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceFluidTarget.TYPE, ModPayloads.SetXianqiaoInterfaceFluidTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceFluidTarget);
         registrar.playToServer(ModPayloads.SetXianqiaoInterfaceExternalTarget.TYPE, ModPayloads.SetXianqiaoInterfaceExternalTarget.STREAM_CODEC, ModNetwork::handleSetXianqiaoInterfaceExternalTarget);
+        registrar.playToServer(ModPayloads.ConfigureXianqiaoRedstone.TYPE, ModPayloads.ConfigureXianqiaoRedstone.STREAM_CODEC, ModNetwork::handleConfigureXianqiaoRedstone);
+        registrar.playToServer(ModPayloads.ConfigureXianqiaoRedstoneExternalTarget.TYPE,
+                ModPayloads.ConfigureXianqiaoRedstoneExternalTarget.STREAM_CODEC,
+                ModNetwork::handleConfigureXianqiaoRedstoneExternalTarget);
         registrar.playToServer(ModPayloads.SetStabilizedRuinValue.TYPE,
                 ModPayloads.SetStabilizedRuinValue.STREAM_CODEC, ModNetwork::handleSetStabilizedRuinValue);
         registrar.playToServer(ModPayloads.SetStabilizedRuinFilter.TYPE,
@@ -887,6 +891,50 @@ public final class ModNetwork {
                     ? source.getInventory().clearSlot(payload.slot())
                     : source.getInventory().setExternalTarget(payload.slot(), key, amount);
             if (updated) player.containerMenu.broadcastChanges();
+        });
+    }
+
+    private static void handleConfigureXianqiaoRedstone(ModPayloads.ConfigureXianqiaoRedstone payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null || !(player.containerMenu instanceof com.immortalstorage.immortalstorage.menu.custom.XianqiaoRedstoneInterfaceMenu)
+                    || !(player.level().getBlockEntity(payload.blockPos()) instanceof com.immortalstorage.immortalstorage.block.entity.XianqiaoRedstoneInterfaceBlockEntity be)
+                    || player.distanceToSqr(payload.blockPos().getCenter()) > 64) return;
+            if (payload.action() == 0) be.setConfiguration(payload.low(), payload.high(), payload.inverted());
+            else {
+                try {
+                    var key = new com.immortalstorage.core.resource.ResourceChannelKey(payload.channel(), payload.resourceId());
+                    if (com.immortalstorage.immortalstorage.compat.ExternalResourceCatalog.contains(key)) be.getInventory().setExternalTarget(0, key, 1000L);
+                } catch (IllegalArgumentException ignored) {}
+            }
+            player.containerMenu.broadcastChanges();
+        });
+    }
+
+    private static void handleConfigureXianqiaoRedstoneExternalTarget(
+            ModPayloads.ConfigureXianqiaoRedstoneExternalTarget payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null
+                    || !(player.containerMenu instanceof
+                    com.immortalstorage.immortalstorage.menu.custom.XianqiaoRedstoneInterfaceMenu menu)
+                    || menu.containerId != payload.containerId()
+                    || !menu.blockPos().equals(payload.blockPos())
+                    || menu.configRevision() != payload.configRevision()
+                    || !(player.level().getBlockEntity(payload.blockPos()) instanceof
+                    com.immortalstorage.immortalstorage.block.entity.XianqiaoRedstoneInterfaceBlockEntity blockEntity)
+                    || player.distanceToSqr(payload.blockPos().getCenter()) > 64) return;
+            try {
+                var key = new com.immortalstorage.core.resource.ResourceChannelKey(
+                        payload.channel(), payload.resourceId());
+                if (!com.immortalstorage.immortalstorage.compat.ExternalResourceCatalog.contains(key)) return;
+                long amount = com.immortalstorage.core.resource.ExternalResourceChannels
+                        .clampCacheAmount(key, payload.requestedAmount());
+                if (blockEntity.getInventory().setExternalTarget(0, key, amount)) {
+                    player.containerMenu.broadcastChanges();
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
         });
     }
 

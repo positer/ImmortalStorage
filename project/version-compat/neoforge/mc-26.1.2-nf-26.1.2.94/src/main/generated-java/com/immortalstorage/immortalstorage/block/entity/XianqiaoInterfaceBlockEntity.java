@@ -604,6 +604,28 @@ public class XianqiaoInterfaceBlockEntity extends com.immortalstorage.immortalst
         return endpoint == null ? null : endpoint.externalResourceStorage();
     }
 
+    /** Total owner-Xianqiao amount for one configured resource identity. */
+    protected long configuredOwnerStorageAmount(int slot) {
+        if (slot < 0 || slot >= XianqiaoInterfaceInventory.SLOT_COUNT) return 0L;
+        ItemStack item = inventory.getTarget(slot);
+        if (!item.isEmpty()) {
+            TerminalItemStorage storage = resolveItemStorage();
+            if (storage == null) return 0L;
+            for (StorageItemSummary summary : storage.snapshot()) if (net.minecraft.world.item.ItemStack.isSameItemSameComponents(item, summary.prototype())) return summary.amount();
+            return 0L;
+        }
+        net.neoforged.neoforge.fluids.FluidStack fluid = inventory.getFluidTarget(slot);
+        if (!fluid.isEmpty()) {
+            TerminalFluidStorage storage = resolveFluidStorage();
+            return storage == null ? 0L : storage.snapshot().getOrDefault(com.immortalstorage.immortalstorage.api.storage.terminal.TerminalFluidKey.of(fluid), 0L);
+        }
+        com.immortalstorage.core.resource.ResourceChannelKey external = inventory.getExternalTarget(slot);
+        ExternalResourceStorage storage = resolveExternalResourceStorage();
+        if (external == null || storage == null) return 0L;
+        for (com.immortalstorage.core.resource.ResourceChannelEntry entry : storage.snapshot()) if (entry.key().equals(external)) return entry.amount();
+        return 0L;
+    }
+
     private void markInventoryChanged() {
         setChanged();
     }

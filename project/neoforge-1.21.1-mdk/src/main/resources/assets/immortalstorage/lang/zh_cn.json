@@ -683,5 +683,16 @@
   "container.immortalstorage.world_shard_miner.settings": "世界碎片开采器设置",
   "container.immortalstorage.world_shard_miner.xianqiao_output": "仙窍输出：%s",
   "container.immortalstorage.world_shard_miner.automatic_output": "自动输出：%s",
-  "container.immortalstorage.world_shard_miner.running": "运行 · %s级底座"
+  "container.immortalstorage.world_shard_miner.running": "运行 · %s级底座",
+  "block.immortalstorage.xianqiao_redstone_interface": "仙窍红石接口",
+  "container.immortalstorage.xianqiao_redstone_interface": "仙窍红石接口",
+  "container.immortalstorage.xianqiao_redstone_interface.above": "缓存大于",
+  "container.immortalstorage.xianqiao_redstone_interface.below": "缓存小于",
+  "container.immortalstorage.xianqiao_redstone_interface.activate": "激活",
+  "container.immortalstorage.xianqiao_redstone_interface.exit": "退出",
+  "container.immortalstorage.redstone_mode.signal_work": "信号工作",
+  "container.immortalstorage.redstone_mode.title": "红石控制",
+  "container.immortalstorage.redstone_mode.no_signal_work": "无信号工作",
+  "container.immortalstorage.redstone_mode.ignore": "忽略红石",
+  "container.immortalstorage.redstone_mode.tooltip": "点击循环：信号工作 / 无信号工作 / 忽略红石"
 }

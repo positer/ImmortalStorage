@@ -25,6 +25,7 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
     private static final int SETTINGS_WIDTH = 126;
     private final List<Button> settingsWidgets = new ArrayList<>();
     private boolean settingsOpen;
+    private Button redstoneModeButton;
 
     public TreasureBasinScreen(TreasureBasinMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -35,6 +36,9 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
 
     @Override protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 28, topPos + 17, menu));
+        redstoneModeButton.visible = false;
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
@@ -65,7 +69,13 @@ public final class TreasureBasinScreen extends AbstractContainerScreen<TreasureB
 
     private void refreshSettings() {
         settingsWidgets.forEach(widget -> widget.visible = settingsOpen);
+        if (redstoneModeButton != null) redstoneModeButton.visible = settingsOpen;
         menu.setSettingsVisible(settingsOpen);
+    }
+
+    @Override protected void containerTick() {
+        super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
     }
 
     @Override

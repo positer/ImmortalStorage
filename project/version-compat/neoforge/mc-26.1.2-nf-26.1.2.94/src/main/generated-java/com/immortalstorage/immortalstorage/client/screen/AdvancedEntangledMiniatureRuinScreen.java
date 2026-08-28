@@ -32,6 +32,7 @@ public final class AdvancedEntangledMiniatureRuinScreen extends com.immortalstor
     private Button splitButton;
     private Button orderButton;
     private final List<Button> faceButtons = new ArrayList<>();
+    private Button redstoneModeButton;
 
     public AdvancedEntangledMiniatureRuinScreen(AdvancedEntangledMiniatureRuinMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -42,6 +43,9 @@ public final class AdvancedEntangledMiniatureRuinScreen extends com.immortalstor
     @Override
     protected void init() {
         super.init();
+        redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
+                leftPos + imageWidth + 6, topPos + 2, menu));
+        redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
                 .bounds(leftPos + 4, topPos - 20, 20, 20).build());
@@ -160,6 +164,7 @@ public final class AdvancedEntangledMiniatureRuinScreen extends com.immortalstor
     @Override
     protected void containerTick() {
         super.containerTick();
+        MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
         if (!settings) return;
         syncingValues = true;
         for (int index = 0; index < valueBoxes.size(); index++) {
@@ -203,7 +208,7 @@ public final class AdvancedEntangledMiniatureRuinScreen extends com.immortalstor
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
         graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, 0xFFFFFF, true);
+        graphics.text(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 98, topPos + 4, 0xFFFFFF, true);
     }
 
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {

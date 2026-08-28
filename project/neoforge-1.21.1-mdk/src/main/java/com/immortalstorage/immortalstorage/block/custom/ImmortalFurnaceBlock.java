@@ -66,6 +66,7 @@ public class ImmortalFurnaceBlock extends BaseEntityBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState s, BlockEntityType<T> t) {
         return level.isClientSide ? null : (lvl, pos, st, be) -> {
             if (be instanceof ImmortalFurnaceBlockEntity f && lvl instanceof net.minecraft.server.level.ServerLevel sl) {
+                if (!com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(f)) return;
                 if (f.isAutoConsume() || ImmortalStorageDimensions.isXianqiaoRealm(lvl.dimension())) {
                     f.tryAutoRefuelFromRealmOwner(sl);
                 }

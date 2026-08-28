@@ -30,11 +30,16 @@ final class TargetRuinPreviewRenderContractTest {
         assertFalse(core.contains("GREATER_DEPTH_TEST"));
         assertTrue(core.contains("CompareOp.LESS_THAN_OR_EQUAL"));
         assertTrue(core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)"));
-        assertTrue(core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
-        assertTrue(core.contains("SILHOUETTE_RIM_LAYER"));
+        assertFalse(core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
+        assertTrue(core.contains("PROJECTED_SILHOUETTE_LAYER"));
+        assertTrue(core.contains("outer shell first, smaller core second"));
+        assertFalse(core.contains("drawBoundaryBeams"));
+        assertFalse(core.contains("beamHalfWidth"));
         assertFalse(core.contains("entityTranslucentEmissive"));
-        assertTrue(core.indexOf("buffers.getBuffer(SILHOUETTE_RIM_LAYER)")
-                < core.indexOf("buffers.getBuffer(OPAQUE_CORE_LAYER)"));
+        assertFalse(core.contains("SILHOUETTE_RIM_LAYER"));
+        assertFalse(core.contains("OPAQUE_CORE_LAYER"));
+        assertTrue(core.indexOf("drawCube(consumer, poses, radius, edgeColor)")
+                < core.indexOf("drawCube(consumer, poses, radius * 0.78F, coreColor)"));
         assertFalse(core.contains("edgeColor, 112"));
     }
 

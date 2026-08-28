@@ -18,7 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 /** Three-row cache menu backed exclusively by the Treasure Basin itself. */
-public final class TreasureBasinMenu extends AbstractContainerMenu {
+public final class TreasureBasinMenu extends AbstractContainerMenu implements MachineRedstoneMenu {
     public static final int CACHE_SLOT_COUNT = WorldShardMinerCache.SLOT_COUNT;
     public static final int PLAYER_SLOT_COUNT = Inventory.INVENTORY_SIZE;
     public static final int CACHE_START = 0;
@@ -38,6 +38,7 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
     private final Container cacheContainer;
     private final ContainerData statusData;
     private final @Nullable TreasureBasinBlockEntity basin;
+    private final net.minecraft.world.inventory.DataSlot redstoneMode;
     private boolean settingsVisible;
 
     public TreasureBasinMenu(int id, Inventory inventory, FriendlyByteBuf buffer) {
@@ -69,6 +70,7 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
         this.cacheContainer = cacheContainer;
         this.statusData = statusData;
         this.basin = basin;
+        this.redstoneMode = MachineRedstoneMenu.dataSlot(basin);
         cacheContainer.startOpen(inventory.player);
 
         for (int row = 0; row < 3; row++) {
@@ -94,6 +96,7 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
             addSlot(new Slot(inventory, column, 8 + column * 18, HOTBAR_Y));
         }
         addDataSlots(statusData);
+        addDataSlot(redstoneMode);
     }
 
     @Override
@@ -171,8 +174,10 @@ public final class TreasureBasinMenu extends AbstractContainerMenu {
     public boolean automaticOutput() { return statusData.get(3) != 0; }
     public boolean outputFace(int side) { return side >= 0 && side < 6 && statusData.get(4 + side) != 0; }
     public void setSettingsVisible(boolean visible) { settingsVisible = visible; }
+    @Override public net.minecraft.world.inventory.DataSlot redstoneModeSlot() { return redstoneMode; }
 
     @Override public boolean clickMenuButton(Player player, int id) {
+        if (id == MachineRedstoneMenu.CYCLE_BUTTON_ID) return MachineRedstoneMenu.cycle(basin);
         if (basin == null) return false;
         if (id == 2) { settingsVisible = !settingsVisible; return true; }
         if (id == 0) { basin.toggleXianqiaoOutput(); return true; }
