@@ -1,1 +1,39 @@
-{"name":"仙窍红石接口","icon":"immortalstorage:xianqiao_redstone_interface","category":"immortalstorage:automation","sortnum":12,"pages":[{"type":"patchouli:text","title":"施密特红石检测","text":"右键打开严格两行的小型界面。第一行虚拟配置槽与仙窍接口配置槽行为一致，用于选择仙窍内资源；缓存大于高阈值时按正相激活。第二行红绿按钮切换正相/反相，缓存小于低阈值时按正相退出。反相时两种结果互换。"}]}
+{
+  "name": "仙窍红石接口",
+  "icon": "immortalstorage:xianqiao_redstone_interface",
+  "category": "immortalstorage:automation",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:xianqiao_redstone_interface",
+      "title": "把缓存变成红石",
+      "text": "仙窍红石接口读取所属玩家仙窍中某种资源的$(thing)存储总量$()，再用高、低两个阈值形成带滞回的红石开关。激活时向相邻方块输出15级红石并发出15级亮度；退出后不输出且熄灭。它是信号源，不使用机器的输入红石工作模式。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "先选择检测资源",
+      "text": "第一行左侧是虚拟配置槽，行为与$(l:immortalstorage:automation/interface)仙窍接口$(/l)缓存配置槽一致：可用鼠标携带的物品或容器配置，也可识别容器右键行为。空槽右键会打开额外资源目录，可选择已加载的FE、魔力、魔源等资源。该槽只记录目标，不吞掉样品。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "正相施密特逻辑",
+      "text": "红绿按钮处于正相时：缓存$(bold)严格大于$()“缓存大于”的高阈值才激活；已经激活后，缓存$(bold)严格小于$()“缓存小于”的低阈值才退出。处于两阈值之间时保持原状态，因此管线在临界值附近波动也不会反复闪烁。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "反相施密特逻辑",
+      "text": "点击第二行左侧的红绿按钮切换反相。反相时两种结果互换：缓存严格小于低阈值时激活，严格大于高阈值时退出；两阈值之间仍保持原状态。可用它制作“资源不足报警”或在库存补足后自动关闭的控制线。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "输入、保存与重载",
+      "text": "高、低阈值只接受非负整数，并自动保证高阈值不低于低阈值。输入后按主键盘Enter或小键盘Enter会立即保存并重新判定输出；直接关闭界面也会兜底保存。阈值和正反相写入方块数据，区块重载或重开界面后仍保留。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "接入自动化",
+      "text": "例如检测铁锭，低阈值设为64、高阈值设为256：正相模式会在超过256时启动下游机器，并持续到库存跌破64才关闭。反相模式则可在低于64时点亮警报或启动补货。若要控制仙藏机器，再把输出接到目标机器，并在其设置页选择“信号工作”或“无信号工作”。"
+    }
+  ]
+}

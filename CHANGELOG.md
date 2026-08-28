@@ -2,46 +2,282 @@
 
 ## [0.1.3] - 2026-08-28
 
-### 简体中文（0.1.2 → 0.1.3）
-
-#### 机器标签与统一红石控制
-
-- 为生产机器、存储机器、接口机器和三类仙能水晶增加独立方块标签，并统一纳入 `immortalstorage:machines`。
-- 所有机器配置页加入服务端权威的三态红石工作模式：有信号工作、无信号工作、忽略红石。机器原有启用条件与红石许可执行 AND 逻辑；旧存档默认忽略红石。
-- 仙窍红石接口是信号输出源，因此不包含机器输入侧的三态红石控制。
-
-#### 仙窍红石接口
-
-- 新增仙窍红石接口方块。激活时输出 15 级红石信号和 15 级亮度；未激活时不输出、不发光。
-- 使用提供的 Blockbench 模型与两态嵌入材质，确定性导出标准方块世界、物品栏及手持模型；修复非 16×16 图集 UV、状态材质反转和 26.1.2 模型烘焙问题。
-- 配置界面顶部严格保留两行：虚拟资源槽、缓存大于阈值和结果；红绿正反相开关、缓存小于阈值和结果。下方显示标准玩家背包与快捷栏。
-- 虚拟配置槽复用仙窍接口语义，支持携带物拖放配置、容器右键识别，以及空槽右键选择额外资源。
-- 高低阈值和正反相状态由服务端同步并写入方块实体 NBT。主 Enter 或小键盘 Enter 会立即保存、应用施密特触发判定并刷新红石输出；重开界面不会被客户端默认零值覆盖。
-
-#### UI、模型与双版本修复
-
-- 高级稳定化迷你仙墟及其纠缠版的红石状态按钮移到右侧设置面板顶部；数值、预览、启用、频率和调度控件保持原坐标。
-- 1.21.1 迷你仙墟渲染器保持原实现。26.1.2 适配器恢复相同的纯色外壳与 0.78 倍核心投影轮廓，正反相交换黑白，不使用物理梁、面框、网络边或线几何。
-- 兼容编译、断言和调试只读取 PCL `versions` 下对应实例的现成编译 JAR；构建全程使用离线模式，不下载、克隆或编译外部兼容模组源码。
-
-#### 发布制品
-
-- Minecraft 1.21.1 / NeoForge 21.1.235：5,562,267 字节，SHA-256 `4296DECE9E8A3D7166A875DCB775740946BF987D449CA4517D4974B0B2250F21`。
-- Minecraft 26.1.2 / NeoForge 26.1.2.94：5,575,350 字节，SHA-256 `731A8C1DDABB6B82AD96717E744BEA03FE25604E3DB6F8924044AB013FF15647`。
-- 两代完整 `build --offline`、兼容矩阵、生产 JAR 边界、版本制品、版本组成及无 AE2 运行时门禁均通过。
-- 本 Release 只包含仙藏 `ImmortalStorage` 的源码与两项版本制品，不包含同一开发工作区中的其他模组。
-
 ### English (0.1.2 → 0.1.3)
 
-- Added categorized block tags plus the shared `immortalstorage:machines` tag.
-- Added a server-authoritative three-state redstone work mode to machine configuration screens: run with signal, run without signal, or ignore redstone. Existing machine enable conditions remain combined with redstone permission through AND logic.
-- Added the Xianqiao Redstone Interface. It emits redstone strength 15 and light level 15 while active, and no signal or light while inactive.
-- Imported the supplied Blockbench model deterministically, including normalized atlas UVs, standard block-item transforms, corrected active/inactive texture mapping, and compatible 1.21.1/26.1.2 resources.
-- Added the compact two-row threshold UI with Xianqiao ghost-resource semantics, external-resource selection, red/green inversion state, player inventory, persisted thresholds, and immediate Enter/keypad-Enter save and evaluation.
-- Moved the redstone mode control for Advanced Stabilized Miniature Immortal Ruins and their entangled variant to the top of the right settings panel while retaining all value and scheduling coordinates.
-- Preserved the canonical 1.21.1 Miniature Immortal Ruin renderer and restored its projected shell/core silhouette semantics in the 26.1.2 adapter without physical beams, face frames, mesh edges, or line geometry.
-- Both version artifacts passed full offline builds and release gates. Compatibility checks use only already-compiled JARs installed under the matching PCL `versions` instance.
-- This repository and Release contain only ImmortalStorage source and artifacts; no other mod from the surrounding development workspace is included.
+#### Release scope
+
+- This entry fully records every user-visible addition, behavior change, UI/model/rendering fix, dual-version adaptation, and release constraint introduced in ImmortalStorage from `0.1.2` to `0.1.3`.
+
+#### Machine classification tags
+
+- Added `immortalstorage:production_machines`, containing the Simulated Spirit Field, Simulated Reincarnation Furnace, Treasure Basin, and Immortal Furnace.
+
+- Added `immortalstorage:storage_machines`, containing the Miniature Immortal Ruin, Stabilized Miniature Immortal Ruin, Entangled Stabilized Miniature Immortal Ruin, Advanced Stabilized Miniature Immortal Ruin, and Advanced Entangled Stabilized Miniature Immortal Ruin.
+
+- Added `immortalstorage:interface_machines`, containing the Xianqiao Interface, Advanced Xianqiao Interface, and Xianqiao Redstone Interface.
+
+- Added `immortalstorage:energy_crystals`, containing the FE, Mana, and Source Immortal Energy Crystal variants.
+
+- Added the aggregate `immortalstorage:machines` tag, which includes all ImmortalStorage machines through the four category tags for data packs, integrations, and centralized management.
+
+#### Shared three-state redstone work control
+
+- Added the shared redstone work-mode button to production machines, storage machines, normal/advanced Xianqiao Interfaces, and all three Immortal Energy Crystal variants. The Xianqiao Redstone Interface is itself a redstone output source and therefore intentionally has no input-side work-mode control.
+
+- The three-state cycle order is fixed as “Run With Signal → Run Without Signal → Ignore Redstone.”
+
+- “Run With Signal” permits work only while the block receives a redstone signal and stops work without a signal.
+
+- “Run Without Signal” permits work only while the block receives no redstone signal and stops work when powered.
+
+- “Ignore Redstone” bypasses redstone input checks entirely and is the default for legacy saves and machines without stored configuration, preventing unexpected shutdown after upgrading.
+
+- Redstone permission is AND-combined with each machine's existing enable, output, or scheduling switch; work ticks run only when both the machine-local condition and the redstone mode allow operation.
+
+- Redstone mode changes are server-authoritative and persisted on the block entity bound to the open menu. The client button only sends a menu action and renders synchronized data; it never mutates the world from an unvalidated client position.
+
+- Production-machine redstone buttons are placed inside their existing settings subpages, while Miniature Immortal Ruins and interfaces retain their established configuration screens without obstructing primary storage or filtering actions.
+
+#### New Xianqiao Redstone Interface
+
+- Added the Xianqiao Redstone Interface block, block item, block entity, menu, client screen, network configuration protocol, creative-tab entry, and bilingual Ancient Jade guide page.
+
+- The block can bind to its placing player and measures the total stored amount of the resource selected by its ghost configuration slot in that player's Xianqiao. Items, fluids, and registered external resources reuse the unified Xianqiao Interface configuration semantics.
+
+- While active, the block emits full-strength redstone level 15 to neighboring blocks and light level 15. While inactive, it emits neither redstone nor light.
+
+- Normal Schmitt behavior is: activate when currently inactive and the cache is strictly above the high threshold; deactivate when currently active and the cache is strictly below the low threshold; retain the previous state between thresholds to prevent boundary chatter.
+
+- Inverted Schmitt behavior swaps the outcomes: activate when the cache is strictly below the low threshold, deactivate when it is strictly above the high threshold, and retain the previous state between thresholds.
+
+- Threshold configuration is normalized to `low threshold ≥ 0` and `high threshold ≥ low threshold`, preventing invalid values from breaking hysteresis behavior.
+
+- After a configuration change, the server immediately rereads the current cached amount and evaluates the state instead of waiting for the next five-tick polling cycle before changing redstone output.
+
+#### Xianqiao Redstone Interface configuration UI
+
+- The configuration area is strictly two rows at the top. Row one contains the ghost resource slot, “Cache Above,” the high-threshold number field, and the normal “Activate” / inverted “Exit” outcome label.
+
+- Row two contains an inversion toggle matching the ghost slot's size, “Cache Below,” the low-threshold number field, and the normal “Exit” / inverted “Activate” outcome label.
+
+- The inversion toggle uses red/green borders to directly communicate its current state and can be clicked to switch modes without relying on missing or ambiguous status text.
+
+- The top two rows use a compact vanilla-style layout, with the standard three-row player inventory and nine-slot hotbar below. Inventory rows are not additional configuration rows.
+
+- The ghost resource slot fully reuses Xianqiao Interface cache-slot behavior, including configuration from the carried stack, drag/click interaction, and right-click recognition of the resource represented by container items.
+
+- Right-clicking an empty ghost slot opens a matching external-resource selector with scrolling support for registered non-item/fluid resources such as FE, Mana, and Source.
+
+- Added complete Chinese/English UI text, ghost-slot presentation, external-resource icons, the inventory title, and vanilla-style slot/panel rendering.
+
+#### Ancient Jade guide documentation
+
+- Expanded the bilingual Ancient Jade Patchouli entry for the Xianqiao Redstone Interface from a one-page summary into a six-page operational guide placed directly after the normal and advanced Xianqiao Interface entries in the Sources and Automation category.
+
+- The guide now explains signal/light output, owner-bound cache measurement, ghost-slot and container configuration, empty-slot external-resource selection, normal and inverted Schmitt behavior, strict threshold comparisons, hysteresis retention, Enter saving, persistence across reloads, and a practical 64/256-stock automation example.
+
+- Chinese and English guide entries use the same page order, page types, resource links, examples, and behavioral meaning.
+
+#### Threshold synchronization, saving, and persistence fixes
+
+- The high threshold, low threshold, and inversion state are stored in block-entity NBT and restored after chunk or save reloads.
+
+- Added an explicit menu configuration-sync marker to distinguish “the authoritative saved value is actually 0” from “the client has not received configuration yet.” Number fields remain locked until synchronization completes.
+
+- Once synchronization completes, the screen populates the authoritative high/low thresholds and inversion state, fixing saved values disappearing or being overwritten by client-side default zeroes when reopening the UI.
+
+- Both threshold fields support main Enter and keypad Enter. Pressing either key immediately normalizes values, sends the server configuration, saves NBT, evaluates the output, and clears input focus.
+
+- Removed per-character automatic packet submission so partially typed values are not committed on every keystroke. Closing the screen still performs one fallback commit when Enter was not pressed.
+
+#### Blockbench block, texture, and item-model fixes
+
+- The supplied `仙窍红石接口.bbmodel` is the sole model/texture source. A deterministic exporter now reads its block geometry, face UVs, and two embedded PNGs directly, without manually redrawing the model or textures.
+
+- Atlas-pixel UVs from the 64×64 texture are normalized into Minecraft's 0–16 block-model UV domain, fixing 26.1.2 UV overflow, missing textures, and model-baking failures caused by incorrectly relying on `texture_size`.
+
+- Added complete `activated=false` and `activated=true` blockstate mappings, both world block models, both runtime textures, and a dedicated item model, fixing missing block and inventory models.
+
+- Both custom-element state models inherit `minecraft:block/block`, giving inventory, first/third-person hand, ground, item-frame, and GUI contexts standard vanilla block transforms while preserving world-block geometry.
+
+- The supplied bbmodel's `activated`/`inactivated` labels are visually reversed. The exporter now explicitly swaps source texture labels into runtime state resources so powered/lit output uses the active appearance and unpowered/dark output uses the inactive appearance.
+
+- Resource contracts lock the embedded PNG hashes, standard-block parent, normalized UVs, both blockstate variants, and the item model, preventing future exports from reintroducing reversed textures or missing models.
+
+#### Miniature Immortal Ruin rendering and settings-layout fixes
+
+- The canonical 1.21.1 Miniature Immortal Ruin renderer remains unchanged; 26.1.2 compatibility fixes do not alter the reference-generation behavior.
+
+- Fixed 26.1.2 Miniature Immortal Ruin rendering to restore the 1.21.1 projected silhouette: a larger solid-color shell is submitted first, followed by a centered 0.78-scale solid-color core in the same ordering context.
+
+- Normal state uses a white shell with a black core, while inverted state uses a black shell with a white core. Both remain solid-color rendered silhouettes with no textures, shading, or internal edges.
+
+- “Rendered boundary” explicitly does not mean physical beams, face frames, physical model edges, network edges, grid lines, or any other line geometry.
+
+- Moved the redstone work-mode button for the Advanced Stabilized Miniature Immortal Ruin and Advanced Entangled Stabilized Miniature Immortal Ruin from the bottom of the right settings panel to the top.
+
+- The advanced stabilized screen retains the positions of access, split, order, and all value controls. The advanced entangled screen only moves the normal/inverted side label to the right of the redstone button to avoid overlap; every other component keeps its original coordinates.
+
+#### Dual-version compatibility and build policy
+
+- Minecraft 1.21.1 / NeoForge 21.1.235 and Minecraft 26.1.2 / NeoForge 26.1.2.94 remain separately maintained with version-specific adapters and artifacts; their JARs are not interchangeable.
+
+- Compatibility compilation, API inspection, assertions, and debugging exclusively use already-compiled JARs from the matching dedicated ImmortalStorage instance under `C:/Users/12252/Desktop/Files/Minecraft/PCL/.minecraft/versions`.
+
+- Build scripts remove external Maven fallback for compatibility mods. Missing target JARs fail explicitly; downloading, cloning, or compiling external compatibility-mod source and reusing JARs across Minecraft generations are forbidden.
+
+- Both generations build with `--offline` and pass contracts for the local compatibility-JAR policy, machine redstone truth table, server-authoritative menus, UI layout, resource models, threshold persistence, and Miniature Immortal Ruin rendering.
+
+#### Release, artifacts, and project isolation
+
+- The mod version is updated to `0.1.3`, and the dedicated PCL instance identifiers are fixed as `ImmortalStorage-1.21.1` and `ImmortalStorage-26.1.2`, with exactly one matching-generation ImmortalStorage JAR deployed to each instance.
+
+- The Minecraft 1.21.1 / NeoForge 21.1.235 artifact is `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.1.3.jar`, 5,564,166 bytes, SHA-256 `1ABAD7A09635DBB4F2E2929CB3959D9C032FD96B16E351D53CE3F93834BBA80B`.
+
+- The Minecraft 26.1.2 / NeoForge 26.1.2.94 artifact is `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.1.3.jar`, 5,577,249 bytes, SHA-256 `B6F90525F0B41F7C418791722D42AC683E2D6BC61566E154FE1842B3F0A9DEF6`.
+
+- Both generations pass full `build --offline`, compatibility-matrix, production-JAR-boundary, version-artifact, version-composition, and no-AE2-runtime gates.
+
+- `0.1.3` is published independently under `positer/ImmortalStorage`. The repository commit and GitHub Release contain only ImmortalStorage source, resources, and the two artifacts above—no other mod, PCL instance, archive, or build output from the surrounding development workspace is included.
+
+### 简体中文（0.1.2 → 0.1.3）
+
+#### 版本范围
+
+- 本条目完整记录仙藏 `ImmortalStorage` 从 `0.1.2` 到 `0.1.3` 的全部用户可见新增、行为变化、UI/模型/渲染修复、双版本适配与发布约束。
+
+#### 机器分类标签
+
+- 新增 `immortalstorage:production_machines`，包含模拟灵田、模拟轮回炼化炉、聚宝盆和仙炉。
+
+- 新增 `immortalstorage:storage_machines`，包含迷你仙墟、稳定化迷你仙墟、纠缠稳定化迷你仙墟、高级稳定化迷你仙墟和纠缠的高级稳定化迷你仙墟。
+
+- 新增 `immortalstorage:interface_machines`，包含仙窍接口、高级仙窍接口和仙窍红石接口。
+
+- 新增 `immortalstorage:energy_crystals`，包含电力、魔力和魔源三类仙能水晶。
+
+- 新增统一标签 `immortalstorage:machines`，通过上述四类标签汇总全部仙藏机器，供数据包、联动和统一管理使用。
+
+#### 统一三态红石工作控制
+
+- 为生产机器、存储机器、普通/高级仙窍接口和三类仙能水晶接入统一红石工作模式按钮；仙窍红石接口本身是红石输出源，因此明确不提供输入侧红石工作模式。
+
+- 三态循环顺序固定为“信号工作 → 无信号工作 → 忽略红石”。
+
+- “信号工作”仅在方块收到红石信号时允许运行；无信号时停止工作。
+
+- “无信号工作”仅在方块未收到红石信号时允许运行；收到信号时停止工作。
+
+- “忽略红石”完全跳过红石输入判断，并作为旧存档和未写入配置机器的默认模式，避免升级后机器意外停机。
+
+- 红石许可与机器原有启用、输出或调度开关执行 AND 逻辑；只有机器自身条件与红石模式同时允许运行时才执行工作 tick。
+
+- 红石模式由菜单绑定的方块实体在服务端权威修改并持久化，客户端按钮只发送菜单操作和显示同步值，不按未经验证的客户端坐标直接修改世界。
+
+- 生产机器的红石按钮放入原有设置子页；迷你仙墟和接口沿用各自既有配置界面，不遮挡主要存储或过滤操作。
+
+#### 新增仙窍红石接口
+
+- 新增“仙窍红石接口”方块、方块物品、方块实体、菜单、客户端界面、网络配置协议、创造模式物品栏入口以及中英双语古玉指导书页面。
+
+- 放置时可绑定玩家，并检测所属仙窍中虚拟配置槽所选资源的存储总量；物品、流体和已注册额外资源沿用仙窍接口的统一资源配置语义。
+
+- 激活状态向相邻方块输出满强度 15 级红石信号，同时产生 15 级方块亮度；未激活状态不输出红石且不发光。
+
+- 正相施密特逻辑为：未激活且缓存严格大于高阈值时激活；已激活且缓存严格小于低阈值时退出；缓存位于两阈值之间时保持原状态，避免临界值附近反复抖动。
+
+- 反相施密特逻辑交换结果：缓存严格小于低阈值时激活，缓存严格大于高阈值时退出，两阈值之间仍保持原状态。
+
+- 阈值配置会自动规范化为 `低阈值 ≥ 0` 且 `高阈值 ≥ 低阈值`，避免无效阈值破坏滞回逻辑。
+
+- 修改配置后由服务端立即重新读取当前缓存总量并执行判定，不再等待下一次五 tick 周期检测才改变红石输出。
+
+#### 仙窍红石接口配置 UI
+
+- 配置区严格为顶部两行：第一行依次为虚拟资源配置槽、“缓存大于”、高阈值数字框，以及正相“激活”/反相“退出”的结果文字。
+
+- 第二行依次为与虚拟槽等大的红绿正反相切换按钮、“缓存小于”、低阈值数字框，以及正相“退出”/反相“激活”的结果文字。
+
+- 正反相开关使用红色/绿色边框直接表达当前状态，点击即可切换，不再依赖缺失或含糊的文字状态。
+
+- 顶部两行压缩到紧凑原版风格布局，下方加入标准三行玩家背包和九格快捷栏；背包不会被计入额外配置行。
+
+- 虚拟资源配置槽完整复用仙窍接口缓存配置槽行为：支持用鼠标携带物配置、拖动/点击配置，以及容器物品右键识别其代表的资源。
+
+- 对空白虚拟槽右键会打开同风格的额外资源选择窗口，可滚动选择已注册的 FE、魔力、魔源等非物品/流体资源。
+
+- 补齐界面中英本地化文字、虚拟槽显示、额外资源图标、背包标题和原版风格槽位/面板绘制。
+
+#### 古玉指导书说明
+
+- 将仙窍红石接口的中英双语古玉帕秋莉条目从单页简介扩写为六页操作指南，并放在“源与自动化”分类中普通仙窍接口、高级仙窍接口之后的合适位置。
+
+- 指南现完整说明信号/亮度输出、认主仙窍缓存检测、虚拟槽与容器配置、空槽额外资源选择、正相/反相施密特逻辑、严格阈值比较、滞回保持、Enter 保存、重载持久化，以及低 64/高 256 的实际自动化接线示例。
+
+- 中文和英文指导页保持完全相同的页序、页面类型、资源链接、示例和行为语义。
+
+#### 阈值同步、保存与持久化修复
+
+- 高阈值、低阈值和正反相状态写入方块实体 NBT，并在区块或存档重新加载后恢复。
+
+- 菜单新增独立配置同步标记，用于区分“服务端真实保存值恰好为 0”和“客户端尚未收到配置”；输入框在同步完成前保持锁定。
+
+- 同步完成后，界面一次性回填服务端权威的高低阈值和正反相状态，修复重新打开 UI 时保存值显示丢失或被默认 0 覆盖的问题。
+
+- 高低阈值输入框支持主键盘 Enter 与小键盘 Enter；按下后立即规范化数值、发送服务端配置、保存 NBT、应用判定并清除输入焦点。
+
+- 移除逐字符自动发包，避免每输入一个数字都提交半成品配置；关闭界面时仍保留一次提交作为未按 Enter 时的兜底。
+
+#### Blockbench 方块、材质与物品模型修复
+
+- 以用户提供的 `仙窍红石接口.bbmodel` 为唯一模型/材质源，新增确定性导出脚本，直接解析方块几何、面 UV 和两张内嵌 PNG，不手工重画模型或材质。
+
+- 将 64×64 图集中的像素 UV 归一化到 Minecraft 方块模型使用的 0–16 UV 域，修复 26.1.2 中因错误使用 `texture_size` 造成的 UV 越界、材质丢失和模型烘焙异常。
+
+- 补齐 `activated=false` 与 `activated=true` 两种 blockstate 模型映射、两份世界方块模型、两张运行时材质和独立物品模型，修复方块模型与物品栏模型缺失。
+
+- 两态自定义元素模型继承 `minecraft:block/block`，使物品栏、第一/第三人称手持、地面、展示框和 GUI 使用原版标准方块变换，而世界方块几何保持原样。
+
+- 提供的 bbmodel 内 `activated`/`inactivated` 标签与实际可见外观相反；导出器现显式交换“源贴图标签 → 运行时状态资源”，确保发光/输出红石时使用激活外观，熄灭/无输出时使用未激活外观。
+
+- 资源契约固定检查两张内嵌 PNG 哈希、标准方块父模型、归一化 UV、两态 blockstate 和物品模型，防止后续重新导出再次出现材质反转或模型丢失。
+
+#### 迷你仙墟渲染与设置布局修复
+
+- 1.21.1 的迷你仙墟渲染器保持原实现，不因 26.1.2 兼容修复而改动规范版本行为。
+
+- 修复 26.1.2 迷你仙墟渲染，使其恢复与 1.21.1 一致的屏幕投影轮廓：在同一提交顺序内绘制较大的纯色外壳，再绘制中心 0.78 倍纯色核心。
+
+- 正相状态使用外白内黑，反相状态使用外黑内白；两种状态都保持纯色、无纹理、无明暗、无内部棱线的实体渲染边界。
+
+- 明确禁止把“渲染边界”实现为实体梁、面框、物理模型边、网络边、网格线或其他线几何。
+
+- 将高级稳定化迷你仙墟和纠缠的高级稳定化迷你仙墟的红石工作模式按钮从右侧设置面板底部移到面板顶部。
+
+- 高级稳定化版的访问、均分、顺序和其他数值控件位置保持不变；纠缠高级版只把正相/反相侧别文字移到红石按钮右侧，避免重叠，其余组件坐标不动。
+
+#### 双版本兼容与构建策略
+
+- 同步维护 Minecraft 1.21.1 / NeoForge 21.1.235 与 Minecraft 26.1.2 / NeoForge 26.1.2.94，两代拥有独立版本适配源码和制品，JAR 不可跨版本混用。
+
+- 兼容编译、API 检查、断言和调试统一只读取 `C:/Users/12252/Desktop/Files/Minecraft/PCL/.minecraft/versions` 下对应仙藏专属实例中的现成编译 JAR。
+
+- 构建脚本移除兼容模组外部 Maven 回退；目标兼容 JAR 缺失时明确失败，禁止下载、克隆或编译外部兼容模组源码，也禁止跨 Minecraft 代复用 JAR。
+
+- 两代构建均使用 `--offline`，并通过本地兼容 JAR 策略、机器红石真值表、菜单服务端权威、UI 布局、资源模型、阈值持久化和仙墟渲染契约测试。
+
+#### 发布、制品与项目隔离
+
+- 版本号升级为 `0.1.3`，并将两代 PCL 专属实例标识固定为 `ImmortalStorage-1.21.1` 与 `ImmortalStorage-26.1.2`，每个实例只部署对应代的一份仙藏 JAR。
+
+- Minecraft 1.21.1 / NeoForge 21.1.235 制品为 `immortalstorage-neoforge-mc1.21.1-nf21.1.235-0.1.3.jar`，大小 5,564,166 字节，SHA-256 为 `1ABAD7A09635DBB4F2E2929CB3959D9C032FD96B16E351D53CE3F93834BBA80B`。
+
+- Minecraft 26.1.2 / NeoForge 26.1.2.94 制品为 `immortalstorage-neoforge-mc26.1.2-nf26.1.2.94-0.1.3.jar`，大小 5,577,249 字节，SHA-256 为 `B6F90525F0B41F7C418791722D42AC683E2D6BC61566E154FE1842B3F0A9DEF6`。
+
+- 两代完整 `build --offline`、兼容矩阵、生产 JAR 边界、版本制品、版本组成和无 AE2 运行时门禁全部通过。
+
+- `0.1.3` 作为仙藏独立版本发布到 `positer/ImmortalStorage`；仓库提交和 GitHub Release 只包含 ImmortalStorage 源码、资源和上述两项版本制品，不包含同一开发工作区中的其他模组、PCL 实例、归档或构建输出。
+
 
 ## [0.1.2] - 2026-08-26
 

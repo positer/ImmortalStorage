@@ -1,1 +1,39 @@
-{"name":"Xianqiao Redstone Interface","icon":"immortalstorage:xianqiao_redstone_interface","category":"immortalstorage:automation","sortnum":12,"pages":[{"type":"patchouli:text","title":"Schmitt Redstone Sensor","text":"Right-click for a strict two-row screen. Its ghost resource slot follows the Xianqiao Interface configuration behavior. In normal mode, exceeding the high threshold activates output and dropping below the low threshold deactivates it; inversion swaps both outcomes."}]}
+{
+  "name": "Xianqiao Redstone Interface",
+  "icon": "immortalstorage:xianqiao_redstone_interface",
+  "category": "immortalstorage:automation",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "immortalstorage:xianqiao_redstone_interface",
+      "title": "Turn Cache into Redstone",
+      "text": "The Xianqiao Redstone Interface reads the $(thing)total stored amount$() of one resource in its owner's Xianqiao and applies a two-threshold hysteresis switch. While active it emits redstone strength 15 and light level 15; after exiting it emits neither signal nor light. It is a signal source and does not use the machine input redstone work mode."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Select a Resource First",
+      "text": "The ghost slot on the left of row one follows the same behavior as a $(l:immortalstorage:automation/interface)Xianqiao Interface$(/l) cache slot. Configure it with a carried item or container, including container right-click behavior. Right-click an empty slot to open the external-resource catalog for loaded resources such as FE, Mana, and Source. The slot records a target and never consumes the sample."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Normal Schmitt Logic",
+      "text": "With the red/green button in normal mode, the output activates only when the cache is $(bold)strictly above$() the high “Cache Above” threshold. Once active, it exits only when the cache is $(bold)strictly below$() the low “Cache Below” threshold. Between both thresholds it retains its previous state, preventing chatter near a boundary."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Inverted Schmitt Logic",
+      "text": "Click the red/green button on the left of row two to invert the behavior. In inverted mode, the output activates strictly below the low threshold and exits strictly above the high threshold; it still retains its previous state between thresholds. This is useful for low-stock alarms or refill controls that switch off after recovery."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Input, Save, and Reload",
+      "text": "Thresholds accept non-negative integers and automatically keep the high value no lower than the low value. Press main Enter or keypad Enter to save and reevaluate immediately; closing the screen also performs a fallback save. Thresholds and inversion are stored on the block and survive chunk reloads and reopening the screen."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wire It into Automation",
+      "text": "For example, monitor iron ingots with low=64 and high=256. Normal mode starts downstream machinery above 256 and keeps it running until stock drops below 64. Inverted mode can light an alarm or start restocking below 64. To control an ImmortalStorage machine, connect the output and select “Run With Signal” or “Run Without Signal” on that machine's settings page."
+    }
+  ]
+}
