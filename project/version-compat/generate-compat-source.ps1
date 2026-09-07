@@ -123,6 +123,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
     }
     if ($relativePath -match '[\\/]client[\\/]keybind[\\/]ImmortalStorageKeybinds\.java$') {
         $text = $text.Replace('net.minecraft.Util.getMillis()', 'System.currentTimeMillis()')
+        $text = $text.Replace('mc.options.keyUp.matches(event.getKey(), event.getScanCode())',
+            'mc.options.keyUp.matches(event.getKeyEvent())')
     }
     if ($relativePath -match '[\\/]item[\\/]custom[\\/]SpiritStaffItem\.java$') {
         $text = $text.Replace('shearable.spawnShearedDrop(player.level(), target.blockPosition(), drop);',

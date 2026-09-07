@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -27,7 +28,8 @@ public final class ImmortalStorageKeybinds {
     private static final net.minecraft.client.KeyMapping.Category IMMORTALSTORAGE_CATEGORY =
             net.minecraft.client.KeyMapping.Category.register(net.minecraft.resources.Identifier.fromNamespaceAndPath("immortalstorage", "immortalstorage"));
     private static boolean jumpWasDown;
-    private static boolean boostWasDown;
+    private static final DoubleTapDetector FORWARD_BOOST = new DoubleTapDetector();
+    private static Player boostPlayer;
     public static final KeyMapping OPEN_STORAGE = new KeyMapping(
             "key.immortalstorage.open_storage", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, IMMORTALSTORAGE_CATEGORY);
     /** Toggles realm entry at stage 6+; shift+V expands/collapses the domain or
@@ -47,6 +49,7 @@ public final class ImmortalStorageKeybinds {
         modBus.addListener(ImmortalStorageKeybinds::registerKeys);
         forgeBus.addListener(ImmortalStorageKeybinds::onClientTickPre);
         forgeBus.addListener(ImmortalStorageKeybinds::onClientTickPost);
+        forgeBus.addListener(ImmortalStorageKeybinds::onKeyInput);
         forgeBus.addListener(ImmortalStorageKeybinds::onScreenKeyPressed);
         forgeBus.addListener(ImmortalStorageKeybinds::onMouseScroll);
     }
@@ -62,6 +65,7 @@ public final class ImmortalStorageKeybinds {
     @SubscribeEvent
     public static void onClientTickPre(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
+        updateBoostContext(mc);
         boolean jumpDown = mc.options.keyJump.isDown();
         boolean jumpPressed = jumpDown && !jumpWasDown;
         jumpWasDown = jumpDown;
@@ -102,14 +106,6 @@ public final class ImmortalStorageKeybinds {
         if (OPEN_LINGQI_OR_REALM.consumeClick()) handleRealmOrDomain(p, d);
 
         if (SHOW_PROGRESS.consumeClick()) showProgress(p, d);
-
-        boolean boostDown = InputConstants.isKeyDown(mc.getWindow(), GLFW.GLFW_KEY_Z) && hasControlDown();
-        if (boostDown && !boostWasDown
-                && p.isFallFlying()
-                && p.getPersistentData().getBooleanOr("ImmortalStorageVirtualElytra", false)) {
-            ClientPacketDistributor.sendToServer(new ModPayloads.AuraGuardBoost());
-        }
-        boostWasDown = boostDown;
 
         if (TIME_FLOW.consumeClick()) {
             if (d.getStage() < 7) {
@@ -205,10 +201,27 @@ public final class ImmortalStorageKeybinds {
                 || InputConstants.isKeyDown(h, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 
-    private static boolean hasControlDown() {
-        var h = Minecraft.getInstance().getWindow();
-        return InputConstants.isKeyDown(h, GLFW.GLFW_KEY_LEFT_CONTROL)
-                || InputConstants.isKeyDown(h, GLFW.GLFW_KEY_RIGHT_CONTROL);
+    @SubscribeEvent
+    public static void onKeyInput(InputEvent.Key event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!updateBoostContext(mc)
+                || !mc.options.keyUp.matches(event.getKeyEvent())) return;
+        // Use actual press/release events so quick taps between ticks are not lost.
+        // Keyboard auto-repeat never counts as another tap or consumes vanilla input.
+        if (event.getAction() != GLFW.GLFW_PRESS && event.getAction() != GLFW.GLFW_RELEASE) return;
+        if (FORWARD_BOOST.update(event.getAction() == GLFW.GLFW_PRESS, System.nanoTime())) {
+            ClientPacketDistributor.sendToServer(new ModPayloads.AuraGuardBoost());
+        }
+    }
+
+    private static boolean updateBoostContext(Minecraft mc) {
+        Player player = mc.player;
+        boolean eligible = player != null && mc.screen == null && mc.isWindowActive() && !mc.isPaused()
+                && player.isFallFlying()
+                && player.getPersistentData().getBooleanOr("ImmortalStorageVirtualElytra", false);
+        if (player != boostPlayer || !eligible) FORWARD_BOOST.reset();
+        boostPlayer = player;
+        return eligible;
     }
 
     @SubscribeEvent

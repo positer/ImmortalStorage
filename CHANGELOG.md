@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.1.4]
+
+### English
+
+- Changed the Spiritual Aura Guard virtual elytra boost from Ctrl+Z to double-tapping the forward key (W by default).
+- Boost follows keyboard rebinding of the forward control. Each boost requires two presses within 350 ms; holding the key does not repeat it.
+- Pending taps are cleared when virtual flight ends, a menu opens, the game pauses, or the window loses focus.
+- Updated the bilingual Ancient Jade handbook with virtual elytra flight and boost controls.
+- Rewrote the README as a concise bilingual overview of all items and the main progression.
+
+### 简体中文
+
+- 将灵气护体虚拟鞘翅的加速操作由 Ctrl+Z 改为双击前进键（默认 W）。
+- 加速操作跟随前进键的键盘重绑定。每次加速需在 350 毫秒内按下两次，长按不会重复触发。
+- 结束虚拟飞行、打开界面、暂停游戏或窗口失焦时，清除尚未完成的双击输入。
+- 更新中英双语古玉手册，补充虚拟鞘翅的飞行与加速操作说明。
+- 将 README 重写为简要的双语全物品与主要流程简介。
+
 ## [0.1.3]
 
 ### English
