@@ -27,7 +27,8 @@ final class ImmortalStorageKeybindCategoryTargetContractTest {
 
         String source = Files.readString(workspace.resolve(relative));
         assertEquals(1, count(source, "KeyMapping.Category.register("));
-        assertEquals(6, count(source, "IMMORTALSTORAGE_CATEGORY"));
+        // One shared category declaration plus exactly one reuse per key mapping.
+        assertEquals(count(source, "new KeyMapping(") + 1, count(source, "IMMORTALSTORAGE_CATEGORY"));
         assertTrue(source.contains("private static final net.minecraft.client.KeyMapping.Category IMMORTALSTORAGE_CATEGORY"));
     }
 

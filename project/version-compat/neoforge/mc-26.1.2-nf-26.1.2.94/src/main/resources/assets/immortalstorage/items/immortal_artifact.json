@@ -1,6 +1,74 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/immortal_artifact"
+    "type": "minecraft:select",
+    "property": "immortalstorage:staff_mode",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "immortalstorage:item/immortal_artifact_explore"
+    },
+    "cases": [
+      {
+        "when": "wrench",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/immortal_artifact_wrench"
+        }
+      },
+      {
+        "when": "pick",
+        "model": {
+          "type": "minecraft:select",
+          "property": "immortalstorage:artifact_tool",
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "immortalstorage:item/immortal_artifact_pick"
+          },
+          "cases": [
+            {
+              "when": "axe",
+              "model": {
+                "type": "minecraft:model",
+                "model": "immortalstorage:item/immortal_artifact_axe"
+              }
+            },
+            {
+              "when": "shovel",
+              "model": {
+                "type": "minecraft:model",
+                "model": "immortalstorage:item/immortal_artifact_shovel"
+              }
+            },
+            {
+              "when": "hoe",
+              "model": {
+                "type": "minecraft:model",
+                "model": "immortalstorage:item/immortal_artifact_hoe"
+              }
+            },
+            {
+              "when": "shears",
+              "model": {
+                "type": "minecraft:model",
+                "model": "immortalstorage:item/immortal_artifact_shears"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "when": "build",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/immortal_artifact_build"
+        }
+      },
+      {
+        "when": "teleport",
+        "model": {
+          "type": "minecraft:model",
+          "model": "immortalstorage:item/immortal_artifact_teleport"
+        }
+      }
+    ]
   }
 }

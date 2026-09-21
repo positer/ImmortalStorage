@@ -1,6 +1,6 @@
 # ImmortalStorage · 仙藏
 
-**0.1.4 · NeoForge** · [Download / 下载](https://github.com/positer/ImmortalStorage/releases/tag/0.1.4) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
+**0.1.5 · NeoForge** · [Download / 下载](https://github.com/positer/ImmortalStorage/releases/tag/0.1.5) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
 
@@ -47,8 +47,8 @@ The following groups cover all 112 item registrations, including block items, co
 1. **Awaken:** carry Ancient Jade for a full day or sleep with it to enter stage 1. Right-click it for the guide; mine Spirit Iron and Spirit Crystal to begin crafting.
 2. **Cultivate:** accumulate qi and refine pills. Stages 1–5 expand Kongqiao from 9 to 72 slots with increasing stack capacity. Stage 3 unlocks crafting, stage 4 smithing, and stage 5 the built-in Immortal Furnace.
 3. **Ascend:** at stage 5, fill qi and use an Immortal Pill. Ascension Dan from End-ship loot offers a rare shortcut. Stage 6 migrates storage into Xianqiao and unlocks a personal dimension; existing True Yuan (TruePower) converts once at 16:1 into Immortal Yuan (ImmortalPower). Later True Yuan stays independent; one Immortal Yuan can be crafted into 64 True Yuan.
-4. **Expand:** stage 7 adds fluids; stage 8 adds supported energy and other resources. Complete tribulations in your own realm to reach stages 7–10. Manage realm time/weather, build inside it, or use Domain Expansion to bring a region into the outside world.
-5. **Automate and equip:** combine source blocks, interfaces and production machines; add reinforcement plugins and ruin scheduling. Mine Immortal Art Remains in the End outer islands, make alloy, and upgrade to the Immortal Artifact and Immortal One's Rule.
+4. **Expand:** stage 7 adds fluids; stage 8 adds supported energy and other resources and unlocks Soul Escape. Complete tribulations in your own realm to reach stages 7–10. Manage realm time/weather, build inside it, or use Domain Expansion to bring a region into the outside world.
+5. **Automate and equip:** combine source blocks, interfaces and production machines; add reinforcement plugins and ruin scheduling. Mine Immortal Art Remains in the End outer islands, make alloy, and upgrade to the Immortal Artifact and Immortal One's Rule, which also gains warp travel in teleport mode.
 
 ### Everyday controls and systems
 
@@ -58,8 +58,10 @@ The following groups cover all 112 item registrations, including block items, co
 | T | Show cultivation progress. |
 | V / Shift+V | Enter or leave your realm / toggle Domain Expansion outside it, or return to its center inside it. |
 | Shift + mouse wheel | Cycle the held tool's modes: wrench, build, mine, teleport and explore. |
-| Jump while airborne | Expand or fold the Spiritual Aura Guard virtual elytra. |
+| Jump while airborne | Expand or fold the Spiritual Aura Guard virtual elytra; while actively flying (creative or stage 6+) the jump key stays with flight. |
 | Double-tap W | Boost the expanded virtual elytra; follows the rebound forward keyboard key. Two presses within 350 ms, with no hold-to-repeat. |
+| F7 | Toggle Soul Escape at stage 8 or later: spectator mode, then back to the exact mode you left. Rebindable, and available in hardcore or cheat-free worlds. |
+| Teleport mode with off-hand ImmortalPower | Warp the Immortal Artifact 100 blocks per item along the horizontal look direction, spending the whole off-hand stack and landing on the highest safe spot. |
 
 Personal storage includes search, sorting, a magnet, replenishment and unlocked crafting/smithing/stonecutting/furnace functions. Machines combine their own enable switch with redstone work modes. The redstone interface monitors high/low resource thresholds with normal or inverted hysteresis; Enter saves numeric edits. Spiritual Aura Guard spends True Yuan first, then Immortal Yuan, before unpaid damage reaches health.
 
@@ -114,8 +116,8 @@ See Ancient Jade for recipes and full gameplay details. Report issues with the g
 1. **启灵入门：** 携带古玉一整日，或携玉入睡，进入一阶。右键查阅手册，采集灵铁与灵晶开始合成。
 2. **积累修行：** 获取灵气并炼制丹药；一至五阶空窍从 9 格扩展到 72 格，单格堆叠量逐级增加。三阶开放内置合成，四阶开放锻造，五阶开放内置仙炉。
 3. **飞升六阶：** 五阶灵气满额后使用仙丹；末地船中的飞升丹提供稀有捷径。飞升时空窍物品迁入仙窍并开放个人维度，既有真元按 16:1 一次性转为仙元；之后获取的真元保持独立，一枚仙元可合成为 64 真元。
-4. **拓展仙窍：** 七阶开放流体，八阶开放受支持的能量及额外资源；在自己的仙窍内渡劫，逐步达到十阶。可管理仙窍时间与天气、在其中建设，或通过领域展开将一片空间带到外界。
-5. **自动化与仙锻：** 组合源方块、接口与生产机器，加入强化插件和仙墟调度；在末地外岛寻找仙法遗骸，炼制仙锻合金，升级仙器与仙师度。
+4. **拓展仙窍：** 七阶开放流体，八阶开放受支持的能量及额外资源并解锁灵魂出窍；在自己的仙窍内渡劫，逐步达到十阶。可管理仙窍时间与天气、在其中建设，或通过领域展开将一片空间带到外界。
+5. **自动化与仙锻：** 组合源方块、接口与生产机器，加入强化插件和仙墟调度；在末地外岛寻找仙法遗骸，炼制仙锻合金，升级仙器与仙师度，其中的仙器还会获得传送模式下的折跃传送。
 
 ### 常用操作与系统
 
@@ -125,8 +127,10 @@ See Ancient Jade for recipes and full gameplay details. Report issues with the g
 | T | 查看修行进度。 |
 | V / Shift+V | 进入或离开仙窍 / 在外界展开或收起领域，在仙窍内回到中心。 |
 | Shift + 鼠标滚轮 | 切换手持工具的扳手、建筑、挖掘、传送与探索模式。 |
-| 空中按跳跃键 | 展开或收起灵气护体虚拟鞘翅。 |
+| 空中按跳跃键 | 展开或收起灵气护体虚拟鞘翅；正在飞行（创造或六阶以上）时跳跃键归飞行，不展开鞘翅。 |
 | 双击 W | 为展开的虚拟鞘翅加速，跟随前进键的键盘重绑定；350 毫秒内按下两次，长按不重复触发。 |
+| F7 | 八阶后可灵魂出窍：进入旁观者模式，再按一次回到进入前的游戏模式。可自定义，且极限模式或无作弊世界同样可用。 |
+| 传送模式 + 副手仙元 | 仙器折跃传送：沿视线水平方向每枚仙元位移 100 格，一次性消耗整叠副手仙元，落点取目标列最高的安全位置。 |
 
 个人存储提供搜索、排序、磁铁、自动补充，以及按进度开放的合成、锻造、切石和仙炉功能。机器自身开关与红石工作模式共同决定运行状态；仙窍红石接口按资源高低阈值执行正相或反相滞回控制，数字修改按 Enter 保存。灵气护体优先消耗真元，其次消耗仙元，不足的伤害才扣除生命。
 

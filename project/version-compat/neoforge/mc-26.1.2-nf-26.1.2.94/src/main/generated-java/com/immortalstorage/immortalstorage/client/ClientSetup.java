@@ -127,6 +127,8 @@ public final class ClientSetup {
     private static void registerStaffModelProperties(RegisterSelectItemModelPropertyEvent event) {
         event.register(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),
                 SpiritStaffModeProperty.TYPE);
+        event.register(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "artifact_tool"),
+                ImmortalArtifactToolProperty.TYPE);
     }
 
     private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {

@@ -13,12 +13,15 @@ import com.immortalstorage.immortalstorage.menu.custom.XianqiaoInterfaceMenu;
 import com.immortalstorage.immortalstorage.menu.provider.KongqiaoProvider;
 import com.immortalstorage.immortalstorage.menu.provider.XianqiaoStorageProvider;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.player.SoulEscapeState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -50,6 +53,7 @@ public final class ModNetwork {
                 ModNetwork::handleTerminalExternalResourceEntryAction);
         registrar.playToServer(ModPayloads.TransferTerminalRecipe.TYPE, ModPayloads.TransferTerminalRecipe.STREAM_CODEC, ModNetwork::handleTransferTerminalRecipe);
         registrar.playToServer(ModPayloads.ToggleRealm.TYPE, ModPayloads.ToggleRealm.STREAM_CODEC, ModNetwork::handleToggleRealm);
+        registrar.playToServer(ModPayloads.ToggleSoulEscape.TYPE, ModPayloads.ToggleSoulEscape.STREAM_CODEC, ModNetwork::handleToggleSoulEscape);
         registrar.playToServer(ModPayloads.RealmCenterTeleport.TYPE, ModPayloads.RealmCenterTeleport.STREAM_CODEC, ModNetwork::handleRealmCenterTeleport);
         registrar.playToServer(ModPayloads.DomainToggle.TYPE, ModPayloads.DomainToggle.STREAM_CODEC, ModNetwork::handleDomainToggle);
         registrar.playToServer(ModPayloads.CycleStaffMode.TYPE, ModPayloads.CycleStaffMode.STREAM_CODEC, ModNetwork::handleCycleStaffMode);
@@ -593,6 +597,33 @@ public final class ModNetwork {
                     .adjustTeleportDistance(sp, m.delta());
         });
     }
+    private static void handleToggleSoulEscape(ModPayloads.ToggleSoulEscape m, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer player = serverPlayer(ctx);
+            if (player == null) return;
+
+            CompoundTag persistent = player.getPersistentData();
+            if (SoulEscapeState.isActive(persistent)) {
+                player.setGameMode(SoulEscapeState.finish(persistent));
+                player.displayClientMessage(Component.translatable(
+                        "message.immortalstorage.soul_escape.exited"), true);
+                return;
+            }
+
+            int stage = ImmortalStoragePlayerData.get(player).getStage();
+            if (stage < SoulEscapeState.REQUIRED_STAGE) {
+                player.displayClientMessage(Component.translatable(
+                        "message.immortalstorage.soul_escape.requires_stage"), true);
+                return;
+            }
+            if (!SoulEscapeState.canStart(stage, false, player.isSpectator())) return;
+
+            SoulEscapeState.start(persistent, player.gameMode.getGameModeForPlayer().getId());
+            player.setGameMode(GameType.SPECTATOR);
+            player.displayClientMessage(Component.translatable(
+                    "message.immortalstorage.soul_escape.entered"), true);
+        });
+    }
 
     private static void handleAuraGuardLeap(ModPayloads.AuraGuardLeap payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
@@ -629,6 +660,7 @@ public final class ModNetwork {
             }
             if (player.isSpectator() || player.onGround() || player.isPassenger()
                     || player.isInWater() || player.isFallFlying()
+                    || player.getAbilities().flying
                     || player.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION)
                     || !com.immortalstorage.immortalstorage.combat.ImmortalMasterTalismanService.hasAuraGuard(player)) {
                 return;

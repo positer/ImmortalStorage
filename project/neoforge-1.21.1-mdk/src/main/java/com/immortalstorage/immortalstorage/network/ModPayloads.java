@@ -607,6 +607,11 @@ public enum ModPayloads {
                         ImmortalStorageMod.MODID, "adjust_staff_teleport_distance"));
         @Override public CustomPacketPayload.Type<AdjustStaffTeleportDistance> type() { return TYPE; }
     }
+    public record ToggleSoulEscape() implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ToggleSoulEscape> STREAM_CODEC = StreamCodec.unit(new ToggleSoulEscape());
+        public static final CustomPacketPayload.Type<ToggleSoulEscape> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "toggle_soul_escape"));
+        @Override public CustomPacketPayload.Type<ToggleSoulEscape> type() { return TYPE; }
+    }
 
     /** Server-authoritative upward impulse requested by a client jump double-tap. */
     public record AuraGuardLeap() implements CustomPacketPayload {

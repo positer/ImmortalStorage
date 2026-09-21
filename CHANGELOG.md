@@ -313,3 +313,27 @@
 - 新增灵器、灵剑、世界碎片采集器、聚宝盆、渡劫、丹药、矿物、效果与成就。
 - 新增对主要配方查看、存储、科技、魔法与建筑类模组的可选联动。
 - 新增完整中英双语配置与界面文本。
+
+## [0.1.5]
+
+### English
+
+- Added stage-8 Soul Escape: the rebindable Soul Escape key (F7 by default) toggles spectator mode, and leaving restores the exact game mode you had before.
+- Soul Escape needs neither cheats nor operator permissions, so it also works in hardcore and cheat-free worlds. A spectator state produced by another command is never treated as Soul Escape.
+- Added warp travel to the Immortal Artifact's teleport mode: with ImmortalPower in the off hand, each item warps 100 blocks along the horizontal look direction, the whole off-hand stack is consumed, and the landing is the highest safe spot in the target column.
+- A warp without a safe landing is cancelled and spends nothing, and a near-vertical look direction does not warp.
+- Warp travel prepares its landing area before moving you, so the destination chunks are already loaded on arrival; the ordinary teleport stays a fast short hop and reports the distance covered.
+- Fixed the Immortal Artifact's mode textures on the newer Minecraft line: the artifact now switches its mode sprite and its adaptive mining-tool sprite like the Spirit Instrument.
+- The Spiritual Aura Guard virtual elytra now follows the vanilla elytra rules: it only deploys while you are not flying, and the second press of a flight double-tap always toggles flight instead of folding the glide.
+- The Ancient Jade handbook documents Soul Escape, warp travel and the flight precedence in English and Simplified Chinese.
+
+### 简体中文
+
+- 八阶新增灵魂出窍：默认 F7（可自定义）进入与退出旁观者模式，退出时恢复进入前的游戏模式。
+- 灵魂出窍不依赖作弊开关与操作员权限，极限模式与未开启作弊的世界同样可用；由其他命令产生的旁观者状态不会被当成灵魂出窍。
+- 仙器传送模式新增折跃传送：副手持有仙元时，每枚仙元沿视线水平方向折跃 100 格，一次性消耗整叠副手仙元，落点取目标列最高的安全位置。
+- 找不到安全落点时折跃取消且不消耗仙元；视线接近垂直时不会折跃。
+- 折跃会先准备好落点区域再移动玩家，抵达时落点区块已经加载；普通传送保持轻量的短距跃迁，并提示本次传送距离。
+- 修复新一代 Minecraft 中仙器的模式贴图：仙器的模式贴图与自适应挖掘工具贴图现在会像灵器一样切换。
+- 灵气护体虚拟鞘翅改为按原版鞘翅规则工作：仅在未处于飞行时展开，双击切换飞行的第二次按键交还飞行，不再被鞘翅占用。
+- 古玉手册以中英双语补充灵魂出窍、折跃传送与飞行优先级的说明页。

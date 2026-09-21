@@ -364,7 +364,13 @@ function Transform-2612([string] $text, [string] $relativePath) {
     # factories rather than the removed BlockPos constructor and asLong name.
     $text = $text.Replace('new ChunkPos(pos)', 'ChunkPos.containing(pos)')
     $text = $text.Replace('new ChunkPos(spawnPos)', 'ChunkPos.containing(spawnPos)')
+    $text = $text.Replace('new ChunkPos(landing)', 'ChunkPos.containing(landing)')
     $text = $text.Replace('ChunkPos.asLong(', 'ChunkPos.pack(')
+    # 26.1 ticket types carry no payload value: the radius overload replaces the
+    # 1.21.1 region-ticket call that pins a teleport landing chunk.
+    $text = $text.Replace(
+        'level.getChunkSource().addRegionTicket(TicketType.PORTAL, landingChunk, 2, landing);',
+        'level.getChunkSource().addTicketWithRadius(TicketType.PORTAL, landingChunk, 2);')
 
     # Official 26.1 renamed the collision-property builder and SpawnEggItem's
     # registry-aware lookup was removed because the item already carries its
@@ -1589,6 +1595,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             '    private static void registerStaffModelProperties(RegisterSelectItemModelPropertyEvent event) {' + $newline +
             '        event.register(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "staff_mode"),' + $newline +
             '                SpiritStaffModeProperty.TYPE);' + $newline +
+            '        event.register(Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "artifact_tool"),' + $newline +
+            '                ImmortalArtifactToolProperty.TYPE);' + $newline +
             '    }' + $newline + $newline
         $text = $text.Replace(
             '    private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {',
@@ -2642,7 +2650,9 @@ foreach ($modelFile in @(Get-ChildItem -LiteralPath $canonicalItemModelRoot -Fil
         Where-Object { -not $_.BaseName.EndsWith('_base') })) {
     $itemId = $modelFile.BaseName
     $definitionPath = Join-Path $targetItemDefinitionRoot ($itemId + '.json')
-    if ($itemId -eq 'spirit_staff' -and (Test-Path -LiteralPath $definitionPath)) {
+    # Items whose 26.1 item definition is an explicit select dispatch live in
+    # the target resource tree and must not be flattened back to a plain model.
+    if ($itemId -in @('spirit_staff', 'immortal_artifact') -and (Test-Path -LiteralPath $definitionPath)) {
         continue
     }
 

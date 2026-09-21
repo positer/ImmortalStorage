@@ -28,6 +28,12 @@ public final class ImmortalStorageKeybinds {
     private static final net.minecraft.client.KeyMapping.Category IMMORTALSTORAGE_CATEGORY =
             net.minecraft.client.KeyMapping.Category.register(net.minecraft.resources.Identifier.fromNamespaceAndPath("immortalstorage", "immortalstorage"));
     private static boolean jumpWasDown;
+    /**
+     * Mirrors vanilla's {@code LocalPlayer#jumpTriggerTime}: while it is
+     * counting down, the next jump press is the second half of the flight
+     * double-tap and must stay with the game.
+     */
+    private static int jumpFlightToggleTicks;
     private static final DoubleTapDetector FORWARD_BOOST = new DoubleTapDetector();
     private static Player boostPlayer;
     public static final KeyMapping OPEN_STORAGE = new KeyMapping(
@@ -44,6 +50,7 @@ public final class ImmortalStorageKeybinds {
     /** Shows the stage-1..5 lingqi progress (and a stage 6+ summary) on request. */
     public static final KeyMapping SHOW_PROGRESS = new KeyMapping(
             "key.immortalstorage.show_progress", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_T, IMMORTALSTORAGE_CATEGORY);
+    public static final KeyMapping SOUL_ESCAPE = new KeyMapping("key.immortalstorage.soul_escape", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F7, IMMORTALSTORAGE_CATEGORY);
 
     public static void init(IEventBus modBus, IEventBus forgeBus) {
         modBus.addListener(ImmortalStorageKeybinds::registerKeys);
@@ -60,12 +67,14 @@ public final class ImmortalStorageKeybinds {
         e.register(TIME_FLOW);
         e.register(SPECIAL_OPERATION);
         e.register(SHOW_PROGRESS);
+        e.register(SOUL_ESCAPE);
     }
 
     @SubscribeEvent
     public static void onClientTickPre(ClientTickEvent.Pre event) {
         Minecraft mc = Minecraft.getInstance();
         updateBoostContext(mc);
+        if (jumpFlightToggleTicks > 0) jumpFlightToggleTicks--;
         boolean jumpDown = mc.options.keyJump.isDown();
         boolean jumpPressed = jumpDown && !jumpWasDown;
         jumpWasDown = jumpDown;
@@ -76,6 +85,16 @@ public final class ImmortalStorageKeybinds {
         // That press remains an ordinary jump; a later airborne press toggles flight.
         if (player.onGround()) return;
 
+        // Vanilla spends the second press of a double-tap on the flight toggle
+        // (LocalPlayer#aiStep sets flag9 there) and never on an elytra. Replicating
+        // that window is what keeps creative and cultivation flight working while
+        // the aura guard is worn.
+        if (player.getAbilities().mayfly && !player.isSwimming()) {
+            boolean flightTogglePress = jumpFlightToggleTicks > 0;
+            jumpFlightToggleTicks = flightTogglePress ? 0 : 7;
+            if (flightTogglePress) return;
+        }
+
         boolean virtualExpanded = player.isFallFlying()
                 && player.getPersistentData().getBooleanOr("ImmortalStorageVirtualElytra", false);
         if (virtualExpanded) {
@@ -84,7 +103,12 @@ public final class ImmortalStorageKeybinds {
             ClientPacketDistributor.sendToServer(new ModPayloads.AuraGuardFlightState(false));
             return;
         }
+        // Deploy conditions copied from vanilla's own elytra branch
+        // (LocalPlayer#aiStep): airborne, not flying, not riding, not climbing,
+        // no levitation. The aura guard replaces the chest-slot elytra.
         if (!player.isFallFlying() && !player.isPassenger() && !player.isInWater()
+                && !player.onClimbable()
+                && !player.getAbilities().flying
                 && !player.hasEffect(net.minecraft.world.effect.MobEffects.LEVITATION)
                 && ImmortalMasterTalismanService.hasAuraGuard(player)
                 && player.tryToStartFallFlying()) {
@@ -106,6 +130,10 @@ public final class ImmortalStorageKeybinds {
         if (OPEN_LINGQI_OR_REALM.consumeClick()) handleRealmOrDomain(p, d);
 
         if (SHOW_PROGRESS.consumeClick()) showProgress(p, d);
+        // The server is the authority for the stage gate and the saved game
+        // mode. Sending the intent even after a stage change also lets a
+        // player leave a previously active Soul Escape state safely.
+        if (SOUL_ESCAPE.consumeClick()) ClientPacketDistributor.sendToServer(new ModPayloads.ToggleSoulEscape());
 
         if (TIME_FLOW.consumeClick()) {
             if (d.getStage() < 7) {

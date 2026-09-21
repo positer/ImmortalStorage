@@ -694,5 +694,12 @@
   "container.immortalstorage.redstone_mode.title": "红石控制",
   "container.immortalstorage.redstone_mode.no_signal_work": "无信号工作",
   "container.immortalstorage.redstone_mode.ignore": "忽略红石",
-  "container.immortalstorage.redstone_mode.tooltip": "点击循环：信号工作 / 无信号工作 / 忽略红石"
+  "container.immortalstorage.redstone_mode.tooltip": "点击循环：信号工作 / 无信号工作 / 忽略红石",
+  "message.immortalstorage.spirit_staff.warp_no_safe_landing": "折跃取消：未找到安全落点。",
+  "message.immortalstorage.spirit_staff.warp_completed": "折跃传送完成",
+  "message.immortalstorage.spirit_staff.teleport_completed": "已传送 %s 格",
+  "message.immortalstorage.soul_escape.entered": "灵魂出窍：已进入旁观者模式。",
+  "message.immortalstorage.soul_escape.exited": "灵魂出窍结束：已恢复原游戏模式。",
+  "message.immortalstorage.soul_escape.requires_stage": "灵魂出窍需要达到八阶。",
+  "key.immortalstorage.soul_escape": "灵魂出窍"
 }

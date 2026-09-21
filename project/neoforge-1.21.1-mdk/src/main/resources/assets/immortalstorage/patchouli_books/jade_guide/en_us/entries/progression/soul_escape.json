@@ -1,0 +1,10 @@
+{
+  "name":"Soul Escape",
+  "icon":"immortalstorage:soul_catcher",
+  "category":"immortalstorage:progression",
+  "sortnum":8,
+  "pages":[
+    {"type":"patchouli:text","title":"Unlocked at Stage 8","text":"$(thing)Soul Escape$() unlocks at $(thing)stage 8$(). Its default key is $(thing)F7$() and it can be rebound in the vanilla $(thing)Options → Controls → Key Binds$() screen, in the same category as the other ImmortalStorage shortcuts. The key only reports your intent; the stage check and the mode switch always run on the server. Below stage 8 the key only reports the requirement and never changes your game mode."},
+    {"type":"patchouli:text","title":"Spectate and Return","text":"Pressing F7 enters $(thing)spectator mode$(), where you pass through blocks and observe freely. Pressing F7 again leaves it and restores the exact mode you had before: survival stays survival, creative stays creative, and adventure stays adventure, so leaving never forces you back into survival. The feature depends on neither the world's cheat switch nor operator permissions, which keeps it available in hardcore and cheat-free worlds. Spectator mode produced by another command or game rule is never treated as Soul Escape and is left untouched by F7."}
+  ]
+}

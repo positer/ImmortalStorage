@@ -13,7 +13,12 @@ public abstract class LivingEntityAuraElytraMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void immortalstorage$auraGuardMaintainsVirtualElytra(CallbackInfo callback) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self.onGround() || !self.isFallFlying()) {
+        // Active flight always wins over the glide marker, so a player who
+        // toggles creative or cultivation flight never keeps virtual-elytra
+        // state (its boost and double-distance would otherwise still apply).
+        boolean activelyFlying = self instanceof net.minecraft.world.entity.player.Player player
+                && player.getAbilities().flying;
+        if (self.onGround() || !self.isFallFlying() || activelyFlying) {
             self.getPersistentData().remove("ImmortalStorageVirtualElytra");
         }
     }

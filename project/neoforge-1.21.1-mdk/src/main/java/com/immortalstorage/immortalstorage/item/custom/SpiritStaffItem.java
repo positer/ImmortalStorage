@@ -5,8 +5,10 @@ import com.immortalstorage.immortalstorage.api.storage.PersonalStorageEndpoint;
 import com.immortalstorage.immortalstorage.config.ImmortalStorageConfig;
 import com.immortalstorage.immortalstorage.compat.SpiritStaffWrenchCompat;
 import com.immortalstorage.immortalstorage.enchantment.ModEnchantments;
+import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -15,6 +17,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -39,6 +43,7 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -583,20 +588,87 @@ public class SpiritStaffItem extends Item {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
         }
-        int requested = getTeleportDistance(stack);
+        // Travel (teleport) mode of the immortal artifact upgrades the ordinary
+        // exact-distance jump into a horizontal warp paid with off-hand Immortal
+        // Yuan: each item moves 100 blocks and the whole stack is consumed.
+        ItemStack offhand = serverPlayer.getOffhandItem();
+        boolean travel = stack.getItem() instanceof ImmortalArtifactItem
+                && getMode(stack) == MODE_TELEPORT
+                && offhand.is(ModItems.IMMORTAL_YUAN.get());
+        int yuan = travel ? offhand.getCount() : 0;
+        int requested = travel ? yuan * 100 : getTeleportDistance(stack);
         Vec3 look = serverPlayer.getLookAngle().normalize();
+        if (travel) { look = new Vec3(look.x, 0, look.z); if (look.lengthSqr() < 1.0E-6) return InteractionResultHolder.fail(stack); look = look.normalize(); }
         Vec3 start = serverPlayer.position();
         // Teleport mode is an exact displacement: intervening blocks and the destination's
         // collision volume are deliberately ignored, including suffocating destinations.
         Vec3 destination = start.add(look.scale(requested));
-        ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(serverPlayer);
-        if (!data.consumeImmortalYuan(1L)) {
-            return InteractionResultHolder.fail(stack);
-        }
+        if (travel) {
+            int x = Mth.floor(destination.x), z = Mth.floor(destination.z);
+            destination = findHighestSafeLanding(serverPlayer.serverLevel(), x, z);
+            if (destination == null) {
+                serverPlayer.displayClientMessage(Component.translatable(
+                        "message.immortalstorage.spirit_staff.warp_no_safe_landing"), true);
+                return InteractionResultHolder.fail(stack);
+            }
+            offhand.shrink(yuan);
+            prepareWarpLanding(serverPlayer, destination);
+        } else if (!ImmortalStoragePlayerData.get(serverPlayer).consumeImmortalYuan(1L)) return InteractionResultHolder.fail(stack);
+        finishMove(serverPlayer, destination);
+        serverPlayer.displayClientMessage(Component.translatable(travel
+                ? "message.immortalstorage.spirit_staff.warp_completed"
+                : "message.immortalstorage.spirit_staff.teleport_completed", requested), true);
+        return InteractionResultHolder.consume(stack);
+    }
+
+    /**
+     * Warp-only landing preparation.
+     *
+     * <p>A warp can cross hundreds of blocks in a single step, so the target
+     * column is forced to full status and pinned with a portal ticket before
+     * the position update. Without the ticket the destination can be unloaded
+     * again before the client has received its chunks, which leaves the player
+     * standing above void chunks.</p>
+     *
+     * <p>The ordinary teleport deliberately does not run this: generating and
+     * pinning chunks for a short hop only stalls the server tick and made the
+     * normal teleport stutter.</p>
+     */
+    private static void prepareWarpLanding(ServerPlayer serverPlayer, Vec3 destination) {
+        ServerLevel level = serverPlayer.serverLevel();
+        BlockPos landing = BlockPos.containing(destination);
+        ChunkPos landingChunk = new ChunkPos(landing);
+        level.getChunk(landing.getX(), landing.getZ());
+        level.getChunkSource().addRegionTicket(TicketType.PORTAL, landingChunk, 2, landing);
+    }
+
+    /**
+     * Applies the destination and clears the movement state a jump leaves
+     * behind. Shared by the ordinary teleport and the warp, and intentionally
+     * free of chunk work so the short hop stays cheap.
+     */
+    private static void finishMove(ServerPlayer serverPlayer, Vec3 destination) {
         serverPlayer.teleportTo(destination.x, destination.y, destination.z);
         serverPlayer.setDeltaMovement(Vec3.ZERO);
         serverPlayer.fallDistance = 0.0F;
-        return InteractionResultHolder.consume(stack);
+        serverPlayer.setOnGround(true);
+    }
+
+    private static Vec3 findHighestSafeLanding(ServerLevel level, int x, int z) {
+        for (int y = level.getMaxBuildHeight() - 2; y > level.getMinBuildHeight(); y--) {
+            BlockPos feet = new BlockPos(x, y, z);
+            BlockPos ground = feet.below();
+            BlockState feetState = level.getBlockState(feet);
+            BlockState headState = level.getBlockState(feet.above());
+            if (!feetState.isAir() || !headState.isAir()
+                    || !level.getFluidState(feet).isEmpty()
+                    || !level.getFluidState(feet.above()).isEmpty()
+                    || !level.getBlockState(ground).isFaceSturdy(level, ground, Direction.UP)) {
+                continue;
+            }
+            return new Vec3(x + 0.5D, y, z + 0.5D);
+        }
+        return null;
     }
 
     public static void cycleMode(Player player) {

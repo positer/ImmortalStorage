@@ -694,5 +694,12 @@
   "container.immortalstorage.redstone_mode.title": "Redstone Control",
   "container.immortalstorage.redstone_mode.no_signal_work": "Run Without Signal",
   "container.immortalstorage.redstone_mode.ignore": "Ignore Redstone",
-  "container.immortalstorage.redstone_mode.tooltip": "Cycle: run with signal / run without signal / ignore redstone"
+  "container.immortalstorage.redstone_mode.tooltip": "Cycle: run with signal / run without signal / ignore redstone",
+  "message.immortalstorage.spirit_staff.warp_no_safe_landing": "Warp cancelled: no safe landing was found.",
+  "message.immortalstorage.spirit_staff.warp_completed": "Warp complete",
+  "message.immortalstorage.spirit_staff.teleport_completed": "Teleported %s blocks",
+  "message.immortalstorage.soul_escape.entered": "Soul Escape active: spectator mode.",
+  "message.immortalstorage.soul_escape.exited": "Soul Escape ended: previous game mode restored.",
+  "message.immortalstorage.soul_escape.requires_stage": "Soul Escape requires stage 8.",
+  "key.immortalstorage.soul_escape": "Soul Escape"
 }
