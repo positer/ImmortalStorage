@@ -521,7 +521,7 @@
   "container.immortalstorage.ruin.side_normal": "正常",
   "container.immortalstorage.ruin.side_reversed": "反转",
   "container.immortalstorage.ruin.tick": "周期",
-  "container.immortalstorage.miniature_ruin.warp": "Warp：%s",
+  "container.immortalstorage.miniature_ruin.warp": "折跃：%s",
   "message.immortalstorage.ruin_link.saved": "已记录此迷你仙墟。",
   "message.immortalstorage.ruin_link.cleared": "已清除灵器中保存的迷你仙墟。",
   "message.immortalstorage.ruin_link.same_dimension": "只能链接同一维度中的迷你仙墟。",

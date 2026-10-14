@@ -1,6 +1,6 @@
 # ImmortalStorage · 仙藏
 
-**0.1.6 · NeoForge (development / 开发版)** · [Download / 下载](https://github.com/positer/ImmortalStorage/releases) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
+**0.1.6 · NeoForge** · [Download / 下载](https://github.com/positer/ImmortalStorage/releases/tag/0.1.6) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
 
