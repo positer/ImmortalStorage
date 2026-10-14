@@ -37,9 +37,16 @@ final class TargetItemModelResourceContractTest {
 
         assertSpecial(targetItems.resolve("water_vein.json"), "immortalstorage:source_vein");
         assertSpecial(targetItems.resolve("custom_source_vein.json"), "immortalstorage:source_vein");
-        assertSpecial(targetItems.resolve("source_vein_manager.json"), "immortalstorage:source_vein_manager");
-        assertSpecial(targetItems.resolve("stabilized_miniature_immortal_ruin.json"), "immortalstorage:dynamic_preview");
-        assertSpecial(targetItems.resolve("xianqiao_manager.json"), "immortalstorage:dynamic_preview");
+        assertSpecial(targetItems.resolve("source_vein_manager.json"), "immortalstorage:world_block_item");
+        assertSpecial(targetItems.resolve("stabilized_miniature_immortal_ruin.json"), "immortalstorage:world_block_item");
+        assertSpecial(targetItems.resolve("xianqiao_manager.json"), "immortalstorage:world_block_item");
+        for (String id : new String[]{"miniature_immortal_ruin", "advanced_stabilized_miniature_immortal_ruin",
+                "entangled_stabilized_miniature_immortal_ruin", "advanced_entangled_stabilized_miniature_immortal_ruin",
+                "world_shard_miner", "simulated_spirit_field", "simulated_reincarnation_furnace",
+                "advanced_xianqiao_interface"}) {
+            assertSpecial(targetItems.resolve(id + ".json"), "immortalstorage:world_block_item");
+        }
+
         assertTrue(Files.readString(targetItems.resolve("spirit_staff.json"))
                 .contains("minecraft:select"), "the migrated staff property model must remain target-native");
     }

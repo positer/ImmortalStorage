@@ -1,0 +1,13 @@
+{
+  "type": "immortalstorage:spirit_decompression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": "minecraft:quartz_slab",
+    "result": {
+      "id": "minecraft:quartz",
+      "count": 2
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  }
+}

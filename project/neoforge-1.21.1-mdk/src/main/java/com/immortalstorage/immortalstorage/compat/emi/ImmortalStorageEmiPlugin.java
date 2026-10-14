@@ -37,6 +37,11 @@ import java.util.List;
 public final class ImmortalStorageEmiPlugin implements EmiPlugin {
     @Override
     public void register(EmiRegistry registry) {
+        registry.addCategory(SpiritCompressorEmiRecipe.CATEGORY);
+        registry.addCategory(SpiritCompressorEmiRecipe.DECOMPRESSION_CATEGORY);
+        registry.addWorkstation(SpiritCompressorEmiRecipe.CATEGORY, EmiStack.of(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get()));
+        registry.addWorkstation(SpiritCompressorEmiRecipe.DECOMPRESSION_CATEGORY, EmiStack.of(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get()));
+        for (var entry : com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.allEntries(net.minecraft.client.Minecraft.getInstance().level)) registry.addRecipe(new SpiritCompressorEmiRecipe(entry));
         registry.addCategory(ImmortalFurnaceEmiRecipe.CATEGORY);
         registry.addCategory(SimulatedReincarnationEmiRecipe.CATEGORY);
         registry.addWorkstation(ImmortalFurnaceEmiRecipe.CATEGORY,

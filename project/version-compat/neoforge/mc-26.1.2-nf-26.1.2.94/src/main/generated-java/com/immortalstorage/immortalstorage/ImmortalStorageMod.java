@@ -79,6 +79,11 @@ public class ImmortalStorageMod {
         com.immortalstorage.immortalstorage.compat.CompatManager.logCompat();
 
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorManager::onServerTick);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorManager::onChunkLoad);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorManager::onChunkUnload);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorManager::onServerStopped);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorLootCatalog::onServerStarted);
         NeoForge.EVENT_BUS.register(new com.immortalstorage.immortalstorage.event.CommonEvents());
         NeoForge.EVENT_BUS.register(new com.immortalstorage.immortalstorage.event.RealmTickRateEvents());
 
@@ -97,6 +102,7 @@ public class ImmortalStorageMod {
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener(
                 event.getRegistryAccess()));
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "source_definitions"), new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
+        event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "tool_locator"), new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener());
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
     }
 
@@ -110,6 +116,14 @@ public class ImmortalStorageMod {
     @SubscribeEvent
     public void onDatapackSync(net.neoforged.neoforge.event.OnDatapackSyncEvent event) {
         event.sendRecipes(com.immortalstorage.immortalstorage.recipe.ModRecipes.IMMORTAL_FURNACE_TYPE.get());
+        if (event.getPlayer() == null) com.immortalstorage.immortalstorage.locator.ToolLocatorSettings.tagsChanged();
+        com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.invalidate();
+        var server = event.getPlayerList().getServer();
+        if(event.getPlayer()==null)com.immortalstorage.immortalstorage.locator.ToolLocatorLootCatalog.rebuild(server);
+        var packet = new com.immortalstorage.immortalstorage.network.SpiritCompressorSync(
+                com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.allEntries(server.overworld()));
+        if (event.getPlayer() == null) net.neoforged.neoforge.network.PacketDistributor.sendToAllPlayers(packet);
+        else net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(event.getPlayer(), packet);
         if (event.getPlayer() != null) return;
         com.immortalstorage.immortalstorage.worldshard.WorldShardMinerModes.rebuildPools(
                 event.getPlayerList().getServer());

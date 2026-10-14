@@ -16,22 +16,25 @@ final class DynamicItemPreviewContractTest {
         String setup = read("client", "ClientSetup.java");
         String source = read("client", "render", "SourceVeinItemRenderer.java");
         String sourceDecorator = read("client", "render", "SourceVeinOutputDecorator.java");
-        String ruinDecorator = read("client", "render", "RuinCoreItemDecorator.java");
-        String managerDecorator = read("client", "render", "XianqiaoManagerItemDecorator.java");
-
-        assertTrue(setup.contains("RegisterItemDecorationsEvent"));
+        String nativeRenderer = read("client", "render", "WorldBlockItemRenderer.java");
+        String snapshot = read("client", "render", "WorldBlockItemVisual.java");
         assertTrue(setup.contains("SourceVeinOutputDecorator.INSTANCE"));
-        assertTrue(setup.contains("RuinCoreItemDecorator.INSTANCE"));
-        assertTrue(setup.contains("XianqiaoManagerItemDecorator.INSTANCE"));
-        assertTrue(source.contains("extends BlockEntityWithoutLevelRenderer"));
+        assertTrue(!setup.contains("RuinCoreItemDecorator"));
+        assertTrue(!setup.contains("EntangledRuinCoreItemDecorator"));
+        assertTrue(!setup.contains("SimulatedSpiritFieldItemDecorator"));
+        assertTrue(!setup.contains("XianqiaoManagerItemDecorator"));
         assertTrue(source.contains("SourceVeinDisplayRenderer.renderForItem")
                 || source.contains("SourceVeinDisplayRenderer.submit"));
+        assertTrue(nativeRenderer.contains("getBlockEntityRenderDispatcher().getRenderer(visual.entity())"));
+        assertTrue(nativeRenderer.contains("renderer.render(visual.entity()") || nativeRenderer.contains("renderer.submit(state"));
+        assertTrue(nativeRenderer.contains("renderSingleBlock(visual.state()") || nativeRenderer.contains("model.update(base, visual.state()"));
+        assertTrue(!nativeRenderer.contains("FloatingCubeRenderer.render"));
+        assertTrue(snapshot.contains("block instanceof SourceVeinBlock"));
+        assertTrue(snapshot.contains("newBlockEntity(BlockPos.ZERO, state)"));
+        assertTrue(snapshot.contains("loadWithComponents"));
+        assertTrue(!snapshot.contains("setBlock("));
+        assertTrue(!snapshot.contains("serverTick("));
         assertTrue(!sourceDecorator.contains("enableScissor"));
-        assertTrue(!sourceDecorator.contains("disableScissor"));
-        assertTrue(!ruinDecorator.contains("enableScissor"));
-        assertTrue(!ruinDecorator.contains("disableScissor"));
-        assertTrue(!managerDecorator.contains("enableScissor"));
-        assertTrue(!managerDecorator.contains("disableScissor"));
         assertTrue(readResource("immortalstorage.core.mixins.json")
                 .contains("\"client\": [\"GuiGraphicsItemPreviewMixin\"]") == false);
     }

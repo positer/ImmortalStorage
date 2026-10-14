@@ -1,0 +1,193 @@
+{
+  "name": "锻灵压缩机",
+  "icon": "immortalstorage:miniature_immortal_ruin",
+  "category": "immortalstorage:automation",
+  "sortnum": 19,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "结构与认主",
+      "text": "下层与上层四角放世界胎壁、四边放铁链；下层中心放世界碎片开采器，上层中心放聚宝盆。中层四角放铁链、四边留空，中心放迷你仙墟。总计8世界胎壁、12铁链和三个中心方块。只检查方块类型与位置，不检查其他机器的工作状态或所有者。所有者在放置迷你仙墟时记录，打开界面不会认主。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "完整结构 · 压缩",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=false]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "点击投影按钮后以下层世界碎片采集器为锚点，瞄准地面放置整座结构；上下层铁链沿X/Z，中层四角沿Y。中心迷你仙墟潜行空手右键切换正反。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "完整结构 · 解压",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=true]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "点击投影按钮后以下层世界碎片采集器为锚点，瞄准地面放置整座结构；上下层铁链沿X/Z，中层四角沿Y。中心迷你仙墟潜行空手右键切换正反。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "下层 · y=-1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角世界胎壁、四边铁链，中心世界碎片开采器。共4胎壁、4铁链、1开采器。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "中层 · y=0",
+      "multiblock": {
+        "pattern": [
+          [
+            "YAY",
+            "A0A",
+            "YAY"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:miniature_immortal_ruin_block",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角铁链、四边留空，中心迷你仙墟。反转时仅核心状态改变，外壳相同。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "上层 · y=+1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:treasure_basin",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角世界胎壁、四边铁链，中心聚宝盆。共4胎壁、4铁链、1聚宝盆。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "材料与装配",
+      "text": "完整结构共8世界胎壁、12铁链、1世界碎片开采器、1聚宝盆、1迷你仙墟。逐层从下向上装配，空格必须留空。只检查种类和位置，不要求开采器/聚宝盆开启或同属一人。机器所有者为放置中心迷你仙墟的玩家。JEI/EMI仅提供压缩与解压配方，放置指示在本书查看。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "批量压缩",
+      "text": "右键成型结构中心打开左侧4×3输入、右侧一个输出槽的界面。每tick优先处理库存中输入需求最大的可合成配方，并计算最大完整倍率。相同结果整批累积到输出槽；不同结果依次处理，当前输出类型不兼容或无容量时停止且不消耗对应材料。普通输出槽可保存超过一组的整批结果。成型后迷你仙墟原力场暂停，铁链低频发出青白粒子向中心移动。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "锻灵解压器",
+      "text": "核心反转后，界面变为左1输入→右4×3输出。每tick处理一整格原矿，输出圆石或深板岩及稳定四倍无时运掉落下限：铜8、红石16、青金石16，其他4。全部结果可放入时才扣材料；仙窍输出绕过本地槽。切换模式弹出内部输入与输出缓存，其他配置共用。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "六面与红石",
+      "text": "点击齿轮打开配置面板，各面依次切换关闭、被动抽入、被动推出、主动抽入、主动推出。主动模式每面每tick共64件；外部端口在3×3×3外壳对应面。配置复用已有红石三态按钮：忽略红石、有信号工作、无信号工作；红石控制生产与主动传输，被动端口仍可使用。配置与库存保存到迷你仙墟，结构拆开后停止工作但保留库存。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "输出到仙窍",
+      "text": "开启仙窍输出后，同一tick处理所有可合成配方的全部完整倍率，产物直接写入迷你仙墟放置者的仙窍，绕过本地输出槽并关闭外推。所有者须在线并拥有仙窍；仙窍不可用时保留材料。开启时先归还旧输出。例如投入768钻石，默认一次转成192仙元。关闭时192仙元进入普通输出槽；开启时192仙元直接进入仙窍。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "源比率与数据包",
+      "text": "默认只将有物品源定义且有非零成本的资源反向兑换：4钻石换1仙元、1回响碎片换16仙元。免费源不默认生成仙元，流体不作为物品输入。数据包的spirit_compression配方可以覆盖比率，也可注入非仙元产物配方；生成仙元的输入始终受源资源白名单约束。JEI/EMI仅显示实际服务端压缩/解压配方；结构投影与逐层示意位于本书。完整JSON格式见项目数据驱动文档。"
+    }
+  ]
+}

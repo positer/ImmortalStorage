@@ -1,0 +1,15 @@
+{
+  "type": "immortalstorage:spirit_decompression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": {
+      "item": "minecraft:smooth_quartz_stairs"
+    },
+    "result": {
+      "id": "minecraft:quartz",
+      "count": 4
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  }
+}

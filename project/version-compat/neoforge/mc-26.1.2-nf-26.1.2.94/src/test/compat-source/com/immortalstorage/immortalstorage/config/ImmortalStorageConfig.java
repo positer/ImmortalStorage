@@ -30,6 +30,8 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.IntValue XIANQIAO_INTERFACE_ITEM_SLOT_LIMIT;
     public static final ModConfigSpec.IntValue XIANQIAO_INTERFACE_FLUID_SLOT_LIMIT_MB;
     public static final ModConfigSpec.IntValue SPIRIT_STAFF_BUILD_LIMIT;
+    public static final ModConfigSpec.IntValue TOOL_LOCATOR_RADIUS;
+    public static final ModConfigSpec.IntValue TOOL_LOCATOR_MINING_RADIUS;
     public static final ModConfigSpec.BooleanValue IMMORTAL_RUIN_SWORD_AFFECTS_OTHER_PLAYERS;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> PRIMORDIAL_QI_ENTITY_BLACKLIST;
     public static final ModConfigSpec.IntValue NORMAL_PROGRESSION_MAX_STAGE;
@@ -93,6 +95,14 @@ public final class ImmortalStorageConfig {
                 .translation(key("spirit_staff.buildLimit"))
                 .comment("Maximum blocks placed by one Spirit Staff build-mode action.")
                 .defineInRange("buildLimit", 64, 1, 4096);
+        BUILDER.pop();
+        BUILDER.translation(key("tool_locator")).push("tool_locator");
+        TOOL_LOCATOR_RADIUS = BUILDER.translation(key("tool_locator.radius"))
+                .comment("Locator rendering radius in blocks. Server per-player caches cover three chunks; an explicit datapack radius overrides this value.")
+                .defineInRange("radius", 32, 1, 48);
+        TOOL_LOCATOR_MINING_RADIUS = BUILDER.translation(key("tool_locator.mining_radius"))
+                .comment("Ore outline radius; independent of exploration. Explicit datapack mining_radius overrides it.")
+                .defineInRange("mining_radius", 16, 1, 48);
         BUILDER.pop();
         BUILDER.translation(key("immortal_ruin_sword")).push("immortal_ruin_sword");
         IMMORTAL_RUIN_SWORD_AFFECTS_OTHER_PLAYERS = BUILDER

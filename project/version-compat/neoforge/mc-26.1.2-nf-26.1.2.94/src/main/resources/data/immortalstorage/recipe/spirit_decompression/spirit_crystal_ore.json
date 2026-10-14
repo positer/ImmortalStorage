@@ -1,0 +1,19 @@
+{
+  "type": "immortalstorage:spirit_decompression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": "immortalstorage:spirit_crystal_ore",
+    "result": {
+      "id": "minecraft:cobblestone",
+      "count": 1
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  },
+  "additional_results": [
+    {
+      "id": "immortalstorage:spirit_crystal",
+      "count": 4
+    }
+  ]
+}

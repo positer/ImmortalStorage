@@ -183,6 +183,10 @@ function Transform-2612([string] $text, [string] $relativePath) {
     # CUSTOM_DATA.  This is an official component typing change, not a
     # compatibility probe.
     $text = $text.Replace('DataComponents.BLOCK_ENTITY_DATA', 'DataComponents.CUSTOM_DATA')
+    $text = $text.Replace('SpiritDecompressionRecipe.Serializer::new', 'SpiritDecompressionRecipe.Serializer::create')
+    $text = $text.Replace('entity.loadWithComponents(saved, minecraft.level.registryAccess());',
+        'entity.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, minecraft.level.registryAccess(), saved));')
+
 
     $text = $text.Replace('net.minecraft.world.ItemInteractionResult', 'net.minecraft.world.InteractionResult')
     $text = $text.Replace('ItemInteractionResult', 'InteractionResult')
@@ -366,6 +370,14 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('new ChunkPos(spawnPos)', 'ChunkPos.containing(spawnPos)')
     $text = $text.Replace('new ChunkPos(landing)', 'ChunkPos.containing(landing)')
     $text = $text.Replace('ChunkPos.asLong(', 'ChunkPos.pack(')
+    if ($RelativePath -match 'ToolLocatorManager\.java$') {
+        $text = $text.Replace('new ChunkPos(key)', 'ChunkPos.unpack(key)')
+        $text = $text.Replace('new ChunkPos(e.getKey())', 'ChunkPos.unpack(e.getKey())')
+        $text = $text.Replace('.toLong()', '.pack()')
+        $text = $text.Replace('chunkPosition().x', 'chunkPosition().x()').Replace('chunkPosition().z', 'chunkPosition().z()')
+        $text = $text.Replace('getPos().x', 'getPos().x()').Replace('getPos().z', 'getPos().z()')
+        $text = [regex]::Replace($text, '\b(centre|pos|p)\.(x|z)\b', '$1.$2()')
+    }
     # 26.1 ticket types carry no payload value: the radius overload replaces the
     # 1.21.1 region-ticket call that pins a teleport landing chunk.
     $text = $text.Replace(
@@ -476,6 +488,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "world_shard_loot"), new com.immortalstorage.immortalstorage.worldshard.WorldShardLootReloadListener('),
         @('event.addListener(new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "source_definitions"), new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener())'),
+        @('event.addListener(new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())',
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "tool_locator"), new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())'),
         @('event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())')
     )
@@ -567,6 +581,11 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('context.level().getServer()', "$compatLevel.server(context.level())")
     $text = $text.Replace('realm.getServer()', "$compatLevel.server(realm)")
     $text = $text.Replace('stack.getTags()', "$compatTags.getTags(stack)")
+    if ($relativePath -match 'ToolLocatorLootCatalog\.java$') {
+        $text = $text.Replace('block.getLootTable()', 'block.getLootTable().orElse(null)')
+        $text = $text.Replace('RegistryOps.create(JsonOps.INSTANCE,server.registryAccess())',
+            'RegistryOps.create(JsonOps.INSTANCE,server.reloadableRegistries().lookup())')
+    }
     $text = $text.Replace('net.minecraft.world.entity.LivingEntity.getSlotForHand(',
         "$compatPlayer.slotForHand(")
     $text = $text.Replace('.canInteractWithBlock(', ".canInteractWithBlock(")
@@ -1120,14 +1139,15 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = [regex]::Replace($text,
             '(?s)\r?\n    private static void registerAdditionalModels\(ModelEvent\.RegisterAdditional event\) \{.*?\r?\n    \}\r?\n\r?\n    private static void registerItemDecorations',
             $newline + '    private static void registerSpecialModelRenderers(RegisterSpecialModelRendererEvent event) {' + $newline +
-            '        event.register(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "dynamic_preview"),' + $newline +
-            '                com.immortalstorage.immortalstorage.client.render.DynamicPreviewBlockItemRenderer.Unbaked.MAP_CODEC);' + $newline +
+            '        event.register(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "world_block_item"),' + $newline +
+            '                com.immortalstorage.immortalstorage.client.render.WorldBlockItemRenderer.Unbaked.MAP_CODEC);' + $newline +
             '        event.register(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "source_vein"),' + $newline +
             '                com.immortalstorage.immortalstorage.client.render.SourceVeinItemRenderer.Unbaked.MAP_CODEC);' + $newline +
-            '        event.register(ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "source_vein_manager"),' + $newline +
-            '                com.immortalstorage.immortalstorage.client.render.SourceVeinManagerItemRenderer.Unbaked.MAP_CODEC);' + $newline +
             '    }' + $newline + $newline +
             '    private static void registerItemDecorations')
+    }
+    if ($relativePath -match '[\\/]compressor[\\/]SpiritCompressorRecipes\.java$') {
+        $text = $text.Replace('new Entry(holder.id(),', 'new Entry(holder.id().identifier(),')
     }
     if ($relativePath -match '[\\/]item[\\/]custom[\\/]ImmortalRuinForgedSpiritSwordItem\.java$') {
         $text = $text.Replace('public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker)',
@@ -1961,11 +1981,14 @@ function Transform-2612([string] $text, [string] $relativePath) {
 
     # 26.1.2 retains JSON resources but the listener constructor now consumes
     # ExtraCodecs.JSON instead of Gson.
-    if ($relativePath -match '(?:SourceDefinitionReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog)\.java$') {
+    if ($relativePath -match '(?:SourceDefinitionReloadListener|ToolLocatorReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog)\.java$') {
         $text = $text.Replace('extends SimpleJsonResourceReloadListener',
             'extends SimpleJsonResourceReloadListener<JsonElement>')
         $text = $text.Replace('super(GSON, DIRECTORY);',
             'super(net.minecraft.util.ExtraCodecs.JSON, net.minecraft.resources.FileToIdConverter.json(DIRECTORY));')
+    }
+    if ($relativePath -match 'ToolLocatorChunkMixin\.java$') {
+        $text = $text.Replace('boolean moved,', 'int flags,')
     }
 
     # The official 26.1 furnace keeps the same feature entry points but its
@@ -2470,6 +2493,29 @@ function Transform-2612([string] $text, [string] $relativePath) {
     # Canonical sources are LF-normalized in git. Environment.NewLine is used
     # above so exact Windows-source replacements remain readable, then the
     # generated tree is normalized once to avoid mixed CRLF/LF additions.
+    # Spirit-compressor additions: keep each adapter boundary explicit.
+    if ($relativePath -match '(?:SpiritCompressorRecipes|SpiritCompressorSync|SpiritCompressionIngredient|SpiritCompressorPreview|SpiritCompressorScene|ModBlockEntities)\.java$') {
+        $text = $text.Replace('BuiltInRegistries.ITEM.get(', 'BuiltInRegistries.ITEM.getValue(')
+        $text = $text.Replace('BuiltInRegistries.BLOCK.get(', 'BuiltInRegistries.BLOCK.getValue(')
+    }
+    if ($relativePath -match 'SpiritCompressionIngredient\.java$') {
+        $text = $text.Replace('Ingredient.CODEC_NONEMPTY', 'Ingredient.CODEC')
+    }
+    if ($relativePath -match '[\\/]block[\\/]entity[\\/]ModBlockEntities\.java$') {
+        $text = $text.Replace('return ruin == null ? null : ruin.compressor().handler(side);',
+            'return ruin == null ? null : ' + $script:compatTransfer + '.item(ruin.compressor().handler(side));')
+        $text = $text.Replace('(ruin, side) -> ruin.compressor().handler(side)',
+            '(ruin, side) -> ' + $script:compatTransfer + '.item(ruin.compressor().handler(side))')
+        $text = $text.Replace('return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);',
+            'return ' + $script:compatTransfer + '.item(ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side));')
+    }
+    if ($relativePath -match '[\\/]item[\\/]custom[\\/]MiniatureImmortalRuinItem\.java$') {
+        $text = [regex]::Replace($text, '(?s)    @Override\s+public void initializeClient\(.*?(?=    @Override\s+public void appendHoverText)', '')
+    }
+    if ($relativePath -match '[\\/]client[\\/]render[\\/]SpiritCompressorParticles\.java$') {
+        $text = $text.Replace('particle.setColor(.76F, .97F, 1F);',
+            'if (particle instanceof net.minecraft.client.particle.SingleQuadParticle quad) quad.setColor(.76F, .97F, 1F);')
+    }
     return $text.Replace("`r`n", "`n")
 }
 
@@ -2582,6 +2628,16 @@ foreach ($sourceFile in $canonicalFiles) {
 # lose the inventory renderer entry points.
 $canonicalResourceRoot = Join-Path (Split-Path -Parent $canonical) 'resources'
 $targetResourceRoot = Join-Path (Split-Path -Parent $target) 'resources'
+# Patchouli placement pages use the target's renamed iron-chain registry entry.
+foreach ($locale in @('en_us', 'zh_cn')) {
+    $bookRelative = 'assets/immortalstorage/patchouli_books/jade_guide/' + $locale + '/entries/automation/spirit_compressor.json'
+    $sourceBook = Join-Path $canonicalResourceRoot $bookRelative
+    $targetBook = Join-Path $targetResourceRoot $bookRelative
+    New-Item -ItemType Directory -Path (Split-Path -Parent $targetBook) -Force | Out-Null
+    $bookText = [System.IO.File]::ReadAllText($sourceBook).Replace('minecraft:chain', 'minecraft:iron_chain')
+    [System.IO.File]::WriteAllText($targetBook, $bookText, [System.Text.UTF8Encoding]::new($false))
+}
+
 $canonicalRecipeRoot = Join-Path $canonicalResourceRoot 'data/immortalstorage/recipe'
 $targetRecipeRoot = Join-Path $targetResourceRoot 'data/immortalstorage/recipe'
 $canonicalLootModifierRoot = Join-Path $canonicalResourceRoot 'data/immortalstorage/loot_modifiers'
@@ -2597,16 +2653,17 @@ foreach ($resourcePair in @(
     }
     New-Item -ItemType Directory -Path $targetDataRoot -Force | Out-Null
     $canonicalNames = @{}
-    foreach ($canonicalDataFile in @(Get-ChildItem -LiteralPath $canonicalDataRoot -Filter '*.json' -File)) {
-        $canonicalNames[$canonicalDataFile.Name] = $true
+    foreach ($canonicalDataFile in @(Get-ChildItem -LiteralPath $canonicalDataRoot -Filter '*.json' -File -Recurse)) {
+        $canonicalNames[[System.IO.Path]::GetRelativePath($canonicalDataRoot, $canonicalDataFile.FullName)] = $true
     }
-    foreach ($staleDataFile in @(Get-ChildItem -LiteralPath $targetDataRoot -Filter '*.json' -File)) {
-        if (-not $canonicalNames.ContainsKey($staleDataFile.Name)) {
+    foreach ($staleDataFile in @(Get-ChildItem -LiteralPath $targetDataRoot -Filter '*.json' -File -Recurse)) {
+        if (-not $canonicalNames.ContainsKey([System.IO.Path]::GetRelativePath($targetDataRoot, $staleDataFile.FullName))) {
             Remove-Item -LiteralPath $staleDataFile.FullName -Force
         }
     }
-    foreach ($canonicalDataFile in @(Get-ChildItem -LiteralPath $canonicalDataRoot -Filter '*.json' -File)) {
-        $targetDataFile = Join-Path $targetDataRoot $canonicalDataFile.Name
+    foreach ($canonicalDataFile in @(Get-ChildItem -LiteralPath $canonicalDataRoot -Filter '*.json' -File -Recurse)) {
+        $targetDataFile = Join-Path $targetDataRoot ([System.IO.Path]::GetRelativePath($canonicalDataRoot, $canonicalDataFile.FullName))
+        New-Item -ItemType Directory -Path (Split-Path -Parent $targetDataFile) -Force | Out-Null
         $canonicalJson = [System.IO.File]::ReadAllText($canonicalDataFile.FullName) | ConvertFrom-Json -Depth 100
         if ($resourceLabel -eq 'recipe') {
             $targetJson = Convert-2612RecipeNode $canonicalJson
@@ -2644,7 +2701,7 @@ $sourceVeinIds = @([regex]::Matches($modBlocksText,
 $sourceVeinManagerIds = @([regex]::Matches($modBlocksText,
         'reg\("([^"]+)",\s*\n?\s*\(\)\s*->\s*new SourceVeinManagerBlock') |
     ForEach-Object { $_.Groups[1].Value })
-$dynamicPreviewIds = @('stabilized_miniature_immortal_ruin', 'xianqiao_manager')
+
 
 foreach ($modelFile in @(Get-ChildItem -LiteralPath $canonicalItemModelRoot -Filter '*.json' -File |
         Where-Object { -not $_.BaseName.EndsWith('_base') })) {
@@ -2656,7 +2713,14 @@ foreach ($modelFile in @(Get-ChildItem -LiteralPath $canonicalItemModelRoot -Fil
         continue
     }
 
-    if ($sourceVeinIds -contains $itemId) {
+    $canonicalItemModel = Get-Content -LiteralPath $modelFile.FullName -Raw | ConvertFrom-Json
+    if ($sourceVeinIds -notcontains $itemId -and $canonicalItemModel.parent -eq 'minecraft:builtin/entity') {
+        $definition = [ordered]@{ model = [ordered]@{
+            type = 'minecraft:special'
+            base = "immortalstorage:item/$itemId"
+            model = [ordered]@{ type = 'immortalstorage:world_block_item' }
+        }}
+    } elseif ($sourceVeinIds -contains $itemId) {
         $baseModel = if ($itemId -eq 'custom_source_vein') {
             'immortalstorage:item/custom_source_vein'
         } else {
@@ -2667,22 +2731,6 @@ foreach ($modelFile in @(Get-ChildItem -LiteralPath $canonicalItemModelRoot -Fil
                 type = 'minecraft:special'
                 base = $baseModel
                 model = [ordered]@{ type = 'immortalstorage:source_vein' }
-            }
-        }
-    } elseif ($sourceVeinManagerIds -contains $itemId) {
-        $definition = [ordered]@{
-            model = [ordered]@{
-                type = 'minecraft:special'
-                base = 'immortalstorage:item/source_vein_manager'
-                model = [ordered]@{ type = 'immortalstorage:source_vein_manager' }
-            }
-        }
-    } elseif ($dynamicPreviewIds -contains $itemId) {
-        $definition = [ordered]@{
-            model = [ordered]@{
-                type = 'minecraft:special'
-                base = "immortalstorage:item/$itemId"
-                model = [ordered]@{ type = 'immortalstorage:dynamic_preview' }
             }
         }
     } else {

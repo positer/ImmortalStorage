@@ -257,7 +257,7 @@ public class SpiritStaffItem extends Item {
         return stack.getItem() instanceof ImmortalArtifactItem && getMode(stack) == MODE_WRENCH;
     }
 
-    private static ItemStack enabledExploreInstrument(Player player) {
+    public static ItemStack enabledExploreInstrument(Player player) {
         ItemStack main = player.getMainHandItem();
         if (main.getItem() instanceof SpiritStaffItem && isExploreEnabled(main)) return main;
         ItemStack offhand = player.getOffhandItem();

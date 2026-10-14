@@ -81,5 +81,7 @@ public final class ModMenus {
     public static final Supplier<MenuType<AdvancedEntangledMiniatureRuinMenu>> ADVANCED_ENTANGLED_MINIATURE_IMMORTAL_RUIN =
             MENUS.register("advanced_entangled_miniature_immortal_ruin", () -> IMenuTypeExtension.create(AdvancedEntangledMiniatureRuinMenu::new));
 
+    public static final Supplier<MenuType<com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorMenu>> SPIRIT_COMPRESSOR =
+            MENUS.register("spirit_compressor", () -> IMenuTypeExtension.create(com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorMenu::new));
     private ModMenus() {}
 }

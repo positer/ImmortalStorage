@@ -18,14 +18,24 @@ public abstract class LivingEntityAuraElytraMixin {
         // state (its boost and double-distance would otherwise still apply).
         boolean activelyFlying = self instanceof net.minecraft.world.entity.player.Player player
                 && player.getAbilities().flying;
+        if (activelyFlying && self.isFallFlying()) {
+            ((net.minecraft.world.entity.player.Player) self).stopFallFlying();
+        }
         if (self.onGround() || !self.isFallFlying() || activelyFlying) {
             self.getPersistentData().remove("ImmortalStorageVirtualElytra");
         }
+    }
+    // LocalPlayer can enable ability flight inside aiStep, after tick HEAD.
+    // Fold the vanilla glide flag before travel chooses its movement branch.
+    @Inject(method = "travel", at = @At("HEAD"))
+    private void immortalstorage$auraGuardFlightBeforeTravel(CallbackInfo callback) {
+        immortalstorage$auraGuardMaintainsVirtualElytra(callback);
     }
     @Inject(method = "updateFallFlying", at = @At("HEAD"), cancellable = true)
     private void immortalstorage$auraGuardKeepsFlying(CallbackInfo callback) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self instanceof net.minecraft.world.entity.player.Player player
+                && !player.getAbilities().flying
                 && self.isFallFlying() && !self.isPassenger() && !self.isInWater()
                 && player.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")) {
             callback.cancel();
@@ -37,7 +47,8 @@ public abstract class LivingEntityAuraElytraMixin {
             ordinal = 2), index = 1)
     private Vec3 immortalstorage$auraGuardDoubleFlightDistance(Vec3 movement) {
         LivingEntity self = (LivingEntity) (Object) this;
-        return self.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")
+        return !(self instanceof net.minecraft.world.entity.player.Player player && player.getAbilities().flying)
+                && self.getPersistentData().getBoolean("ImmortalStorageVirtualElytra")
                 ? movement.scale(2.0D) : movement;
     }
 }

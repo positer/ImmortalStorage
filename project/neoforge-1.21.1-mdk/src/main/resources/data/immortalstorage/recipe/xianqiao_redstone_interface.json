@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IRI",
+    "CSC",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "immortalstorage:spirit_iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "S": {
+      "item": "immortalstorage:xianqiao_interface"
+    }
+  },
+  "result": {
+    "id": "immortalstorage:xianqiao_redstone_interface",
+    "count": 1
+  }
+}

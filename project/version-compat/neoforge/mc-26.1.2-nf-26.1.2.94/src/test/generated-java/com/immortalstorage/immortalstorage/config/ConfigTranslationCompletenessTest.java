@@ -32,6 +32,7 @@ final class ConfigTranslationCompletenessTest {
             "xianqiao_interface", "xianqiao_interface.xianqiaoInterfaceItemSlotLimit",
             "xianqiao_interface.xianqiaoInterfaceFluidSlotLimitMb",
             "spirit_staff", "spirit_staff.buildLimit",
+            "tool_locator", "tool_locator.radius", "tool_locator.mining_radius",
             "immortal_ruin_sword", "immortal_ruin_sword.affectsOtherPlayers",
             "primordial_qi", "primordial_qi.entityBlacklist", "progression",
             "progression.maximumStage", "progression.stageTenInfiniteImmortalYuan",

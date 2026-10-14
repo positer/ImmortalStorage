@@ -47,6 +47,22 @@ import java.util.Optional;
 public final class ImmortalStorageJeiPlugin implements IModPlugin {
     private static final Identifier UID = Identifier.fromNamespaceAndPath(ImmortalStorageMod.MODID, "terminal_jei");
     private static IJeiRuntime runtime;
+    static mezz.jei.api.ingredients.IIngredientRenderer<net.minecraft.world.item.ItemStack> itemRenderer() {
+        return runtime.getIngredientManager().getIngredientRenderer(mezz.jei.api.constants.VanillaTypes.ITEM_STACK);
+    }
+    private static java.util.List<com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.Entry> compressorEntries = java.util.List.of();
+    private static java.util.List<com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.Entry> decompressorEntries = java.util.List.of();
+    public static void refreshCompressorRecipes() {
+        if (runtime == null) return;
+        runtime.getRecipeManager().hideRecipes(SpiritCompressorJeiCategory.TYPE, compressorEntries);
+        runtime.getRecipeManager().hideRecipes(SpiritCompressorJeiCategory.DECOMPRESSION_TYPE, decompressorEntries);
+        compressorEntries = com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.entries(net.minecraft.client.Minecraft.getInstance().level);
+        decompressorEntries = com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.entries(net.minecraft.client.Minecraft.getInstance().level, true);
+        runtime.getRecipeManager().addRecipes(SpiritCompressorJeiCategory.TYPE, compressorEntries);
+        runtime.getRecipeManager().addRecipes(SpiritCompressorJeiCategory.DECOMPRESSION_TYPE, decompressorEntries);
+        runtime.getRecipeManager().unhideRecipes(SpiritCompressorJeiCategory.TYPE, compressorEntries);
+        runtime.getRecipeManager().unhideRecipes(SpiritCompressorJeiCategory.DECOMPRESSION_TYPE, decompressorEntries);
+    }
 
     @Override
     public Identifier getPluginUid() {
@@ -57,6 +73,7 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
     public void onRuntimeAvailable(IJeiRuntime jeiRuntime) {
         runtime = jeiRuntime;
         com.immortalstorage.immortalstorage.compat.mc2612.TargetClientRecipeCache.bindJei(ImmortalStorageJeiPlugin::refreshImmortalFurnaceRecipes);
+        refreshCompressorRecipes();
     }
 
     @Override
@@ -95,6 +112,8 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        registration.addRecipeCategories(new SpiritCompressorJeiCategory(registration.getJeiHelpers().getGuiHelper()),
+                new SpiritCompressorJeiCategory(registration.getJeiHelpers().getGuiHelper(), true));
         registration.addRecipeCategories(new ImmortalFurnaceJeiCategory(
                 registration.getJeiHelpers().getGuiHelper()), new SimulatedReincarnationJeiCategory(
                 registration.getJeiHelpers().getGuiHelper()));
@@ -102,6 +121,10 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        compressorEntries = com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.entries(net.minecraft.client.Minecraft.getInstance().level);
+        decompressorEntries = com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.entries(net.minecraft.client.Minecraft.getInstance().level, true);
+        registration.addRecipes(SpiritCompressorJeiCategory.TYPE, compressorEntries);
+        registration.addRecipes(SpiritCompressorJeiCategory.DECOMPRESSION_TYPE, decompressorEntries);
         registration.addRecipes(ImmortalFurnaceJeiCategory.TYPE,
                 com.immortalstorage.immortalstorage.compat.mc2612.TargetClientRecipeCache.immortalFurnaceRecipes());
         registration.addRecipes(SimulatedReincarnationJeiCategory.TYPE,
@@ -115,6 +138,8 @@ public final class ImmortalStorageJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
+        registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get(), SpiritCompressorJeiCategory.TYPE);
+        registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get(), SpiritCompressorJeiCategory.DECOMPRESSION_TYPE);
         registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.block.ModBlocks.IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceJeiCategory.TYPE);
         registration.addRecipeCatalyst(com.immortalstorage.immortalstorage.block.ModBlocks.SIMULATED_REINCARNATION_FURNACE.get(),

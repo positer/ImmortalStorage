@@ -33,7 +33,7 @@ final class XianqiaoInterfaceResourceTest {
             assertTrue(blockstate.contains("facing=" + facing));
         }
         String itemModel = resource("assets/immortalstorage/models/item/xianqiao_interface.json");
-        assertTrue(itemModel.contains("immortalstorage:block/xianqiao_interface"));
+        assertTrue(itemModel.contains("minecraft:builtin/entity"));
     }
 
     @Test

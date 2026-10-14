@@ -1,0 +1,23 @@
+{
+  "type": "immortalstorage:spirit_compression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": {
+      "item": "minecraft:amethyst_block"
+    },
+    "result": {
+      "id": "minecraft:budding_amethyst",
+      "count": 1
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  },
+  "additional_inputs": [
+    {
+      "ingredient": {
+        "item": "immortalstorage:immortal_yuan"
+      },
+      "count": 8
+    }
+  ]
+}

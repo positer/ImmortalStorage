@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#c:tick_acceleration_disallowed",
+      "required": false
+    },
+    {
+      "id": "#industrialforegoingsouls:cant_accelerate",
+      "required": false
+    },
+    {
+      "id": "projecte:dm_pedestal",
+      "required": false
+    }
+  ]
+}

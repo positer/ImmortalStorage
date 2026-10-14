@@ -137,7 +137,7 @@ final class PatchouliBundledHandbookContractTest {
                 "copper_vein", "iron_vein", "gold_vein", "lapis_vein", "redstone_vein",
                 "spirit_iron_vein", "spirit_crystal_vein", "diamond_vein", "emerald_vein",
                 "echo_shard_vein", "ancient_debris_vein", "nether_star_vein",
-                "enchanted_golden_apple_vein", "dragon_egg_vein"));
+                "enchanted_golden_apple_vein", "dragon_egg_vein", "source_vein_manager"));
         expected = expected.stream().map(id -> "immortalstorage:" + id)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         assertEquals(expected, structuredRecipeReferences(

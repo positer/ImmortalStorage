@@ -14,6 +14,7 @@ public abstract class PlayerAuraElytraMixin {
     private void immortalstorage$auraGuardStartsFlying(CallbackInfoReturnable<Boolean> result) {
         Player self = (Player) (Object) this;
         if (!self.isFallFlying() && !self.onGround() && !self.isPassenger() && !self.isInWater()
+                && !self.onClimbable() && !self.getAbilities().flying
                 && !self.hasEffect(MobEffects.LEVITATION)
                 && ImmortalMasterTalismanService.hasAuraGuard(self)) {
             self.startFallFlying();

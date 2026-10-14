@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "接入自动化",
       "text": "例如检测铁锭，低阈值设为64、高阈值设为256：正相模式会在超过256时启动下游机器，并持续到库存跌破64才关闭。反相模式则可在低于64时点亮警报或启动补货。若要控制仙藏机器，再把输出接到目标机器，并在其设置页选择“信号工作”或“无信号工作”。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:xianqiao_redstone_interface",
+      "title": "仙窍红石接口"
     }
   ]
 }

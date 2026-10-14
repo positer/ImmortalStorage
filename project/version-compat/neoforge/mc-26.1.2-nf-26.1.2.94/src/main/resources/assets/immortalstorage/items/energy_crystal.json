@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/energy_crystal"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/energy_crystal",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

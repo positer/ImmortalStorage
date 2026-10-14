@@ -36,5 +36,17 @@ public final class ModRecipes {
             RECIPE_SERIALIZERS.register("yuan_substitution_shapeless",
                     YuanSubstitutionShapelessRecipe.Serializer::create);
 
+    public static final Supplier<RecipeType<SpiritCompressionRecipe>> SPIRIT_COMPRESSION_TYPE =
+            RECIPE_TYPES.register("spirit_compression", () -> new RecipeType<SpiritCompressionRecipe>() {
+                @Override public String toString() { return "immortalstorage:spirit_compression"; }
+            });
+    public static final Supplier<RecipeSerializer<SpiritCompressionRecipe>> SPIRIT_COMPRESSION_SERIALIZER =
+            RECIPE_SERIALIZERS.register("spirit_compression", SpiritCompressionRecipe.Serializer::create);
+    public static final Supplier<RecipeType<SpiritDecompressionRecipe>> SPIRIT_DECOMPRESSION_TYPE =
+            RECIPE_TYPES.register("spirit_decompression", () -> new RecipeType<SpiritDecompressionRecipe>() {
+                @Override public String toString() { return "immortalstorage:spirit_decompression"; }
+            });
+    public static final Supplier<RecipeSerializer<SpiritDecompressionRecipe>> SPIRIT_DECOMPRESSION_SERIALIZER =
+            RECIPE_SERIALIZERS.register("spirit_decompression", SpiritDecompressionRecipe.Serializer::create);
     private ModRecipes() {}
 }

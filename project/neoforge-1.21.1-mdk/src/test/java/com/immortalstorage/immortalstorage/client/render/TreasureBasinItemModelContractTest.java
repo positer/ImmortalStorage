@@ -19,7 +19,7 @@ final class TreasureBasinItemModelContractTest {
         Path modelPath = resourceRoot().resolve(Path.of(
                 "immortalstorage", "models", "item", "treasure_basin.json"));
         JsonObject model = JsonParser.parseString(Files.readString(modelPath)).getAsJsonObject();
-        assertEquals("immortalstorage:block/treasure_basin", model.get("parent").getAsString());
+        assertEquals("minecraft:builtin/entity", model.get("parent").getAsString());
         assertEquals("side", model.get("gui_light").getAsString());
         JsonObject display = model.getAsJsonObject("display");
         assertTransform(display, "gui", "[30,225,0]", "[0.625,0.625,0.625]");

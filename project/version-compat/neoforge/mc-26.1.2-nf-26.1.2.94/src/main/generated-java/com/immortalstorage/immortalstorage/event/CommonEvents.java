@@ -517,6 +517,7 @@ public class CommonEvents {
     }
 
     private static void suppressImmortalStorageBuffs(ServerPlayer p) {
+        p.removeEffect(MobEffects.NIGHT_VISION);
         p.removeEffect(MobEffects.STRENGTH);
         p.removeEffect(MobEffects.SPEED);
         p.removeEffect(MobEffects.REGENERATION);
@@ -542,6 +543,7 @@ public class CommonEvents {
     private static void applyStageEffects(ServerPlayer p, ImmortalStoragePlayerData d) {
         boolean weak = d.isAdvancedWeak() && d.getAdvancedWeakTicks() > 0;
         if (weak) {
+            p.removeEffect(MobEffects.NIGHT_VISION);
             Holder<net.minecraft.world.effect.MobEffect> advancedWeakness = BuiltInRegistries.MOB_EFFECT
                     .wrapAsHolder(ModEffects.ADVANCED_WEAKNESS.get());
             MobEffectInstance currentWeakness = p.getEffect(advancedWeakness);
@@ -568,6 +570,9 @@ public class CommonEvents {
         ensureStageEffect(p, MobEffects.REGENERATION, regeneration);
         ensureStageEffect(p, MobEffects.RESISTANCE, resistance);
         if (st >= 6) {
+            // Vanilla night vision flickers below 200 ticks. Refresh well before
+            // that threshold rather than using the other buffs' short lease.
+            ensureStageEffect(p, MobEffects.NIGHT_VISION, 0, 600, 300);
             boolean abilitiesChanged = !p.getAbilities().mayfly
                     || Float.compare(p.getAbilities().getFlyingSpeed(), 0.05f) != 0;
             if (abilitiesChanged) {
@@ -586,11 +591,18 @@ public class CommonEvents {
     private static void ensureStageEffect(ServerPlayer player,
                                           Holder<net.minecraft.world.effect.MobEffect> effect,
                                           int amplifier) {
+        ensureStageEffect(player, effect, amplifier, 100, 40);
+    }
+
+    private static void ensureStageEffect(ServerPlayer player,
+                                          Holder<net.minecraft.world.effect.MobEffect> effect,
+                                          int amplifier, int duration, int refreshThreshold) {
         if (amplifier < 0) return;
         MobEffectInstance current = player.getEffect(effect);
         if (current != null && (current.getAmplifier() > amplifier
-                || current.getAmplifier() == amplifier && current.getDuration() > 40)) return;
-        player.addEffect(new MobEffectInstance(effect, 100,
+                || current.getAmplifier() == amplifier
+                && (current.isInfiniteDuration() || current.getDuration() > refreshThreshold))) return;
+        player.addEffect(new MobEffectInstance(effect, duration,
                 amplifier, true, false, true));
     }
 }

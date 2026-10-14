@@ -23,6 +23,9 @@ import net.minecraft.world.phys.Vec3;
 
 /** Server-authoritative horizontal field for the placed miniature ruin. */
 public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implements MenuProvider {
+    private final SpiritCompressorLogic compressor = new SpiritCompressorLogic(this);
+    public SpiritCompressorLogic compressor() { return compressor; }
+    public void restoreFromItem(CompoundTag tag) { if (level != null && !level.isClientSide) loadAdditional(tag, level.registryAccess()); }
     private boolean affectPlayers;
     private boolean entityDamage = true;
     private boolean playerDamage;
@@ -33,8 +36,23 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
         super(ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(), pos, state);
     }
 
+    @Override public void setBlockState(BlockState nextState) {
+        BlockState previous = getBlockState();
+        if (compressor != null && level instanceof ServerLevel server
+                && previous.getBlock() == nextState.getBlock()
+                && previous.hasProperty(MiniatureImmortalRuinBlock.REVERSED)
+                && nextState.hasProperty(MiniatureImmortalRuinBlock.REVERSED)
+                && previous.getValue(MiniatureImmortalRuinBlock.REVERSED) != nextState.getValue(MiniatureImmortalRuinBlock.REVERSED)) {
+            compressor.ejectCaches(server);
+        }
+        super.setBlockState(nextState);
+    }
+
     public void serverTick() {
         if (!(level instanceof ServerLevel serverLevel)) return;
+        compressor.updateFormation();
+        if (!MachineRedstoneControl.allows(this)) return;
+        if (compressor.formed()) { compressor.tick(serverLevel); return; }
         boolean reversed = getBlockState().getValue(MiniatureImmortalRuinBlock.REVERSED);
         Vec3 center = Vec3.atCenterOf(worldPosition);
         AABB area = MiniatureImmortalRuinEffectPolicy.effectArea(worldPosition);
@@ -112,10 +130,13 @@ public final class MiniatureImmortalRuinBlockEntity extends BlockEntity implemen
             @Override public int getCount() { return 5; }
         };
     }
-    @Override public Component getDisplayName() { return Component.translatable("item.immortalstorage.miniature_immortal_ruin"); }
-    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu(id, inventory, menuData(), this); }
-    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putBoolean("AffectPlayers", affectPlayers); tag.putBoolean("EntityDamage", entityDamage); tag.putBoolean("PlayerDamage", playerDamage); tag.putInt("ForceMode", forceMode); tag.putBoolean("WarpEnabled", warpEnabled); if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong()); }
-    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); affectPlayers = tag.getBoolean("AffectPlayers"); entityDamage = !tag.contains("EntityDamage") || tag.getBoolean("EntityDamage"); playerDamage = tag.getBoolean("PlayerDamage"); forceMode = Math.max(0, Math.min(4, tag.getInt("ForceMode"))); warpEnabled = tag.getBoolean("WarpEnabled"); linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null; }
+    @Override public Component getDisplayName() { return Component.translatable(compressor.formed() ? (compressor.reversed() ? "container.immortalstorage.spirit_decompressor" : "container.immortalstorage.spirit_compressor") : "item.immortalstorage.miniature_immortal_ruin"); }
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        if (compressor.formed()) {
+            return new com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorMenu(id, inventory, this); }
+        return new com.immortalstorage.immortalstorage.menu.custom.MiniatureImmortalRuinMenu(id, inventory, menuData(), this); }
+    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); compressor.save(tag, registries); tag.putBoolean("AffectPlayers", affectPlayers); tag.putBoolean("EntityDamage", entityDamage); tag.putBoolean("PlayerDamage", playerDamage); tag.putInt("ForceMode", forceMode); tag.putBoolean("WarpEnabled", warpEnabled); if (linkedPos != null) tag.putLong("LinkedPos", linkedPos.asLong()); }
+    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); compressor.load(tag, registries); affectPlayers = tag.getBoolean("AffectPlayers"); entityDamage = !tag.contains("EntityDamage") || tag.getBoolean("EntityDamage"); playerDamage = tag.getBoolean("PlayerDamage"); forceMode = Math.max(0, Math.min(4, tag.getInt("ForceMode"))); warpEnabled = tag.getBoolean("WarpEnabled"); linkedPos = tag.contains("LinkedPos") ? BlockPos.of(tag.getLong("LinkedPos")) : null; }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         CompoundTag tag = new CompoundTag(); saveAdditional(tag, registries); return tag;

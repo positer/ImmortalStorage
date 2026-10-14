@@ -110,7 +110,7 @@ public final class ModBlockEntities {
                             ModBlocks.RAW_GOLD_VEIN.get(), ModBlocks.LAPIS_VEIN.get(),
                             ModBlocks.REDSTONE_VEIN.get(), ModBlocks.CRUDE_SPIRIT_IRON_VEIN.get(),
                             ModBlocks.SPIRIT_CRYSTAL_VEIN.get(), ModBlocks.DIAMOND_VEIN.get(),
-                            ModBlocks.EMERALD_VEIN.get(), ModBlocks.ANCIENT_DEBRIS_VEIN.get(),
+                            ModBlocks.EMERALD_VEIN.get(), ModBlocks.ECHO_SHARD_VEIN.get(), ModBlocks.ANCIENT_DEBRIS_VEIN.get(),
                             ModBlocks.NETHER_STAR_VEIN.get(), ModBlocks.ENCHANTED_GOLDEN_APPLE_VEIN.get(),
                             ModBlocks.DRAGON_EGG_VEIN.get(), ModBlocks.CUSTOM_SOURCE_VEIN.get()).build(null));
 
@@ -149,6 +149,15 @@ public final class ModBlockEntities {
                     ModBlocks.TRUE_YUAN_LIGHT.get(), ModBlocks.IMMORTAL_YUAN_LIGHT.get()).build(null));
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlock(Capabilities.ItemHandler.BLOCK, (level, pos, state, entity, side) -> {
+            var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(level, pos);
+            return ruin == null ? null : ruin.compressor().handler(side);
+        }, com.immortalstorage.immortalstorage.block.ModBlocks.WORLD_BARRIER.get(),
+                net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.parse(
+                        net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(net.minecraft.resources.ResourceLocation.parse("minecraft:iron_chain"))
+                                ? "minecraft:iron_chain" : "minecraft:chain")));
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MINIATURE_IMMORTAL_RUIN.get(),
+                (ruin, side) -> ruin.compressor().handler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_REINCARNATION_FURNACE.get(),
@@ -187,9 +196,15 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> be.getFluidHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, WORLD_SHARD_MINER.get(),
-                (be, side) -> be.getCacheHandler());
+                (be, side) -> {
+                    var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
+                    return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);
+                });
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TREASURE_BASIN.get(),
-                (be, side) -> be.getCacheHandler());
+                (be, side) -> {
+                    var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
+                    return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);
+                });
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (be, side) -> be.itemHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),

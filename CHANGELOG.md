@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.1.6]
+
+### English
+
+- Fixed the Spiritual Aura Guard virtual elytra conflicting with creative and realm flight. Ability flight now ends a gliding state before the player moves, the elytra can neither deploy nor boost while flying, and the second press of a flight double-tap goes to the flight toggle instead of folding the glide.
+- Added two multiblock machines built around a Miniature Immortal Ruin: the Spirit Forging Compressor and the Spirit Decompressor. Eight World Barrier blocks and twelve iron chains ring the core, a World Shard Miner sits below and a Treasure Basin above; forming the structure opens a 4x3 input to a single output, and reversing the core switches the same build between the two machines.
+- Ancient Jade documents the multiblock with a complete projection and layer diagrams, so the structure can be assembled straight from the handbook, and JEI and EMI list the compression and decompression production categories.
+- The Spirit Forging Compressor converts source-defined resources into Immortal Yuan in whole batches, accepts datapack compression recipes, moves up to 64 items per tick on each of its six faces, can output directly into the owner's Xianqiao, and shares the simulated-machine face panel and three-state redstone control. The Spirit Decompressor runs one input into up to twelve outputs with atomic multiple results, and switching core polarity ejects both cached inventories.
+- Added recipes worth building it for: quartz slabs return 2 quartz while blocks, stairs and chiseled variants return 4; an amethyst block returns 4 amethyst shards; ores split into their stone and their drops, so coal ore gives cobblestone and 4 coal and iron ore gives cobblestone and 4 raw iron; and one amethyst block or one inactive Nurturing Crystal Bedrock plus eight ImmortalPower activates the corresponding budding amethyst or Nurturing Crystal Bedrock. Compression matches counted multiple materials, including overlapping tag ingredients, and consumes nothing when the output is blocked.
+- Added the missing Source Vein Manager and Xianqiao Redstone Interface crafting recipes together with their handbook pages, so both can be crafted again, and hollow-frame blocks no longer hide neighbouring block faces.
+- Stages 6 and above now keep constant Night Vision. The effect renews before vanilla expiry, and topping it up never shortens a stronger, longer or infinite effect from another source.
+- The Spirit Instrument and Immortal Artifact gained a resource locator: yellow outlines mark containers and loot, purple marks spawners and green marks archaeology, while a held Mine-mode artifact adds white ore outlines. Ore outlines follow a loot dictionary built from real loot tables at world load, so an off-hand drop or an ore selects every variant of its source family without name guessing or repeated world scans.
+- Reworked item and block rendering: non-source block items reuse their placed model, block state and world renderer in the inventory and in hand, and the Miniature Immortal Ruin draws opaquely with a depth-writing shell and core over a black-and-white polarity texture.
+- Also in this version: realm time acceleration guards repeated entity calls, honours acceleration-exclusion tags and isolates failures in extra ticks; the obsolete time-flow keybinding was removed; and handbook layer order, preview centring and culling were corrected so structures display in their real orientation.
+- Updated the bilingual Ancient Jade handbook and the localization text for every change above.
+
+### 简体中文
+
+- 修复灵气护体虚拟鞘翅与创造飞行、仙窍飞行的冲突：主动飞行时会在移动前结束虚拟滑翔，飞行中既不能展开也不能加速鞘翅，双击飞行的第二次按键交还飞行切换，不再被鞘翅占用。
+- 新增两台以迷你仙墟为核心的多方块机器：锻灵压缩机与锻灵解压器。八块世界胎壁与十二条铁链环绕核心，下方为世界碎片开采器、上方为聚宝盆；成型后打开 4x3 输入到单输出的界面，反转核心即可在同一结构上切换两台机器。
+- 古玉指导书提供完整结构投影与逐层分解，照着手册即可搭建成型；JEI 与 EMI 列出压缩与解压两类生产配方。
+- 锻灵压缩机按整批把源定义资源兑换为仙元，支持数据包压缩配方，六个面每 tick 可主动吞吐 64 件，可直接输出到放置者的仙窍，并复用模拟机器的六面面板与三态红石控件。锻灵解压器把单输入拆为最多十二输出，多结果原子化提交；切换核心极性会弹出两套缓存。
+- 新增值得为此建机的配方：石英半砖拆解为 2 个石英，整块、楼梯与凿刻变体为 4 个；一块紫水晶块拆解为 4 枚紫水晶碎片；原矿拆为石料与掉落物，例如煤矿石产出圆石与 4 个煤炭、铁矿石产出圆石与 4 个粗铁；一块紫水晶块或失活的蕴灵晶母岩加八枚仙元，可激活为紫水晶芽床或蕴灵晶母岩。压缩支持计数多材料与重叠标签原料，输出被阻挡时不消耗材料。
+- 补全缺失的源方块管理器与仙窍红石接口合成配方，并加入对应指导书页面，两者恢复可合成；中空框架不再隐藏相邻方块表面。
+- 六阶及以上新增常驻夜视：在原版到期前续期，且续期不会缩短来自其他来源的更强、更长或无限时长的效果。
+- 灵器与仙器新增有趣的增强——资源定位：黄色框标记容器与战利品、紫色框标记刷怪笼、绿色框标记考古，手持挖掘模式仙器再加白色矿物框。矿物定位依据世界载入时由真实掉落表建立的词典：副手掉落物或原矿会选中同一来源族的全部变体，不按名称猜测、不反复扫描世界。
+- 重做物品与方块渲染：非源方块物品在物品栏与手持时复用放置后的模型、方块状态与世界渲染器；迷你仙墟改为不透明绘制，以黑白极性纹理保持外壳与核心的深度写入。
+- 本版还包括：仙窍时间加速保护重复实体调用、遵守加速排除标签，并隔离额外 tick 的失败；移除废弃的时间流速快捷键；修正指导书层序、预览居中和遮挡剔除，使结构按真实朝向显示。
+- 同步更新中英双语古玉指导书与本地化文本。
+
+## [0.1.5]
+
+### English
+
+- Added stage-8 Soul Escape: the rebindable Soul Escape key (F7 by default) toggles spectator mode, and leaving restores the exact game mode you had before.
+- Soul Escape needs neither cheats nor operator permissions, so it also works in hardcore and cheat-free worlds. A spectator state produced by another command is never treated as Soul Escape.
+- Added warp travel to the Immortal Artifact's teleport mode: with ImmortalPower in the off hand, each item warps 100 blocks along the horizontal look direction, the whole off-hand stack is consumed, and the landing is the highest safe spot in the target column.
+- A warp without a safe landing is cancelled and spends nothing, and a near-vertical look direction does not warp.
+- Warp travel prepares its landing area before moving you, so the destination chunks are already loaded on arrival; the ordinary teleport stays a fast short hop and reports the distance covered.
+- Fixed the Immortal Artifact's mode textures on the newer Minecraft line: the artifact now switches its mode sprite and its adaptive mining-tool sprite like the Spirit Instrument.
+- The Spiritual Aura Guard virtual elytra now follows the vanilla elytra rules: it only deploys while you are not flying, and the second press of a flight double-tap always toggles flight instead of folding the glide.
+- The Ancient Jade handbook documents Soul Escape, warp travel and the flight precedence in English and Simplified Chinese.
+
+### 简体中文
+
+- 八阶新增灵魂出窍：默认 F7（可自定义）进入与退出旁观者模式，退出时恢复进入前的游戏模式。
+- 灵魂出窍不依赖作弊开关与操作员权限，极限模式与未开启作弊的世界同样可用；由其他命令产生的旁观者状态不会被当成灵魂出窍。
+- 仙器传送模式新增折跃传送：副手持有仙元时，每枚仙元沿视线水平方向折跃 100 格，一次性消耗整叠副手仙元，落点取目标列最高的安全位置。
+- 找不到安全落点时折跃取消且不消耗仙元；视线接近垂直时不会折跃。
+- 折跃会先准备好落点区域再移动玩家，抵达时落点区块已经加载；普通传送保持轻量的短距跃迁，并提示本次传送距离。
+- 修复新一代 Minecraft 中仙器的模式贴图：仙器的模式贴图与自适应挖掘工具贴图现在会像灵器一样切换。
+- 灵气护体虚拟鞘翅改为按原版鞘翅规则工作：仅在未处于飞行时展开，双击切换飞行的第二次按键交还飞行，不再被鞘翅占用。
+- 古玉手册以中英双语补充灵魂出窍、折跃传送与飞行优先级的说明页。
+
 ## [0.1.4]
 
 ### English
@@ -313,27 +367,3 @@
 - 新增灵器、灵剑、世界碎片采集器、聚宝盆、渡劫、丹药、矿物、效果与成就。
 - 新增对主要配方查看、存储、科技、魔法与建筑类模组的可选联动。
 - 新增完整中英双语配置与界面文本。
-
-## [0.1.5]
-
-### English
-
-- Added stage-8 Soul Escape: the rebindable Soul Escape key (F7 by default) toggles spectator mode, and leaving restores the exact game mode you had before.
-- Soul Escape needs neither cheats nor operator permissions, so it also works in hardcore and cheat-free worlds. A spectator state produced by another command is never treated as Soul Escape.
-- Added warp travel to the Immortal Artifact's teleport mode: with ImmortalPower in the off hand, each item warps 100 blocks along the horizontal look direction, the whole off-hand stack is consumed, and the landing is the highest safe spot in the target column.
-- A warp without a safe landing is cancelled and spends nothing, and a near-vertical look direction does not warp.
-- Warp travel prepares its landing area before moving you, so the destination chunks are already loaded on arrival; the ordinary teleport stays a fast short hop and reports the distance covered.
-- Fixed the Immortal Artifact's mode textures on the newer Minecraft line: the artifact now switches its mode sprite and its adaptive mining-tool sprite like the Spirit Instrument.
-- The Spiritual Aura Guard virtual elytra now follows the vanilla elytra rules: it only deploys while you are not flying, and the second press of a flight double-tap always toggles flight instead of folding the glide.
-- The Ancient Jade handbook documents Soul Escape, warp travel and the flight precedence in English and Simplified Chinese.
-
-### 简体中文
-
-- 八阶新增灵魂出窍：默认 F7（可自定义）进入与退出旁观者模式，退出时恢复进入前的游戏模式。
-- 灵魂出窍不依赖作弊开关与操作员权限，极限模式与未开启作弊的世界同样可用；由其他命令产生的旁观者状态不会被当成灵魂出窍。
-- 仙器传送模式新增折跃传送：副手持有仙元时，每枚仙元沿视线水平方向折跃 100 格，一次性消耗整叠副手仙元，落点取目标列最高的安全位置。
-- 找不到安全落点时折跃取消且不消耗仙元；视线接近垂直时不会折跃。
-- 折跃会先准备好落点区域再移动玩家，抵达时落点区块已经加载；普通传送保持轻量的短距跃迁，并提示本次传送距离。
-- 修复新一代 Minecraft 中仙器的模式贴图：仙器的模式贴图与自适应挖掘工具贴图现在会像灵器一样切换。
-- 灵气护体虚拟鞘翅改为按原版鞘翅规则工作：仅在未处于飞行时展开，双击切换飞行的第二次按键交还飞行，不再被鞘翅占用。
-- 古玉手册以中英双语补充灵魂出窍、折跃传送与飞行优先级的说明页。

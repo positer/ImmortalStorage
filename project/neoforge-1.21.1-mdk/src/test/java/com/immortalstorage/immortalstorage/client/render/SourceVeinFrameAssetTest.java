@@ -111,7 +111,7 @@ final class SourceVeinFrameAssetTest {
         Path itemModel = RESOURCES.resolve(Path.of(
                 "assets", "immortalstorage", "models", "item", "source_vein_manager.json"));
         JsonObject item = JsonParser.parseString(Files.readString(itemModel)).getAsJsonObject();
-        assertEquals("immortalstorage:block/source_vein_manager", item.get("parent").getAsString());
+        assertEquals("minecraft:builtin/entity", item.get("parent").getAsString());
 
         String worldRenderer = Files.readString(PROJECT.resolve(Path.of(
                 "src", "main", "java", "com", "immortalstorage", "immortalstorage", "client", "render",
@@ -122,22 +122,17 @@ final class SourceVeinFrameAssetTest {
 
         String itemRenderer = Files.readString(PROJECT.resolve(Path.of(
                 "src", "main", "java", "com", "immortalstorage", "immortalstorage", "client", "render",
-                "SourceVeinManagerItemRenderer.java")));
+                "WorldBlockItemRenderer.java")));
         assertFalse(itemRenderer.contains("ITEM_PREVIEW_SCALE"),
                 "the manager GUI preview must use the same transform scale as the source item");
         assertFalse(itemRenderer.contains("poseStack.scale(")
                         || itemRenderer.contains("poses.scale("),
                 "the manager must not introduce a second GUI-only scale");
-        assertTrue(itemRenderer.contains("renderModelLists(")
-                        || itemRenderer.contains("SpecialModelGeometry.submitBlockBase"),
-                "the item path must render the inherited source frame model");
-        assertTrue(itemRenderer.contains("SourceVeinManagerRenderer.drawCore("),
-                "the manager item must retain its animated eight-segment core");
-        assertTrue(itemRenderer.contains("itemDisplayState(stack)"),
-                "the manager item must preserve the persisted occupancy projection");
-        assertTrue(itemRenderer.contains("SourceVeinAnimation.rotationDegrees")
-                        || itemRenderer.contains("ticks * SourceVeinManagerRenderer.DEGREES_PER_TICK"),
-                "the manager item core must continue to rotate continuously");
+        assertTrue(itemRenderer.contains("renderSingleBlock(visual.state()")
+                        || itemRenderer.contains("model.update(base, visual.state()"),
+                "native block-state model must draw the inherited source frame");
+        assertTrue(itemRenderer.contains("getRenderer(visual.entity())"),
+                "manager core and persisted occupancy must use the placed manager renderer");
     }
 
     @Test

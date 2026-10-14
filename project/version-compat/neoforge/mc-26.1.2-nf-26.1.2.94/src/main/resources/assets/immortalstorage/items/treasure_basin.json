@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/treasure_basin"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/treasure_basin",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

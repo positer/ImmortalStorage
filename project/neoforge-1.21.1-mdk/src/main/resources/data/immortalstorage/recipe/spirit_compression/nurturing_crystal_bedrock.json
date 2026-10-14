@@ -1,0 +1,23 @@
+{
+  "type": "immortalstorage:spirit_compression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": {
+      "item": "immortalstorage:inactive_nurturing_crystal_bedrock"
+    },
+    "result": {
+      "id": "immortalstorage:nurturing_crystal_bedrock",
+      "count": 1
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  },
+  "additional_inputs": [
+    {
+      "ingredient": {
+        "item": "immortalstorage:immortal_yuan"
+      },
+      "count": 8
+    }
+  ]
+}

@@ -65,7 +65,7 @@ public final class ModBlocks {
     public static final Supplier<Block> XIANQIAO_REDSTONE_INTERFACE = reg("xianqiao_redstone_interface",
             () -> new XianqiaoRedstoneInterfaceBlock(setBlockId("xianqiao_redstone_interface",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK).strength(3.5f)
-                            .requiresCorrectToolForDrops().lightLevel(state -> state.getValue(XianqiaoRedstoneInterfaceBlock.ACTIVATED) ? 15 : 0))));
+                            .requiresCorrectToolForDrops().noOcclusion().lightLevel(state -> state.getValue(XianqiaoRedstoneInterfaceBlock.ACTIVATED) ? 15 : 0))));
     public static final Supplier<Block> SIMULATED_REINCARNATION_FURNACE = reg("simulated_reincarnation_furnace",
             () -> new SimulatedReincarnationFurnaceBlock(setBlockId("simulated_reincarnation_furnace",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.TRIAL_SPAWNER).strength(5.0F)
@@ -103,7 +103,7 @@ public final class ModBlocks {
             () -> new SourceVeinManagerBlock(setBlockId("source_vein_manager",
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK)
                             .mapColor(MapColor.COLOR_GRAY).strength(4.0f)
-                            .requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK))));
+                            .requiresCorrectToolForDrops().noOcclusion().pushReaction(PushReaction.BLOCK))));
     /** Frozen registry carrier for config/datapack-defined sourceDefinitionId values. */
     public static final Supplier<Block> CUSTOM_SOURCE_VEIN = reg("custom_source_vein",
             () -> new SourceVeinBlock(VeinKind.COBBLE, true));
@@ -223,6 +223,8 @@ public final class ModBlocks {
                 ? new SourceVeinBlockItem(source, ModItems.setItemId(id, new Item.Properties()))
                 : ro.get() instanceof SourceVeinManagerBlock manager
                 ? new SourceVeinManagerBlockItem(manager, ModItems.setItemId(id, new Item.Properties()))
+                : ro.get() instanceof net.minecraft.world.level.block.EntityBlock
+                ? new com.immortalstorage.immortalstorage.item.WorldRenderedBlockItem(ro.get(), ModItems.setItemId(id, new Item.Properties()))
                 : new BlockItem(ro.get(), ModItems.setItemId(id, new Item.Properties())));
         return ro;
     }

@@ -50,7 +50,7 @@ final class XianqiaoManagerAssetTest {
         String blockModel = Files.readString(RESOURCES.resolve(Path.of(
                 "assets", "immortalstorage", "models", "block", "xianqiao_manager.json")));
 
-        assertTrue(itemModel.contains("\"scale\":[0.625,0.625,0.625]"),
+        assertTrue(itemModel.replaceAll("\\s+", "").contains("\"scale\":[0.625,0.625,0.625]"),
                 "only the inventory transform should use Minecraft's normal block-item scale");
         assertTrue(blockModel.contains("\"parent\":\"immortalstorage:block/arcane_machine_frame\""),
                 "the placed block must keep the full-size world frame model");

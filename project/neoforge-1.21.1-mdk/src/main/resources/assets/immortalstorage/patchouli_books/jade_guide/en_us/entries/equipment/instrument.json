@@ -17,6 +17,11 @@
     },
     {
       "type": "patchouli:text",
+      "title": "Explore Outlines",
+      "text": "While held with Explore enabled, yellow outlines locate storage and loot containers, purple outlines locate spawners, and green outlines locate suspicious archaeology blocks through walls. Outlines share the container-transfer switch. Default radius: 32 blocks, configurable in the mod settings; server datapacks can override the radius and block categories."
+    },
+    {
+      "type": "patchouli:text",
       "title": "Wrench",
       "text": "Rotate or dismantle compatible blocks through public wrench semantics; sneak-use safely picks up ImmortalStorage machines. It can also link two same-type ruins in opposite states. Sneak-use in air clears the recorded endpoint."
     },

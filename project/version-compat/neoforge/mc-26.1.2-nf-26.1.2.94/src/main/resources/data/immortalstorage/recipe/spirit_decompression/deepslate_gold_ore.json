@@ -1,0 +1,19 @@
+{
+  "type": "immortalstorage:spirit_decompression",
+  "input_count": 1,
+  "recipe": {
+    "ingredient": "minecraft:deepslate_gold_ore",
+    "result": {
+      "id": "minecraft:deepslate",
+      "count": 1
+    },
+    "experience": 0.0,
+    "cookingtime": 1
+  },
+  "additional_results": [
+    {
+      "id": "minecraft:raw_gold",
+      "count": 4
+    }
+  ]
+}

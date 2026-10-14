@@ -110,7 +110,7 @@ public final class ModBlockEntities {
                             ModBlocks.RAW_GOLD_VEIN.get(), ModBlocks.LAPIS_VEIN.get(),
                             ModBlocks.REDSTONE_VEIN.get(), ModBlocks.CRUDE_SPIRIT_IRON_VEIN.get(),
                             ModBlocks.SPIRIT_CRYSTAL_VEIN.get(), ModBlocks.DIAMOND_VEIN.get(),
-                            ModBlocks.EMERALD_VEIN.get(), ModBlocks.ANCIENT_DEBRIS_VEIN.get(),
+                            ModBlocks.EMERALD_VEIN.get(), ModBlocks.ECHO_SHARD_VEIN.get(), ModBlocks.ANCIENT_DEBRIS_VEIN.get(),
                             ModBlocks.NETHER_STAR_VEIN.get(), ModBlocks.ENCHANTED_GOLDEN_APPLE_VEIN.get(),
                             ModBlocks.DRAGON_EGG_VEIN.get(), ModBlocks.CUSTOM_SOURCE_VEIN.get()));
 
@@ -149,6 +149,15 @@ public final class ModBlockEntities {
                     ModBlocks.TRUE_YUAN_LIGHT.get(), ModBlocks.IMMORTAL_YUAN_LIGHT.get()));
 
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlock(Capabilities.Item.BLOCK, (level, pos, state, entity, side) -> {
+            var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(level, pos);
+            return ruin == null ? null : com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(ruin.compressor().handler(side));
+        }, com.immortalstorage.immortalstorage.block.ModBlocks.WORLD_BARRIER.get(),
+                net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.parse(
+                        net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(net.minecraft.resources.Identifier.parse("minecraft:iron_chain"))
+                                ? "minecraft:iron_chain" : "minecraft:chain")));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, MINIATURE_IMMORTAL_RUIN.get(),
+                (ruin, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(ruin.compressor().handler(side)));
         event.registerBlockEntity(Capabilities.Item.BLOCK, IMMORTAL_FURNACE.get(),
                 (be, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(be.getItemHandler(side)));
         event.registerBlockEntity(Capabilities.Item.BLOCK, SIMULATED_REINCARNATION_FURNACE.get(),
@@ -187,9 +196,15 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.Fluid.BLOCK, XIANQIAO_MANAGER.get(),
                 (be, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.fluid(be.getFluidHandler()));
         event.registerBlockEntity(Capabilities.Item.BLOCK, WORLD_SHARD_MINER.get(),
-                (be, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(be.getCacheHandler()));
+                (be, side) -> {
+                    var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
+                    return com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side));
+                });
         event.registerBlockEntity(Capabilities.Item.BLOCK, TREASURE_BASIN.get(),
-                (be, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(be.getCacheHandler()));
+                (be, side) -> {
+                    var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
+                    return com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side));
+                });
         event.registerBlockEntity(Capabilities.Item.BLOCK, STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (be, side) -> com.immortalstorage.immortalstorage.compat.mc2612.CompatTransfer.item(be.itemHandler()));
         event.registerBlockEntity(Capabilities.Item.BLOCK, ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),

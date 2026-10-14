@@ -101,7 +101,7 @@ final class MachineVisualResourceTest {
         assertFalse(blockModel.contains("source_vein_manager_front"));
 
         String itemModel = text("assets/immortalstorage/models/item/source_vein_manager.json");
-        assertTrue(itemModel.contains("\"parent\": \"immortalstorage:block/source_vein_manager\""));
+        assertTrue(itemModel.contains("minecraft:builtin/entity"));
         assertFalse(itemModel.contains("\"overrides\""),
                 "the rotating core comes from the item BEWLR, not model overrides");
     }

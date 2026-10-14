@@ -1,0 +1,26 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:chest",
+    "minecraft:trapped_chest",
+    "minecraft:barrel",
+    "minecraft:ender_chest",
+    "#minecraft:shulker_boxes",
+    "minecraft:hopper",
+    "minecraft:dispenser",
+    "minecraft:dropper",
+    "minecraft:decorated_pot",
+    "minecraft:chiseled_bookshelf",
+    "minecraft:vault",
+    "immortalstorage:xianqiao_manager",
+    "immortalstorage:source_vein_manager",
+    {
+      "id": "#c:chests",
+      "required": false
+    },
+    {
+      "id": "#c:barrels",
+      "required": false
+    }
+  ]
+}

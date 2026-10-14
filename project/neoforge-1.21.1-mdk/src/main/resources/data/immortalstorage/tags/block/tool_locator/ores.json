@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "#c:ores",
+      "required": false
+    },
+    {
+      "id": "#forge:ores",
+      "required": false
+    },
+    "minecraft:ancient_debris",
+    "immortalstorage:spirit_iron_ore",
+    "immortalstorage:deepslate_spirit_iron_ore",
+    "immortalstorage:spirit_crystal_ore",
+    "immortalstorage:deepslate_spirit_crystal_ore"
+  ]
+}

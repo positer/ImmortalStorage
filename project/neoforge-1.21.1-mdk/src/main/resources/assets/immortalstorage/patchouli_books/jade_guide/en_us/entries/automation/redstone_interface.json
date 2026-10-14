@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "Wire It into Automation",
       "text": "For example, monitor iron ingots with low=64 and high=256. Normal mode starts downstream machinery above 256 and keeps it running until stock drops below 64. Inverted mode can light an alarm or start restocking below 64. To control an ImmortalStorage machine, connect the output and select “Run With Signal” or “Run Without Signal” on that machine's settings page."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:xianqiao_redstone_interface",
+      "title": "Xianqiao Redstone Interface"
     }
   ]
 }

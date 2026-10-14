@@ -126,7 +126,7 @@ final class PersonalRealmServerLevel extends ServerLevel {
                     owner != null && owner.level() == this);
         }
         this.tickingRealm = true;
-        try {
+        try (var safety = RealmTickSafety.open(this)) {
             // First pass is the full dimension tick (chunks/entities/block
             // entities/weather); extra accelerated passes tick only block
             // entities so the realm's machines run faster without repeating
@@ -135,8 +135,8 @@ final class PersonalRealmServerLevel extends ServerLevel {
             super.tick(hasTime);
             applyEnvironmentLock();
             for (int pass = 1; pass < passes; pass++) {
-                if (!this.tickBudget.active) break;
-                this.tickBlockEntities();
+                if (!this.tickBudget.active || !hasTime.getAsBoolean()) break;
+                RealmTickSafety.extra(this, this::tickBlockEntities);
                 applyEnvironmentLock();
             }
         } finally {

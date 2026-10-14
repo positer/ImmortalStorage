@@ -32,10 +32,18 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import java.util.List;
 
 public final class ModNetwork {
-    public static final String PROTOCOL = "8";
+    public static final String PROTOCOL = "11";
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL).optional();
+        registrar.playToClient(ToolLocatorFilterSync.TYPE, ToolLocatorFilterSync.STREAM_CODEC, (packet, context) -> context.enqueueWork(() ->
+                com.immortalstorage.immortalstorage.client.render.ToolLocatorClient.installFilter(packet)));
+        registrar.playToClient(ToolLocatorSync.TYPE, ToolLocatorSync.STREAM_CODEC, (packet, context) -> context.enqueueWork(() ->
+                com.immortalstorage.immortalstorage.client.render.ToolLocatorClient.install(packet)));
+        registrar.playToClient(SpiritCompressorSync.TYPE, SpiritCompressorSync.STREAM_CODEC, (packet, context) -> context.enqueueWork(() -> {
+            com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.installClient(packet.entries());
+            com.immortalstorage.immortalstorage.compat.CompatManager.refreshCompressorRecipes();
+        }));
         registrar.playToServer(ModPayloads.OpenKongqiao.TYPE, ModPayloads.OpenKongqiao.STREAM_CODEC, ModNetwork::handleOpenKongqiao);
         registrar.playToServer(ModPayloads.OpenXianqiaoStorage.TYPE, ModPayloads.OpenXianqiaoStorage.STREAM_CODEC, ModNetwork::handleOpenXianqiao);
         registrar.playToServer(ModPayloads.TriggerTribulation.TYPE, ModPayloads.TriggerTribulation.STREAM_CODEC, ModNetwork::handleTriggerTribulation);
@@ -672,7 +680,7 @@ public final class ModNetwork {
     private static void handleAuraGuardBoost(ModPayloads.AuraGuardBoost payload, IPayloadContext ctx) {
         ctx.enqueueWork(() -> {
             ServerPlayer player = serverPlayer(ctx);
-            if (player == null || !player.isFallFlying()
+            if (player == null || player.getAbilities().flying || !player.isFallFlying()
                     || !player.getPersistentData().getBooleanOr("ImmortalStorageVirtualElytra", false)) return;
             player.setDeltaMovement(player.getDeltaMovement().add(player.getLookAngle().scale(1.5D)));
             player.hurtMarked = true;

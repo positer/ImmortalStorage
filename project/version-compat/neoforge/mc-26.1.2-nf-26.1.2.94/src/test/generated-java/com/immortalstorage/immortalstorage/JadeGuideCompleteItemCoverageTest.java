@@ -63,7 +63,11 @@ class JadeGuideCompleteItemCoverageTest {
             String entry = Files.readString(PROJECT.resolve(
                     "src/main/resources/assets/immortalstorage/patchouli_books/jade_guide/" + locale
                             + "/entries/equipment/immortal_forging.json"));
-            assertTrue(entry.contains("\"type\":\"patchouli:smelting\""));
+            boolean smeltingPage = false;
+            for (var page : com.google.gson.JsonParser.parseString(entry).getAsJsonObject().getAsJsonArray("pages")) {
+                if (page.getAsJsonObject().get("type").getAsString().equals("patchouli:smelting")) smeltingPage = true;
+            }
+            assertTrue(smeltingPage);
             assertTrue(locale.equals("zh_cn") ? entry.contains("仙炉煅烧")
                     : entry.contains("Immortal-Furnace Firing"));
         }

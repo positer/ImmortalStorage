@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/miniature_immortal_ruin"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/miniature_immortal_ruin",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

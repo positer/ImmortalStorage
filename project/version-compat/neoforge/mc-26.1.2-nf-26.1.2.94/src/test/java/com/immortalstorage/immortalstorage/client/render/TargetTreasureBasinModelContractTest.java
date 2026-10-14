@@ -104,7 +104,7 @@ final class TargetTreasureBasinModelContractTest {
     @Test
     void itemUsesThreeDimensionalBasinWithVanillaBlockDisplayTransforms() throws Exception {
         JsonObject item = JsonParser.parseString(Files.readString(canonicalItemModel())).getAsJsonObject();
-        assertEquals("immortalstorage:block/treasure_basin", item.get("parent").getAsString());
+        assertEquals("minecraft:builtin/entity", item.get("parent").getAsString());
         assertEquals("side", item.get("gui_light").getAsString());
 
         JsonObject display = item.getAsJsonObject("display");
@@ -114,8 +114,11 @@ final class TargetTreasureBasinModelContractTest {
         assertTransform(display, "firstperson_lefthand", "[0,225,0]", "[0.4,0.4,0.4]");
 
         JsonObject definition = JsonParser.parseString(Files.readString(targetItemDefinition())).getAsJsonObject();
+        assertEquals("minecraft:special", definition.getAsJsonObject("model").get("type").getAsString());
         assertEquals("immortalstorage:item/treasure_basin",
-                definition.getAsJsonObject("model").get("model").getAsString());
+                definition.getAsJsonObject("model").get("base").getAsString());
+        assertEquals("immortalstorage:world_block_item",
+                definition.getAsJsonObject("model").getAsJsonObject("model").get("type").getAsString());
     }
 
     private static void assertTransform(JsonObject display, String context, String rotation, String scale) {

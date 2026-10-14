@@ -45,11 +45,17 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
         if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
             if (player.isShiftKeyDown()) {
+                ItemStack recovered = new ItemStack(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get());
+                net.minecraft.nbt.CompoundTag saved = ruin.getUpdateTag(level.registryAccess());
+                saved.putBoolean("Reversed", state.getValue(REVERSED));
+                saved.remove("LinkedPos");
+                recovered.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(saved));
+                for (var handler : java.util.List.of(ruin.compressor().inventory, ruin.compressor().decompressionInventory))
+                    for (int i = 0; i < 13; i++) handler.setStackInSlot(i, ItemStack.EMPTY);
                 ruin.unlinkForBreak();
                 level.levelEvent(2001, pos, Block.getId(state));
                 level.removeBlock(pos, false);
-                Block.popResource(level, pos, new ItemStack(
-                        com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get()));
+                Block.popResource(level, pos, recovered);
                 stack.hurtAndBreak(1, player, com.immortalstorage.immortalstorage.compat.mc2612.CompatPlayer.slotForHand(hand));
             } else {
                 com.immortalstorage.immortalstorage.item.custom.RuinLinkingService.interact(serverPlayer, stack, ruin);
@@ -81,9 +87,12 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
     @Override
     public <T extends net.minecraft.world.level.block.entity.BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
             Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type,
+        if (level.isClientSide()) return createTickerHelper(type,
                 com.immortalstorage.immortalstorage.block.entity.ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(),
-                (tickLevel, pos, tickState, ruin) -> { if (com.immortalstorage.immortalstorage.block.entity.MachineRedstoneControl.allows(ruin)) ruin.serverTick(); });
+                (tickLevel, pos, tickState, ruin) -> com.immortalstorage.immortalstorage.client.render.SpiritCompressorParticles.tick(ruin));
+        return createTickerHelper(type,
+                com.immortalstorage.immortalstorage.block.entity.ModBlockEntities.MINIATURE_IMMORTAL_RUIN.get(),
+                (tickLevel, pos, tickState, ruin) -> ruin.serverTick());
     }
 
     @Override
@@ -92,6 +101,15 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
         if (!state.is(nextState.getBlock())
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
             ruin.unlinkForBreak();
+            ruin.compressor().invalidatePorts();
+            for (var handler : java.util.List.of(ruin.compressor().inventory, ruin.compressor().decompressionInventory))
+            for (int i = 0; i < 13; i++) {
+                while (!handler.getStackInSlot(i).isEmpty()) {
+                    ItemStack saved = handler.extractItem(i, 64, false);
+                    if (saved.isEmpty()) break;
+                    Block.popResource(level, pos, saved);
+                }
+            }
         }
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
     }

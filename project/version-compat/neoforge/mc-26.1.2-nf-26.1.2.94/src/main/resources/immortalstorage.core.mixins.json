@@ -3,7 +3,25 @@
   "minVersion": "0.8",
   "package": "com.immortalstorage.immortalstorage.mixin.core",
   "compatibilityLevel": "JAVA_21",
-  "mixins": ["MerchantMenuMixin", "LivingEntityAuraElytraMixin", "PlayerAuraElytraMixin", "AbstractFurnaceSpiritDriveMixin", "AbstractFurnaceSpiritSwordTemperingMixin"],
-  "client": ["ItemInHandRendererOneQiMuzzleMixin"],
-  "injectors": {"defaultRequire": 1}
+  "mixins": [
+    "MerchantMenuMixin",
+    "LivingEntityAuraElytraMixin",
+    "PlayerAuraElytraMixin",
+    "AbstractFurnaceSpiritDriveMixin",
+    "AbstractFurnaceSpiritSwordTemperingMixin",
+    "RealmTickerFactoryMixin",
+    "RealmBoundTickerMixin",
+    "ToolLocatorChunkMixin"
+  ],
+  "client": [
+    "ItemInHandRendererOneQiMuzzleMixin",
+    "ParticleMotionAccessor",
+    "NativeWorldItemAnimationMixin",
+    "PatchouliHandbookPreviewMixin",
+    "PatchouliHandbookCoreMixin",
+    "PatchouliHandbookProjectionCoreMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

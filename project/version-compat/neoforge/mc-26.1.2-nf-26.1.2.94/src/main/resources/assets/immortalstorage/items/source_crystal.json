@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/source_crystal"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/source_crystal",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

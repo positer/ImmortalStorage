@@ -25,6 +25,7 @@ public final class GuiItemPreviewOverlay {
 
     public static void render(GuiGraphicsExtractor graphics, ItemStack stack, int x, int y) {
         if (renderingOverlay || stack.isEmpty()) return;
+        if (!(stack.getItem() instanceof BlockItem item && item.getBlock() instanceof SourceVeinBlock)) return;
         renderingOverlay = true;
         try {
             
@@ -33,10 +34,6 @@ public final class GuiItemPreviewOverlay {
             if (stack.getItem() instanceof BlockItem blockItem
                     && blockItem.getBlock() instanceof SourceVeinBlock source) {
                 renderSource(graphics, stack, source, x, y);
-            } else if (stack.is(ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem())) {
-                renderRuin(graphics, stack, x, y);
-            } else if (stack.is(ModBlocks.XIANQIAO_MANAGER.get().asItem())) {
-                renderManager(graphics, x, y);
             }
             
             graphics.disableScissor();
@@ -60,29 +57,6 @@ public final class GuiItemPreviewOverlay {
         graphics.pose().popMatrix();
     }
 
-    private static void renderRuin(GuiGraphicsExtractor graphics, ItemStack stack, int x, int y) {
-        float ticks = ticks();
-        int radius = Mth.sin(ticks * 0.12F) > 0.0F ? 4 : 3;
-        boolean reversed = reversed(stack);
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(0.0F, 0.0F);
-        drawSquare(graphics, x + 8, y + 8, radius, reversed ? 0x96000000 : 0x96FFFFFF);
-        drawSquare(graphics, x + 8, y + 8, Math.max(2, radius - 1), reversed ? 0xFFFFFFFF : 0xFF000000);
-        graphics.pose().popMatrix();
-    }
-
-    private static void renderManager(GuiGraphicsExtractor graphics, int x, int y) {
-        float ticks = ticks();
-        int centerX = x + 8 + (Mth.sin(ticks * 0.04F) > 0.45F ? 1 : Mth.sin(ticks * 0.04F) < -0.45F ? -1 : 0);
-        int centerY = y + 8 + (Mth.sin(ticks * 0.075F) > 0.35F ? -1 : Mth.sin(ticks * 0.075F) < -0.35F ? 1 : 0);
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(0.0F, 0.0F);
-        graphics.fill(centerX - 3, centerY - 2, centerX + 3, centerY + 2, 0x68F7FBFF);
-        graphics.fill(centerX - 2, centerY - 3, centerX + 2, centerY + 3, 0x68F7FBFF);
-        graphics.fill(centerX - 2, centerY - 2, centerX + 2, centerY + 2, 0xFFF7FBFF);
-        graphics.pose().popMatrix();
-    }
-
     private static ItemStack outputStack(SourceDefinition definition) {
         if (definition == null) return ItemStack.EMPTY;
         if (definition.fluid()) {
@@ -92,24 +66,6 @@ public final class GuiItemPreviewOverlay {
         }
         var item = BuiltInRegistries.ITEM.get(definition.outputId()).map(net.minecraft.core.Holder.Reference::value).orElse(null);
         return item == null ? ItemStack.EMPTY : new ItemStack(item);
-    }
-
-    private static float ticks() {
-        Minecraft minecraft = Minecraft.getInstance();
-        return minecraft.level == null ? (System.currentTimeMillis() % 100_000L) / 50.0F
-                : minecraft.level.getGameTime() + minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-    }
-
-    private static boolean reversed(ItemStack stack) {
-        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        if (data == null) return false;
-        CompoundTag tag = data.copyTag();
-        return tag.getBooleanOr("Reversed", false);
-    }
-
-    private static void drawSquare(GuiGraphicsExtractor graphics, int centerX, int centerY, int radius, int color) {
-        graphics.fill(centerX - radius, centerY - radius,
-                centerX + radius + 1, centerY + radius + 1, color);
     }
 
     private GuiItemPreviewOverlay() {}

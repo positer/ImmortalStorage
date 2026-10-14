@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/simulated_spirit_field"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/simulated_spirit_field",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

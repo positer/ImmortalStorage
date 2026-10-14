@@ -1,0 +1,193 @@
+{
+  "name": "Spirit Forging Compressor",
+  "icon": "immortalstorage:miniature_immortal_ruin",
+  "category": "immortalstorage:automation",
+  "sortnum": 19,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Structure and ownership",
+      "text": "Bottom/top: World Barriers at corners, chains at edge centres, World Shard Miner at bottom centre and Treasure Basin at top centre. Middle: chains at corners, air at edge centres and a Miniature Immortal Ruin at centre. Ownership is recorded when placing the ruin. Other machines' enable state and ownership do not affect formation."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Full Structure: Compression",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=false]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "Project with the bottom World Shard Miner as anchor; aim at the ground to place the full structure. Upper/lower chains follow X/Z and middle corner chains follow Y. Sneak empty-hand right-click the central ruin to reverse it."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Full Structure: Decompression",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=true]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "Project with the bottom World Shard Miner as anchor; aim at the ground to place the full structure. Upper/lower chains follow X/Z and middle corner chains follow Y. Sneak empty-hand right-click the central ruin to reverse it."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Bottom Layer: y=-1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four World Barriers at corners, four chains at edge centres, World Shard Miner at centre."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Middle Layer: y=0",
+      "multiblock": {
+        "pattern": [
+          [
+            "YAY",
+            "A0A",
+            "YAY"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:miniature_immortal_ruin_block",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four chains at corners, four air cells at edge centres and the ruin at centre. Reversal changes only the core state."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Top Layer: y=+1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "immortalstorage:treasure_basin",
+          "A": "minecraft:air",
+          "0": "immortalstorage:treasure_basin",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four World Barriers at corners, four chains at edge centres, Treasure Basin at centre."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Materials and Assembly",
+      "text": "Materials: 8 World Barriers, 12 chains, 1 World Shard Miner, 1 Treasure Basin and 1 Miniature Immortal Ruin. Build bottom to top and keep the air cells empty. Auxiliary enable state and ownership are ignored. The core placer owns the machine. JEI/EMI contain production recipes; placement guidance lives here."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Batched compression",
+      "text": "Right-click the formed centre for twelve inputs and one output. Each tick, recipes with the largest input requirement run first at their maximum whole multiplier. Identical outputs accumulate in bulk; incompatible or full output stops further local processing without spending the blocked recipe's inputs. The formed ruin suspends its force field. Chains emit sparse cyan-white particles moving inward."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Spirit Forging Decompressor",
+      "text": "The reversed core uses one left input and twelve right outputs. Each tick processes the whole ore stack: cobblestone or deepslate plus four times minimum unenchanted drops (copper 8, redstone/lapis 16, others 4). All results must fit before consuming input; direct Xianqiao output bypasses local slots. Switching mode ejects cached inputs and outputs while sharing configuration."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Faces and redstone",
+      "text": "Open the gear panel. Each face cycles closed, passive input, passive output, active input and active output. Active transfers share a 64-item budget per face per tick. Ports lie on the matching outer faces of the structure. The existing three-state redstone button gates production and active transfers; passive ports remain available. Configuration and inventory persist in the ruin; breaking the structure pauses processing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Direct Xianqiao output",
+      "text": "When enabled, all craftable recipes run at their complete multiplier in the same tick, writing directly to the ruin placer's Xianqiao without the local output-slot bottleneck or external output. The owner must be online with Xianqiao unlocked; otherwise materials remain. Existing cached output is returned first. Example: 768 diamonds produce 192 Immortal Yuan in one tick, locally or directly in Xianqiao."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Sources and datapacks",
+      "text": "Default inversion follows item-source ratios: 4 diamonds yield 1 Immortal Yuan; 1 echo shard yields 16. Free sources yield no default Yuan; fluids are excluded. spirit_compression datapack recipes can override ratios or produce other items. Inputs that generate Yuan remain restricted to source resources. JEI/EMI show the server-resolved compression/decompression recipes. Structure projection and layer diagrams are in this handbook. See the project data-driven documentation for JSON schemas."
+    }
+  ]
+}

@@ -25,6 +25,16 @@ import java.util.function.Function;
 import java.util.List;
 
 public final class CompatManager {
+    public static void refreshCompressorRecipes() {
+        if (net.neoforged.fml.ModList.get().isLoaded("emi")) {
+            try { Class.forName("dev.emi.emi.runtime.EmiReloadManager").getMethod("reloadRecipes").invoke(null); }
+            catch (ReflectiveOperationException error) { com.immortalstorage.immortalstorage.ImmortalStorageMod.LOG.error("Unable to refresh compressor EMI recipes", error); }
+        }
+        if (net.neoforged.fml.ModList.get().isLoaded("jei")) {
+            try { Class.forName("com.immortalstorage.immortalstorage.compat.jei.ImmortalStorageJeiPlugin").getMethod("refreshCompressorRecipes").invoke(null); }
+            catch (ReflectiveOperationException error) { com.immortalstorage.immortalstorage.ImmortalStorageMod.LOG.error("Unable to refresh compressor JEI recipes", error); }
+        }
+    }
     public static final boolean AE2_LOADED = modPresent("ae2");
     public static final boolean RS_LOADED = modPresent("refinedstorage");
     public static final boolean FTB_CHUNKS_LOADED = modPresent("ftbchunks");

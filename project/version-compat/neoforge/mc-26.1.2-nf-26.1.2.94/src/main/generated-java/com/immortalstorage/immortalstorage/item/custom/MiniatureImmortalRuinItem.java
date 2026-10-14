@@ -28,9 +28,17 @@ public final class MiniatureImmortalRuinItem extends com.immortalstorage.immorta
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos().relative(context.getClickedFace());
         if (!level.getBlockState(pos).canBeReplaced()) return InteractionResult.FAIL;
-        if (!level.isClientSide() && level.setBlock(pos, ModBlocks.MINIATURE_IMMORTAL_RUIN.get().defaultBlockState(), 3)
-                && context.getPlayer() != null && !context.getPlayer().getAbilities().instabuild) {
-            context.getItemInHand().shrink(1);
+        var customData = context.getItemInHand().get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        net.minecraft.nbt.CompoundTag saved = customData == null ? new net.minecraft.nbt.CompoundTag() : customData.copyTag();
+        if (!level.isClientSide() && level.setBlock(pos, ModBlocks.MINIATURE_IMMORTAL_RUIN.get().defaultBlockState()
+                .setValue(com.immortalstorage.immortalstorage.block.custom.MiniatureImmortalRuinBlock.REVERSED, saved.getBooleanOr("Reversed", false)), 3)
+                && context.getPlayer() != null) {
+            if (level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
+                ruin.restoreFromItem(saved);
+                ruin.compressor().placedBy(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(context.getPlayer()));
+                level.sendBlockUpdated(pos, ruin.getBlockState(), ruin.getBlockState(), 3);
+            }
+            if (!context.getPlayer().getAbilities().instabuild) context.getItemInHand().shrink(1);
         }
         return (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER);
     }

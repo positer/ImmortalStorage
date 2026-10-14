@@ -10,15 +10,11 @@ import com.immortalstorage.immortalstorage.client.render.XianqiaoManagerRenderer
 import com.immortalstorage.immortalstorage.client.render.WorldShardMinerRenderer;
 import com.immortalstorage.immortalstorage.client.render.YuanLightRenderer;
 import com.immortalstorage.immortalstorage.client.render.MiniatureImmortalRuinRenderer;
-import com.immortalstorage.immortalstorage.client.render.RuinCoreItemDecorator;
 import com.immortalstorage.immortalstorage.client.render.SourceVeinOutputDecorator;
 import com.immortalstorage.immortalstorage.client.render.StabilizedMiniatureImmortalRuinRenderer;
 import com.immortalstorage.immortalstorage.client.render.EntangledStabilizedMiniatureImmortalRuinRenderer;
 import com.immortalstorage.immortalstorage.client.render.AdvancedStabilizedMiniatureImmortalRuinRenderer;
 import com.immortalstorage.immortalstorage.client.render.AdvancedEntangledStabilizedMiniatureImmortalRuinRenderer;
-import com.immortalstorage.immortalstorage.client.render.EntangledRuinCoreItemDecorator;
-import com.immortalstorage.immortalstorage.client.render.SimulatedSpiritFieldItemDecorator;
-import com.immortalstorage.immortalstorage.client.render.XianqiaoManagerItemDecorator;
 import com.immortalstorage.immortalstorage.client.render.AdvancedXianqiaoInterfaceRenderer;
 import com.immortalstorage.immortalstorage.client.screen.ImmortalFurnaceScreen;
 import com.immortalstorage.immortalstorage.client.screen.KongqiaoScreen;
@@ -71,6 +67,8 @@ public final class ClientSetup {
         SpiritStaffBuildPreview.init(forgeBus);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.OneQiBeamRenderer::render);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.DomainExpansionHighlight::render);
+        forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.ToolLocatorRenderer::render);
+        forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.ToolLocatorClient::onTick);
     }
 
     private static void clientSetup(final FMLClientSetupEvent e) {
@@ -129,6 +127,7 @@ public final class ClientSetup {
                 (com.immortalstorage.immortalstorage.menu.custom.StabilizedMiniatureImmortalRuinMenu menu,
                  net.minecraft.world.entity.player.Inventory inv, net.minecraft.network.chat.Component title)
                         -> new StabilizedMiniatureImmortalRuinScreen<>(menu, inv, title));
+        e.register(ModMenus.SPIRIT_COMPRESSOR.get(), com.immortalstorage.immortalstorage.client.screen.SpiritCompressorScreen::new);
         e.register(ModMenus.MINIATURE_IMMORTAL_RUIN.get(), MiniatureImmortalRuinScreen::new);
         e.register(ModMenus.ENTANGLED_MINIATURE_IMMORTAL_RUIN.get(), EntangledMiniatureRuinScreen::new);
         e.register(ModMenus.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get(), AdvancedStabilizedMiniatureImmortalRuinScreen::new);
@@ -184,18 +183,7 @@ public final class ClientSetup {
                 event.register(item, SourceVeinOutputDecorator.INSTANCE);
             }
         }
-        event.register(ModBlocks.STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem(),
-                RuinCoreItemDecorator.INSTANCE);
-        event.register(ModBlocks.ADVANCED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem(),
-                RuinCoreItemDecorator.INSTANCE);
-        event.register(ModBlocks.ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem(),
-                EntangledRuinCoreItemDecorator.INSTANCE);
-        event.register(ModBlocks.ADVANCED_ENTANGLED_STABILIZED_MINIATURE_IMMORTAL_RUIN.get().asItem(),
-                EntangledRuinCoreItemDecorator.INSTANCE);
-        event.register(ModBlocks.SIMULATED_SPIRIT_FIELD.get().asItem(),
-                SimulatedSpiritFieldItemDecorator.INSTANCE);
-        event.register(ModBlocks.XIANQIAO_MANAGER.get().asItem(),
-                XianqiaoManagerItemDecorator.INSTANCE);
+
     }
 
     private ClientSetup() {}

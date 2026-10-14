@@ -21,39 +21,21 @@ final class RuinPreviewRenderContractTest {
         assertTrue(core.contains("int coreColor = reversed ? 0xFFFFFF : 0x000000"));
         assertTrue(core.contains("drawCube"));
         assertFalse(core.contains("drawRing"));
-        assertTrue(core.contains("DefaultVertexFormat.POSITION_COLOR"));
-        assertTrue(core.contains("POSITION_COLOR_SHADER") || core.contains("RenderPipelines.DEBUG_FILLED_SNIPPET"));
-        assertFalse(core.contains("textures/block/white_concrete.png"));
-        assertFalse(core.contains("setUv("));
-        assertFalse(core.contains("setNormal("));
-        assertFalse(core.contains("setLight("));
+        assertTrue(core.contains("DefaultVertexFormat.NEW_ENTITY") || core.contains("DefaultVertexFormat.POSITION_TEX_COLOR"));
+        assertTrue(core.contains("ruin_polarity.png"));
+        assertTrue(core.contains("setUv("));
+        assertTrue(core.contains("0.75F : 0.25F"));
         assertFalse(core.contains("GREATER_DEPTH_TEST"));
         assertTrue(core.contains("LEQUAL_DEPTH_TEST") || core.contains("CompareOp.LESS_THAN_OR_EQUAL"));
-        assertTrue(core.contains("COLOR_WRITE") || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)"));
-        boolean canonicalDualLayer = core.contains("SILHOUETTE_RIM_LAYER")
-                && core.contains("OPAQUE_CORE_LAYER");
-        boolean targetSingleSubmission = core.contains("PROJECTED_SILHOUETTE_LAYER")
-                && core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false)")
-                && !core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)");
-        assertTrue(canonicalDualLayer || targetSingleSubmission);
-        assertFalse(core.contains("entityTranslucentEmissive"));
-        if (canonicalDualLayer) {
-            assertTrue(core.contains("COLOR_DEPTH_WRITE")
-                    || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
-            assertTrue(core.indexOf("buffers.getBuffer(SILHOUETTE_RIM_LAYER)")
-                    < core.indexOf("buffers.getBuffer(OPAQUE_CORE_LAYER)"));
-        } else {
-            assertTrue(core.indexOf("drawCube(consumer, poses, radius, edgeColor)")
-                    < core.indexOf("drawCube(consumer, poses, radius * 0.78F, coreColor)"));
-            assertFalse(core.contains("drawBoundaryBeams"));
-        }
+        assertTrue(core.contains("COLOR_DEPTH_WRITE") || core.contains("DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true)"));
+        assertTrue(core.contains("radius * 0.78F"));
+        assertTrue(core.indexOf("radius, edgeColor") < core.indexOf("radius * 0.78F, coreColor"));
+        assertFalse(core.contains("drawBoundaryBeams"));
         assertFalse(core.contains("edgeColor, 112"));
-        for (String itemRenderer : new String[]{"RuinCoreItemDecorator.java",
-                "EntangledRuinCoreItemDecorator.java", "GuiItemPreviewOverlay.java"}) {
-            String item = Files.readString(source(itemRenderer));
-            assertTrue(item.contains("drawSquare"), itemRenderer);
-            assertFalse(item.contains("drawDisc"), itemRenderer);
-        }
+        String nativeItem = Files.readString(source("WorldBlockItemRenderer.java"));
+        assertTrue(nativeItem.contains("getRenderer(visual.entity())"));
+        assertFalse(nativeItem.contains("drawSquare"));
+        assertFalse(Files.readString(source("GuiItemPreviewOverlay.java")).contains("drawSquare"));
     }
 
     private static Path source(String name) {

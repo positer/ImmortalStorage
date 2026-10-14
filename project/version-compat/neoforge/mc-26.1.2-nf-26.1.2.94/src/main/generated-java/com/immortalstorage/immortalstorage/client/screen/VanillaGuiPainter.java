@@ -5,7 +5,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.Slot;
 
-final class VanillaGuiPainter {
+public final class VanillaGuiPainter {
     private static final Identifier VANILLA_SLOT =
             Identifier.withDefaultNamespace("container/slot");
     private static final Identifier CRAFTING_TABLE_TEXTURE =
@@ -485,7 +485,7 @@ final class VanillaGuiPainter {
         }
     }
 
-    static void slot(GuiGraphicsExtractor g, int x, int y, boolean active) {
+    public static void slot(GuiGraphicsExtractor g, int x, int y, boolean active) {
         // Use Minecraft's runtime GUI sprite directly. Its 18x18 tile is anchored
         // one pixel outside the slot's real 16x16 item/hit area.
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitSprite(g, VANILLA_SLOT, x - 1, y - 1,

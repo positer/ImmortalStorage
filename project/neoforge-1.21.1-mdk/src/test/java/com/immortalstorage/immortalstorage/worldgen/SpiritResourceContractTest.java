@@ -65,12 +65,8 @@ final class SpiritResourceContractTest {
         assertEquals("immortalstorage:block/world_shard_miner",
                 minerState.getAsJsonObject("variants").getAsJsonObject("").get("model").getAsString());
         JsonObject minerItem = resource("assets/immortalstorage/models/item/world_shard_miner.json");
-        assertEquals("minecraft:block/block", minerItem.get("parent").getAsString());
-        assertEquals("minecraft:translucent", minerItem.get("render_type").getAsString());
-        assertEquals("minecraft:block/glass", minerItem.getAsJsonObject("textures").get("glass").getAsString());
-        assertEquals("minecraft:block/white_concrete", minerItem.getAsJsonObject("textures").get("core").getAsString());
-        assertEquals(3, minerItem.getAsJsonArray("elements").size(),
-                "item preview keeps a transparent glass shell around the inactive white core");
+        assertEquals("minecraft:builtin/entity", minerItem.get("parent").getAsString());
+        assertFalse(minerItem.has("elements"), "the native world renderer owns the glass and dynamic core");
         JsonObject minerModel = resource("assets/immortalstorage/models/block/world_shard_miner.json");
         for (String face : List.of("bottom", "side", "top")) {
             assertEquals("immortalstorage:block/world_shard_miner_" + face,

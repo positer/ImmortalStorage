@@ -73,6 +73,25 @@ final class AuraGuardFlightPrecedenceContractTest {
                 "cultivation flight (mayfly) must still allow the aura-guard glide");
     }
 
+    @Test
+    void bothMovementAdaptersFoldTheVanillaGlideFlagBeforeClearingItsMarker() throws IOException {
+        Path project = locateProject();
+        Path canonical = project.resolve("src/main/java/com/immortalstorage/immortalstorage/mixin/core");
+        Path adapter = project.resolve("../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/main/java/com/immortalstorage/immortalstorage/mixin/core");
+        for (Path lane : new Path[]{canonical, adapter}) {
+            String living = Files.readString(lane.resolve("LivingEntityAuraElytraMixin.java"));
+            int fold = living.indexOf(".stopFallFlying();");
+            int clear = living.indexOf("remove(\"ImmortalStorageVirtualElytra\")");
+            assertTrue(fold >= 0 && fold < clear, lane + " must clear the real movement flag, not only its marker");
+            assertTrue(living.contains("@Inject(method = \"travel\", at = @At(\"HEAD\"))"),
+                    lane + " must reconcile after aiStep can enable ability flight");
+            assertTrue(living.contains("&& !player.getAbilities().flying"),
+                    lane + " must not preserve a glide during ability flight");
+            String player = Files.readString(lane.resolve("PlayerAuraElytraMixin.java"));
+            assertTrue(player.contains("!self.getAbilities().flying"), lane + " must not redeploy during flight");
+        }
+    }
+
     private static Path locateProject() {
         Path current = Path.of("").toAbsolutePath();
         while (current != null) {

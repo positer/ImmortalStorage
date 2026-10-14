@@ -1,6 +1,9 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "immortalstorage:item/xianqiao_interface"
+    "type": "minecraft:special",
+    "base": "immortalstorage:item/xianqiao_interface",
+    "model": {
+      "type": "immortalstorage:world_block_item"
+    }
   }
 }

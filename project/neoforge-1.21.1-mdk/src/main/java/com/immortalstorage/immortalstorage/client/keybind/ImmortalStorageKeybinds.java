@@ -40,8 +40,6 @@ public final class ImmortalStorageKeybinds {
      *  teleports to the realm center depending on the current dimension. */
     public static final KeyMapping OPEN_LINGQI_OR_REALM = new KeyMapping(
             "key.immortalstorage.lingqi_or_realm", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, "key.categories.immortalstorage");
-    public static final KeyMapping TIME_FLOW = new KeyMapping(
-            "key.immortalstorage.time_flow", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_S, "key.categories.immortalstorage");
     public static final KeyMapping SPECIAL_OPERATION = new KeyMapping(
             "key.immortalstorage.special_operation", InputConstants.Type.KEYSYM,
             GLFW.GLFW_KEY_GRAVE_ACCENT, "key.categories.immortalstorage");
@@ -62,7 +60,6 @@ public final class ImmortalStorageKeybinds {
     private static void registerKeys(RegisterKeyMappingsEvent e) {
         e.register(OPEN_STORAGE);
         e.register(OPEN_LINGQI_OR_REALM);
-        e.register(TIME_FLOW);
         e.register(SPECIAL_OPERATION);
         e.register(SHOW_PROGRESS);
         e.register(SOUL_ESCAPE);
@@ -79,6 +76,7 @@ public final class ImmortalStorageKeybinds {
         if (!jumpPressed || mc.player == null || mc.screen != null) return;
 
         Player player = mc.player;
+        if (player.getAbilities().flying) return;
         // Pre runs before vanilla turns a grounded jump into an airborne state.
         // That press remains an ordinary jump; a later airborne press toggles flight.
         if (player.onGround()) return;
@@ -133,15 +131,7 @@ public final class ImmortalStorageKeybinds {
         // player leave a previously active Soul Escape state safely.
         if (SOUL_ESCAPE.consumeClick()) PacketDistributor.sendToServer(new ModPayloads.ToggleSoulEscape());
 
-        if (TIME_FLOW.consumeClick()) {
-            if (d.getStage() < 7) {
-                p.displayClientMessage(Component.literal("Stage 7+ required to adjust time flow")
-                        .withStyle(ChatFormatting.RED), true);
-            } else {
-                p.displayClientMessage(Component.translatable("container.immortalstorage.terminal.time_open_realm")
-                        .withStyle(ChatFormatting.YELLOW), true);
-            }
-        }
+
 
     }
 
@@ -243,6 +233,7 @@ public final class ImmortalStorageKeybinds {
     private static boolean updateBoostContext(Minecraft mc) {
         Player player = mc.player;
         boolean eligible = player != null && mc.screen == null && mc.isWindowActive() && !mc.isPaused()
+                && !player.getAbilities().flying
                 && player.isFallFlying()
                 && player.getPersistentData().getBoolean("ImmortalStorageVirtualElytra");
         if (player != boostPlayer || !eligible) FORWARD_BOOST.reset();
