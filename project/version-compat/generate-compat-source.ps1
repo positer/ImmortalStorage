@@ -41,6 +41,15 @@ $compatLevel = 'com.immortalstorage.immortalstorage.compat.mc2612.CompatLevel'
 $compatTags = 'com.immortalstorage.immortalstorage.compat.mc2612.CompatTags'
 $newline = [Environment]::NewLine
 
+# 0.1.7 generation counters.  Every rule below that could silently stop
+# matching bumps a counter, and the generation is asserted against the
+# known canonical count so a future rename fails the generation instead of
+# emitting a target tree that compiles by accident.
+$getByteArrayRewrites = 0
+$isEnchantableRewrites = 0
+$resourceKeyLocationRewrites = 0
+$gameTestHookRewrites = 0
+
 function Convert-2612RecipeNode([object] $node) {
     if ($null -eq $node) {
         return $null
@@ -334,6 +343,23 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = [regex]::Replace($text, '\.getListOrEmpty\(([^,()\r\n]+),\s*(?:net\.minecraft\.nbt\.)?Tag\.TAG_[A-Z_]+\)', '.getListOrEmpty($1)')
     $text = [regex]::Replace($text, '\.getIntArray\(([^()\r\n]*)\)', '.getIntArray($1).orElseGet(() -> new int[0])')
     $text = [regex]::Replace($text, '\.getLongArray\(([^()\r\n]*)\)', '.getLongArray($1).orElseGet(() -> new long[0])')
+    # 0.1.7: getByteArray is Optional-returning in 26.1.2 as well; the
+    # enchantment machine persists its pending strip mask as a byte array.
+    $getByteArrayMatches = [regex]::Matches($text, '\.getByteArray\(([^()\r\n]*)\)')
+    if ($getByteArrayMatches.Count -gt 0) {
+        $script:getByteArrayRewrites += $getByteArrayMatches.Count
+        $text = [regex]::Replace($text, '\.getByteArray\(([^()\r\n]*)\)', '.getByteArray($1).orElseGet(() -> new byte[0])')
+    }
+    # 0.1.7: Item#isEnchantable(ItemStack) is gone in 26.1.2.  An item now
+    # declares DataComponents.ENCHANTABLE, the same "this type can be
+    # enchanted" gate, while ItemStack#isEnchantable() is the stronger
+    # runtime check.  The caller keeps its non-empty guard.
+    $isEnchantableShape = 'stack.getItem().isEnchantable(stack)'
+    $isEnchantableMatches = [regex]::Matches($text, [regex]::Escape($isEnchantableShape))
+    if ($isEnchantableMatches.Count -gt 0) {
+        $script:isEnchantableRewrites += $isEnchantableMatches.Count
+        $text = $text.Replace($isEnchantableShape, 'stack.has(net.minecraft.core.component.DataComponents.ENCHANTABLE)')
+    }
     # Avoid rewriting Component#getString() and preserve Brigadier's static
     # StringArgumentType#getString(...) while adapting CompoundTag#getString.
     $text = $text.Replace('StringArgumentType.getString(', '__IMMORTAL_STRING_ARGUMENT_GET__(')
@@ -567,6 +593,20 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('.id().location()', '.id().identifier()')
     $text = $text.Replace('key.location()', 'key.identifier()')
     $text = $text.Replace('dimension.location()', 'dimension.identifier()')
+    # 0.1.7: ResourceKey keeps only identifier() in 26.1.2.  The receiver-shaped
+    # rules above cannot see a method reference, so the reference form gets its
+    # own exact rule with a content guard and an applied-count assertion (the
+    # frozen canonical count is 1, in EnchantmentStackRules).
+    $resourceKeyLocationShape = 'ResourceKey::location'
+    $resourceKeyLocationReplacement = 'ResourceKey::identifier'
+    if (-not $resourceKeyLocationReplacement.Contains('ResourceKey::identifier')) {
+        throw '26.1.2 generation setup failed; the ResourceKey location replacement was not built as expected.'
+    }
+    $resourceKeyLocationMatches = ([regex]::Matches($text, [regex]::Escape($resourceKeyLocationShape))).Count
+    if ($resourceKeyLocationMatches -gt 0) {
+        $script:resourceKeyLocationRewrites += $resourceKeyLocationMatches
+        $text = $text.Replace($resourceKeyLocationShape, $resourceKeyLocationReplacement)
+    }
     $text = [regex]::Replace($text, '(?<![\w.])([A-Za-z_]\w*)\.random\b', '$1.getRandom()')
     $text = $text.Replace('.getGameProfile().getName()', '.getGameProfile().name()')
     foreach ($receiver in @('serverPlayer', 'player', 'owner', 'actor', 'sp', 'p')) {
@@ -2070,6 +2110,48 @@ function Transform-2612([string] $text, [string] $relativePath) {
             '"src/main/java/com/immortalstorage/immortalstorage"',
             '"' + $targetAuditJavaRoot + '"')
 
+        # 0.1.7 target-only test adaptations.  Each is an exact, additive
+        # replacement with a hard applied-count assertion, so a future canonical
+        # change fails the generation instead of leaving a target test that
+        # asserts a spelling the target lane cannot produce.  Note that
+        # ItemInteractionResult and <receiver>.random inside assertion strings are
+        # already handled by the global API renames above, so they need no rule.
+        if ($relativePath -match '[\\/]compressor[\\/]EnchantmentHandbookContractTest\.java$') {
+            # The target handbook projection names the renamed iron-chain block
+            # (Blocks.CHAIN does not exist in 26.1.2), so the target lane must
+            # expect the real target block id.
+            $chainLiteral = '"minecraft:chain"'
+            $chainLiteralMatches = [regex]::Matches($text, [regex]::Escape($chainLiteral)).Count
+            if ($chainLiteralMatches -ne 3) {
+                throw "26.1.2 test adaptation failed for EnchantmentHandbookContractTest: expected 3 occurrences of $chainLiteral, found $chainLiteralMatches."
+            }
+            $text = $text.Replace($chainLiteral, '"minecraft:iron_chain"')
+        }
+        if ($relativePath -match '[\\/]block[\\/]entity[\\/]EnchantmentMachineContractTest\.java$') {
+            # 26.1.2 replaced Block#onRemove with the server-only removal hook, so
+            # the target lane must look for the target signature to find the body.
+            $onRemoveSignature = 'methodBody(block, "protected void onRemove(")'
+            $onRemoveSignatureMatches = [regex]::Matches($text, [regex]::Escape($onRemoveSignature)).Count
+            if ($onRemoveSignatureMatches -ne 1) {
+                throw "26.1.2 test adaptation failed for EnchantmentMachineContractTest: expected 1 onRemove signature lookup, found $onRemoveSignatureMatches."
+            }
+            $text = $text.Replace($onRemoveSignature, 'methodBody(block, "protected void affectNeighborsAfterRemoval(")')
+        }
+        if ($relativePath -match '[\\/]compressor[\\/]EnchantmentTestSupport\.java$') {
+            # 26.1.2's Holder adds two abstract members that the 1.21.1 test
+            # holder does not implement; without them the target test lane does
+            # not compile.
+            $holderAnchor = '@Override public boolean canSerializeIn(HolderOwner<Enchantment> owner) { return true; }'
+            $holderAnchorMatches = [regex]::Matches($text, [regex]::Escape($holderAnchor)).Count
+            if ($holderAnchorMatches -ne 1) {
+                throw "26.1.2 test adaptation failed for EnchantmentTestSupport: expected 1 Holder anchor, found $holderAnchorMatches."
+            }
+            $text = $text.Replace($holderAnchor,
+                $holderAnchor + $newline +
+                '        @Override public boolean areComponentsBound() { return false; }' + $newline +
+                '        @Override public net.minecraft.core.component.DataComponentMap components() { return net.minecraft.core.component.DataComponentMap.EMPTY; }')
+        }
+
         if ($relativePath -match '[\\/]menu[\\/]custom[\\/]XianqiaoRealmTimeLayoutContractTest\.java$') {
             $text = $text.Replace(
                 'Path root = locateMainSourceRoot();',
@@ -2502,19 +2584,125 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = $text.Replace('Ingredient.CODEC_NONEMPTY', 'Ingredient.CODEC')
     }
     if ($relativePath -match '[\\/]block[\\/]entity[\\/]ModBlockEntities\.java$') {
-        $text = $text.Replace('return ruin == null ? null : ruin.compressor().handler(side);',
-            'return ruin == null ? null : ' + $script:compatTransfer + '.item(ruin.compressor().handler(side));')
-        $text = $text.Replace('(ruin, side) -> ruin.compressor().handler(side)',
-            '(ruin, side) -> ' + $script:compatTransfer + '.item(ruin.compressor().handler(side))')
-        $text = $text.Replace('return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);',
-            'return ' + $script:compatTransfer + '.item(ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side));')
+        # 0.1.7: the ruin controller now exposes the kind-aware machine()
+        # accessor, so the 0.1.6 compressor() shapes are no longer present.
+        # Both generations of each shape stay listed additively, the new ones
+        # are matched exactly, and the applied count is asserted to the known
+        # canonical total (1 + 1 + 2 = 4) so a future rename fails generation
+        # instead of emitting an unwrapped handler.
+        # PowerShell note: every built replacement must be parenthesised.
+        # Inside an array element an unparenthesised '+' is parsed as array
+        # concatenation, which silently truncates the string to its first
+        # operand (that bug shipped once and the applied-count assertion did
+        # not catch it, so the built text is asserted below as well).
+        $ruinHandlerSearches = @(
+            'return ruin == null ? null : ruin.machine().handler(side);',
+            '(ruin, side) -> ruin.machine().handler(side)',
+            'return ruin == null ? be.getCacheHandler() : ruin.machine().handler(side);',
+            'return ruin == null ? null : ruin.compressor().handler(side);',
+            '(ruin, side) -> ruin.compressor().handler(side)',
+            'return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);'
+        )
+        $ruinHandlerReplacements = @(
+            ('return ruin == null ? null : ' + $script:compatTransfer + '.item(ruin.machine().handler(side));'),
+            ('(ruin, side) -> ' + $script:compatTransfer + '.item(ruin.machine().handler(side))'),
+            ('return ' + $script:compatTransfer + '.item(ruin == null ? be.getCacheHandler() : ruin.machine().handler(side));'),
+            ('return ruin == null ? null : ' + $script:compatTransfer + '.item(ruin.compressor().handler(side));'),
+            ('(ruin, side) -> ' + $script:compatTransfer + '.item(ruin.compressor().handler(side))'),
+            ('return ' + $script:compatTransfer + '.item(ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side));')
+        )
+        if ($ruinHandlerSearches.Count -ne $ruinHandlerReplacements.Count) {
+            throw '26.1.2 generation setup failed; the ModBlockEntities ruin handler shape lists are out of step.'
+        }
+        $ruinHandlerApplied = 0
+        for ($ruinHandlerIndex = 0; $ruinHandlerIndex -lt $ruinHandlerSearches.Count; $ruinHandlerIndex++) {
+            $ruinHandlerSearch = $ruinHandlerSearches[$ruinHandlerIndex]
+            $ruinHandlerReplacement = $ruinHandlerReplacements[$ruinHandlerIndex]
+            if (-not $ruinHandlerReplacement.Contains($script:compatTransfer + '.item(')) {
+                throw "26.1.2 generation setup failed; a ModBlockEntities ruin handler replacement was not built as expected: $ruinHandlerReplacement"
+            }
+            $ruinHandlerMatches = [regex]::Matches($text, [regex]::Escape($ruinHandlerSearch)).Count
+            if ($ruinHandlerMatches -gt 0) {
+                $text = $text.Replace($ruinHandlerSearch, $ruinHandlerReplacement)
+                $ruinHandlerApplied += $ruinHandlerMatches
+            }
+        }
+        if ($ruinHandlerApplied -ne 4) {
+            throw "26.1.2 generation assertion failed; ModBlockEntities ruin handler wrappers: expected 4 applied replacements, found $ruinHandlerApplied. A ruin capability accessor or handler signature changed; update the explicit shapes in generate-compat-source.ps1."
+        }
+        if ([regex]::Matches($text, [regex]::Escape('ruin.machine().handler(side)')).Count -ne 4) {
+            throw '26.1.2 generation assertion failed; the generated ModBlockEntities does not carry four kind-aware ruin handlers.'
+        }
+    }
+    if ($relativePath -match '[\\/]ImmortalStorageMod\.java$') {
+        # 0.1.7 target-only GameTest wiring.  Minecraft 26.1 has no annotation-based game tests
+        # and NeoForge 26.1.2 ships no @EventBusSubscriber, so the hand-written target suite
+        # (gametest/EnchantmentMachineGameTest in the override tree) has to be put on the mod bus
+        # from the mod constructor.  The hook is target-only, so it is one explicit anchor
+        # insertion with a content guard and an applied-count assertion.
+        $gameTestHook = '        modBus.addListener(com.immortalstorage.immortalstorage.gametest.EnchantmentMachineGameTest::register);'
+        $gameTestAnchor = '        modBus.addListener(ModBlockEntities::registerCapabilities);'
+        if (-not $gameTestHook.Contains('gametest.EnchantmentMachineGameTest::register')) {
+            throw '26.1.2 generation setup failed; the game test hook was not built as expected.'
+        }
+        $gameTestAnchorMatches = [regex]::Matches($text, [regex]::Escape($gameTestAnchor)).Count
+        if ($gameTestAnchorMatches -ne 1) {
+            throw "26.1.2 generation assertion failed; expected 1 ImmortalStorageMod mod-bus anchor, found $gameTestAnchorMatches."
+        }
+        if (-not $text.Contains($gameTestHook)) {
+            $text = $text.Replace($gameTestAnchor, $gameTestAnchor + $newline + $gameTestHook)
+            $script:gameTestHookRewrites += 1
+        }
+        if ([regex]::Matches($text, [regex]::Escape($gameTestHook)).Count -ne 1) {
+            throw '26.1.2 generation assertion failed; the game test hook is not present exactly once in ImmortalStorageMod.'
+        }
     }
     if ($relativePath -match '[\\/]item[\\/]custom[\\/]MiniatureImmortalRuinItem\.java$') {
+        # 26.1.2's Item has no initializeClient; the target resolves the item
+        # renderer through the minecraft:special item definition instead. The
+        # strip depends on initializeClient sitting directly before
+        # appendHoverText, so its success is asserted rather than assumed.
         $text = [regex]::Replace($text, '(?s)    @Override\s+public void initializeClient\(.*?(?=    @Override\s+public void appendHoverText)', '')
+        if ($text.Contains('initializeClient')) {
+            throw '26.1.2 generation assertion failed; MiniatureImmortalRuinItem still declares initializeClient.'
+        }
     }
     if ($relativePath -match '[\\/]client[\\/]render[\\/]SpiritCompressorParticles\.java$') {
-        $text = $text.Replace('particle.setColor(.76F, .97F, 1F);',
-            'if (particle instanceof net.minecraft.client.particle.SingleQuadParticle quad) quad.setColor(.76F, .97F, 1F);')
+        # 0.1.7: the chain particles take their colour from the machine kind,
+        # so the 0.1.6 literal is gone.  Match the new call shape exactly (the
+        # 0.1.6 shape stays listed additively) and assert that exactly one
+        # colour call was guarded; 26.1.2 exposes setColor only on
+        # SingleQuadParticle, never on Particle.
+        $particleColourSearches = @(
+            'particle.setColor(colour.red(), colour.green(), colour.blue());',
+            'particle.setColor(.76F, .97F, 1F);'
+        )
+        $particleColourReplacements = @(
+            'if (particle instanceof net.minecraft.client.particle.SingleQuadParticle quad) quad.setColor(colour.red(), colour.green(), colour.blue());',
+            'if (particle instanceof net.minecraft.client.particle.SingleQuadParticle quad) quad.setColor(.76F, .97F, 1F);'
+        )
+        if ($particleColourSearches.Count -ne $particleColourReplacements.Count) {
+            throw '26.1.2 generation setup failed; the particle colour shape lists are out of step.'
+        }
+        $particleColourApplied = 0
+        for ($particleColourIndex = 0; $particleColourIndex -lt $particleColourSearches.Count; $particleColourIndex++) {
+            $particleColourSearch = $particleColourSearches[$particleColourIndex]
+            $particleColourReplacement = $particleColourReplacements[$particleColourIndex]
+            if (-not $particleColourReplacement.Contains('SingleQuadParticle quad) quad.setColor(')) {
+                throw "26.1.2 generation setup failed; a particle colour replacement was not built as expected: $particleColourReplacement"
+            }
+            $particleColourMatches = [regex]::Matches($text, [regex]::Escape($particleColourSearch)).Count
+            if ($particleColourMatches -gt 0) {
+                $text = $text.Replace($particleColourSearch, $particleColourReplacement)
+                $particleColourApplied += $particleColourMatches
+            }
+        }
+        if ($particleColourApplied -ne 1) {
+            throw "26.1.2 generation assertion failed; SpiritCompressorParticles colour call: expected 1 guarded replacement, found $particleColourApplied. The particle colour call shape changed; update the explicit shapes in generate-compat-source.ps1."
+        }
+        if ([regex]::IsMatch($text, '(?<!quad\.)particle\.setColor\(')) {
+            throw '26.1.2 generation assertion failed; an unguarded Particle#setColor call remains in SpiritCompressorParticles.'
+        }
     }
     return $text.Replace("`r`n", "`n")
 }
@@ -2572,7 +2760,11 @@ $targetExcludedFragments = @(
       # 结构模板矿石扫描器在 26.1.2 依赖已移除的 NbtIo.readCompressed/NbtAccounter，
       # 且 canonical 端尚未被任何调用方接入（孤立半成品）；设计文档第 4 节的被动
       # 区块观测才是结构矿物的完整解法，故目标版本不生成该文件。
-      '/worldshard/worldshardstructureorescanner.java'
+      '/worldshard/worldshardstructureorescanner.java',
+      # GameTest 验收套件（`gradlew runGameTestServer`）只服务于 1.21.1 的实机行为验收，
+      # 用的是 1.21.1 的 net.minecraft.gametest/NeoForge 注解；目标代际不承载该套件，
+      # 否则 26.1.2 树会去编译它不提供的 GameTest API。
+      '/gametest/'
   )
 $canonicalFiles = @(Get-ChildItem -LiteralPath $canonical -Filter '*.java' -Recurse -File |
     Where-Object {
@@ -2628,14 +2820,64 @@ foreach ($sourceFile in $canonicalFiles) {
 # lose the inventory renderer entry points.
 $canonicalResourceRoot = Join-Path (Split-Path -Parent $canonical) 'resources'
 $targetResourceRoot = Join-Path (Split-Path -Parent $target) 'resources'
-# Patchouli placement pages use the target's renamed iron-chain registry entry.
-foreach ($locale in @('en_us', 'zh_cn')) {
-    $bookRelative = 'assets/immortalstorage/patchouli_books/jade_guide/' + $locale + '/entries/automation/spirit_compressor.json'
-    $sourceBook = Join-Path $canonicalResourceRoot $bookRelative
-    $targetBook = Join-Path $targetResourceRoot $bookRelative
-    New-Item -ItemType Directory -Path (Split-Path -Parent $targetBook) -Force | Out-Null
-    $bookText = [System.IO.File]::ReadAllText($sourceBook).Replace('minecraft:chain', 'minecraft:iron_chain')
-    [System.IO.File]::WriteAllText($targetBook, $bookText, [System.Text.UTF8Encoding]::new($false))
+# 0.1.7 target GameTest template.  The 26.1.2 suite is code-only but still needs a structure
+# template: the canonical 1x1x1 all-air data/immortalstorage/structure/empty.nbt.  The target lane
+# shares the canonical resource root (sourceSets.main.resources), so the template reaches the target
+# JAR without any copy; this guard exists to keep that invariant fail-loud instead of silent, and it
+# asserts both the expected file count (1) and that the file actually carries bytes.
+$gameTestTemplate = Join-Path $canonicalResourceRoot 'data/immortalstorage/structure/empty.nbt'
+$gameTestTemplateFiles = @(Get-ChildItem -LiteralPath $gameTestTemplate -File -ErrorAction SilentlyContinue)
+if ($gameTestTemplateFiles.Count -ne 1) {
+    throw "26.1.2 generation assertion failed; expected exactly 1 canonical GameTest structure template at data/immortalstorage/structure/empty.nbt, found $($gameTestTemplateFiles.Count). The 26.1.2 suite references immortalstorage:empty through the shared canonical resource root."
+}
+if ($gameTestTemplateFiles[0].Length -le 0) {
+    throw '26.1.2 generation assertion failed; the canonical GameTest structure template is empty.'
+}
+# Patchouli placement pages use the target's renamed iron-chain registry entry
+# (Blocks.CHAIN does not exist in 26.1.2; the block id is minecraft:iron_chain).
+# The rule is generic over the handbook: every canonical entry that references
+# the old chain id gets a rewritten target counterpart, and the rewrite is
+# asserted per file (no stale token, one target token per source token) plus in
+# total, so a new chain-referencing page can never slip through unrewritten and
+# an empty discovery fails loudly instead of silently copying nothing.
+$chainSourceToken = 'minecraft:chain'
+$chainTargetToken = 'minecraft:iron_chain'
+$canonicalHandbookRoot = Join-Path $canonicalResourceRoot 'assets/immortalstorage/patchouli_books'
+$chainEntries = @(Get-ChildItem -LiteralPath $canonicalHandbookRoot -Filter '*.json' -Recurse -File |
+    Where-Object { [System.IO.File]::ReadAllText($_.FullName).Contains($chainSourceToken) } |
+    Sort-Object FullName)
+$chainSourceTokenTotal = 0
+foreach ($chainEntry in $chainEntries) {
+    $chainEntryRelative = $chainEntry.FullName.Substring($canonicalResourceRoot.Length).TrimStart('\', '/')
+    $chainSourceText = [System.IO.File]::ReadAllText($chainEntry.FullName)
+    $chainTargetText = $chainSourceText.Replace($chainSourceToken, $chainTargetToken)
+    $chainSourceCount = ([regex]::Matches($chainSourceText, [regex]::Escape($chainSourceToken))).Count
+    $chainTargetCount = ([regex]::Matches($chainTargetText, [regex]::Escape($chainTargetToken))).Count
+    $chainSourceTokenTotal += $chainSourceCount
+    if ($chainTargetText.Contains($chainSourceToken)) {
+        throw "26.1.2 generation assertion failed; $chainEntryRelative still references $chainSourceToken after the iron-chain rewrite."
+    }
+    if ($chainTargetCount -ne $chainSourceCount) {
+        throw "26.1.2 generation assertion failed; $chainEntryRelative rewrote $chainSourceCount chain references into $chainTargetCount target references."
+    }
+    $chainTargetPath = Join-Path $targetResourceRoot $chainEntryRelative
+    New-Item -ItemType Directory -Path (Split-Path -Parent $chainTargetPath) -Force | Out-Null
+    [System.IO.File]::WriteAllText($chainTargetPath, $chainTargetText, [System.Text.UTF8Encoding]::new($false))
+    Write-Output "Rewrote $chainSourceCount $chainSourceToken reference(s) in $chainEntryRelative"
+}
+if ($chainSourceTokenTotal -le 0) {
+    throw '26.1.2 generation assertion failed; no handbook entry referencing minecraft:chain was found, so the iron-chain rewrite would silently do nothing.'
+}
+# Independent re-read of what was actually written: the generated tree must
+# not keep the retired chain id anywhere, not just in the files rewritten
+# above (e.g. a hand-written target handbook page must fail this too).
+$targetHandbookRoot = Join-Path $targetResourceRoot 'assets/immortalstorage/patchouli_books'
+if (Test-Path -LiteralPath $targetHandbookRoot) {
+    $staleChainTargets = @(Get-ChildItem -LiteralPath $targetHandbookRoot -Filter '*.json' -Recurse -File |
+        Where-Object { [System.IO.File]::ReadAllText($_.FullName).Contains($chainSourceToken) })
+    if ($staleChainTargets.Count -ne 0) {
+        throw "26.1.2 generation assertion failed; generated handbook entries still reference $chainSourceToken : $($staleChainTargets.Name -join ', ')"
+    }
 }
 
 $canonicalRecipeRoot = Join-Path $canonicalResourceRoot 'data/immortalstorage/recipe'
@@ -2934,4 +3176,22 @@ if (-not [string]::IsNullOrWhiteSpace($CanonicalTestRoot)) {
         }
     }
     Write-Output "Generated $($generatedTests.Count) 26.1.2 compatibility tests at $targetTests"
+}
+
+# 0.1.7 counter assertions.  These rules are global (they fire in whichever
+# file carries the 1.21.1 call shape), so the binding check is the applied
+# total against the canonical count: a new or renamed call site fails the
+# generation instead of slipping through unrewritten.  Update the expected
+# number here deliberately together with the canonical source that changes it.
+if ($script:getByteArrayRewrites -ne 1) {
+    throw "26.1.2 generation assertion failed; expected 1 CompoundTag#getByteArray rewrite (EnchantmentMachineLogic), applied $script:getByteArrayRewrites. A new getByteArray call site needs its own reviewed expectation."
+}
+if ($script:isEnchantableRewrites -ne 1) {
+    throw "26.1.2 generation assertion failed; expected 1 Item#isEnchantable rewrite (EnchantmentStackRules), applied $script:isEnchantableRewrites. A new call site needs its own reviewed expectation."
+}
+if ($script:gameTestHookRewrites -ne 1) {
+    throw "26.1.2 generation assertion failed; expected 1 target GameTest mod-bus hook, applied $script:gameTestHookRewrites."
+}
+if ($script:resourceKeyLocationRewrites -ne 1) {
+    throw "26.1.2 generation assertion failed; expected 1 ResourceKey::location rewrite (EnchantmentStackRules), applied $script:resourceKeyLocationRewrites. A new call site needs its own reviewed expectation."
 }

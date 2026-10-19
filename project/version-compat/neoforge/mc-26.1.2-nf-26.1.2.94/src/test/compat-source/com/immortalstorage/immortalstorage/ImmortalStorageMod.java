@@ -66,6 +66,7 @@ public class ImmortalStorageMod {
         modBus.addListener(net.neoforged.neoforge.data.event.GatherDataEvent.Client.class, ModDataGeneration::gatherData);
         modBus.addListener(net.neoforged.neoforge.data.event.GatherDataEvent.Server.class, ModDataGeneration::gatherData);
         modBus.addListener(ModBlockEntities::registerCapabilities);
+        modBus.addListener(com.immortalstorage.immortalstorage.gametest.EnchantmentMachineGameTest::register);
 
         modContainer.registerConfig(ModConfig.Type.COMMON, ImmortalStorageConfig.SPEC, "immortalstorage-common.toml");
         modContainer.registerConfig(ModConfig.Type.CLIENT, ImmortalStorageClientConfig.SPEC, "immortalstorage-client.toml");

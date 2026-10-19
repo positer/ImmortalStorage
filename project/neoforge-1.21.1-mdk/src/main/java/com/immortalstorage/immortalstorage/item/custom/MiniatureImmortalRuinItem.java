@@ -44,7 +44,7 @@ public final class MiniatureImmortalRuinItem extends Item {
                 && context.getPlayer() != null) {
             if (level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
                 ruin.restoreFromItem(saved);
-                ruin.compressor().placedBy(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(context.getPlayer()));
+                ruin.placedBy(com.immortalstorage.immortalstorage.player.PersistentPlayerIdentity.id(context.getPlayer()));
                 level.sendBlockUpdated(pos, ruin.getBlockState(), ruin.getBlockState(), 3);
             }
             if (!context.getPlayer().getAbilities().instabuild) context.getItemInHand().shrink(1);

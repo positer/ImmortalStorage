@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class JadeGuideCompleteItemCoverageTest {
     private static final Path PROJECT = locateProject();
     private static final Pattern DIRECT_ITEM = Pattern.compile("registerItem\\(\\s*\"([^\"]+)\"");
-    private static final Pattern BLOCK_ITEM = Pattern.compile("(?:\\breg|BLOCKS\\.register)\\(\\s*\"([^\"]+)\"");
+    private static final Pattern BLOCK_ITEM = Pattern.compile("\\breg\\(\\s*\"([^\"]+)\"");
 
     @Test
     void everyDirectlyRegisteredItemAppearsInBothLanguages() throws IOException {

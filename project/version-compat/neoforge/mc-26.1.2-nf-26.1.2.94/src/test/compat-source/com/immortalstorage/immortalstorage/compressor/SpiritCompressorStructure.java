@@ -15,12 +15,32 @@ public final class SpiritCompressorStructure {
         return x != 0 && z != 0 ? "immortalstorage:world_barrier" : "minecraft:chain";
     }
 
+    /** The block this machine kind expects at one shell cell; only the top centre differs. */
+    public static String blockId(int x, int y, int z, RuinMachineKind kind) {
+        if (x == 0 && y == 1 && z == 0) return kind.coreBlockId();
+        return blockId(x, y, z);
+    }
+
+    /** The machine kind the shell above the core currently runs, or null when it is not a machine. */
+    public static RuinMachineKind kindAt(Level level, BlockPos center) {
+        if (level == null || center == null) return null;
+        BlockPos core = center.offset(0, 1, 0);
+        if (!level.hasChunkAt(core)) return null;
+        return RuinMachineKind.of(BuiltInRegistries.BLOCK.getKey(level.getBlockState(core).getBlock()).toString());
+    }
+
+    /** Any legal machine kind; the exact machine is decided by {@link #kindAt}. */
     public static boolean matches(Level level, BlockPos center) {
-        if (level == null) return false;
+        RuinMachineKind kind = kindAt(level, center);
+        return kind != null && matches(level, center, kind);
+    }
+
+    public static boolean matches(Level level, BlockPos center, RuinMachineKind kind) {
+        if (level == null || kind == null) return false;
         for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) for (int x = -1; x <= 1; x++) {
             BlockPos pos = center.offset(x, y, z);
             if (!level.hasChunkAt(pos)) return false;
-            String expected = blockId(x, y, z);
+            String expected = blockId(x, y, z, kind);
             String actual = BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()).toString();
             // Iron chain was renamed in 26.1; the structure has identical geometry.
             if (expected.equals("minecraft:chain")) {

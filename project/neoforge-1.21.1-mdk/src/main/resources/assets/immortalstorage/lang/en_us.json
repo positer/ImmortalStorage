@@ -718,6 +718,8 @@
   "container.immortalstorage.spirit_compressor.mode.2": "Passive output",
   "container.immortalstorage.spirit_compressor.mode.3": "Active input 64/t",
   "container.immortalstorage.spirit_compressor.mode.4": "Active output 64/t",
+  "container.immortalstorage.enchantment_compressor": "Enchantment Compressor",
+  "container.immortalstorage.enchantment_decompressor": "Enchantment Decompressor",
   "emi.category.immortalstorage.spirit_compression": "Spirit Forging Compressor",
   "container.immortalstorage.spirit_decompressor": "Spirit Decompressor",
   "emi.category.immortalstorage.spirit_decompression": "Spirit Decompressor",

@@ -13,7 +13,7 @@ import net.neoforged.neoforge.items.*;
 import java.util.UUID;
 
 /** Inventory and configuration belong to the existing ruin controller, never to a transient multiblock. */
-public final class SpiritCompressorLogic {
+public final class SpiritCompressorLogic implements RuinMachine {
     public static final int CLOSED = 0, PASSIVE_PULL = 1, PASSIVE_PUSH = 2, ACTIVE_PULL = 3, ACTIVE_PUSH = 4;
     private final MiniatureImmortalRuinBlockEntity controller;
     private final int[] faces = new int[6];
@@ -52,7 +52,8 @@ public final class SpiritCompressorLogic {
     public int inputEnd() { return reversed() ? 1 : 12; }
     public int outputStart() { return reversed() ? 1 : 12; }
     public SpiritCompressorLogic(MiniatureImmortalRuinBlockEntity controller) { this.controller = controller; }
-    public boolean formed() { return !controller.isRemoved() && SpiritCompressorStructure.matches(controller.getLevel(), controller.getBlockPos()); }
+    public boolean formed() { return !controller.isRemoved() && SpiritCompressorStructure.matches(controller.getLevel(), controller.getBlockPos(),
+            com.immortalstorage.immortalstorage.compressor.RuinMachineKind.SPIRIT); }
     public void updateFormation() {
         boolean current = formed();
         if (current != lastFormation) { lastFormation = current; invalidatePorts(); }
@@ -66,6 +67,11 @@ public final class SpiritCompressorLogic {
     }
     public void placedBy(UUID id) { if (id != null) { owner = id; controller.setChanged(); } }
     public UUID owner() { return owner; }
+    /** The spirit machine spends its materials in the same tick that it crafts; nothing is ever deferred. */
+    @Override public void settlePending() {}
+    @Override public void discardPending() {}
+    @Override public boolean inputsLocked() { return false; }
+    @Override public String titleKey() { return com.immortalstorage.immortalstorage.compressor.RuinMachineKind.SPIRIT.titleKey(reversed()); }
     public int mode(int side) { return faces[side]; }
     public boolean xianqiaoOutput() { return xianqiao; }
     public void cycle(int side) { faces[side] = (faces[side] + 1) % 5; controller.setChanged(); }

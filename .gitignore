@@ -1,5 +1,6 @@
-# Reference material and external projects are never part of Cultivation releases.
-reference-mods/
+# Cross-mod reference material stays in the sibling dispatch workspace
+# (Code\Minecraft Forge Workspace\reference-mods); this repository keeps only the
+# release evidence its own gates must resolve in-tree.
 archive/
 tools/
 tasks/
@@ -54,6 +55,7 @@ out/
 **/build/
 **/run/
 **/run-data/
+**/run-gametest/
 **/logs/
 **/local-build-tmp/
 **/local-gradle-home/
@@ -67,6 +69,10 @@ out/
 /project/neoforge-1.21.1-mdk/CREDITS.txt
 
 # Local build/download diagnostics.
+# 0.1.7 target-line recon notes and determinism diagnostics are local records:
+# they carry machine-specific absolute paths and are not shipped.
+/project/version-compat/notes-0.1.7-enchantment-machines.md
+/project/version-compat/target-determinism-*.txt
 **/*.download
 **/compile*.log
 **/test*.log

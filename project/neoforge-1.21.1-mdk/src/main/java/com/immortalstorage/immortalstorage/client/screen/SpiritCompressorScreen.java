@@ -25,8 +25,7 @@ public final class SpiritCompressorScreen extends AbstractContainerScreen<Spirit
     private Button redstone;
     private Button xianqiao;
     public SpiritCompressorScreen(SpiritCompressorMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, Component.translatable(menu.reversed()
-                ? "container.immortalstorage.spirit_decompressor" : "container.immortalstorage.spirit_compressor"));
+        super(menu, inventory, Component.translatable(menu.titleKey()));
         imageWidth = 176; imageHeight = 182;
     }
     @Override protected void init() {

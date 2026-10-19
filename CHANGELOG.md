@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.7]
+
+### English
+
+- Added the Enchantment Compressor and the Enchantment Decompressor: build the Spirit Forging multiblock with an Enchanting Table above the core instead of a Treasure Basin, and the same shell runs the enchantment pair, with the core's polarity still switching compressor and decompressor.
+- Both machines reuse the spirit machines' interface: the same slot layout and arrow, the six-face mode panel moving up to 64 items per tick, the same three-state redstone control, direct Xianqiao output and the same chain particles, now tinted in experience-rune green.
+- Unlike the spirit machines, the enchantment machines deduct their materials only when the product is taken out. Tearing the structure down, reversing the core, swapping the top block or breaking the block instead discards the uncollected product, so nothing drops, while the materials stay in the machine and drop with it.
+- The Enchantment Compressor treats books, enchanted ones and plain ones alike, as materials only. Books alone merge into a single enchanted book; with an item present, every enchantment moves onto the first non-book item and the remaining items are disenchanted where they stand. Enchantment conflicts are ignored and a repeated enchantment keeps its highest level.
+- The Enchantment Decompressor splits one composite enchanted book or enchanted item into single-enchantment books: up to eleven in a fixed order, with any leftover enchantments staying on the carrier. An item is always handed back, while a book carrier is spent and never returned as a plain book.
+- The Ancient Jade handbook documents the structure, the slot behaviour, the merge and split rules and the deferred material cost in English and Simplified Chinese.
+
+### 简体中文
+
+- 新增附魔压缩机与附魔解压器：把锻灵多方块上层的聚宝盆替换为附魔台，同一外壳即运行附魔机；核心极性依旧切换压缩机与解压器。
+- 两台机器沿用锻灵机的界面：槽位排布与箭头一致，六面面板每 tick 吞吐 64 件，红石三态控件、仙窍直出与铁链粒子相同，粒子改为经验符文绿。
+- 与锻灵机不同，附魔机只在产物被取出时才扣材料。拆除结构、反转核心、更换顶层方块或破坏方块则直接作废未取走的产物（什么都不掉落），材料仍留在机器内并随方块一同掉落。
+- 附魔压缩机把书（附魔书与普通书）一律当作材料。只有书时整合为一本附魔书；存在物品时，全部附魔转移到序号最小的非书物品上，其余物品在原地被清除附魔。合并无视附魔冲突，同名附魔取最高等级。
+- 附魔解压器把一本复合附魔书或一件附魔物品拆成单附魔书：按固定顺序最多拆出十一本，未拆完的附魔留在载体上。物品载体始终返还，书作为载体则被消耗，不会返还普通书。
+- 古玉指导书以中英双语记录结构、槽位行为、合并与拆分规则以及延迟扣料。
+
 ## [0.1.6]
 
 ### English

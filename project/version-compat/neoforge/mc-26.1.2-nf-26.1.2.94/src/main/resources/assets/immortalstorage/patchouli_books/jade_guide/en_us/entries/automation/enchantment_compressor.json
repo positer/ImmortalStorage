@@ -1,0 +1,193 @@
+{
+  "name": "Enchantment Compressor",
+  "icon": "immortalstorage:miniature_immortal_ruin",
+  "category": "immortalstorage:automation",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Structure and ownership",
+      "text": "The shell is exactly the Spirit Forging shell with one change: an Enchanting Table replaces the Treasure Basin at the top centre. Bottom/top: World Barriers at corners, chains at edge centres, World Shard Miner at bottom centre and Enchanting Table at top centre. Middle: chains at corners, air at edge centres and a Miniature Immortal Ruin at centre. The family is read live from the block above the core and is never stored in the ruin, so adding or removing that Enchanting Table switches the machine at once. A family swap keeps the two families apart: the newly selected family never inherits the other one's six-face or Xianqiao settings and starts with every face closed and Xianqiao output off. Reversing the core or swapping the family discards any uncollected product and ejects caches so that no stock is stranded, while removing the block above the core ejects nothing and only stops the machine. Ownership is recorded when placing the ruin; opening the screen never claims it."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Full Structure: Compression",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:iron_chain[axis=x]",
+          "Y": "minecraft:iron_chain[axis=y]",
+          "Z": "minecraft:iron_chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=false]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "Project with the bottom World Shard Miner as anchor; aim at the ground to place the full structure. Upper/lower chains follow X/Z and middle corner chains follow Y. Sneak empty-hand right-click the central ruin to reverse it; the block above the core selects the enchantment family."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Full Structure: Decompression",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:iron_chain[axis=x]",
+          "Y": "minecraft:iron_chain[axis=y]",
+          "Z": "minecraft:iron_chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=true]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "Project with the bottom World Shard Miner as anchor; aim at the ground to place the full structure. Upper/lower chains follow X/Z and middle corner chains follow Y. Sneak empty-hand right-click the central ruin to reverse it; the block above the core selects the enchantment family."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Bottom Layer: y=-1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:iron_chain[axis=x]",
+          "Y": "minecraft:iron_chain[axis=y]",
+          "Z": "minecraft:iron_chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four World Barriers at corners, four chains at edge centres, World Shard Miner at centre."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Middle Layer: y=0",
+      "multiblock": {
+        "pattern": [
+          [
+            "YAY",
+            "A0A",
+            "YAY"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:miniature_immortal_ruin_block",
+          "X": "minecraft:iron_chain[axis=x]",
+          "Y": "minecraft:iron_chain[axis=y]",
+          "Z": "minecraft:iron_chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four chains at corners, four air cells at edge centres and the ruin at centre. Reversal changes only the core state."
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "Top Layer: y=+1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "minecraft:enchanting_table",
+          "X": "minecraft:iron_chain[axis=x]",
+          "Y": "minecraft:iron_chain[axis=y]",
+          "Z": "minecraft:iron_chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "Four World Barriers at corners, four chains at edge centres, Enchanting Table at centre. Placing this block instead of the Treasure Basin selects the enchantment family."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Materials and Assembly",
+      "text": "Materials: 8 World Barriers, 12 chains, 1 World Shard Miner, 1 Enchanting Table and 1 Miniature Immortal Ruin. Build bottom to top and keep the air cells empty. Kind and position are the only checks; the miner and the table need no enable state and no shared owner. The core placer owns the machine. Both enchantment machines transform enchantment sets instead of running a finite recipe table, so JEI/EMI gain no category for them and this handbook carries every rule."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Shared interface, faces and redstone",
+      "text": "Right-click the formed centre for the same screen as Spirit Forging: twelve inputs and one output when compressing, one input and twelve outputs when decompressing, with identical slot geometry, arrow, gear panel, six face-preview buttons, three-state redstone button and Xianqiao switch. Only the title differs: Enchantment Compressor or Enchantment Decompressor. Each face cycles closed, passive input, passive output, active input and active output; active transfers share a 64-item budget per face per tick and ports lie on the matching outer faces of the structure. The redstone button gates production and active transfers while passive ports stay available. Direct Xianqiao output writes products into the placer's Xianqiao in the same tick and needs that owner online with Xianqiao unlocked; cached output is returned first. Example: feed books into one face set to active input, take the merged book from another face set to active output, and the machine runs with no player present."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Deferred consumption",
+      "text": "Both enchantment machines produce first: the result appears in the output slots and nothing is deducted yet. Materials are deducted only when the result is taken: the hand, a shift-click, a number-key swap, a pipe or an active-output face, and a successful Xianqiao write in the same tick all count as taken, and a partial take settles the whole registration. While a settlement is pending the machine starts no new batch and its input slots refuse manual pickup on the server. An uncollected result is never paid for, it is voided, and where the materials end up depends on how the machine goes away. Breaking the block voids the product and nothing drops, while the materials stay in the input slots and drop on the ground with the block. Wrench pick-up also voids the product, but the materials travel inside the recovered Miniature Immortal Ruin item instead of falling to the ground. Removing the block above the core, so that the structure is simply lost, ejects nothing at all: the materials stay in the machine and drop with the block once it is broken, and the product is voided. Only a deliberate family swap or a core reversal ejects caches, a reversal returning both caches of the current family and a swap returning the stock of the family left behind, and in both cases the product is voided while the materials come back untouched. The output row is therefore either empty or backed by an unsettled transaction, because a leftover result is only ever the player's own partially taken remainder. Registration and inventories are saved in the ruin and survive a reload."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Enchantment Compressor",
+      "text": "Inputs are slots 0 to 11 and the output is slot 12. Enchantable items and enchanted books are accepted, and nothing is produced when there is no enchantment to merge. Enchanted books are materials only, plain books included, so they can never be the carrier. With no non-book item in the input row every book stack merges into a single enchanted book, and all of them are consumed whole. Otherwise the target is the lowest-index non-book item. Every input, books included, contributes to one union in which the same enchantment keeps its highest level and never sums levels, and in which vanilla conflicts are always ignored. The result is one copy of the target item carrying that union, written to slot 12 while the target loses one item; the other non-book inputs are replaced in place by the same item with its enchantments cleared, keeping their counts, and every book stack is consumed whole. Example: put a plain diamond sword in slot 3 with Sharpness III, Sharpness V and Smite II books in slots 0 to 2. The books are materials, so the sword is the target: taking the output leaves one diamond sword carrying Sharpness V, not VIII, together with Smite II, even though vanilla calls those two conflicting, and the three books are consumed whole."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Enchantment Decompressor",
+      "text": "The reversed core uses input slot 0 and output slots 1 to 12. Enchanted items and enchanted books are accepted, and each operation processes exactly one item from the input slot, never the whole stack. Enchantments are ordered by registry name, so the result is deterministic. With N enchantments: at N of 11 or fewer the output is N single-enchantment books in slots 1 to N and nothing else, because a carrier book is consumed and never returned as a plain book, while an item carrier is always returned with its enchantments cleared in slot N+1. At N of 12 or more the first eleven enchantments become one book each in slots 1 to 11 and the carrier keeps the remaining N minus 11 in slot 12, as the same item or, when the carrier was a book, as a composite enchanted book holding those enchantments. When the outputs do not fit nothing is produced and no transaction is registered, and an item with no enchantments is rejected instead of producing an empty transaction. Example: a book with three enchantments becomes three single-enchantment books and the book itself is consumed; a chestplate with three enchantments becomes three single-enchantment books plus the chestplate it came from; a book with thirteen enchantments becomes eleven single-enchantment books plus one composite book holding the last two."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Experience-rune particles",
+      "text": "Geometry, trigger, frequency, lifetime and motion match Spirit Forging: once formed, every chain emits on one tick in 160, with no gravity, no damping and no collision, drifting toward the core with a 24-tick lifetime, and an unformed structure emits nothing. The colour becomes the experience-rune palette: 0x80FF20 fading to 0xE8FFB0, while Spirit Forging keeps its cyan-white palette. The colour follows the core's live family, and a redstone state never hides the effect of a structure that is already formed."
+    }
+  ]
+}

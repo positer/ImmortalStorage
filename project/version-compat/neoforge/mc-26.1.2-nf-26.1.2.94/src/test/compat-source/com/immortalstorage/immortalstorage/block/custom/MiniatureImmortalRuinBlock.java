@@ -46,11 +46,13 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
             if (player.isShiftKeyDown()) {
                 ItemStack recovered = new ItemStack(com.immortalstorage.immortalstorage.item.ModItems.MINIATURE_IMMORTAL_RUIN.get());
+                // A pick-up is a teardown: the uncollected product is voided, the material travels in the item.
+                ruin.discardUncollectedProducts();
                 net.minecraft.nbt.CompoundTag saved = ruin.getUpdateTag(level.registryAccess());
                 saved.putBoolean("Reversed", state.getValue(REVERSED));
                 saved.remove("LinkedPos");
                 recovered.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(saved));
-                for (var handler : java.util.List.of(ruin.compressor().inventory, ruin.compressor().decompressionInventory))
+                for (var handler : ruin.machineInventories())
                     for (int i = 0; i < 13; i++) handler.setStackInSlot(i, ItemStack.EMPTY);
                 ruin.unlinkForBreak();
                 level.levelEvent(2001, pos, Block.getId(state));
@@ -100,9 +102,11 @@ public final class MiniatureImmortalRuinBlock extends BaseEntityBlock {
         BlockState nextState = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         if (!state.is(nextState.getBlock())
                 && level.getBlockEntity(pos) instanceof com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity ruin) {
+            // Breaking the controller voids the uncollected product, then drops whatever remains.
+            ruin.discardUncollectedProducts();
             ruin.unlinkForBreak();
-            ruin.compressor().invalidatePorts();
-            for (var handler : java.util.List.of(ruin.compressor().inventory, ruin.compressor().decompressionInventory))
+            ruin.machine().invalidatePorts();
+            for (var handler : ruin.machineInventories())
             for (int i = 0; i < 13; i++) {
                 while (!handler.getStackInSlot(i).isEmpty()) {
                     ItemStack saved = handler.extractItem(i, 64, false);

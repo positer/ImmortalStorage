@@ -130,6 +130,14 @@ neoForge {
             programArgument '--nogui'
         }
 
+        gameTestServer {
+            // In-game behaviour verification on a real dedicated server: the userdev run type already
+            // sets neoforge.enableGameTest and neoforge.gameTestServer.
+            type = 'gameTestServer'
+            gameDirectory = project.file('run-gametest')
+            programArgument '--nogui'
+        }
+
         data {
             data()
             gameDirectory = project.file('run-data')
@@ -287,7 +295,10 @@ dependencies {
             def localJar = localCompatJar(module)
             if (localJar != null) compileOnly files(localJar)
         }
-        compileOnly files('../../archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
+        // The shared cross-mod runtime matrix stays in the sibling dispatch/archive
+        // workspace (Code\Minecraft Forge Workspace\archive); this repository keeps only
+        // the release evidence its own gates must resolve in-tree.
+        compileOnly files('../../../Minecraft Forge Workspace/archive/runtime-mod-matrix-0.0.2/geckolib-neoforge-1.21.1-4.9.2.jar')
         implementation('vazkii.patchouli:Patchouli:1.21.1-93-NEOFORGE') {
             transitive = false
         }

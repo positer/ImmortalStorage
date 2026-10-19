@@ -1,0 +1,193 @@
+{
+  "name": "附魔压缩机",
+  "icon": "immortalstorage:miniature_immortal_ruin",
+  "category": "immortalstorage:automation",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "结构与认主",
+      "text": "外壳与锻灵机完全一致，只有一处不同：上层中心的聚宝盆换成附魔台。下层与上层四角放世界胎壁、四边放铁链；下层中心放世界碎片开采器，上层中心放附魔台。中层四角放铁链、四边留空，中心放迷你仙墟。机器种类只根据核心上方那一格实时判断，不写入存档，因此换上或换下附魔台即刻切换种类。换族时两套配置互不影响：新启用的那一族不会继承另一族的六面或仙窍设置，它从全部面关闭、仙窍输出关闭开始。反转核心或主动换族会作废未取走的产物并弹出缓存，避免任何一族的库存无处可去；只移除核心上方方块时不会弹出任何东西，机器只是停止工作。所有者在放置迷你仙墟时记录，打开界面不会认主。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "完整结构 · 压缩",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=false]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "点击投影按钮后以下层世界碎片采集器为锚点，瞄准地面放置整座结构；上下层铁链沿X/Z，中层四角沿Y。中心迷你仙墟潜行空手右键切换正反；核心上方那一格决定这是附魔系还是锻灵系。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "完整结构 · 解压",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "XTX",
+            "BZB"
+          ],
+          [
+            "YAY",
+            "ARA",
+            "YAY"
+          ],
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]",
+          "R": "immortalstorage:miniature_immortal_ruin_block[reversed=true]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": true,
+      "text": "点击投影按钮后以下层世界碎片采集器为锚点，瞄准地面放置整座结构；上下层铁链沿X/Z，中层四角沿Y。中心迷你仙墟潜行空手右键切换正反；核心上方那一格决定这是附魔系还是锻灵系。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "下层 · y=-1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:world_shard_miner",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角世界胎壁、四边铁链，中心世界碎片开采器。共4胎壁、4铁链、1开采器。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "中层 · y=0",
+      "multiblock": {
+        "pattern": [
+          [
+            "YAY",
+            "A0A",
+            "YAY"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "immortalstorage:miniature_immortal_ruin_block",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角铁链、四边留空，中心迷你仙墟。反转时仅核心状态改变，外壳相同。"
+    },
+    {
+      "type": "patchouli:multiblock",
+      "name": "上层 · y=+1",
+      "multiblock": {
+        "pattern": [
+          [
+            "BZB",
+            "X0X",
+            "BZB"
+          ]
+        ],
+        "mapping": {
+          "B": "immortalstorage:world_barrier",
+          "M": "immortalstorage:world_shard_miner",
+          "T": "minecraft:enchanting_table",
+          "A": "minecraft:air",
+          "0": "minecraft:enchanting_table",
+          "X": "minecraft:chain[axis=x]",
+          "Y": "minecraft:chain[axis=y]",
+          "Z": "minecraft:chain[axis=z]"
+        },
+        "symmetrical": true
+      },
+      "enable_visualize": false,
+      "text": "四角世界胎壁、四边铁链，中心附魔台。共4胎壁、4铁链、1附魔台。这一格换成聚宝盆即为锻灵系。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "材料与装配",
+      "text": "完整结构共8世界胎壁、12铁链、1世界碎片开采器、1附魔台、1迷你仙墟。逐层从下向上装配，空格必须留空。只检查种类和位置，不要求开采器或附魔台开启或同属一人。机器所有者为放置中心迷你仙墟的玩家。两台附魔机器变换的是附魔集合而不是有限的配方表，因此JEI/EMI不为其新增分类，全部规则见本书。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "共用界面、六面与红石",
+      "text": "右键成型结构中心打开与锻灵机完全相同的界面：压缩机为左侧4×3输入、右侧一个输出槽，解压器为左1输入→右4×3输出；槽位几何、箭头、齿轮面板、六面预览按钮、红石三态按钮与仙窍开关全部一致，只有标题分别显示“附魔压缩机”与“附魔解压器”。各面依次切换关闭、被动抽入、被动推出、主动抽入、主动推出；主动模式每面每tick共64件，外部端口在3×3×3外壳对应面。红石三态只控制生产与主动传输，被动端口仍可使用。仙窍输出把产物在同一tick直接写入放置者的仙窍，要求其在线且已开启仙窍，否则保留材料，并优先归还已有缓存。示例：把附魔书面朝主动抽入的面送入，在另一个主动推出的面取走合并结果，全程无需玩家在场。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "延迟扣料",
+      "text": "两台附魔机器都先产出：产物写入产物槽，此时不扣除任何材料。只有真正取走产物才扣料——手取、Shift 点击、数字键换位、管道或主动推出、以及成功写入仙窍（同 tick 视为已取走）都算取走，部分取出也按登记一次性结算。有待结算事务时机器不开始新一轮生产，输入槽在服务端拒绝手动取出。未取走的产物一律作废而不是结算，材料去向取决于机器如何消失：破坏方块会作废产物且不掉落，材料原样留在输入槽并随方块掉落在地面；扳手回收同样作废产物，但材料随回收的迷你仙墟物品带走，不会掉在地上。只移除核心上方方块、结构因此失效时不再弹出任何东西：材料留在机器里，方块被破坏时随方块掉落，产物作废。只有主动换族或反转核心才会弹出缓存——反转核心会弹出当前族的两套缓存，换族会弹出被换下那一族的库存——两种情况都作废产物并把材料原样返还给你。因此产物行要么为空，要么一定对应一笔未结算事务——残留的产物只可能是玩家自己部分取出后留下的余量。事务与库存都保存在迷你仙墟中，重登或重载后依然有效。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "附魔压缩机",
+      "text": "输入为槽0至槽11，产物为槽12；接受可附魔物品与附魔书，没有可合并的附魔时不产出。附魔书只作材料（普通书同样只作材料），永远不能作为载体。输入行中没有非书物品时，把所有书槽整合成一本附魔书，全部书槽整叠消耗。否则首位为序号最小的非书物品：收集全部输入（含书）的附魔并取并集，同名附魔只取最高等级、不做相加，合并一律无视原版冲突。产物为首位物品的一个副本并写入合并附魔，放入槽12，首位扣1个；其余非书输入整叠原地替换为清除附魔后的同种物品，数量不变；所有书槽整叠消耗。示例：槽0至槽2放锋利III、锋利V与亡灵杀手II附魔书，槽3放普通钻石剑。书只作材料，因此首位是这把钻石剑：取走产物后得到一把同时带锋利V与亡灵杀手II的钻石剑（等级取最高而非相加，冲突也被无视），三本书整叠消耗。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "附魔解压器",
+      "text": "核心反转后为左1输入（槽0）→右12输出（槽1至槽12），接受带附魔的物品或附魔书，每次只处理输入槽中的1个物品，不整叠处理。附魔按注册名升序排列，结果确定。设附魔数为N：N≤11时只输出N本单附魔附魔书，占槽1至槽N，不产出其他东西——载体若是附魔书则被消耗、不返还普通书；载体若是物品则始终返还，占槽N+1并已清除附魔。N≥12时，前11个附魔各出一本附魔书占槽1至槽11，载体占槽12并保留其余N−11个附魔：物品仍是该物品，书则成为带剩余附魔的复合附魔书。产物槽放不下时不生产，也不登记事务；没有附魔的物品不接受，也不会产生空事务。示例：一本带3个附魔的附魔书拆成3本单附魔书，书本身被消耗；一件带3个附魔的胸甲拆成3本单附魔书加原来那件胸甲；一本带13个附魔的附魔书拆成11本单附魔书加1本仍带最后2个附魔的复合附魔书。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "经验符文粒子",
+      "text": "几何、触发条件、频率、寿命与运动都与锻灵机一致：成型后每条铁链每160tick发射一次，无重力、无减速、无碰撞，朝核心飘动，寿命24tick，未成形不发射。颜色改为经验符文色：主色0x80FF20，淡出0xE8FFB0；锻灵机保持青白色不变。颜色由核心当前种类实时决定，已成型结构的效果不会因红石状态而隐藏。"
+    }
+  ]
+}

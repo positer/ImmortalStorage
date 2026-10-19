@@ -718,6 +718,8 @@
   "container.immortalstorage.spirit_compressor.mode.2": "被动推出",
   "container.immortalstorage.spirit_compressor.mode.3": "主动抽入 64/t",
   "container.immortalstorage.spirit_compressor.mode.4": "主动推出 64/t",
+  "container.immortalstorage.enchantment_compressor": "附魔压缩机",
+  "container.immortalstorage.enchantment_decompressor": "附魔解压器",
   "emi.category.immortalstorage.spirit_compression": "锻灵压缩机",
   "container.immortalstorage.spirit_decompressor": "锻灵解压器",
   "emi.category.immortalstorage.spirit_decompression": "锻灵解压器",

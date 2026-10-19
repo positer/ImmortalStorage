@@ -151,13 +151,13 @@ public final class ModBlockEntities {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlock(Capabilities.ItemHandler.BLOCK, (level, pos, state, entity, side) -> {
             var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(level, pos);
-            return ruin == null ? null : ruin.compressor().handler(side);
+            return ruin == null ? null : ruin.machine().handler(side);
         }, com.immortalstorage.immortalstorage.block.ModBlocks.WORLD_BARRIER.get(),
                 net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.parse(
                         net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(net.minecraft.resources.ResourceLocation.parse("minecraft:iron_chain"))
                                 ? "minecraft:iron_chain" : "minecraft:chain")));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, MINIATURE_IMMORTAL_RUIN.get(),
-                (ruin, side) -> ruin.compressor().handler(side));
+                (ruin, side) -> ruin.machine().handler(side));
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, IMMORTAL_FURNACE.get(),
                 ImmortalFurnaceBlockEntity::getItemHandler);
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, SIMULATED_REINCARNATION_FURNACE.get(),
@@ -198,12 +198,12 @@ public final class ModBlockEntities {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, WORLD_SHARD_MINER.get(),
                 (be, side) -> {
                     var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
-                    return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);
+                    return ruin == null ? be.getCacheHandler() : ruin.machine().handler(side);
                 });
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TREASURE_BASIN.get(),
                 (be, side) -> {
                     var ruin = com.immortalstorage.immortalstorage.compressor.SpiritCompressorStructure.controllerAtPart(be.getLevel(), be.getBlockPos());
-                    return ruin == null ? be.getCacheHandler() : ruin.compressor().handler(side);
+                    return ruin == null ? be.getCacheHandler() : ruin.machine().handler(side);
                 });
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, STABILIZED_MINIATURE_IMMORTAL_RUIN.get(),
                 (be, side) -> be.itemHandler());
