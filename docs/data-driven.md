@@ -126,7 +126,7 @@ For 26.1.2, use `"ingredient": "minecraft:copper_ore"`; tags use `"#namespace:ta
 }
 ```
 
-26.1.2 uses item/tag strings in every `ingredient`, including additional inputs. 多材料配方也按最大完整倍率整批执行：紫水晶块或失活蕴灵晶母岩每块需8仙元，缺任一种材料不消耗；结果阻挡不扣任何原料。蕴灵晶母岩激活已从工作台移到压缩机，原工作台配方ID不再提供。
+26.1.2 uses item/tag strings in every `ingredient`, including additional inputs. 多材料配方也按最大完整倍率整批执行：紫水晶块或失活蕴灵晶母岩每块需8仙元，缺任一种材料不消耗；结果阻挡不扣任何原料。蕴灵晶母岩的激活现在有两条等价路线：合成台八仙元环绕一块失活母岩（`immortalstorage:nurturing_crystal_bedrock`），或上述压缩机整批配方（`immortalstorage:spirit_compression/nurturing_crystal_bedrock`），两者产出同一方块。跨模组配方在根上带 `neoforge:conditions` 才加载，例如安装 AE2 时新增的 `immortalstorage:spirit_compression/flawless_budding_quartz`（赛特斯石英块1 + 仙元8 → 无瑕赛特斯石英母岩）；缺少该模组时配方整条不存在，压机与 JEI/EMI 都不会列出它。
 
 The built-in decompressor also accepts quartz blocks, chiseled quartz, pillars, quartz bricks, smooth quartz and both quartz stairs (4 quartz each), both quartz slabs (2 each), and amethyst blocks (4 shards). Stair recovery uses the reversible stonecutter quantity; it does not multiply ore drops. 解压新增石英系列整块/楼梯4石英、半砖2石英、紫水晶块4碎片，独立于原矿的四倍基础掉落规则。
 

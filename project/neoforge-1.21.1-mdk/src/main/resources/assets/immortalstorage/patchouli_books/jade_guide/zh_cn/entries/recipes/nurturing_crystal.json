@@ -26,7 +26,13 @@
       "station_item": "immortalstorage:miniature_immortal_ruin",
       "output_item": "immortalstorage:nurturing_crystal_bedrock",
       "station_text": "锻灵压缩机 · 每批失活母岩×1 + 仙元×8",
-      "body": "在成型压缩机输入槽放入两种材料；输出阻挡不扣任何材料。工作台不再提供激活配方。"
+      "body": "在成型压缩机输入槽放入两种材料；输出阻挡不扣任何材料。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:nurturing_crystal_bedrock",
+      "title": "工作台激活母岩",
+      "text": "八枚仙元环绕一块失活的蕴灵晶母岩，即可在合成台直接激活。它与压缩机配方等价，两条路线任选其一。"
     },
     {
       "type": "patchouli:spotlight",
@@ -71,6 +77,17 @@
       "output_item": "minecraft:budding_amethyst",
       "station_text": "锻灵压缩机 · 每批紫水晶块×1 + 仙元×8",
       "body": "解压器可将紫水晶块拆为4碎片；普通石英块、錾制/柱/砖、平滑与楼梯各拆4石英，半砖拆2。楼梯按切石机可逆材料量计算，避免循环增殖。"
+    },
+    {
+      "type": "immortalstorage:process_recipe",
+      "source_recipe": "immortalstorage:spirit_compression/flawless_budding_quartz",
+      "heading": "无瑕赛特斯石英母岩",
+      "input_item": "ae2:quartz_block",
+      "station_item": "immortalstorage:miniature_immortal_ruin",
+      "output_item": "ae2:flawless_budding_quartz",
+      "station_text": "锻灵压缩机 · 每批赛特斯石英块×1 + 仙元×8",
+      "body": "安装AE2后，一块赛特斯石英块与八枚仙元可压出一块无瑕赛特斯石英母岩；它培育晶芽时不会受损。未安装AE2时本页与配方都不加载。",
+      "flag": "mod:ae2"
     }
   ]
 }

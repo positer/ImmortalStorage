@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8]
+
+### English
+
+- The crafting table can awaken a Nurturing Crystal Bedrock again: eight Immortal Yuan around one inactive bedrock produce the active block in a single shaped recipe. The compressor keeps its identical batch recipe, so both stations bill the same materials for the same result.
+- With AE2 installed, one Certus Quartz Block and eight Immortal Yuan compress into one Flawless Budding Certus Quartz, a budding block that never decays while its buds grow. The recipe is gated on AE2, so an installation without it never loads that recipe and neither the compressor nor the recipe viewers list it.
+- Ancient Jade documents both activation routes in English and Simplified Chinese, and its AE2 page appears only when AE2 is installed.
+
+### 简体中文
+
+- 合成台重新可以激活蕴灵晶母岩：八枚仙元环绕一块失活的母岩，一次有序合成即得激活后的方块。压缩机保留同一整批配方，两个工作站的材料与产物完全一致。
+- 安装 AE2 后，一块赛特斯石英块与八枚仙元可在锻灵压缩机中压出一块无瑕赛特斯石英母岩，它培育晶芽时不会受损。该配方以 AE2 为加载条件，未安装时整条配方不存在，压机与配方查看器都不会列出它。
+- 古玉手册以中英双语记录两条激活路线，其中 AE2 页面仅在安装 AE2 时出现。
+
 ## [0.1.7]
 
 ### English

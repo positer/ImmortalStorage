@@ -26,7 +26,13 @@
       "station_item": "immortalstorage:miniature_immortal_ruin",
       "output_item": "immortalstorage:nurturing_crystal_bedrock",
       "station_text": "Spirit Compressor: 1 inactive bedrock + 8 ImmortalPower",
-      "body": "Place both materials in a formed compressor. Blocked output consumes neither. Crafting-table activation is removed."
+      "body": "Place both materials in a formed compressor. Blocked output consumes neither."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:nurturing_crystal_bedrock",
+      "title": "Awaken It at the Crafting Table",
+      "text": "Eight Immortal Yuan around one inactive bedrock awaken a Nurturing Crystal Bedrock right in a crafting table. It yields the same block as the compressor, so either route works."
     },
     {
       "type": "patchouli:spotlight",
@@ -71,6 +77,17 @@
       "output_item": "minecraft:budding_amethyst",
       "station_text": "Spirit Compressor: 1 amethyst block + 8 ImmortalPower",
       "body": "Decompress an amethyst block into 4 shards. Quartz blocks, chiseled/pillar/bricks/smooth variants and stairs return 4 quartz; slabs return 2. Stairs follow the stonecutter ratio to avoid duplication."
+    },
+    {
+      "type": "immortalstorage:process_recipe",
+      "source_recipe": "immortalstorage:spirit_compression/flawless_budding_quartz",
+      "heading": "Flawless Budding Certus Quartz",
+      "input_item": "ae2:quartz_block",
+      "station_item": "immortalstorage:miniature_immortal_ruin",
+      "output_item": "ae2:flawless_budding_quartz",
+      "station_text": "Spirit Compressor: 1 Certus Quartz Block + 8 ImmortalPower",
+      "body": "With AE2 installed, one Certus Quartz Block plus eight Immortal Yuan compress into one Flawless Budding Certus Quartz, which never decays while its buds grow. Without AE2 neither this page nor the recipe is loaded.",
+      "flag": "mod:ae2"
     }
   ]
 }

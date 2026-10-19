@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "III",
+    "IBI",
+    "III"
+  ],
+  "key": {
+    "I": "immortalstorage:immortal_yuan",
+    "B": "immortalstorage:inactive_nurturing_crystal_bedrock"
+  },
+  "result": {
+    "id": "immortalstorage:nurturing_crystal_bedrock",
+    "count": 1
+  }
+}

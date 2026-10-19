@@ -1,6 +1,6 @@
 # ImmortalStorage · 仙藏
 
-**0.1.7 · NeoForge** · [Latest release / 最新发布: 0.1.7](https://github.com/positer/ImmortalStorage/releases/tag/0.1.7) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
+**0.1.8 · NeoForge** · [Latest release / 最新发布: 0.1.8](https://github.com/positer/ImmortalStorage/releases/tag/0.1.8) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
 
@@ -30,6 +30,16 @@ ImmortalStorage is a **cultivation mod for Minecraft** on NeoForge. It takes the
 | 26.1.2 | 26.1.2.94 | 25 |
 
 Install the release JAR that matches your game version in the instance's mods directory, on both client and server, and keep one ImmortalStorage JAR per instance. Patchouli is embedded, so the handbook needs no separate installation. Back up worlds before updating.
+
+### What is new in 0.1.8
+
+| Change | In short |
+| --- | --- |
+| Crafting-table activation | Eight Immortal Yuan around one inactive bedrock awaken a Nurturing Crystal Bedrock in a single shaped recipe. The compressor keeps the same batch recipe, so both stations bill the same materials. |
+| AE2 Flawless Certus Bedrock | With AE2 installed, one Certus Quartz Block plus eight Immortal Yuan compress into a Flawless Budding Certus Quartz, which never decays while its buds grow. The recipe is gated on AE2 and does not exist without it. |
+| Handbook | Ancient Jade documents both activation routes in English and Simplified Chinese; the AE2 page only appears when AE2 is installed. |
+
+The full list is in the [changelog](CHANGELOG.md).
 
 ### What is new in 0.1.7
 
@@ -167,6 +177,16 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 | 26.1.2 | 26.1.2.94 | 25 |
 
 将对应版本的发行 JAR 安装到客户端与服务端实例的 mods 目录，每个实例只保留一个仙藏 JAR。已内置 Patchouli，手册无需另装依赖。更新前请备份世界。
+
+### 0.1.8 新增内容
+
+| 改动 | 简要说明 |
+| --- | --- |
+| 合成台激活 | 八枚仙元环绕一块失活的蕴灵晶母岩，一次有序合成即得激活后的母岩。压缩机保留同一整批配方，两个工作站材料一致。 |
+| AE2 无瑕石英母岩 | 安装 AE2 后，一块赛特斯石英块加八枚仙元可压出一块无瑕赛特斯石英母岩，它培育晶芽时不会受损；该配方以 AE2 为加载条件，未安装时不存在。 |
+| 手册 | 古玉以中英双语记录两条激活路线，AE2 页面仅在安装该模组时出现。 |
+
+完整列表见[更新日志](CHANGELOG.md)。
 
 ### 0.1.7 新增内容
 
