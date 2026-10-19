@@ -21,6 +21,16 @@ public final class ImmortalArtifactItem extends SpiritStaffItem {
         return false;
     }
 
+    /**
+     * The artifact has no durability, so the 1.21.1 table gate (max stack one AND a MAX_DAMAGE component) rejects
+     * it although it is enchantable equipment. Declaring it here is what makes the anvil, other mods and the mod's
+     * own enchantment machine treat it as an enchantable item; 26.1.2 reads DataComponents.ENCHANTABLE instead.
+     */
+    @Override
+    public boolean isEnchantable(ItemStack stack) {
+        return true;
+    }
+
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state,
                              BlockPos pos, LivingEntity miner) {

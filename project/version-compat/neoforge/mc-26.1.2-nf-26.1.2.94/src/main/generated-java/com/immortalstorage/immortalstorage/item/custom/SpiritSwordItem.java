@@ -25,12 +25,9 @@ public class SpiritSwordItem extends com.immortalstorage.immortalstorage.compat.
         super(props.fireResistant().durability(2500).sword(ModItemsTierAccess.SPIRIT_MATERIAL, 0.0F, -2.4F));
     }
 
-    @Override
-    public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
-        return false;
-    }
+    /** Same rule as the staff line: a real enchantability value, no primary-item veto. */
     public int getEnchantmentValue(ItemStack stack) {
-        return 0;
+        return SpiritStaffItem.ENCHANTMENT_VALUE;
     }
 
     @Override

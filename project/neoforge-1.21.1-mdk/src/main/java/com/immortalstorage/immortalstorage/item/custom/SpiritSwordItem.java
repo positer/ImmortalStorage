@@ -26,14 +26,10 @@ public class SpiritSwordItem extends SwordItem {
                 .attributes(SwordItem.createAttributes(ModItemsTierAccess.SPIRIT_MATERIAL, 0.0F, -2.4F)));
     }
 
-    @Override
-    public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
-        return false;
-    }
-
+    /** Same rule as the staff line: a real enchantability value, no primary-item veto. */
     @Override
     public int getEnchantmentValue(ItemStack stack) {
-        return 0;
+        return SpiritStaffItem.ENCHANTMENT_VALUE;
     }
 
     @Override

@@ -2667,6 +2667,37 @@ function Transform-2612([string] $text, [string] $relativePath) {
             throw '26.1.2 generation assertion failed; MiniatureImmortalRuinItem still declares initializeClient.'
         }
     }
+    if ($relativePath -match '[\\/]item[\\/]ModItems\.java$') {
+        # 0.1.7 enchantability: 1.21.1 reads the item's own value (NeoForge item extension) while 26.1.2 reads
+        # DataComponents.ENCHANTABLE.  The canonical helper is a no-op; here its body becomes the component so the
+        # table gate and the enchantment cost both see a positive value.  One exact three-line shape, asserted.
+        # The canonical sources are LF, so the shape is matched with \r?\n rather than the platform newline.
+        $enchantableHelperPattern = 'public static Item\.Properties enchantableValue\(Item\.Properties props, int value\) \{\r?\n        return props;\r?\n    \}'
+        $enchantableComponent = 'public static Item.Properties enchantableValue(Item.Properties props, int value) {' + $newline + '        return props.enchantable(value);' + $newline + '    }'
+        if (-not $enchantableComponent.Contains('.enchantable(value)')) {
+            throw '26.1.2 generation setup failed; the enchantable helper replacement was not built as expected.'
+        }
+        $enchantableHelperMatches = [regex]::Matches($text, $enchantableHelperPattern)
+        if ($enchantableHelperMatches.Count -ne 1) {
+            throw "26.1.2 generation assertion failed; expected 1 enchantableValue helper, found $($enchantableHelperMatches.Count)."
+        }
+        $text = $text.Replace($enchantableHelperMatches[0].Value, $enchantableComponent)
+        $enchantableCallSites = [regex]::Matches($text, [regex]::Escape('enchantableValue(new Item.Properties')).Count
+        if ($enchantableCallSites -ne 5) {
+            throw "26.1.2 generation assertion failed; expected 5 enchantableValue call sites, found $enchantableCallSites."
+        }
+        if ([regex]::Matches($text, [regex]::Escape('return props.enchantable(value);')).Count -ne 1) {
+            throw '26.1.2 generation assertion failed; the enchantable helper does not set the ENCHANTABLE component.'
+        }
+    }
+    if ($relativePath -match '[\\/]item[\\/]custom[\\/]ImmortalArtifactItem\.java$') {
+        # 26.1.2 removed Item#isEnchantable(ItemStack); the ENCHANTABLE component now carries both the gate and the
+        # value, so the 1.21.1 override must not survive into the target tree.
+        $text = [regex]::Replace($text, '(?s)\r?\n    /\*\*\r?\n     \* The artifact has no durability.*?public boolean isEnchantable\(ItemStack stack\) \{\r?\n        return true;\r?\n    \}', '')
+        if ($text.Contains('isEnchantable')) {
+            throw '26.1.2 generation assertion failed; ImmortalArtifactItem still declares isEnchantable after the strip.'
+        }
+    }
     if ($relativePath -match '[\\/]client[\\/]render[\\/]SpiritCompressorParticles\.java$') {
         # 0.1.7: the chain particles take their colour from the machine kind,
         # so the 0.1.6 literal is gone.  Match the new call shape exactly (the

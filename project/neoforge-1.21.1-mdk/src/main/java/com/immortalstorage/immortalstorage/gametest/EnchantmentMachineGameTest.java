@@ -6,15 +6,19 @@ import com.immortalstorage.immortalstorage.block.custom.MiniatureImmortalRuinBlo
 import com.immortalstorage.immortalstorage.block.entity.MiniatureImmortalRuinBlockEntity;
 import com.immortalstorage.immortalstorage.block.entity.RuinMachine;
 import com.immortalstorage.immortalstorage.compressor.EnchantmentStackRules;
+import com.immortalstorage.immortalstorage.enchantment.ModEnchantments;
+import com.immortalstorage.immortalstorage.item.ModItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.Blocks;
@@ -23,6 +27,7 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -148,15 +153,127 @@ public final class EnchantmentMachineGameTest {
                     "the merged set keeps the other book's enchantment");
             helper.assertTrue(inventory.getStackInSlot(0).getCount() == 1 && inventory.getStackInSlot(1).getCount() == 1,
                     "RULING 2: the material is still in the input slots while the product is uncollected");
-            helper.assertTrue(machine.inputsLocked(), "an uncollected product locks the input slots");
+            helper.assertTrue(!machine.inputsLocked(), "RULING 4: the material row stays editable");
+
+            // RULING 4: a material added while the product is uncollected refreshes it in place.
+            Map<ResourceKey<Enchantment>, Integer> third = new LinkedHashMap<>();
+            third.put(Enchantments.UNBREAKING, 5);
+            inventory.insertItem(2, enchantedBook(helper, third), false);
+            ItemStack refreshed = inventory.getStackInSlot(COMPRESSOR_OUTPUT);
+            helper.assertTrue(EnchantmentStackRules.enchantments(refreshed).getLevel(holder(helper, Enchantments.UNBREAKING)) == 5,
+                    "RULING 4: a later material raises the uncollected product's level");
 
             ItemStack taken = inventory.extractItem(COMPRESSOR_OUTPUT, 1, false);
             helper.assertTrue(!taken.isEmpty(), "the product must be takeable");
-            helper.assertTrue(inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(1).isEmpty(),
-                    "taking the product pays the deferred material cost exactly once");
+            helper.assertTrue(inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(1).isEmpty()
+                            && inventory.getStackInSlot(2).isEmpty(),
+                    "taking the product pays the deferred material cost exactly once, for the refreshed inputs");
             helper.assertTrue(!machine.inputsLocked(), "no transaction may survive the take");
             helper.succeed();
         });
+    }
+
+    /**
+     * RULING 5: a shift-click take moves the product out of its slot first and only then calls onTake, so the
+     * take path must never rewrite the product. Rewriting it there duplicated the product on every shift-click.
+     */
+    @GameTest(template = "empty", timeoutTicks = 600)
+    public static void compressorShiftClickTakeDoesNotDuplicateTheProduct(GameTestHelper helper) {
+        buildShell(helper, false, true);
+        Map<ResourceKey<Enchantment>, Integer> book = new LinkedHashMap<>();
+        book.put(Enchantments.SHARPNESS, 3);
+        ItemStackHandler inputs = machine(helper).activeInventory();
+        inputs.insertItem(0, enchantedBook(helper, book), false);
+
+        helper.runAtTickTime(80, () -> {
+            RuinMachine machine = machine(helper);
+            ItemStackHandler inventory = machine.activeInventory();
+            ItemStack product = inventory.getStackInSlot(COMPRESSOR_OUTPUT);
+            helper.assertTrue(!product.isEmpty(), "one book must produce one product");
+
+            // Exactly what SpiritCompressorMenu.quickMoveStack + Slot#onTake do: move out, clear the slot, settle.
+            ItemStack taken = product.copy();
+            inventory.setStackInSlot(COMPRESSOR_OUTPUT, ItemStack.EMPTY);
+            machine.settlePending();
+
+            helper.assertTrue(inventory.getStackInSlot(COMPRESSOR_OUTPUT).isEmpty(),
+                    "RULING 5: a shift-click take must not put the product back");
+            helper.assertTrue(inventory.getStackInSlot(0).isEmpty(),
+                    "RULING 5: and it still pays the material cost once");
+            helper.assertTrue(!taken.isEmpty(), "the player keeps the taken product");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * User ruling B: the mod's own enchantment is an ordinary table enchantment now. The third slot of a
+     * thirty-level table (fifteen bookshelves) always costs 60, the candidate list comes from
+     * #minecraft:in_enchanting_table, and it may land on anything durability-based, this mod's gear included.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void spiritRepairIsOfferedByALevelThirtyTable(GameTestHelper helper) {
+        var enchantments = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Holder<Enchantment> repair = enchantments.getOrThrow(ModEnchantments.SPIRIT_REPAIR);
+        helper.assertTrue(!repair.is(EnchantmentTags.TREASURE), "spirit_repair must not be treasure any more");
+
+        // The table's own candidate pool is #minecraft:in_enchanting_table, not the whole registry.
+        var tablePool = enchantments.getOrThrow(EnchantmentTags.IN_ENCHANTING_TABLE);
+        helper.assertTrue(tablePool.stream().anyMatch(holder -> holder.is(ModEnchantments.SPIRIT_REPAIR)),
+                "spirit_repair must be part of the table's candidate pool");
+        for (ItemStack stack : List.of(new ItemStack(ModItems.SPIRIT_STAFF.get()),
+                new ItemStack(ModItems.IMMORTAL_ARTIFACT.get()), new ItemStack(ModItems.SPIRIT_SWORD.get()),
+                new ItemStack(Items.DIAMOND_SWORD))) {
+            // Third slot with fifteen bookshelves: max(j, 15 * 2), so the cost is 30 or 31.
+            int cost = EnchantmentHelper.getEnchantmentCost(net.minecraft.util.RandomSource.create(), 2, 15, stack);
+            helper.assertTrue(cost >= 30, "a 30-level table's third slot is at least 30, got " + cost);
+            // The offer then needs the item to accept it and the cost to sit inside its window.
+            helper.assertTrue(stack.isPrimaryItemFor(repair), stack + " must be allowed to receive spirit_repair");
+            helper.assertTrue(repair.value().getMinCost(1) <= cost && cost <= repair.value().getMaxCost(1),
+                    stack + " cost " + cost + " must sit inside spirit_repair's cost window");
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The equipment is registered as a genuinely enchantable item, so the anvil and other mods that inspect
+     * enchantment support recognise it. This is the item-side contract the enchantment compressor relies on; it is
+     * deliberately not a compressor-private whitelist.
+     */
+    @GameTest(template = "empty", timeoutTicks = 200)
+    public static void theImmortalEquipmentIsRecognisedAsEnchantable(GameTestHelper helper) {
+        var enchantments = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Holder<Enchantment> mending = enchantments.getOrThrow(Enchantments.MENDING);
+        Holder<Enchantment> sharpness = enchantments.getOrThrow(Enchantments.SHARPNESS);
+        Holder<Enchantment> repair = enchantments.getOrThrow(ModEnchantments.SPIRIT_REPAIR);
+
+        for (ItemStack stack : immortalEquipment()) {
+            helper.assertTrue(stack.isEnchantable(), stack + " must be an enchantable item");
+            helper.assertTrue(stack.getItem().getEnchantmentValue(stack) > 0,
+                    stack + " must carry a positive enchantability value");
+            helper.assertTrue(stack.supportsEnchantment(mending),
+                    stack + " must accept a durability enchantment like the anvil expects");
+            helper.assertTrue(stack.supportsEnchantment(repair),
+                    stack + " must accept the mod's own enchantment");
+        }
+        for (ItemStack sword : List.of(new ItemStack(ModItems.SPIRIT_SWORD.get()),
+                new ItemStack(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get()),
+                new ItemStack(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get()))) {
+            helper.assertTrue(sword.supportsEnchantment(sharpness), sword + " must be recognised as a sword");
+        }
+        ItemStack staff = new ItemStack(ModItems.SPIRIT_STAFF.get());
+        helper.assertTrue(com.immortalstorage.immortalstorage.compressor.EnchantmentStackRules.acceptsCarrier(staff),
+                "the enchantment compressor must accept the spirit instrument without a private whitelist");
+        helper.assertTrue(com.immortalstorage.immortalstorage.compressor.EnchantmentStackRules.acceptsCarrier(
+                        new ItemStack(ModItems.IMMORTAL_ARTIFACT.get())),
+                "the enchantment compressor must accept the immortal artifact without a private whitelist");
+        helper.succeed();
+    }
+
+    private static List<ItemStack> immortalEquipment() {
+        return List.of(new ItemStack(ModItems.SPIRIT_STAFF.get()), new ItemStack(ModItems.IMMORTAL_ARTIFACT.get()),
+                new ItemStack(ModItems.SPIRIT_SWORD.get()),
+                new ItemStack(ModItems.IMMORTAL_RUIN_FORGED_SPIRIT_SWORD.get()),
+                new ItemStack(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get()));
     }
 
     /**

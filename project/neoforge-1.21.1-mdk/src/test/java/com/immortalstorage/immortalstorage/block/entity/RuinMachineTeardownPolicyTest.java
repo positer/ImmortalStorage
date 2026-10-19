@@ -34,7 +34,7 @@ final class RuinMachineTeardownPolicyTest {
         ruin.enchanter().inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2),
                 EnchantmentTestSupport.enchantment("minecraft:sharpness"), 5));
         ruin.enchanter().runCycle();
-        assertTrue(ruin.enchanter().inputsLocked());
+        assertFalse(ruin.enchanter().inputsLocked(), "RULING 4: the material row is never locked");
         assertFalse(ruin.enchanter().inventory.getStackInSlot(12).isEmpty());
     }
 
@@ -46,8 +46,7 @@ final class RuinMachineTeardownPolicyTest {
         ruin.applyKindTransition(RuinMachineKind.ENCHANTMENT, null, ejected::add);
 
         assertTrue(ejected.isEmpty(), "a lost shell keeps its caches inside the block");
-        assertFalse(ruin.enchanter().inputsLocked(), "a stranded product must not stay pending");
-        assertTrue(ruin.enchanter().inventory.getStackInSlot(12).isEmpty(), "it is voided instead");
+        assertTrue(ruin.enchanter().inventory.getStackInSlot(12).isEmpty(), "the uncollected product is voided instead");
         assertEquals(2, ruin.enchanter().inventory.getStackInSlot(0).getCount(), "and the material stays put");
     }
 
@@ -116,7 +115,6 @@ final class RuinMachineTeardownPolicyTest {
         assertEquals(2, ejected.size());
         assertSame(ruin.compressor(), ejected.get(0));
         assertSame(ruin.enchanter(), ejected.get(1));
-        assertFalse(ruin.enchanter().inputsLocked());
         assertTrue(ruin.enchanter().inventory.getStackInSlot(12).isEmpty());
         assertEquals(2, ruin.enchanter().inventory.getStackInSlot(0).getCount());
     }

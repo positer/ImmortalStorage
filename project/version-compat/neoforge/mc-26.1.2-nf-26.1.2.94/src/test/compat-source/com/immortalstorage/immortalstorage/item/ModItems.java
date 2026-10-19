@@ -59,6 +59,16 @@ public final class ModItems {
         };
     }
 
+
+    /**
+     * 1.21.1 keeps enchantability in the item's own value (the NeoForge item extension). 26.1.2 reads
+     * DataComponents.ENCHANTABLE, so the generator rewrites this body to {@code props.enchantable(value)} on the
+     * target line and asserts it; both lines therefore register the same enchantable equipment.
+     */
+    public static Item.Properties enchantableValue(Item.Properties props, int value) {
+        return props.enchantable(value);
+    }
+
     public static <T extends Item> Supplier<T> registerItem(String name, Function<Item.Properties, T> func) {
         return registerItem(name, func, new Item.Properties());
     }
@@ -121,18 +131,24 @@ public final class ModItems {
     public static final Supplier<Item> GREAT_THOUSAND_WORLD_PARALLEL_EDICT = registerItem(
             "great_thousand_world_parallel_edict", p -> new ReinforcementPluginItem(p, 256));
 
-    public static final Supplier<Item> SPIRIT_SWORD = registerItem("spirit_sword", SpiritSwordItem::new);
+    public static final Supplier<Item> SPIRIT_SWORD = registerItem("spirit_sword", SpiritSwordItem::new,
+            enchantableValue(new Item.Properties(), SpiritStaffItem.ENCHANTMENT_VALUE));
     public static final Supplier<Item> IMMORTAL_RUIN_FORGED_SPIRIT_SWORD = registerItem(
-            "immortal_ruin_forged_spirit_sword", ImmortalRuinForgedSpiritSwordItem::new);
+            "immortal_ruin_forged_spirit_sword", ImmortalRuinForgedSpiritSwordItem::new,
+            enchantableValue(new Item.Properties(), SpiritStaffItem.ENCHANTMENT_VALUE));
     public static final Supplier<Item> ONE_QI_RETURNING_ORIGIN_SWORD = registerItem(
-            "one_qi_returning_origin_sword", OneQiReturningOriginSwordItem::new);
+            "one_qi_returning_origin_sword", OneQiReturningOriginSwordItem::new,
+            enchantableValue(new Item.Properties(), SpiritStaffItem.ENCHANTMENT_VALUE));
     public static final Supplier<Item> SOUL_CATCHER = registerItem(
             "soul_catcher", SoulCatcherItem::new, new Item.Properties().stacksTo(1));
     public static final Supplier<Item> SPIRIT_STAFF = registerItem("spirit_staff", SpiritStaffItem::new,
-            new Item.Properties().attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)));
+            enchantableValue(new Item.Properties()
+                    .attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)),
+                    SpiritStaffItem.ENCHANTMENT_VALUE));
     public static final Supplier<Item> IMMORTAL_ARTIFACT = registerItem("immortal_artifact", ImmortalArtifactItem::new,
-            new Item.Properties().fireResistant()
-                    .attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)));
+            enchantableValue(new Item.Properties().fireResistant()
+                    .attributes(com.immortalstorage.immortalstorage.compat.mc2612.CompatWeaponAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)),
+                    SpiritStaffItem.ENCHANTMENT_VALUE));
     public static final Supplier<Item> SPIRIT_DRIVE = registerItem("spirit_drive", SpiritDriveItem::new);
     public static final Supplier<Item> XIANQIAO_EXCHANGE_CELL = registerItem(
             "xianqiao_exchange_cell", XianqiaoExchangeCellItem::new);

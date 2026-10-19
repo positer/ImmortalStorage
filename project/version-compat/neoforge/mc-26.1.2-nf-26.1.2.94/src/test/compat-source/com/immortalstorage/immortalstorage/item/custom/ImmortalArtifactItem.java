@@ -21,6 +21,7 @@ public final class ImmortalArtifactItem extends SpiritStaffItem {
         return false;
     }
 
+
     @Override
     public boolean mineBlock(ItemStack stack, Level level, BlockState state,
                              BlockPos pos, LivingEntity miner) {

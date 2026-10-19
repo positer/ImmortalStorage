@@ -33,12 +33,16 @@ public interface RuinMachine {
     void discardPending();
     void placedBy(UUID id);
     UUID owner();
-    /** True while a deferred transaction keeps the input slots from being emptied by hand. */
+    /**
+     * Ruling 2026-10-19: no machine locks its material row. An uncollected product always mirrors the current
+     * inputs, so material can be inserted or removed at any time and a take bills exactly what it came from.
+     * The hook stays so the menu keeps reading the machine its slots were built from.
+     */
     boolean inputsLocked();
     /**
-     * A slot is locked by the machine instance the caller holds, never by whatever the world reports now:
-     * a kind change only discards on the core's next tick, and mid-menu that gap would otherwise unlock the
-     * inputs while the product is still uncollected.
+     * A slot is resolved on the machine instance the caller holds, never on whatever the world reports now:
+     * a kind change only discards on the core's next tick, and mid-menu that gap would otherwise settle
+     * against the wrong machine.
      */
     default boolean locksSlot(int slot) { return slot < inputEnd() && inputsLocked(); }
     String titleKey();

@@ -68,23 +68,40 @@ final class EnchantmentMachineLogicTest {
         assertEquals(1, decompressor.outputStart());
     }
 
-    @Test void aCycleProducesOnceAndRefusesToProduceWhileTheProductIsUncollected() {
+    @Test void aCycleProducesOnceAndTheUncollectedProductFollowsTheInputs() {
         var logic = machine(false);
         var sharpness = EnchantmentTestSupport.enchantment("minecraft:sharpness");
+        var unbreaking = EnchantmentTestSupport.enchantment("minecraft:unbreaking");
         logic.inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2), sharpness, 5));
 
         logic.runCycle();
-        assertTrue(logic.inputsLocked());
+        assertFalse(logic.inputsLocked(), "RULING 4: the material row stays editable");
         assertTrue(logic.inventory.getStackInSlot(12).is(Items.DIAMOND_SWORD));
-        assertEquals(5, logic.inventory.getStackInSlot(12).get(DataComponents.ENCHANTMENTS).getLevel(sharpness));
+        assertEquals(5, EnchantmentStackRules.enchantments(logic.inventory.getStackInSlot(12)).getLevel(sharpness));
         assertEquals(2, logic.inventory.getStackInSlot(0).getCount(), "the cost is deferred, not paid on production");
 
         logic.runCycle();
-        assertEquals(2, logic.inventory.getStackInSlot(0).getCount(), "a pending transaction must block the next cycle");
-        assertTrue(logic.inputsLocked());
+        assertEquals(2, logic.inventory.getStackInSlot(0).getCount(), "a pending product must block the next cycle");
 
+        // RULING 4: a later material refreshes the uncollected product in place and still pays nothing.
+        logic.inventory.setStackInSlot(1, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD), unbreaking, 2));
+        var refreshed = logic.inventory.getStackInSlot(12);
+        assertEquals(5, EnchantmentStackRules.enchantments(refreshed).getLevel(sharpness));
+        assertEquals(2, EnchantmentStackRules.enchantments(refreshed).getLevel(unbreaking),
+                "the uncollected product must follow the current materials");
+        assertEquals(2, logic.inventory.getStackInSlot(0).getCount(), "the refresh deducts nothing");
+
+        // Removing that material refreshes back, and removing everything leaves an empty product row.
+        logic.inventory.setStackInSlot(1, ItemStack.EMPTY);
+        assertEquals(0, EnchantmentStackRules.enchantments(logic.inventory.getStackInSlot(12)).getLevel(unbreaking));
+        logic.inventory.setStackInSlot(0, ItemStack.EMPTY);
+        assertTrue(logic.inventory.getStackInSlot(12).isEmpty(), "no materials produce no product, and nothing is owed");
+
+        // Feeding it again produces again, and the take bills whatever the product was last made from.
+        logic.inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2), sharpness, 5));
+        logic.runCycle();
+        assertEquals(2, logic.inventory.getStackInSlot(0).getCount());
         logic.inventory.extractItem(12, 1, false);
-        assertFalse(logic.inputsLocked());
         assertEquals(1, logic.inventory.getStackInSlot(0).getCount());
         logic.runCycle();
         assertTrue(logic.inventory.getStackInSlot(12).is(Items.DIAMOND_SWORD), "collection releases the next cycle");
@@ -97,7 +114,8 @@ final class EnchantmentMachineLogicTest {
         logic.inventory.setStackInSlot(1, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2), sharpness, 4));
         logic.inventory.setStackInSlot(2, EnchantmentTestSupport.enchanted(new ItemStack(Items.IRON_SWORD, 3), sharpness, 2));
         logic.runCycle();
-        assertTrue(logic.inputsLocked());
+        assertFalse(logic.inputsLocked(), "RULING 4: the material row stays editable");
+        assertFalse(logic.inventory.getStackInSlot(12).isEmpty());
 
         logic.inventory.extractItem(12, 1, false);
         assertFalse(logic.inputsLocked());
@@ -112,11 +130,12 @@ final class EnchantmentMachineLogicTest {
         var sharpness = EnchantmentTestSupport.enchantment("minecraft:sharpness");
         logic.inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2), sharpness, 5));
         logic.runCycle();
-        assertTrue(logic.inputsLocked());
+        assertFalse(logic.inputsLocked(), "RULING 4: the material row stays editable");
+        assertFalse(logic.inventory.getStackInSlot(12).isEmpty());
 
         // What structure loss, polarity switch, kind switch, wrench pick-up, break and ejectCaches call.
         logic.discardPending();
-        assertFalse(logic.inputsLocked());
+        assertTrue(logic.inventory.getStackInSlot(12).isEmpty());
         assertTrue(logic.inventory.getStackInSlot(12).isEmpty(), "the uncollected product must not exist anywhere");
         assertEquals(2, logic.inventory.getStackInSlot(0).getCount(), "the material was never produced, so it is not charged");
         assertEquals(5, EnchantmentStackRules.enchantments(logic.inventory.getStackInSlot(0)).getLevel(sharpness),
@@ -142,7 +161,7 @@ final class EnchantmentMachineLogicTest {
         assertTrue(logic.decompressionInventory.getStackInSlot(3).is(Items.DIAMOND_SWORD));
     }
 
-    @Test void aCapturedMachineKeepsItsInputLockAfterTheWorldSwitchesKind() {
+    @Test void aCapturedMachineSettlesItsOwnInventoryAcrossAKindSwitch() {
         // A kind change only discards on the core's next tick, so in that gap the world already reports the
         // other machine while the open menu still settles against the captured one.
         var ruin = new MiniatureImmortalRuinBlockEntity(BlockPos.ZERO, ModBlocks.MINIATURE_IMMORTAL_RUIN.get().defaultBlockState());
@@ -150,12 +169,13 @@ final class EnchantmentMachineLogicTest {
         captured.inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2),
                 EnchantmentTestSupport.enchantment("minecraft:sharpness"), 5));
         captured.runCycle();
-        assertTrue(captured.locksSlot(0), "the captured machine still owes its material cost");
+        assertFalse(captured.locksSlot(0), "RULING 4: no machine locks its material row");
         assertFalse(captured.locksSlot(12), "the product slot itself stays takeable");
 
         assertSame(ruin.compressor(), ruin.machine(), "without a world the controller already reports the other family");
-        assertFalse(ruin.machine().locksSlot(0), "the freshly resolved machine would hand out the inputs for free");
-        assertTrue(captured.locksSlot(0), "so the lock must be read from the machine the menu was built with");
+        captured.settlePending();
+        assertEquals(1, captured.inventory.getStackInSlot(0).getCount(),
+                "the captured machine must bill its own inventory, not the one the world reports now");
     }
 
     @Test void aBookIsNeverTheCarrierSoTheLowestNonBookItemReceivesTheMerge() {
@@ -201,7 +221,7 @@ final class EnchantmentMachineLogicTest {
         logic.decompressionInventory.setStackInSlot(0, input);
 
         logic.runCycle();
-        assertTrue(logic.inputsLocked());
+        assertFalse(logic.inputsLocked(), "RULING 4: the carrier slot stays editable");
         assertEquals("minecraft:sharpness", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(1)));
         assertEquals("minecraft:unbreaking", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(2)));
         assertTrue(logic.decompressionInventory.getStackInSlot(3).isEmpty(), "the spent book is consumed, never returned");
@@ -209,6 +229,69 @@ final class EnchantmentMachineLogicTest {
         logic.decompressionInventory.extractItem(1, 1, false);
         assertFalse(logic.inputsLocked());
         assertTrue(logic.decompressionInventory.getStackInSlot(0).isEmpty(), "the book is spent by the split");
+    }
+
+    /**
+     * RULING 5: the menu's shift-click takes the product out first (it clears the source slot) and only then
+     * calls onTake, so the take path must never write the product back. Rewriting it here duplicated the product.
+     */
+    @Test void aShiftClickStyleTakeNeverPutsTheProductBack() {
+        var logic = machine(false);
+        var sharpness = EnchantmentTestSupport.enchantment("minecraft:sharpness");
+        logic.inventory.setStackInSlot(0, EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD, 2), sharpness, 5));
+        logic.runCycle();
+        assertFalse(logic.inventory.getStackInSlot(12).isEmpty());
+
+        // Exactly what SpiritCompressorMenu.quickMoveStack + Slot#onTake do for the product row.
+        ItemStack moved = logic.inventory.getStackInSlot(12).copy();
+        logic.inventory.setStackInSlot(12, ItemStack.EMPTY);
+        logic.settlePending();
+
+        assertTrue(logic.inventory.getStackInSlot(12).isEmpty(), "a shift-click take must not re-create the product");
+        assertEquals(1, logic.inventory.getStackInSlot(0).getCount(), "and it still pays the material cost once");
+        assertTrue(logic.inventory.extractItem(12, 1, false).isEmpty(), "nothing is left to take twice");
+        assertTrue(!moved.isEmpty());
+    }
+
+    @Test void aNumberKeySwapStyleTakeAlsoPaysOnceAndLeavesNoCopy() {
+        var logic = machine(true);
+        var sharpness = EnchantmentTestSupport.enchantment("minecraft:sharpness");
+        var unbreaking = EnchantmentTestSupport.enchantment("minecraft:unbreaking");
+        var input = EnchantmentTestSupport.enchanted(new ItemStack(Items.DIAMOND_SWORD), sharpness, 5);
+        EnchantmentTestSupport.enchanted(input, unbreaking, 3);
+        logic.decompressionInventory.setStackInSlot(0, input);
+        logic.runCycle();
+
+        // Slot#setByPlayer + onTake on the first book of the split.
+        ItemStack book = logic.decompressionInventory.getStackInSlot(1).copy();
+        logic.decompressionInventory.setStackInSlot(1, ItemStack.EMPTY);
+        logic.settlePending();
+
+        assertTrue(logic.decompressionInventory.getStackInSlot(1).isEmpty(), "the taken book must not come back");
+        assertTrue(logic.decompressionInventory.getStackInSlot(0).isEmpty(), "the carrier is spent exactly once");
+        assertTrue(logic.decompressionInventory.getStackInSlot(2).is(Items.ENCHANTED_BOOK),
+                "the other split books stay for the player");
+        assertTrue(!book.isEmpty());
+    }
+
+    @Test void swappingTheDecompressorCarrierRefreshesTheWholeOutputRow() {
+        var logic = machine(true);
+        var sharpness = EnchantmentTestSupport.enchantment("minecraft:sharpness");
+        var unbreaking = EnchantmentTestSupport.enchantment("minecraft:unbreaking");
+        logic.decompressionInventory.setStackInSlot(0,
+                EnchantmentTestSupport.enchanted(new ItemStack(Items.ENCHANTED_BOOK), sharpness, 5));
+        logic.runCycle();
+        assertEquals("minecraft:sharpness", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(1)));
+
+        logic.decompressionInventory.setStackInSlot(0,
+                EnchantmentTestSupport.enchanted(new ItemStack(Items.ENCHANTED_BOOK), unbreaking, 3));
+        assertEquals("minecraft:unbreaking", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(1)),
+                "RULING 4: the split follows the current carrier");
+        assertTrue(logic.decompressionInventory.getStackInSlot(2).isEmpty(), "the stale second book is gone");
+        assertEquals(1, logic.decompressionInventory.getStackInSlot(0).getCount(), "the refresh still deducts nothing");
+
+        logic.decompressionInventory.extractItem(1, 1, false);
+        assertTrue(logic.decompressionInventory.getStackInSlot(0).isEmpty(), "the take spends the swapped-in carrier");
     }
 
     /** Item components holding enchantment holders need the datapack registry, so this proof uses plain stacks. */
@@ -232,12 +315,9 @@ final class EnchantmentMachineLogicTest {
         armed.putIntArray("EnchantMachinePendingConsume", consume);
         armed.putByteArray("EnchantMachinePendingStrip", pack(strip));
         logic.load(armed, registries);
-        assertTrue(logic.inputsLocked(), "a loaded pending record must block the next cycle");
         assertEquals(2, logic.inventory.getStackInSlot(0).getCount());
-        logic.runCycle();
-        assertTrue(logic.inputsLocked());
-        assertTrue(logic.inventory.getStackInSlot(12).is(Items.BOOK), "no second product while one is uncollected");
-        assertEquals(2, logic.inventory.getStackInSlot(0).getCount());
+        assertTrue(logic.inventory.getStackInSlot(12).is(Items.BOOK), "a loaded pending product is restored as it was");
+        assertFalse(logic.inputsLocked(), "RULING 4: a restored record never locks the material row");
 
         CompoundTag resaved = new CompoundTag();
         logic.save(resaved, registries);
@@ -246,13 +326,11 @@ final class EnchantmentMachineLogicTest {
 
         var reloaded = machine(false);
         reloaded.load(resaved, registries);
-        assertTrue(reloaded.inputsLocked(), "dropping the pending record would hand out a free product");
         assertEquals(2, reloaded.inventory.getStackInSlot(0).getCount());
         assertEquals(3, reloaded.inventory.getStackInSlot(5).getCount());
         assertTrue(reloaded.inventory.getStackInSlot(12).is(Items.BOOK));
 
         reloaded.inventory.extractItem(12, 1, false);
-        assertFalse(reloaded.inputsLocked());
         assertEquals(1, reloaded.inventory.getStackInSlot(0).getCount(), "the take pays the material cost recorded before the reload");
         assertEquals(3, reloaded.inventory.getStackInSlot(5).getCount());
     }
@@ -272,7 +350,7 @@ final class EnchantmentMachineLogicTest {
         logic.decompressionInventory.setStackInSlot(0, input);
 
         logic.runCycle();
-        assertTrue(logic.inputsLocked());
+        assertFalse(logic.inputsLocked(), "RULING 4: the carrier slot stays editable");
         assertEquals("minecraft:sharpness", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(1)));
         assertEquals("minecraft:unbreaking", EnchantmentTestSupport.singleName(logic.decompressionInventory.getStackInSlot(2)));
         assertTrue(logic.decompressionInventory.getStackInSlot(3).is(Items.DIAMOND_SWORD));

@@ -1,0 +1,27 @@
+{
+  "name": "Spirit Repair",
+  "icon": "minecraft:enchanted_book",
+  "category": "immortalstorage:equipment",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Spirit Repair$() is this mod's own enchantment. It has a single level and no level scaling: one level is the whole effect. Any item that uses durability can carry it, so it is not tied to ImmortalStorage equipment."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What it does",
+      "text": "While a Spirit Repair item is worn or held, spending $(thing)Immortal Yuan$() also feeds the item: the enchantment converts part of that spending into durability, so tools and blades keep working without an anvil. Repairs happen only where Immortal Yuan is really consumed, so the effect follows your cultivation, not a timer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "How to get it",
+      "text": "Spirit equipment is born with it: the first time a Spirit Instrument or a spirit sword is obtained it already carries Spirit Repair. It is also an ordinary enchantment: it can be rolled at the $(thing)enchanting table$() (thirty levels and fifteen bookshelves can offer it), bought from villagers, or found as loot."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Enchanting it",
+      "text": "The table offers Spirit Repair on anything durability-based, including vanilla gear. On this mod's equipment it behaves like the equivalent netherite item: the Spirit Instrument follows the pickaxe line and the spirit swords follow the sword line, so the usual tool and weapon enchantments may appear next to it."
+    }
+  ]
+}

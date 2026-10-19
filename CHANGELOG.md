@@ -10,6 +10,10 @@
 - The Enchantment Compressor treats books, enchanted ones and plain ones alike, as materials only. Books alone merge into a single enchanted book; with an item present, every enchantment moves onto the first non-book item and the remaining items are disenchanted where they stand. Enchantment conflicts are ignored and a repeated enchantment keeps its highest level.
 - The Enchantment Decompressor splits one composite enchanted book or enchanted item into single-enchantment books: up to eleven in a fixed order, with any leftover enchantments staying on the carrier. An item is always handed back, while a book carrier is spent and never returned as a plain book.
 - The Ancient Jade handbook documents the structure, the slot behaviour, the merge and split rules and the deferred material cost in English and Simplified Chinese.
+- A product that has not been taken yet now follows the material slots: placing or removing material refreshes the output immediately, so the machine always shows what its current contents make, and a take still pays the cost once for the product it came from.
+- Fixed a duplication where taking a product with shift-click left a second copy inside the machine.
+- The Spirit Instrument, the Immortal Artifact and the three spirit swords are ordinary enchantable items now: the enchantment compressor accepts them as carriers, and enchanting tables, anvils and other mods recognise them the same way they recognise the netherite tool and sword lines they follow.
+- Spirit Repair is a standard enchanting-table offer now: thirty levels with fifteen bookshelves can offer it on anything durability-based, including vanilla gear, while it keeps its other sources — granted on the equipment the first time it is made, librarian trades and loot. The handbook documents it in both languages.
 
 ### 简体中文
 
@@ -19,6 +23,10 @@
 - 附魔压缩机把书（附魔书与普通书）一律当作材料。只有书时整合为一本附魔书；存在物品时，全部附魔转移到序号最小的非书物品上，其余物品在原地被清除附魔。合并无视附魔冲突，同名附魔取最高等级。
 - 附魔解压器把一本复合附魔书或一件附魔物品拆成单附魔书：按固定顺序最多拆出十一本，未拆完的附魔留在载体上。物品载体始终返还，书作为载体则被消耗，不会返还普通书。
 - 古玉指导书以中英双语记录结构、槽位行为、合并与拆分规则以及延迟扣料。
+- 未取走的产物现在跟随材料槽：放入或取出材料都会立刻刷新产物槽，机器始终显示当前材料能做出的结果；取走时仍按这份产物只扣一次材料。
+- 修复使用 Shift 点击取走产物时会复制出一份产物的缺陷。
+- 灵器、仙器与三把灵剑现在是普通的可附魔物品：附魔压缩机可以把它们作为载体放入，附魔台、铁砧与其他模组也按它们所对应的下界工具与剑线来识别。
+- 灵气修复成为标准的附魔台附魔：30 级、15 个书架即可把它提供在任何以耐久为基础的物品上（含原版装备），同时保留原有的其它获取方式——装备首次制成时自带、图书管理员交易与战利品。古玉手册以中英双语记录它。
 
 ## [0.1.6]
 

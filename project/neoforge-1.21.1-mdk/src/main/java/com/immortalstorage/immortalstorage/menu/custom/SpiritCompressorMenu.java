@@ -22,9 +22,9 @@ public final class SpiritCompressorMenu extends AbstractContainerMenu implements
     /** The title key of the bound machine, kind and polarity included. */
     public String titleKey() { return machine == null ? "container.immortalstorage.spirit_compressor" : machine.titleKey(); }
     /**
-     * A pending deferred transaction keeps the machine's own inputs in place, and the check must read the
-     * machine these slots were built from: re-deriving it from the world would unlock the inputs in the gap
-     * between a kind change and the core's next tick, while settleOutput would still bill the captured one.
+     * No machine locks its material row any more (ruling 2026-10-19: the product follows the inputs), but the
+     * gate still reads the machine these slots were built from: re-deriving it from the world would settle the
+     * wrong machine in the gap between a kind change and the core's next tick.
      */
     private boolean lockedInput(int slot) {
         return machine != null && machine.locksSlot(slot);
@@ -43,20 +43,15 @@ public final class SpiritCompressorMenu extends AbstractContainerMenu implements
         reversed = machine != null && machine.reversed();
         kind = ruin == null ? null : ruin.machineKind();
         var handler = ruin == null || inventory.player.level().isClientSide ? new ItemStackHandler(13) : machine.activeInventory();
+        boolean serverSide = ruin != null && ruin.getLevel() != null && !ruin.getLevel().isClientSide;
         if (reversed) {
             addSlot(new SlotItemHandler(handler, 0, 26, 46) { @Override public boolean mayPickup(Player player) { return !lockedInput(index); } });
-            for (int i = 0; i < 12; i++) addSlot(new SlotItemHandler(handler, i + 1, 98 + i % 4 * 18, 28 + i / 4 * 18) {
-                @Override public boolean mayPlace(ItemStack stack) { return false; }
-                @Override public void onTake(Player player, ItemStack stack) { super.onTake(player, stack); settleOutput(player); }
-            });
+            for (int i = 0; i < 12; i++) addSlot(productSlot(handler, i + 1, 98 + i % 4 * 18, 28 + i / 4 * 18, serverSide));
         } else {
             for (int i = 0; i < 12; i++) addSlot(new SlotItemHandler(handler, i, 8 + i % 4 * 18, 28 + i / 4 * 18) {
                 @Override public boolean mayPickup(Player player) { return !lockedInput(index); }
             });
-            addSlot(new SlotItemHandler(handler, 12, 134, 46) {
-                @Override public boolean mayPlace(ItemStack stack) { return false; }
-                @Override public void onTake(Player player, ItemStack stack) { super.onTake(player, stack); settleOutput(player); }
-            });
+            addSlot(productSlot(handler, 12, 134, 46, serverSide));
         }
         for (int i = 0; i < 27; i++) addSlot(new Slot(inventory, i + 9, 8 + i % 9 * 18, 100 + i / 9 * 18));
         for (int i = 0; i < 9; i++) addSlot(new Slot(inventory, i, 8 + i * 18, 158));
@@ -77,6 +72,25 @@ public final class SpiritCompressorMenu extends AbstractContainerMenu implements
         if (id >= 0 && id < 6) { machine.cycle(id); return true; }
         if (id == 6) { machine.toggleXianqiao(); return true; } return false;
     }
+    /**
+     * A product-row slot. The machine writes its product straight into the handler, so the slot itself must never
+     * accept a stack from a container action: vanilla already blocks number-key swaps through mayPlace, but the
+     * creative set-slot packet and other mods write through Slot#set / setByPlayer and bypass it. On the server such
+     * writes are dropped for anything non-empty; the client still receives the server's product so the row renders,
+     * and clearing a taken product stays allowed.
+     */
+    private SlotItemHandler productSlot(ItemStackHandler handler, int index, int x, int y, boolean serverSide) {
+        return new SlotItemHandler(handler, index, x, y) {
+            @Override public boolean mayPlace(ItemStack stack) { return false; }
+            @Override public void set(ItemStack stack) { if (!serverSide || stack.isEmpty()) super.set(stack); }
+            @Override public void setByPlayer(ItemStack stack) { if (!serverSide || stack.isEmpty()) super.setByPlayer(stack); }
+            @Override public void setByPlayer(ItemStack stack, ItemStack previous) {
+                if (!serverSide || stack.isEmpty()) super.setByPlayer(stack, previous);
+            }
+            @Override public void onTake(Player player, ItemStack stack) { super.onTake(player, stack); settleOutput(player); }
+        };
+    }
+
     @Override public ItemStack quickMoveStack(Player player, int index) {
         if (index < 0 || index >= slots.size()) return ItemStack.EMPTY;
         Slot slot = slots.get(index); if (!slot.hasItem() || lockedInput(index)) return ItemStack.EMPTY;

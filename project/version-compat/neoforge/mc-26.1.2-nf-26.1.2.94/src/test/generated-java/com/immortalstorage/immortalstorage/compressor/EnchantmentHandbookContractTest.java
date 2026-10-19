@@ -187,8 +187,10 @@ final class EnchantmentHandbookContractTest {
                 "Direct Xianqiao output writes products into the placer's Xianqiao in the same tick");
         assertRule(chinese, english, "只有真正取走产物才扣料",
                 "Materials are deducted only when the result is taken");
-        assertRule(chinese, english, "输入槽在服务端拒绝手动取出",
-                "its input slots refuse manual pickup on the server");
+        assertRule(chinese, english, "输入槽随时可以放入或取出材料",
+                "the material row stays editable");
+        assertRule(chinese, english, "立即把产物槽刷新成当前材料的结果",
+                "refreshes the output row to what the current inputs produce");
         assertRule(chinese, english, "破坏方块会作废产物且不掉落",
                 "Breaking the block voids the product and nothing drops");
         assertRule(chinese, english, "材料原样留在输入槽并随方块掉落在地面",

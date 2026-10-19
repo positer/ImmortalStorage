@@ -86,12 +86,15 @@ public class SpiritStaffItem extends com.immortalstorage.immortalstorage.compat.
         super(immortalArtifact ? props.stacksTo(1) : props.durability(3000));
     }
 
-    @Override
-    public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
-        return false;
-    }
+    /**
+     * Enchantability of the spirit and immortal equipment. It is a real value here, not a compressor whitelist: the
+     * anvil, the enchanting table, other mods' enchantment behaviour and the mod's own enchantment machines all
+     * judge the item by isEnchantable / this value. Which enchantments may land on it is decided by the vanilla item
+     * tags through supportsEnchantment below, with no primary-item veto.
+     */
+    public static final int ENCHANTMENT_VALUE = 30;
     public int getEnchantmentValue(ItemStack stack) {
-        return 0;
+        return ENCHANTMENT_VALUE;
     }
 
     @Override

@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,7 +23,9 @@ final class SpiritRepairResourceTest {
         assertEquals("#minecraft:enchantable/durability",
                 enchantment.get("supported_items").getAsString());
         assertTagContains("tradeable");
-        assertTagContains("treasure");
+        // User ruling B (2026-10-19): the enchantment is an ordinary table enchantment now, not treasure.
+        assertTagContains("in_enchanting_table");
+        assertTagNotContains("treasure");
         assertCraftResult("spirit_sword");
         assertCraftResult("spirit_staff");
         assertMainSourceContains("item/ModCreativeTabs.java", "EnchantedBookItem.createForEnchantment");
@@ -59,6 +62,18 @@ final class SpiritRepairResourceTest {
             }
         }
         assertTrue(found, path);
+    }
+
+    private static void assertTagNotContains(String tag) throws Exception {
+        String path = "data/minecraft/tags/enchantment/" + tag + ".json";
+        for (var url : Collections.list(SpiritRepairResourceTest.class.getClassLoader().getResources(path))) {
+            try (InputStream in = url.openStream();
+                 InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                assertFalse(json.getAsJsonArray("values").asList().stream()
+                        .anyMatch(value -> "immortalstorage:spirit_repair".equals(value.getAsString())), path);
+            }
+        }
     }
 
     private static JsonObject json(String path) throws Exception {

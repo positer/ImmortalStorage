@@ -1,6 +1,6 @@
 # ImmortalStorage · 仙藏
 
-**0.1.7 (development) · NeoForge** · [Latest release / 最新发布: 0.1.6](https://github.com/positer/ImmortalStorage/releases/tag/0.1.6) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
+**0.1.7 · NeoForge** · [Latest release / 最新发布: 0.1.7](https://github.com/positer/ImmortalStorage/releases/tag/0.1.7) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
 
@@ -39,6 +39,9 @@ Install the release JAR that matches your game version in the instance's mods di
 | Deferred material cost | The enchantment machines deduct their materials only when the product is taken out. Tearing the structure down, swapping the top block, reversing the core or breaking the block voids the uncollected product instead, so nothing drops and the materials stay in the machine. |
 | Enchantment Compressor | Books, plain and enchanted alike, are materials only. Books alone merge into a single enchanted book; with an item present every enchantment moves onto the lowest-numbered non-book item and the other items are disenchanted where they stand. Conflicts are ignored and a repeated enchantment keeps its highest level. |
 | Enchantment Decompressor | One composite enchanted book or enchanted item splits into single-enchantment books, up to eleven in a fixed order, with any leftover enchantments staying on the carrier. An item is always handed back; a spent book carrier is not returned as a plain book. |
+| Live output | While a product is uncollected the machine keeps it in step with the material slots: placing or removing material refreshes the output, a take bills it once, and shift-clicking it no longer leaves a copy behind. |
+| Enchantable equipment | The Spirit Instrument, the Immortal Artifact and the three spirit swords are ordinary enchantable items, so the compressor accepts them as carriers and enchanting tables, anvils and other mods treat them like the netherite lines they follow. |
+| Spirit Repair at the table | Spirit Repair can now be rolled at the enchanting table, including on vanilla durability gear, and keeps its other sources: granted when the equipment is first made, librarian trades and loot. Ancient Jade documents it in both languages. |
 | Handbook and particles | Ancient Jade documents both machines in English and Simplified Chinese, and the shared chain particles turn experience-rune green. |
 
 The full list, including the deferred-cost rule and the split ordering, is in the [changelog](CHANGELOG.md).

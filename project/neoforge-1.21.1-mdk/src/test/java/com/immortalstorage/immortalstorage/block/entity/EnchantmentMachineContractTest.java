@@ -37,7 +37,11 @@ final class EnchantmentMachineContractTest {
             assertTrue(logic.contains(key), key);
         assertTrue(logic.contains("transaction.afterExtract(this, slot, EnchantmentCompressionPlan.OUTPUT_SLOT)"));
         assertTrue(logic.contains("transaction.afterExtract(this, slot, EnchantmentDecompressionPlan.OUTPUT_START)"));
-        assertTrue(logic.contains("if (transaction.pending()) return;"));
+        assertTrue(logic.contains("if (transaction.pending()) { refreshPending(); return; }"),
+                "RULING 4: a pending product is refreshed, never frozen");
+        assertTrue(logic.contains("void refreshPending()"));
+        assertTrue(logic.contains("public boolean inputsLocked() { return false; }"),
+                "RULING 4: the material row is never locked");
         assertTrue(logic.contains("if (!current) discardPending();"), "losing the structure voids the uncollected product");
         assertTrue(logic.contains("transaction.discard(activeInventory(), outputStart())"));
         String be = read("block/entity/MiniatureImmortalRuinBlockEntity.java");
@@ -101,7 +105,7 @@ final class EnchantmentMachineContractTest {
         assertTrue(read("client/screen/SpiritCompressorScreen.java").contains("Component.translatable(menu.titleKey())"));
     }
 
-    @Test void theSharedScreenGeometryIsUnchangedAndInputsLockOnlyWhileATransactionIsPending() throws Exception {
+    @Test void theSharedScreenGeometryIsUnchangedAndNoMachineLocksItsMaterialRow() throws Exception {
         String menu = read("menu/custom/SpiritCompressorMenu.java");
         assertTrue(menu.contains("addSlot(new SlotItemHandler(handler, 0, 26, 46)"));
         assertTrue(menu.contains("98 + i % 4 * 18, 28 + i / 4 * 18"));
@@ -110,10 +114,13 @@ final class EnchantmentMachineContractTest {
         assertTrue(menu.contains("private boolean lockedInput(int slot) {"));
         assertTrue(menu.contains("return machine != null && machine.locksSlot(slot);"));
         assertFalse(menu.contains("ruin.machine().inputEnd()"), "the gate must never re-derive the machine from the world (F1)");
-        // Shift-click and the number-key swap replace the slot directly instead of calling extractItem,
-        // so the product slots settle the deferred cost themselves as well.
-        assertEquals(2, menu.split("super.onTake\\(player, stack\\); settleOutput\\(player\\);", -1).length - 1,
-                "both output rows settle a container take");
+        // Both output rows now share one guarded product slot: it settles a container take and refuses any
+        // server-side write of a non-empty stack (creative set-slot, another mod), which Slot#set bypassed.
+        assertEquals(1, menu.split("super.onTake\\(player, stack\\); settleOutput\\(player\\);", -1).length - 1,
+                "the shared product slot settles a container take for both rows");
+        assertTrue(menu.contains("private SlotItemHandler productSlot(ItemStackHandler handler, int index, int x, int y, boolean serverSide) {"));
+        assertTrue(menu.contains("if (!serverSide || stack.isEmpty()) super.set(stack);"));
+        assertTrue(menu.contains("if (!serverSide || stack.isEmpty()) super.setByPlayer(stack);"));
         assertTrue(menu.contains("if (machine != null && !player.level().isClientSide) machine.settlePending();"));
     }
 

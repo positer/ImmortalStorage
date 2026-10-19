@@ -35,11 +35,17 @@ public final class EnchantmentMachineLogic implements RuinMachine {
     private UUID owner;
     private boolean xianqiao;
     private boolean lastFormation;
+    /** Guards the product rewrite so the slot callback cannot re-enter the refresh. */
+    private boolean refreshing;
 
     public final ItemStackHandler inventory = new ItemStackHandler(SLOTS) {
         @Override public int getSlotLimit(int slot) { return slot == EnchantmentCompressionPlan.OUTPUT_SLOT ? Integer.MAX_VALUE : 64; }
         @Override protected int getStackLimit(int slot, ItemStack stack) { return slot == EnchantmentCompressionPlan.OUTPUT_SLOT ? Integer.MAX_VALUE : super.getStackLimit(slot, stack); }
-        @Override protected void onContentsChanged(int slot) { controller.setChanged(); }
+        @Override protected void onContentsChanged(int slot) {
+            // Ruling 2026-10-19: an uncollected product is never frozen; editing a material slot refreshes it.
+            if (slot < EnchantmentCompressionPlan.INPUT_SLOTS && !refreshing && !reversed()) refreshPending();
+            controller.setChanged();
+        }
         @Override public boolean isItemValid(int slot, ItemStack stack) {
             return slot < EnchantmentCompressionPlan.INPUT_SLOTS && EnchantmentStackRules.acceptsCarrier(stack);
         }
@@ -52,7 +58,11 @@ public final class EnchantmentMachineLogic implements RuinMachine {
     public final ItemStackHandler decompressionInventory = new ItemStackHandler(SLOTS) {
         @Override public int getSlotLimit(int slot) { return slot == EnchantmentDecompressionPlan.INPUT_SLOT ? 64 : Integer.MAX_VALUE; }
         @Override protected int getStackLimit(int slot, ItemStack stack) { return slot == EnchantmentDecompressionPlan.INPUT_SLOT ? super.getStackLimit(slot, stack) : Integer.MAX_VALUE; }
-        @Override protected void onContentsChanged(int slot) { controller.setChanged(); }
+        @Override protected void onContentsChanged(int slot) {
+            // Ruling 2026-10-19: swapping the carrier refreshes the whole uncollected output row.
+            if (slot == EnchantmentDecompressionPlan.INPUT_SLOT && !refreshing && reversed()) refreshPending();
+            controller.setChanged();
+        }
         @Override public boolean isItemValid(int slot, ItemStack stack) {
             return slot == EnchantmentDecompressionPlan.INPUT_SLOT && !EnchantmentStackRules.enchantments(stack).isEmpty();
         }
@@ -100,8 +110,17 @@ public final class EnchantmentMachineLogic implements RuinMachine {
     /** A kind switch inherits the owner the ruin already recorded. */
     @Override public UUID owner() { return owner != null ? owner : controller.compressor().owner(); }
 
-    @Override public boolean inputsLocked() { return transaction.pending(); }
+    /**
+     * Ruling 2026-10-19: the material row is never locked. The product mirrors the current inputs, so an edit
+     * can never hand out an unpaid product — a take bills exactly the material it was made from.
+     */
+    @Override public boolean inputsLocked() { return false; }
     @Override public String titleKey() { return RuinMachineKind.ENCHANTMENT.titleKey(reversed()); }
+    /**
+     * Take path. The product has already left its slot when this runs — the menu's shift-click moves it out and
+     * clears the slot before calling onTake, a pipe extracts it before the hook fires — so this must only bill.
+     * RULING 5: refreshing here put the product straight back into the just-emptied slot and duplicated it.
+     */
     @Override public void settlePending() { transaction.settle(activeInventory()); }
     /** Teardown rule: the uncollected product is deleted, never dropped, and the material stays in its slots. */
     @Override public void discardPending() { transaction.discard(activeInventory(), outputStart()); }
@@ -133,6 +152,7 @@ public final class EnchantmentMachineLogic implements RuinMachine {
 
     @Override public void tick(ServerLevel level) {
         if (!formed()) return;
+        refreshPending();
         ItemStackHandler inventory = activeInventory();
         if (xianqiao) {
             flush(level);
@@ -154,10 +174,66 @@ public final class EnchantmentMachineLogic implements RuinMachine {
 
     /** One production attempt; it needs an unsettled product collected and the whole output row empty. */
     void runCycle() {
-        if (transaction.pending()) return;
+        // An uncollected product is refreshed from the current inputs instead of being frozen (ruling 2026-10-19).
+        if (transaction.pending()) { refreshPending(); return; }
         ItemStackHandler inventory = activeInventory();
         if (hasStoredOutput(inventory)) return;
         if (reversed()) decompose(inventory); else compose(inventory);
+    }
+
+    /**
+     * Ruling 2026-10-19: while a product is uncollected it must always be what the current input slots produce.
+     * Every material edit recomputes the product and re-registers the cost a take settles; when the inputs no
+     * longer produce anything the product row empties and nothing stays owed, because nothing was ever paid.
+     */
+    void refreshPending() {
+        if (refreshing || !transaction.pending()) return;
+        refreshing = true;
+        try {
+            if (reversed()) refreshDecompression(); else refreshCompression();
+        } finally {
+            refreshing = false;
+        }
+    }
+
+    private void refreshCompression() {
+        ItemStack[] slots = new ItemStack[SLOTS];
+        for (int slot = 0; slot < SLOTS; slot++) slots[slot] = inventory.getStackInSlot(slot);
+        EnchantmentCompressionPlan.Result plan = EnchantmentCompressionPlan.plan(slots);
+        if (plan == null) {
+            clearProducts(inventory);
+            transaction.clear();
+        } else {
+            write(inventory, EnchantmentCompressionPlan.OUTPUT_SLOT, plan.output());
+            transaction.arm(plan.consume(), plan.strip());
+        }
+        controller.setChanged();
+    }
+
+    private void refreshDecompression() {
+        EnchantmentDecompressionPlan.Result plan = EnchantmentDecompressionPlan.plan(
+                decompressionInventory.getStackInSlot(EnchantmentDecompressionPlan.INPUT_SLOT));
+        if (plan == null) {
+            clearProducts(decompressionInventory);
+            transaction.clear();
+        } else {
+            for (int index = 0; index < EnchantmentDecompressionPlan.OUTPUT_SLOTS; index++)
+                write(decompressionInventory, EnchantmentDecompressionPlan.OUTPUT_START + index, plan.outputs().get(index));
+            transaction.arm(plan.consume(), plan.strip());
+        }
+        controller.setChanged();
+    }
+
+    /** Writes a product only when it changed, so a refresh can never bounce through the slot callback. */
+    private static void write(ItemStackHandler handler, int slot, ItemStack desired) {
+        ItemStack current = handler.getStackInSlot(slot);
+        if (current.getCount() == desired.getCount() && ItemStack.isSameItemSameComponents(current, desired)) return;
+        handler.setStackInSlot(slot, desired.isEmpty() ? ItemStack.EMPTY : desired.copy());
+    }
+
+    private void clearProducts(ItemStackHandler handler) {
+        for (int slot = outputStart(); slot < SLOTS; slot++)
+            if (!handler.getStackInSlot(slot).isEmpty()) handler.setStackInSlot(slot, ItemStack.EMPTY);
     }
 
     // Same active-transfer loop as SpiritCompressorLogic, kept local so the spirit machine stays frozen.
