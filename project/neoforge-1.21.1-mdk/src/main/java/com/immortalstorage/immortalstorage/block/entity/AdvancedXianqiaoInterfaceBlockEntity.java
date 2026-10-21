@@ -79,7 +79,9 @@ public final class AdvancedXianqiaoInterfaceBlockEntity
     public void serverTick() {
         if (!(level instanceof ServerLevel serverLevel)) return;
         getInventory().replenishAllSlots(TerminalStorageAction.EXECUTE);
-        if (!enabled || frequency <= 0 || serverLevel.getGameTime() % frequency != 0) return;
+        if (!enabled || frequency <= 0) return;
+        int gate = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, frequency);
+        if (serverLevel.getGameTime() % gate != 0 && !com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition)) return;
         AdvancedXianqiaoInterfaceScheduler.tick(this, serverLevel);
         XianqiaoInterfaceCompatHooks.serverTick(this, serverLevel);
     }

@@ -105,7 +105,10 @@ public final class CompatManager {
             modBus.addListener(CompatManager::registerAe2Capabilities);
             modBus.addListener(CompatManager::initializeAe2);
         }
-        if (RS_LOADED) modBus.addListener(CompatManager::initializeRs);
+        if (RS_LOADED) {
+            modBus.addListener(CompatManager::initializeRs);
+            modBus.addListener(CompatManager::registerRsCapabilities);
+        }
         if (MEKANISM_LOADED) {
             installMekanismBridge();
             modBus.addListener(CompatManager::registerMekanismCapabilities);
@@ -204,6 +207,15 @@ public final class CompatManager {
     private static void initializeRs(InterModEnqueueEvent event) {
         event.enqueueWork(() -> invokeOptionalBootstrap(
                 "com.immortalstorage.immortalstorage.compat.refinedstorage.RsCompat"));
+    }
+
+    /** RS discovers in-world network members through this block capability. */
+    private static void registerRsCapabilities(RegisterCapabilitiesEvent event) {
+        invokeOptionalMethod(
+                "com.immortalstorage.immortalstorage.compat.refinedstorage.RsManagerNetworkNodes",
+                "registerCapabilities",
+                new Class<?>[]{RegisterCapabilitiesEvent.class},
+                event);
     }
 
     private static void initializeArsNouveau(InterModEnqueueEvent event) {

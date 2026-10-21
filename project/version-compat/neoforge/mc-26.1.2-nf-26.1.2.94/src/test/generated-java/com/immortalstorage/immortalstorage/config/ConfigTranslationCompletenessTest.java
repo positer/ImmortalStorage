@@ -39,6 +39,8 @@ final class ConfigTranslationCompletenessTest {
             "progression.tribulation_targets", "progression.tribulation_targets.stage6To7",
             "progression.tribulation_targets.stage7To8", "progression.tribulation_targets.stage8To9",
             "progression.tribulation_targets.stage9To10",
+            "time_shift", "time_shift.boostLog2", "time_shift.boostSeconds",
+            "time_shift.maxBlocks", "time_shift.randomTickBlocks",
             "energy_crystal", "energy_crystal.feCapacity", "energy_crystal.fePerTick",
             "resource_conversion", "resource_conversion.fe", "resource_conversion.botaniaMana",
             "resource_conversion.arsSource", "resource_conversion.fe.enabled",

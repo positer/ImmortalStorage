@@ -52,8 +52,9 @@ public final class AdvancedStabilizedMiniatureImmortalRuinBlockEntity
 
     @Override
     public void serverTick() {
-        if (!(level instanceof ServerLevel serverLevel) || !enabled || frequency <= 0
-                || serverLevel.getGameTime() % frequency != 0) return;
+        if (!(level instanceof ServerLevel serverLevel) || !enabled || frequency <= 0) return;
+        int gate = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, frequency);
+        if (serverLevel.getGameTime() % gate != 0 && !com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition)) return;
         List<AdvancedRuinScheduler.Target> targets = AdvancedRuinScheduler.scan(
                 serverLevel, worldPosition, offsetX, offsetY, offsetZ, sizeX, sizeY, sizeZ,
                 orderMode == ORDER_FAR_FIRST, faceMask());

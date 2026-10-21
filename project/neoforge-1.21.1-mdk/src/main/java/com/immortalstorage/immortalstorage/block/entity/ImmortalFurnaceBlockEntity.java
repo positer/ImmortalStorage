@@ -444,8 +444,21 @@ public class ImmortalFurnaceBlockEntity extends AbstractFurnaceBlockEntity imple
                                   ImmortalFurnaceBlockEntity furnace) {
         furnace.refreshSpiritDriveRetryState();
         boolean wasLit = furnace.engine.isLit();
+        // The engine drops every call that carries a game time it already saw, so an
+        // extra ticker call cannot accelerate it. The staff multiplier is folded into
+        // the engine's own processing multiplier instead, which advances every channel
+        // by that many units in this tick.
+        // Realm acceleration repeats tickBlockEntities, but the engine drops every call that
+        // carries a game time it already saw, so those extra passes never advance it. Fold
+        // the realm's own pass multiplier in here instead, and let the extra passes be
+        // deduplicated (they are free).
+        int processingMultiplier = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.combine(
+                furnace.reinforcementMultiplier(),
+                com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.combine(
+                        com.immortalstorage.immortalstorage.dimension.RealmHelper.accelerationMultiplier(level),
+                        com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.multiplierAt(level, pos)));
         boolean changed = furnace.engine.tick(level.getGameTime(), furnace, furnace.fuelResolver,
-                furnace::findRecipe, channel -> false, furnace.reinforcementMultiplier());
+                furnace::findRecipe, channel -> false, processingMultiplier);
         furnace.recordCompletedRecipes(level.getRecipeManager());
         boolean isLit = furnace.engine.isLit();
         if (wasLit != isLit && state.hasProperty(ImmortalFurnaceBlock.LIT)) {

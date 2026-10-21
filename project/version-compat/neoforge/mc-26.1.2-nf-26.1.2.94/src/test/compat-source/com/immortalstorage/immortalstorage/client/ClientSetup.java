@@ -39,8 +39,12 @@ import com.immortalstorage.immortalstorage.block.entity.ModBlockEntities;
 import com.immortalstorage.immortalstorage.item.ModItems;
 import com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem;
 import com.immortalstorage.immortalstorage.menu.ModMenus;
+import com.immortalstorage.immortalstorage.network.ModPayloads;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -50,6 +54,7 @@ import net.neoforged.neoforge.client.event.RegisterSelectItemModelPropertyEvent;
 import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 public final class ClientSetup {
@@ -73,6 +78,8 @@ public final class ClientSetup {
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.DomainExpansionHighlight::render);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.ToolLocatorRenderer::render);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.ToolLocatorClient::onTick);
+        forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.TimeShiftBorderRenderer::render);
+        forgeBus.addListener(ClientSetup::onMouseScroll);
     }
 
     private static void clientSetup(final FMLClientSetupEvent e) {
@@ -144,6 +151,21 @@ public final class ClientSetup {
             }
         }
 
+    }
+
+    /**
+     * Sneak+scroll with the time-shift staff cycles its permanent tier on the
+     * server.  The event is cancelled so the same scroll does not also move the
+     * hotbar selection, exactly like the spirit staff's own scroll binding.
+     */
+    private static void onMouseScroll(net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent event) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (player == null || minecraft.screen != null || !player.isShiftKeyDown()) return;
+        Item staff = ModItems.TIME_SHIFT_STAFF.get();
+        if (player.getMainHandItem().getItem() != staff && player.getOffhandItem().getItem() != staff) return;
+        event.setCanceled(true);
+        ClientPacketDistributor.sendToServer(new ModPayloads.TimeShiftTier(event.getScrollDeltaY() > 0.0D ? 1 : -1));
     }
 
     private ClientSetup() {}

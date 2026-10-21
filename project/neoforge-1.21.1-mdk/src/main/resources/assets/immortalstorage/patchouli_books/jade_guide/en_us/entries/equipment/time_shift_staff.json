@@ -1,0 +1,39 @@
+{
+  "name": "Guixu Time-Shift Staff",
+  "icon": "immortalstorage:time_shift_staff",
+  "category": "immortalstorage:equipment",
+  "sortnum": 60,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "immortalstorage:time_shift_staff",
+      "title": "A Staff Built Around a Ruin",
+      "text": "Immortal-Forged Alloy forms the head, a Nurturing Crystal sets the order, two sticks make the shaft, and the part that really pushes time forward is a Miniature Immortal Ruin. The staff neither stacks nor wears out: it has no durability and never breaks from use. All it ever spends is the Primordial Qi you feed it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "First Right-Click · Permanent Acceleration",
+      "text": "Right-clicking an accelerable block with the staff gives it permanent acceleration: a cyan outline rises around it and the current multiplier hangs at the centre of every face. Permanent acceleration costs no material and never fades by itself; it ends only when you clear it with a sneaking right-click, or when the block is broken or replaced."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tiers · 2x to 32x",
+      "text": "Hold the staff, sneak and scroll to pick the tier you are about to apply. Five tiers cycle: 2x, 4x, 8x, 16x and 32x. Scrolling changes only the staff in your hand; acceleration already placed keeps the tier it was given. To move a block to another tier, sneak right-click to clear it, then apply it again at the new one."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Right-Click Again · 60 Seconds of 1024x",
+      "text": "Right-clicking a block that already has permanent acceleration spends 1 Primordial Qi from your inventory or your Xianqiao and raises that block to 1024x for 60 seconds of real time. The outline turns red and the floating figure becomes a red 1024x; when the time is up the block falls back to the permanent tier it had before. Right-clicking again while boosted still costs 1 Primordial Qi and rewrites the full 60 seconds instead of stacking more multiplier. Without the material you are simply told what is missing, and the existing acceleration is left untouched."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Clearing · Blocks That Refuse",
+      "text": "Sneak right-click clears every time-shift effect on that block at once, and Primordial Qi already spent is not refunded.$(br2)Only blocks tagged $(thing)immortalstorage:time_acceleration_disallowed$() or the common $(thing)c:tick_acceleration_disallowed$() tag are refused; every other block is accepted and the staff performs no further filtering. A block with no block entity and no random ticks still receives its box and multiplier label, but it has nothing to accelerate, so its effect is naturally zero.$(br2)While the staff is held, acceleration takes priority over block interaction: right-click does not open a block's screen and does not trigger the block's own use behaviour. Put the staff away when you need to interact with a block."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Multiplication · Alongside the Realm",
+      "text": "Time-shift acceleration multiplies with the personal realm's own acceleration. When the realm already runs four passes per game tick, 16x permanent acceleration really gives 64 ticks per game tick. Crops, leaves and other random-tick blocks follow the same model, and the server may switch that off. A dimension records 256 accelerated blocks by default and refuses new ones past that; the 1024x multiplier, its duration and the cap are all server settings."
+    }
+  ]
+}

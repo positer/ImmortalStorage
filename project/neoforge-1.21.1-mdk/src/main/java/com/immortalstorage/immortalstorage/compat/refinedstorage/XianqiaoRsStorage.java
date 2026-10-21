@@ -87,14 +87,16 @@ final class XianqiaoRsStorage implements SerializableStorage, CompositeAwareChil
         if (access == null) return new ReadSnapshot(stamp, List.of(), 0L);
 
         List<ResourceAmount> result = new ArrayList<>();
-        for (StorageItemSummary entry : access.items().snapshot()) {
+        // RS is a storage reader, not the Xianqiao interface: real contents only. Paid veins stay
+        // a projection on the interface; free veins are real stock and snapshotRealOnly keeps them.
+        for (StorageItemSummary entry : access.items().snapshotRealOnly()) {
             long amount = RsAmountPolicy.advertised(entry.amount());
             if (amount > 0L) {
                 result.add(new ResourceAmount(ItemResource.ofItemStack(entry.prototype()), amount));
             }
         }
         if (access.fluids() != null) {
-            access.fluids().snapshot().forEach((key, stored) -> {
+            access.fluids().snapshotRealOnly().forEach((key, stored) -> {
                 long amount = RsAmountPolicy.advertised(stored == null ? 0L : stored);
                 if (key == null || amount <= 0L) return;
                 FluidStack stack = key.prototype();

@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.9]
+
+### English
+
+- Added the Guixu Time-Shift Staff: a shaped crafting-table item made from one Immortal Forged Alloy, one Nurturing Crystal, two sticks and one Miniature Immortal Ruin. It has no durability and does not stack.
+- Right-clicking any block applies a permanent single-block acceleration: the block gains a cyan box and its multiplier is written at the centre of every face, in cyan. The multiplier is the tier the staff currently holds — 2x, 4x, 8x, 16x or 32x.
+- Right-clicking an already accelerated block spends one Primordial Qi from the player's inventory or Xianqiao storage, turns the box and its label red at 1024x and grants 1024x for 60 seconds of the player's real time. When that window closes the block falls back to exactly the permanent tier it was given.
+- Shift-right-clicking a block that carries a permanent or 1024x acceleration clears all of the staff's acceleration on it at once.
+- Sneak-scrolling while holding the staff cycles the tier the next application will grant. Changing the held tier never alters a block that is already accelerated.
+- The acceleration follows JDT's approach: every block-entity pass adds the block's extra ticks, so the personal realm's own extra passes multiply with the staff tier instead of replacing it. Blocks carrying immortalstorage:time_acceleration_disallowed or c:tick_acceleration_disallowed are never accelerated, and blocks that only expose random ticks are accelerated by the same expectation and can be disabled in the config.
+- Ancient Jade documents the staff in English and Simplified Chinese.
+
+### 简体中文
+
+- 新增归墟时移法杖，合成台有序合成：仙锻合金一块、蕴灵晶一枚、木棍两根、迷你仙墟一块。无耐久，不可堆叠。
+- 右键任意方块即赋予常驻的单方块加速：方块出现青色边框，每一面中心悬挂当前倍率（青色）。倍率取自法杖当前档位——2x、4x、8x、16x、32x。
+- 再次右键已加速的方块会消耗背包或仙窍中的 1 个混元一气，把边框与字样变红并显示 1024x，提供 60 秒（玩家真实时间）的 1024x 加速；该窗口结束后回落到它被赋予时的常驻档位。
+- Shift 右键带有常驻或 1024x 加速的方块，会一次清空它上面全部时移法杖加速。
+- 手持法杖时潜行+滚轮循环切换"下一次赋予"的档位；手持档位变化不会改动任何已经放出的加速。
+- 加速沿用 JDT 的做法：每个方块实体轮次都为该方块补上额外 tick，因此仙窍自身的额外轮次与时移档位相乘而不是相互取代。命中 immortalstorage:time_acceleration_disallowed 或 c:tick_acceleration_disallowed 的方块永不被加速；只有随机刻的方块按同样的期望值加速，并可在配置中关闭。
+- 古玉手册以中英双语记录这把法杖。
+
 ## [0.1.8]
 
 ### English

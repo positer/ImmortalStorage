@@ -189,6 +189,14 @@ sourceSets.main {
             exclude 'com/immortalstorage/immortalstorage/mixin/appliedbotanics/**'
             exclude 'com/immortalstorage/immortalstorage/mixin/arsnouveau/**'
             exclude 'com/immortalstorage/immortalstorage/mixin/buildinggadgets/**'
+            // 2026-10-21 user ruling: both target lines must carry the AE2/RS membership
+            // and exchange recipes. The AE2 beta on 26.1.2 keeps IInWorldGridNodeHost and
+            // ICraftingProvider byte-identical to 19.2.17; only IManagedGridNode's
+            // save/load pair moved to NeoForge ValueIO (serialize/deserialize), and the
+            // bridge uses neither, so the bridge is enabled here as well.
+            // The RS manager bridge is enabled on both lines: RS 3.2.1 keeps the same class
+            // paths and only renamed setPattern/accept (verified with javap), which the source
+            // generator maps for this target.
         }
     }
     resources {
@@ -222,6 +230,13 @@ sourceSets.test {
                 compatibilityTestSourceDir,
                 file('../version-compat/neoforge/mc-26.1.2-nf-26.1.2.94/src/test/java')
         ])
+        // The AE2/RS bridge is not compiled on this line, so its contract tests must
+        // not be compiled either (they link against the excluded classes).
+        java.exclude 'com/immortalstorage/immortalstorage/compat/ae2/**'
+        java.exclude 'com/immortalstorage/immortalstorage/compat/refinedstorage/RsManager*'
+        java.exclude 'com/immortalstorage/immortalstorage/compat/refinedstorage/RsExchange*'
+        // Pure contract probes that read canonical doc paths; they are 1.21.1-only.
+        java.exclude 'com/immortalstorage/immortalstorage/compat/pattern/**'
     }
 }
 

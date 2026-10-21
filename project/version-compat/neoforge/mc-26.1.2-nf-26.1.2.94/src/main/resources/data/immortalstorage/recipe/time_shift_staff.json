@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " AB",
+    " CD",
+    "E  "
+  ],
+  "key": {
+    "A": "immortalstorage:immortal_forged_alloy",
+    "B": "immortalstorage:nurturing_crystal",
+    "C": "minecraft:stick",
+    "D": "immortalstorage:miniature_immortal_ruin",
+    "E": "minecraft:stick"
+  },
+  "result": {
+    "id": "immortalstorage:time_shift_staff",
+    "count": 1
+  }
+}

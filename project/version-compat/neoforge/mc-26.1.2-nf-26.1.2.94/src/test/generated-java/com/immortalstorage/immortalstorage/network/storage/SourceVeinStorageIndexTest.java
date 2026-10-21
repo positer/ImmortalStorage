@@ -95,7 +95,9 @@ final class SourceVeinStorageIndexTest {
         long firstRevision = directory.itemRevision();
         directory.register(second);
         assertTrue(directory.itemRevision() > firstRevision);
-        assertEquals(96L, directory.itemSnapshot().getFirst().amount());
+        // Two veins of the same resource describe ONE budget: the largest single one wins
+        // (32 vs 64 -> 64). Summing them would inflate the convertible amount.
+        assertEquals(64L, directory.itemSnapshot().getFirst().amount());
 
         long beforeRemoval = directory.itemRevision();
         assertTrue(directory.unregister(second.sourceId()));

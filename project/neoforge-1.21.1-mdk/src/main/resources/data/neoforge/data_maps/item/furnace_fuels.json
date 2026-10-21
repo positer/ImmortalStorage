@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": {
+    "immortalstorage:true_yuan": { "burn_time": 2000 },
+    "immortalstorage:immortal_yuan": { "burn_time": 100000 },
+    "immortalstorage:spirit_drive": { "burn_time": 1 }
+  }
+}

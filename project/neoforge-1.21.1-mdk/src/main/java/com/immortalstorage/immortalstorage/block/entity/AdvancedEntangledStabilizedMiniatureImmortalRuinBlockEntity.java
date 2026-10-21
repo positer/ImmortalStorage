@@ -69,7 +69,9 @@ public final class AdvancedEntangledStabilizedMiniatureImmortalRuinBlockEntity
     }
 
     private void runSide(ServerLevel serverLevel, SideConfig side, boolean reversed) {
-        if (!side.enabled || side.frequency <= 0 || serverLevel.getGameTime() % side.frequency != 0) return;
+        if (!side.enabled || side.frequency <= 0) return;
+        int gate = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, side.frequency);
+        if (serverLevel.getGameTime() % gate != 0 && !com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition)) return;
         List<AdvancedRuinScheduler.Target> targets = AdvancedRuinScheduler.scan(
                 serverLevel, worldPosition, side.offsetX, side.offsetY, side.offsetZ,
                 side.sizeX, side.sizeY, side.sizeZ, side.orderMode == SideConfig.ORDER_FAR_FIRST, side.faceMask);

@@ -87,6 +87,21 @@ public final class PersonalStorageFluidHandler implements IFluidHandler, Termina
         return Map.copyOf(merged);
     }
 
+    /** Real contents (plus free veins, which hold real stock): the AE2/RS exchange-cell view. */
+    @Override
+    public Map<TerminalFluidKey, Long> snapshotRealOnly() {
+        if (!isAvailable()) return Map.of();
+        LinkedHashMap<TerminalFluidKey, Long> merged = new LinkedHashMap<>(data.getXianqiaoFluidAmounts());
+        if (hasSourceDirectory()) {
+            SourceVeinStorageIndex.freeFluidSnapshot(server, owner).forEach((key, amount) -> {
+                long previous = merged.getOrDefault(key, 0L);
+                merged.put(key, amount == Integer.MAX_VALUE ? Integer.MAX_VALUE
+                        : Math.max(previous, amount));
+            });
+        }
+        return Map.copyOf(merged);
+    }
+
     @Override
     public long insert(TerminalFluidKey key, long amountMb, TerminalStorageAction action) {
         if (!isAvailable()) return 0L;

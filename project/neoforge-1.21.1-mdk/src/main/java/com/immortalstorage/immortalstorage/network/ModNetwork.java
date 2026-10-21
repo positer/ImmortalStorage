@@ -44,6 +44,19 @@ public final class ModNetwork {
             com.immortalstorage.immortalstorage.compressor.SpiritCompressorRecipes.installClient(packet.entries());
             com.immortalstorage.immortalstorage.compat.CompatManager.refreshCompressorRecipes();
         }));
+        registrar.playToClient(ModPayloads.TimeShiftSync.TYPE, ModPayloads.TimeShiftSync.STREAM_CODEC,
+                (packet, context) -> context.enqueueWork(() -> {
+                    var minecraft = net.minecraft.client.Minecraft.getInstance();
+                    if (minecraft.level == null) return;
+                    com.immortalstorage.immortalstorage.client.TimeShiftClientCache.replace(
+                            minecraft.level.dimension(),
+                            packet.entries().stream()
+                                    .map(entry -> new com.immortalstorage.immortalstorage.client.TimeShiftClientCache.Entry(
+                                            net.minecraft.core.BlockPos.of(entry.pos()), entry.tier(),
+                                            entry.boosted(), entry.boostEndEpochMillis()))
+                                    .toList());
+                }));
+        registrar.playToServer(ModPayloads.TimeShiftTier.TYPE, ModPayloads.TimeShiftTier.STREAM_CODEC, ModNetwork::handleTimeShiftTier);
         registrar.playToServer(ModPayloads.OpenKongqiao.TYPE, ModPayloads.OpenKongqiao.STREAM_CODEC, ModNetwork::handleOpenKongqiao);
         registrar.playToServer(ModPayloads.OpenXianqiaoStorage.TYPE, ModPayloads.OpenXianqiaoStorage.STREAM_CODEC, ModNetwork::handleOpenXianqiao);
         registrar.playToServer(ModPayloads.TriggerTribulation.TYPE, ModPayloads.TriggerTribulation.STREAM_CODEC, ModNetwork::handleTriggerTribulation);
@@ -552,6 +565,14 @@ public final class ModNetwork {
             if (stack.getItem() instanceof com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem) {
                 com.immortalstorage.immortalstorage.item.custom.SpiritStaffItem.cycleMode(sp, m.delta());
             }
+        });
+    }
+
+    private static void handleTimeShiftTier(ModPayloads.TimeShiftTier m, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            ServerPlayer sp = serverPlayer(ctx);
+            if (sp == null) return;
+            com.immortalstorage.immortalstorage.timeshift.TimeShiftService.adjustTier(sp, m.delta());
         });
     }
 

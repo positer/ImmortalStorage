@@ -25,7 +25,7 @@ public final class ModItems {
     /** Keep rarity consistent for standalone items and every registered block item. */
     public static Rarity rarityFor(String name) {
         return switch (name) {
-            case "ascension_dan", "white_day_thunder",
+            case "ascension_dan", "white_day_thunder", "time_shift_staff",
                     "immortal_ruin_forged_spirit_sword", "one_qi_returning_origin_sword",
                     "stabilized_miniature_immortal_ruin",
                     "entangled_stabilized_miniature_immortal_ruin",
@@ -149,6 +149,8 @@ public final class ModItems {
             enchantableValue(new Item.Properties().fireResistant()
                     .attributes(DiggerItem.createAttributes(Tiers.NETHERITE, 4.0F, -2.4F)),
                     SpiritStaffItem.ENCHANTMENT_VALUE));
+    public static final Supplier<Item> TIME_SHIFT_STAFF = registerItem("time_shift_staff",
+            p -> new TimeShiftStaffItem(p.stacksTo(1)));
     public static final Supplier<Item> SPIRIT_DRIVE = registerItem("spirit_drive", SpiritDriveItem::new);
     public static final Supplier<Item> XIANQIAO_EXCHANGE_CELL = registerItem(
             "xianqiao_exchange_cell", XianqiaoExchangeCellItem::new);

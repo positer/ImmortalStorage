@@ -449,7 +449,7 @@ function Transform-2612([string] $text, [string] $relativePath) {
     foreach ($registry in @('ITEM', 'FLUID')) {
         $valueMapper = 'map(net.minecraft.core.Holder.Reference::value).orElse(null)'
         $qualifiedPrefix = 'net.minecraft.core.registries.BuiltInRegistries'
-        foreach ($argument in @('id', 'definition.outputId()')) {
+        foreach ($argument in @('id', 'definition.outputId()', 'offer.outputId()')) {
             $old = "$qualifiedPrefix.$registry.get($argument)"
             $text = $text.Replace($old, "$old.$valueMapper")
             $old = "BuiltInRegistries.$registry.get($argument)"
@@ -458,6 +458,13 @@ function Transform-2612([string] $text, [string] $relativePath) {
                 "$old.$valueMapper")
         }
     }
+
+    # RS 3.2.1 renamed the pattern-provider mutator and the external-sink contract
+    # (verified with javap: 2.0.9 setPattern/accept/getKey vs 3.2.1 tryUpdatePattern/
+    # insertAll/getId+getDetails). Class paths are identical on both lines.
+    $text = $text.Replace('setPattern(slot,', 'tryUpdatePattern(slot,')
+    $text = $text.Replace('public ExternalPatternSink.Result accept(',
+        'public ExternalPatternSink.Result insertAll(')
 
     # Item use/animation and material APIs were collapsed into component-based APIs.
     $text = $text.Replace('net.minecraft.world.InteractionResultHolder', 'net.minecraft.world.InteractionResult')
@@ -483,7 +490,10 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = $text.Replace('net.minecraft.world.item.Tiers', 'net.minecraft.world.item.ToolMaterial')
     $text = $text.Replace('net.minecraft.world.item.Tier', 'net.minecraft.world.item.ToolMaterial')
     $text = $text.Replace('ToolMaterials', 'ToolMaterial')
-    $text = $text.Replace('Tier ', 'ToolMaterial ')
+    # 0.1.9: match the standalone token only. The previous literal 'Tier ' rewrite
+    # corrupted any identifier that merely ENDED in 'Tier' (the TimeShiftTier payload
+    # became TimeShiftToolMaterial), so the 26.1.2 tree failed to compile.
+    $text = [regex]::Replace($text, '(?<![A-Za-z0-9_])Tier(?![A-Za-z0-9_])', 'ToolMaterial')
     $text = $text.Replace('Tiers.NETHERITE', 'ToolMaterial.NETHERITE')
     $text = $text.Replace('DiggerItem.createAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)',
         "$script:compatAttributes.toolAttributes(ToolMaterial.NETHERITE, 4.0F, -2.4F)")
@@ -1815,7 +1825,10 @@ function Transform-2612([string] $text, [string] $relativePath) {
         $text = $text.Replace('loadKeyFromTag(HolderLookup.Provider registries, CompoundTag tag)',
             'loadKeyFromTag(ValueInput tag)')
     }
-    if ($relativePath -match '[\\/]client[\\/]render[\\/]OneQiBeamRenderer\.java$') {
+    # 0.1.9: the Guixu Time-Shift Staff border/label renderer is authored against the
+    # same 1.21.1 AFTER_PARTICLES + getCamera() shape as OneQiBeamRenderer, so the same
+    # 26.1 migration (typed sub-event, levelRenderState camera) applies to it.
+    if ($relativePath -match '[\\/]client[\\/]render[\\/](OneQiBeamRenderer|TimeShiftBorderRenderer)\.java$') {
         $text = $text.Replace('public static void render(RenderLevelStageEvent event) {',
             'public static void render(RenderLevelStageEvent.AfterTranslucentParticles event) {')
         $text = $text.Replace('event.getCamera().getPosition()',
@@ -3049,6 +3062,10 @@ if ([regex]::IsMatch($generatedText, '(?m)\bclass\s+\w+(?:\s*<[^{}]*>)?\s+extend
     throw '26.1.2 generation assertion failed; a block entity class still extends the canonical BlockEntity type.'
 }
 if ($generatedText.Contains('saveAdditional(CompoundTag') -or $generatedText.Contains('loadAdditional(CompoundTag')) {
+    $generatedFiles | Where-Object {
+        $t = [System.IO.File]::ReadAllText($_.FullName)
+        $t.Contains('saveAdditional(CompoundTag') -or $t.Contains('loadAdditional(CompoundTag')
+    } | ForEach-Object { Write-Output ("LEGACY-HOOK-RESIDUE: " + $_.FullName) }
     throw '26.1.2 generation assertion failed; a legacy block-entity hook was not renamed.'
 }
 if ($generatedText.Contains('`')) {

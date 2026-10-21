@@ -55,6 +55,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ONE_QI_RETURNING_ORIGIN_SWORD.get());
                         output.accept(ModItems.SOUL_CATCHER.get());
                         output.accept(ModItems.SPIRIT_STAFF.get());
+                        output.accept(ModItems.TIME_SHIFT_STAFF.get());
                         output.accept(ModItems.IMMORTAL_ARTIFACT.get());
                         params.holders().lookupOrThrow(Registries.ENCHANTMENT)
                                 .get(com.immortalstorage.immortalstorage.enchantment.ModEnchantments.SPIRIT_REPAIR)

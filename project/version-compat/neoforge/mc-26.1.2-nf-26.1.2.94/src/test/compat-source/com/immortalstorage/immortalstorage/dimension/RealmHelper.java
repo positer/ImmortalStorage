@@ -37,6 +37,8 @@ public final class RealmHelper {
     private static final int MAX_RUNTIME_FORCED_RADIUS_CHUNKS = 3;
     private static final Map<UUID, Set<Long>> FORCED_CHUNK_CACHE = new ConcurrentHashMap<>();
     private static final Set<UUID> ADMIN_SUSPENDED_REALMS = ConcurrentHashMap.newKeySet();
+    /** GameTest-only realm multiplier override; empty during normal gameplay. */
+    private static final ThreadLocal<Integer> TEST_MULTIPLIER = new ThreadLocal<>();
     private static final Map<UUID, Double> APPLIED_BORDER_SIZE = new ConcurrentHashMap<>();
     private static final double UNBOUNDED_BORDER_SIZE = 59_999_968.0D;
     private static final String NBT_BOUNDARY_NOTICE_TICK = "immortalstorageBoundaryNoticeTick";
@@ -427,6 +429,41 @@ public final class RealmHelper {
 
     public static boolean isRealmLoadingSuspended(UUID owner) {
         return owner != null && ADMIN_SUSPENDED_REALMS.contains(owner);
+    }
+
+    /**
+     * The personal realm's effective block-entity pass multiplier for {@code level}.
+     *
+     * <p>The realm accelerates itself by calling {@code tickBlockEntities} again once per
+     * pass, so a machine that advances only when the world clock moves (the immortal
+     * furnace engine drops repeated game times, the Spirit Forging family gates on
+     * {@code gameTime % frequency}) would silently ignore those passes. Machines read this
+     * multiplier and fold it into their own pacing instead of depending on pass count.
+     * Outside a personal realm this is always 1.</p>
+     */
+    public static int accelerationMultiplier(ServerLevel level) {
+        Integer overridden = TEST_MULTIPLIER.get();
+        if (overridden != null && overridden > 0) return overridden;
+        if (!(level instanceof PersonalRealmServerLevel realm)) return 1;
+        double scale = realm.effectiveTickScale();
+        if (!Double.isFinite(scale) || scale <= 1.0D) return 1;
+        return (int) Math.min(32L, Math.max(1L, Math.round(scale)));
+    }
+
+    /**
+     * GameTest hook: forces {@link #accelerationMultiplier} on the calling thread.
+     *
+     * <p>A personal realm only exists for a real player watching its own dimension, which a
+     * GameTest cannot construct; this lets the acceleration matrix tests drive the machine
+     * side without inventing a fake dimension. Pass {@code 0} (or any non-positive value)
+     * to clear. Gameplay never calls this.</p>
+     */
+    public static void setTestAccelerationMultiplier(int multiplier) {
+        if (multiplier <= 0) {
+            TEST_MULTIPLIER.remove();
+        } else {
+            TEST_MULTIPLIER.set(multiplier);
+        }
     }
 
     /** Restore an unloading personal level without consulting any global rate. */

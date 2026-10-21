@@ -185,6 +185,16 @@ public class XianqiaoManagerBlockEntity extends BlockEntity implements MenuProvi
     }
 
     @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        // RS never looks at neighbouring blocks on its own: it only initialises its own containers
+        // from clearRemoved() (and cables additionally ask their neighbours). Without this call a
+        // manager placed against a plain RS member is never asked for its capability and therefore
+        // never joins the network — measured as "cable works, adjacent block does not".
+        com.immortalstorage.immortalstorage.compat.XianqiaoManagerCompatHooks.managerAdded(this);
+    }
+
+    @Override
     public void setRemoved() {
         clearCachedEndpoint();
         super.setRemoved();

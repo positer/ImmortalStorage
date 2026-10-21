@@ -40,6 +40,17 @@ public final class RsCompat {
         if (resources.get(EXTERNAL_RESOURCE_TYPE_ID).isEmpty()) {
             resources.register(EXTERNAL_RESOURCE_TYPE_ID, RsExternalResourceType.INSTANCE);
         }
+        // Reflective so the 26.1.2 line can exclude the RS bridge (its 3.2.1 API differs)
+        // without breaking this file; on 1.21.1 the class is always present.
+        try {
+            Class.forName("com.immortalstorage.immortalstorage.compat.refinedstorage.RsManagerNetworkNodes")
+                    .getMethod("initialize")
+                    .invoke(null);
+        } catch (ClassNotFoundException absent) {
+            ImmortalStorageMod.LOG.info("[Compat/RS] RS network bridge excluded on this target line");
+        } catch (ReflectiveOperationException failure) {
+            ImmortalStorageMod.LOG.warn("[Compat/RS] RS network bridge failed to initialize", failure);
+        }
         initialized = true;
         ImmortalStorageMod.LOG.info(
                 "[Compat/RS] Registered RS 2.0.9 Xianqiao storage and {} external-resource key bridges",

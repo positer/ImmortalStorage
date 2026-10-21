@@ -85,6 +85,9 @@ public class ImmortalStorageMod {
         NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.locator.ToolLocatorLootCatalog::onServerStarted);
         NeoForge.EVENT_BUS.register(new com.immortalstorage.immortalstorage.event.CommonEvents());
         NeoForge.EVENT_BUS.register(new com.immortalstorage.immortalstorage.event.RealmTickRateEvents());
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.timeshift.TimeShiftService::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.timeshift.TimeShiftService::onPlayerChangedDimension);
+        NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.timeshift.TimeShiftService::onBlockBreak);
         NeoForge.EVENT_BUS.register(com.immortalstorage.immortalstorage.villager.ModTrades.class);
         NeoForge.EVENT_BUS.addListener(com.immortalstorage.immortalstorage.command.ImmortalStorageCommands::register);
     }

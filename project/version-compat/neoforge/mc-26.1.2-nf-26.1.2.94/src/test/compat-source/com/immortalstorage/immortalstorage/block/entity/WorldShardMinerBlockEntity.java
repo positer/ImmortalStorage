@@ -74,7 +74,15 @@ public final class WorldShardMinerBlockEntity extends com.immortalstorage.immort
         WorldShardPyramid.Result pyramid = WorldShardPyramid.scan(pos, level::getBlockState,
                 WorldShardMinerModes.definitions().values());
         miner.updateActivation(level, state, pyramid);
-        if (pyramid.level() == 0 || !WorldShardMiningMath.shouldRun(level.getGameTime())
+        boolean accelerated = false;
+        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            accelerated = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines
+                    .isShifted(serverLevel, miner.getBlockPos())
+                    || com.immortalstorage.immortalstorage.dimension.RealmHelper
+                            .accelerationMultiplier(serverLevel) > 1;
+        }
+        if (pyramid.level() == 0
+                || (!accelerated && !WorldShardMiningMath.shouldRun(level.getGameTime()))
                 || !miner.canGenerateOutputs(level)) return;
 
         WorldShardMinerModes.ResolvedMode resolved = WorldShardMinerModes

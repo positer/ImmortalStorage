@@ -5,6 +5,7 @@ import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.IGridService;
 import appeng.api.networking.IGridServiceProvider;
+import appeng.api.networking.crafting.ICraftingProvider;
 import appeng.api.storage.cells.StorageCell;
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
 import com.immortalstorage.immortalstorage.block.entity.XianqiaoManagerBlockEntity;
@@ -139,6 +140,27 @@ public final class XianqiaoExchangeGridService implements IGridService, IGridSer
         duplicateOwners = Set.copyOf(nextDuplicateOwners);
 
         if (invalidate) grid.getStorageService().invalidateCache();
+        refreshDriveCraftingProviders();
+    }
+
+    /**
+     * Re-projects the exchange patterns published by drives holding Xianqiao disks.
+     *
+     * <p>A drive block entity has no server tick of its own, so this grid service is the only
+     * periodic hook that can make a newly connected source vein visible without touching the
+     * drive. The provider rebuilds its list and calls {@code ICraftingProvider.requestUpdate}
+     * itself, and only when its signature actually changed, so this pass is a no-op most of the
+     * time. Provider classification is by exact type: every other crafting provider on the grid is
+     * left alone.</p>
+     */
+    private void refreshDriveCraftingProviders() {
+        // Inactive nodes are included on purpose: the provider is what clears an unpowered drive's
+        // patterns, and skipping them here would leave a stale list behind forever.
+        for (IGridNode node : grid.getNodes()) {
+            if (node.getService(ICraftingProvider.class) instanceof XianqiaoAe2DriveCraftingProvider provider) {
+                provider.refreshFromGridTick();
+            }
+        }
     }
 
     static boolean diskWrapperMayMount(UUID owner, Set<UUID> storageBusOwners) {

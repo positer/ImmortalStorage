@@ -13,6 +13,17 @@ public interface TerminalItemStorage {
     /** Immutable point-in-time identity/amount snapshot. */
     List<StorageItemSummary> snapshot();
 
+    /**
+     * Snapshot restricted to items that physically exist in Xianqiao.
+     *
+     * <p>An exchange cell is a storage reader, so it must never project the source veins'
+     * convertible budget; the exchange itself is a recipe the cell exposes separately. The
+     * Xianqiao terminal keeps using {@link #snapshot()}, which does project that budget.</p>
+     */
+    default List<StorageItemSummary> snapshotRealOnly() {
+        return snapshot();
+    }
+
     /** Returns the amount accepted (or that would be accepted). */
     long insert(TerminalEntryKey key, long amount, TerminalStorageAction action);
 

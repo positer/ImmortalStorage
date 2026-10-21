@@ -85,6 +85,37 @@ public final class PersonalStorageLongItemStorage implements TerminalItemStorage
         return List.copyOf(grouped.values());
     }
 
+    /**
+     * Real-contents view for storage readers (the AE2/RS exchange cell): no source-vein budget.
+     */
+    @Override
+    public List<StorageItemSummary> snapshotRealOnly() {
+        if (!isAvailable()) return List.of();
+        LinkedHashMap<TerminalEntryKey, StorageItemSummary> grouped = new LinkedHashMap<>();
+        for (StorageItemSummary summary : data.getXianqiaoItemSummary()) {
+            if (data.isInfiniteImmortalYuan()
+                    && data.isVirtualInfiniteImmortalYuanStack(summary.prototype())) continue;
+            grouped.put(TerminalEntryKey.of(summary.prototype()), summary);
+        }
+        if (data.isInfiniteImmortalYuan()) {
+            data.getVirtualTerminalEntries().forEach(entry -> grouped.put(
+                    TerminalEntryKey.of(entry.prototype()),
+                    new StorageItemSummary(entry.prototype(), entry.amount())));
+        }
+        // A free vein fills its cache without charging anything, so its output is real stock and
+        // must be discoverable by AE2/RS; paid veins remain a projection and are excluded here.
+        if (hasSourceDirectory()) {
+            for (StorageItemSummary source : SourceVeinStorageIndex.freeItemSnapshot(server, owner)) {
+                TerminalEntryKey key = TerminalEntryKey.of(source.prototype());
+                StorageItemSummary previous = grouped.get(key);
+                long amount = previous == null ? source.amount()
+                        : Math.max(previous.amount(), source.amount());
+                grouped.put(key, new StorageItemSummary(source.prototype(), amount));
+            }
+        }
+        return List.copyOf(grouped.values());
+    }
+
     @Override
     public long insert(TerminalEntryKey key, long amount, TerminalStorageAction action) {
         if (!isAvailable()) return 0L;

@@ -41,6 +41,14 @@ public final class ImmortalStorageConfig {
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_8;
     public static final ModConfigSpec.ConfigValue<String> TRIBULATION_TARGET_STAGE_9;
     /** Internal FE memory of one Energy Crystal. Kept as a long at the config boundary. */
+    /** Base-2 exponent of the Guixu Time-Shift Staff boost (10 = 1024x). */
+    public static final ModConfigSpec.IntValue TIME_SHIFT_BOOST_LOG2;
+    /** Boost duration in the player's real-world seconds. */
+    public static final ModConfigSpec.IntValue TIME_SHIFT_BOOST_SECONDS;
+    /** Maximum number of time-shifted blocks per dimension. */
+    public static final ModConfigSpec.IntValue TIME_SHIFT_MAX_BLOCKS;
+    /** Whether blocks that only have random ticks may be accelerated. */
+    public static final ModConfigSpec.BooleanValue TIME_SHIFT_RANDOM_TICK_BLOCKS;
     public static final ModConfigSpec.LongValue ENERGY_CRYSTAL_FE_CAPACITY;
     /** FE produced and offered by one running Energy Crystal per server tick. */
     public static final ModConfigSpec.LongValue ENERGY_CRYSTAL_FE_PER_TICK;
@@ -134,6 +142,25 @@ public final class ImmortalStorageConfig {
         TRIBULATION_TARGET_STAGE_8 = BUILDER.translation(key("progression.tribulation_targets.stage8To9")).define("stage8To9", "minecraft:vindicator");
         TRIBULATION_TARGET_STAGE_9 = BUILDER.translation(key("progression.tribulation_targets.stage9To10")).define("stage9To10", "minecraft:warden");
         BUILDER.pop(2);
+
+        BUILDER.translation(key("time_shift")).push("time_shift");
+        TIME_SHIFT_BOOST_LOG2 = BUILDER
+                .translation(key("time_shift.boostLog2"))
+                .comment("Base-2 exponent of the temporary boost the Guixu Time-Shift Staff grants. 10 means 1024x.")
+                .defineInRange("boostLog2", 10, 1, 30);
+        TIME_SHIFT_BOOST_SECONDS = BUILDER
+                .translation(key("time_shift.boostSeconds"))
+                .comment("How long the boost lasts, measured in the player's real-world seconds.")
+                .defineInRange("boostSeconds", 60, 1, 86_400);
+        TIME_SHIFT_MAX_BLOCKS = BUILDER
+                .translation(key("time_shift.maxBlocks"))
+                .comment("Maximum number of time-shifted blocks recorded per dimension.")
+                .defineInRange("maxBlocks", 256, 1, 65_536);
+        TIME_SHIFT_RANDOM_TICK_BLOCKS = BUILDER
+                .translation(key("time_shift.randomTickBlocks"))
+                .comment("Allow accelerating blocks that only expose random ticks, such as crops and leaves.")
+                .define("randomTickBlocks", true);
+        BUILDER.pop();
 
         BUILDER.translation(key("energy_crystal")).push("energy_crystal");
         ENERGY_CRYSTAL_FE_CAPACITY = BUILDER

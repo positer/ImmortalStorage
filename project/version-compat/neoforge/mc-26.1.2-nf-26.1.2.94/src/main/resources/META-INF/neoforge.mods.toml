@@ -8,6 +8,11 @@ config="immortalstorage.refinedstorage.mixins.json"
 [[mixins]]
 config="immortalstorage.core.mixins.json"
 
+# 26.1.2 loads its own manifest and previously omitted the AE2 one, so XianqiaoManagerAe2NodeMixin
+# never applied on this line (measured: "capability queried but ... is not mixed in").
+[[mixins]]
+config="immortalstorage.ae2.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"

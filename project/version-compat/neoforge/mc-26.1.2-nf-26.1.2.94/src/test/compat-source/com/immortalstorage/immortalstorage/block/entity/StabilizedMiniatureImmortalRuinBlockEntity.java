@@ -108,8 +108,10 @@ public class StabilizedMiniatureImmortalRuinBlockEntity extends com.immortalstor
     }
 
     public void serverTick() {
-        if (!(level instanceof ServerLevel serverLevel) || !enabled || frequency <= 0
-                || serverLevel.getGameTime() % frequency != 0) return;
+        if (!(level instanceof ServerLevel serverLevel) || !enabled || frequency <= 0) return;
+        // A time-shifted block runs on every pass instead of waiting for its world-clock slot.
+        int gate = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, frequency);
+        if (serverLevel.getGameTime() % gate != 0 && !com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition)) return;
         if (reversed) {
             for (int group = 0; group < reinforcementMultiplier(); group++)
                 if (!eject(serverLevel)) break;

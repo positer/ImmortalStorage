@@ -1,0 +1,9 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "com.immortalstorage.immortalstorage.mixin.ae2",
+  "plugin": "com.immortalstorage.immortalstorage.mixin.ae2.Ae2MixinConfigPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["XianqiaoManagerAe2NodeMixin", "XianqiaoDriveAe2CraftingMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

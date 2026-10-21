@@ -214,14 +214,17 @@ final class XianqiaoExchangeStorageCell implements StorageCell {
         }
 
         Map<AEKey, Long> amounts = new HashMap<>();
-        for (StorageItemSummary entry : access.items().snapshot()) {
+        // An exchange cell reads real contents only; the convertible budget is offered through
+        // the cell's own recipe path instead of being reported as stored items.
+        for (StorageItemSummary entry : access.items().snapshotRealOnly()) {
             AEItemKey key = AEItemKey.of(entry.prototype());
             if (key != null && entry.amount() > 0L) {
                 amounts.merge(key, entry.amount(), XianqiaoExchangeStorageCell::saturatedSum);
             }
         }
         if (access.fluids() != null) {
-            access.fluids().snapshot().forEach((fluid, amount) -> {
+            // Same rule as the item view: an exchange cell reads real fluids only.
+            access.fluids().snapshotRealOnly().forEach((fluid, amount) -> {
                 if (fluid == null || amount == null || amount <= 0L) return;
                 AEFluidKey key = AEFluidKey.of(fluid.prototype());
                 if (key != null) {

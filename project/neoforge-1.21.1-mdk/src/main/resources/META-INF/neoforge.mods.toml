@@ -17,6 +17,9 @@ config="immortalstorage.arsnouveau.mixins.json"
 [[mixins]]
 config="immortalstorage.appliedbotanics.mixins.json"
 
+[[mixins]]
+config="immortalstorage.ae2.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"

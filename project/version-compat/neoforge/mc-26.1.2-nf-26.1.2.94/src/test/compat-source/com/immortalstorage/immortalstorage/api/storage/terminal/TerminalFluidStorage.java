@@ -19,6 +19,16 @@ public interface TerminalFluidStorage {
     /** Immutable point-in-time identity/amount snapshot. */
     Map<TerminalFluidKey, Long> snapshot();
 
+    /**
+     * Snapshot restricted to fluids that physically exist in Xianqiao.
+     *
+     * <p>An exchange cell reads real contents only; the Xianqiao interface keeps projecting the
+     * source veins through {@link #snapshot()}, mirroring the item view.</p>
+     */
+    default Map<TerminalFluidKey, Long> snapshotRealOnly() {
+        return snapshot();
+    }
+
     /** Returns the amount accepted (or that would be accepted). */
     long insert(TerminalFluidKey key, long amountMb, TerminalStorageAction action);
 

@@ -277,6 +277,11 @@ public final class SourceVeinManagerBlockEntity extends BlockEntity implements C
         return slot < 0 || slot >= memberSlots() ? ItemStack.EMPTY : members.getStackInSlot(slot);
     }
 
+    /** Public read-out for the exchange catalog; the definition is otherwise private. */
+    public @Nullable SourceDefinition memberDefinitionFor(int slot) {
+        return memberDefinition(slot);
+    }
+
     private @Nullable SourceDefinition memberDefinition(int slot) {
         return SourceVeinManagerInventory.sourceDefinition(memberStack(slot));
     }

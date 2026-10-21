@@ -39,7 +39,30 @@ final class EnchantmentHandbookContractTest {
     private static final String LANG_PATH = "assets/immortalstorage/lang/%s.json";
     private static final List<String> NEW_KEYS = List.of(
             "container.immortalstorage.enchantment_compressor",
-            "container.immortalstorage.enchantment_decompressor");
+            "container.immortalstorage.enchantment_decompressor",
+            // 0.1.9 Guixu Time-Shift Staff: item/staff feedback keys in both locales.
+            "item.immortalstorage.time_shift_staff",
+            "immortalstorage.time_shift.tier",
+            "immortalstorage.time_shift.applied",
+            "immortalstorage.time_shift.cleared",
+            "immortalstorage.time_shift.nothing_to_clear",
+            "immortalstorage.time_shift.not_accelerable",
+            "immortalstorage.time_shift.need_primordial_qi",
+            "immortalstorage.time_shift.boosted",
+            "immortalstorage.time_shift.renewed",
+            "immortalstorage.time_shift.limit",
+            "immortalstorage.time_shift.tooltip.tier",
+            "immortalstorage.time_shift.tooltip.usage",
+            // 0.1.9 config section bound by ImmortalStorageConfig.
+            "immortalstorage.configuration.time_shift",
+            "immortalstorage.configuration.time_shift.boostLog2",
+            "immortalstorage.configuration.time_shift.boostLog2.tooltip",
+            "immortalstorage.configuration.time_shift.boostSeconds",
+            "immortalstorage.configuration.time_shift.boostSeconds.tooltip",
+            "immortalstorage.configuration.time_shift.maxBlocks",
+            "immortalstorage.configuration.time_shift.maxBlocks.tooltip",
+            "immortalstorage.configuration.time_shift.randomTickBlocks",
+            "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip");
     private static final Map<String, String> ENGLISH_KEYS = Map.of(
             "container.immortalstorage.enchantment_compressor", "Enchantment Compressor",
             "container.immortalstorage.enchantment_decompressor", "Enchantment Decompressor");
@@ -152,8 +175,8 @@ final class EnchantmentHandbookContractTest {
         JsonObject english = lang("en_us");
         JsonObject chinese = lang("zh_cn");
         int expected = BASELINE_KEY_COUNT + NEW_KEYS.size();
-        assertEquals(expected, english.size(), "en_us key count changed instead of growing by the two new keys");
-        assertEquals(expected, chinese.size(), "zh_cn key count changed instead of growing by the two new keys");
+        assertEquals(expected, english.size(), "en_us key count changed instead of growing by the recorded new keys");
+        assertEquals(expected, chinese.size(), "zh_cn key count changed instead of growing by the recorded new keys");
         List<String> englishKeys = new ArrayList<>(english.keySet());
         List<String> chineseKeys = new ArrayList<>(chinese.keySet());
         assertEquals(englishKeys, chineseKeys, "both locales must declare their keys in the same order");

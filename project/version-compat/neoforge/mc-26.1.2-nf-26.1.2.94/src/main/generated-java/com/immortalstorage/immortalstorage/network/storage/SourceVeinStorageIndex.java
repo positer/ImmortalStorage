@@ -8,6 +8,8 @@ import com.immortalstorage.immortalstorage.block.entity.SourceVeinBlockEntity;
 import com.immortalstorage.immortalstorage.block.entity.SourceVeinManagerBlockEntity;
 import com.immortalstorage.immortalstorage.dimension.ImmortalStorageDimensions;
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
+import com.immortalstorage.immortalstorage.source.SourceExchangeOffer;
+import com.immortalstorage.immortalstorage.source.definition.SourceDefinition;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -136,6 +138,35 @@ public final class SourceVeinStorageIndex {
         return directory == null ? 0L : directory.extractFluid(key, amount, action);
     }
 
+    /**
+     * Free veins only, as real stock.
+     *
+     * <p>A free definition fills its persistent cache without charging anything, so its output
+     * physically exists; an exchange cell must therefore see it as stored contents. Paid veins stay
+     * a projection and are excluded here.</p>
+     */
+    public static List<StorageItemSummary> freeItemSnapshot(MinecraftServer server, UUID owner) {
+        OwnerDirectory directory = directory(server, owner, false);
+        return directory == null ? List.of() : directory.freeItemSnapshot();
+    }
+
+    public static Map<TerminalFluidKey, Long> freeFluidSnapshot(MinecraftServer server, UUID owner) {
+        OwnerDirectory directory = directory(server, owner, false);
+        return directory == null ? Map.of() : directory.freeFluidSnapshot();
+    }
+
+    /**
+     * Exchange offers the owner's connected veins imply right now.
+     *
+     * <p>This is the only data source the AE2/RS providers may use: no connected vein means
+     * no offer, and the set changes whenever a vein or a manager member registers or
+     * unregisters.</p>
+     */
+    public static List<SourceExchangeOffer> exchangeOffers(MinecraftServer server, UUID owner) {
+        OwnerDirectory directory = directory(server, owner, false);
+        return directory == null ? List.of() : directory.exchangeOffers();
+    }
+
     public static long itemRevision(MinecraftServer server, UUID owner) {
         OwnerDirectory directory = directory(server, owner, false);
         return directory == null ? 0L : directory.itemRevision();
@@ -189,6 +220,20 @@ public final class SourceVeinStorageIndex {
         long availableUnits();
         long extract(long requested, boolean simulate);
 
+        /**
+         * The production id straight from the source definition.
+         *
+         * <p>Unlike {@link #itemPrototype()} / {@link #fluidPrototype()} this does not consult the
+         * cache, so an exchange recipe exists even while the cache is empty — a recipe is a rate,
+         * not a stock level.</p>
+         */
+        default net.minecraft.resources.Identifier definitionOutputId() { return null; }
+
+        /** Immortal Yuan spent per production batch; 0 for a free vein. */
+        default long yuanPerBatch() { return 0L; }
+        /** Units produced per batch; the exchange recipe's output count. */
+        default long outputsPerBatch() { return 1L; }
+
         /** Production handles publish mutations through {@link #changed}; test fakes do not. */
         default boolean publishesMutation() { return false; }
     }
@@ -241,6 +286,22 @@ public final class SourceVeinStorageIndex {
             return item || fluid;
         }
 
+        /** One offer per active source, in stable tree order so providers can diff cheaply. */
+        synchronized List<SourceExchangeOffer> exchangeOffers() {
+            List<SourceExchangeOffer> offers = new java.util.ArrayList<>(sources.size());
+            for (Map.Entry<String, SourceHandle> entry : sources.entrySet()) {
+                SourceHandle source = entry.getValue();
+                if (source == null) continue;
+                // Definition-backed, not cache-backed: an empty cache must still advertise its
+                // exchange recipe (a recipe is a rate, not a stock level), for items and fluids alike.
+                var definitionId = source.definitionOutputId();
+                if (definitionId == null) continue;
+                offers.add(new SourceExchangeOffer(entry.getKey(), definitionId, source.fluid(),
+                        source.yuanPerBatch(), source.outputsPerBatch()));
+            }
+            return List.copyOf(offers);
+        }
+
         synchronized boolean touch(String sourceId) {
             SourceHandle source = sources.get(sourceId);
             if (source == null) return false;
@@ -269,17 +330,48 @@ public final class SourceVeinStorageIndex {
                 MutableItem item = grouped.computeIfAbsent(key,
                         ignored -> new MutableItem(prototype.copyWithCount(1)));
                 long amount = Math.max(0L, source.availableUnits());
-                if (source.free() || item.amount == Long.MAX_VALUE) {
-                    item.amount = Math.max(item.amount, amount);
-                } else {
-                    item.amount = saturatingAdd(item.amount, amount);
-                }
+                // Deduplicate by produced resource: several veins of the same kind (and a manager
+                // member pointing at the same source) describe one budget, not several. The
+                // largest single budget wins; summing them would inflate the convertible amount.
+                item.amount = Math.max(item.amount, amount);
             }
             ArrayList<StorageItemSummary> result = new ArrayList<>(grouped.size());
             grouped.values().forEach(item -> {
                 if (item.amount > 0L) result.add(new StorageItemSummary(item.prototype, item.amount));
             });
             return List.copyOf(result);
+        }
+
+        /** Real-stock projection: free veins only, deduplicated by resource identity. */
+        synchronized List<StorageItemSummary> freeItemSnapshot() {
+            LinkedHashMap<TerminalEntryKey, MutableItem> grouped = new LinkedHashMap<>();
+            for (SourceHandle source : sources.values()) {
+                if (source.fluid() || !source.free() || !source.activeFor(owner)) continue;
+                ItemStack prototype = source.itemPrototype();
+                if (prototype == null || prototype.isEmpty()) continue;
+                TerminalEntryKey key = TerminalEntryKey.of(prototype);
+                MutableItem item = grouped.computeIfAbsent(key,
+                        ignored -> new MutableItem(prototype.copyWithCount(1)));
+                item.amount = Math.max(item.amount, Math.max(0L, source.availableUnits()));
+            }
+            ArrayList<StorageItemSummary> result = new ArrayList<>(grouped.size());
+            grouped.values().forEach(item -> {
+                if (item.amount > 0L) result.add(new StorageItemSummary(item.prototype, item.amount));
+            });
+            return List.copyOf(result);
+        }
+
+        synchronized Map<TerminalFluidKey, Long> freeFluidSnapshot() {
+            LinkedHashMap<TerminalFluidKey, Long> result = new LinkedHashMap<>();
+            for (SourceHandle source : sources.values()) {
+                if (!source.fluid() || !source.free() || !source.activeFor(owner)) continue;
+                FluidStack prototype = source.fluidPrototype();
+                if (prototype == null || prototype.isEmpty()) continue;
+                TerminalFluidKey key = TerminalFluidKey.of(prototype);
+                result.merge(key, Math.max(0L, source.availableUnits()), Math::max);
+            }
+            result.values().removeIf(amount -> amount == null || amount <= 0L);
+            return Map.copyOf(result);
         }
 
         synchronized Map<TerminalFluidKey, Long> fluidSnapshot() {
@@ -291,8 +383,9 @@ public final class SourceVeinStorageIndex {
                 TerminalFluidKey key = TerminalFluidKey.of(prototype);
                 long previous = result.getOrDefault(key, 0L);
                 long amount = Math.max(0L, source.availableUnits());
-                result.put(key, source.free() || previous == Long.MAX_VALUE
-                        ? Math.max(previous, amount) : saturatingAdd(previous, amount));
+                // Same deduplication rule as itemSnapshot: one budget per resource identity.
+                result.put(key, source.free() ? Math.max(previous, amount)
+                        : Math.max(previous, amount));
             }
             result.values().removeIf(amount -> amount == null || amount <= 0L);
             return Map.copyOf(result);
@@ -405,6 +498,18 @@ public final class SourceVeinStorageIndex {
             SourceVeinBlockEntity live = source.get();
             return live == null ? 0L : live.extractForXianqiaoStorage(owner, requested, simulate);
         }
+        @Override public net.minecraft.resources.Identifier definitionOutputId() {
+            SourceVeinBlockEntity live = source.get();
+            return live == null ? null : live.definition().outputId();
+        }
+        @Override public long yuanPerBatch() {
+            SourceVeinBlockEntity live = source.get();
+            return live == null ? 0L : live.definition().yuanCostPerBatch();
+        }
+        @Override public long outputsPerBatch() {
+            SourceVeinBlockEntity live = source.get();
+            return live == null ? 1L : live.definition().outputsPerBatch();
+        }
         @Override public boolean publishesMutation() { return true; }
     }
 
@@ -450,6 +555,21 @@ public final class SourceVeinStorageIndex {
         @Override public long extract(long requested, boolean simulate) {
             SourceVeinManagerBlockEntity live = manager.get();
             return live == null ? 0L : live.extractMember(slot, requested, simulate);
+        }
+        @Override public net.minecraft.resources.Identifier definitionOutputId() {
+            SourceVeinManagerBlockEntity live = manager.get();
+            SourceDefinition definition = live == null ? null : live.memberDefinitionFor(slot);
+            return definition == null ? null : definition.outputId();
+        }
+        @Override public long yuanPerBatch() {
+            SourceVeinManagerBlockEntity live = manager.get();
+            SourceDefinition definition = live == null ? null : live.memberDefinitionFor(slot);
+            return definition == null ? 0L : definition.yuanCostPerBatch();
+        }
+        @Override public long outputsPerBatch() {
+            SourceVeinManagerBlockEntity live = manager.get();
+            SourceDefinition definition = live == null ? null : live.memberDefinitionFor(slot);
+            return definition == null ? 1L : definition.outputsPerBatch();
         }
         @Override public boolean publishesMutation() { return true; }
     }

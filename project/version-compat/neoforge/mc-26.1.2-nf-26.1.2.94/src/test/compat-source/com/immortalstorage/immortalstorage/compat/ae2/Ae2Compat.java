@@ -42,6 +42,10 @@ public final class Ae2Compat {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(AECapabilities.ME_STORAGE, ModBlockEntities.XIANQIAO_MANAGER.get(),
                 (manager, side) -> managerStorage(manager));
+        // AE2 discovers in-world network members exclusively through this capability
+        // (GridHelper.getNodeHost never does an instanceof check), so registering it is
+        // what actually lets the Xianqiao controller join a grid.
+        XianqiaoAe2GridNodes.registerCapabilities(event);
     }
 
     private static MEStorage managerStorage(

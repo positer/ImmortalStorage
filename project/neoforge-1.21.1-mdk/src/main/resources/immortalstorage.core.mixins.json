@@ -13,6 +13,7 @@
     "AbstractFurnaceSpiritSwordTemperingMixin",
     "RealmTickerFactoryMixin",
     "RealmBoundTickerMixin",
+    "TimeShiftBlockEntitiesMixin",
     "ToolLocatorChunkMixin"
   ],
   "client": [

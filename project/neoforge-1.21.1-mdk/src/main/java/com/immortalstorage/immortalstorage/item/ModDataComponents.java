@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.item;
 
 import com.immortalstorage.immortalstorage.ImmortalStorageMod;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -16,6 +17,12 @@ public final class ModDataComponents {
             SOURCE_DEFINITION_ID = DATA_COMPONENTS.registerComponentType(
                     "source_definition_id",
                     builder -> builder.persistent(ResourceLocation.CODEC));
+
+    /** Time-Shift Staff tier (0..4 -> 2x..32x) that the next application grants. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>>
+            TIME_SHIFT_TIER = DATA_COMPONENTS.registerComponentType(
+                    "time_shift_tier",
+                    builder -> builder.persistent(Codec.INT));
 
     private ModDataComponents() {}
 }

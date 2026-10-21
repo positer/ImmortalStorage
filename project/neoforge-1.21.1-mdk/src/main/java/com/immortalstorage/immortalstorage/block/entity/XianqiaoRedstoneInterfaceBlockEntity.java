@@ -36,7 +36,17 @@ public final class XianqiaoRedstoneInterfaceBlockEntity extends XianqiaoInterfac
         else { if (!active && amount < lowThreshold) active = true; else if (active && amount > highThreshold) active = false; }
         if (active != getBlockState().getValue(XianqiaoRedstoneInterfaceBlock.ACTIVATED)) level.setBlock(worldPosition, getBlockState().setValue(XianqiaoRedstoneInterfaceBlock.ACTIVATED, active), Block.UPDATE_CLIENTS | Block.UPDATE_NEIGHBORS);
     }
-    @Override public void serverTick() { if (level != null && level.getGameTime() % 5L == 0L) evaluate(configuredOwnerStorageAmount(0)); }
+    @Override public void serverTick() {
+        if (level == null) return;
+        if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            int gate = com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, 5);
+            if (level.getGameTime() % gate != 0L
+                    && !com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition)) return;
+        } else if (level.getGameTime() % 5L != 0L) {
+            return;
+        }
+        evaluate(configuredOwnerStorageAmount(0));
+    }
     @Override public Component getDisplayName() { return Component.translatable("container.immortalstorage.xianqiao_redstone_interface"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new XianqiaoRedstoneInterfaceMenu(id, inventory, this); }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putLong("LowThreshold", lowThreshold); tag.putLong("HighThreshold", highThreshold); tag.putBoolean("Inverted", inverted); }

@@ -1093,4 +1093,54 @@ public enum ModPayloads {
                         ImmortalStorageMod.MODID, "set_xianqiao_interface_external_target"));
         @Override public CustomPacketPayload.Type<SetXianqiaoInterfaceExternalTarget> type() { return TYPE; }
     }
+
+    /** One synced time-shift record. {@code pos} is a packed BlockPos long. */
+    public record TimeShiftSyncEntry(long pos, int tier, boolean boosted, long boostEndEpochMillis) {}
+
+    /** Full per-dimension time-shift record sent to every player in that dimension. */
+    public record TimeShiftSync(List<TimeShiftSyncEntry> entries) implements CustomPacketPayload {
+        /** Defensive bound; a client never needs more records than the server-side per-dimension limit. */
+        private static final int MAX_ENTRIES = 8192;
+
+        public TimeShiftSync {
+            entries = entries == null ? List.of() : List.copyOf(entries);
+        }
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, TimeShiftSync> STREAM_CODEC =
+                new StreamCodec<>() {
+                    @Override public TimeShiftSync decode(RegistryFriendlyByteBuf buffer) {
+                        int size = Math.max(0, Math.min(buffer.readVarInt(), MAX_ENTRIES));
+                        List<TimeShiftSyncEntry> decoded = new ArrayList<>(size);
+                        for (int index = 0; index < size; index++) {
+                            decoded.add(new TimeShiftSyncEntry(buffer.readLong(), buffer.readVarInt(),
+                                    buffer.readBoolean(), buffer.readLong()));
+                        }
+                        return new TimeShiftSync(decoded);
+                    }
+
+                    @Override public void encode(RegistryFriendlyByteBuf buffer, TimeShiftSync payload) {
+                        buffer.writeVarInt(payload.entries().size());
+                        for (TimeShiftSyncEntry entry : payload.entries()) {
+                            buffer.writeLong(entry.pos());
+                            buffer.writeVarInt(entry.tier());
+                            buffer.writeBoolean(entry.boosted());
+                            buffer.writeLong(entry.boostEndEpochMillis());
+                        }
+                    }
+                };
+        public static final CustomPacketPayload.Type<TimeShiftSync> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "time_shift_sync"));
+        @Override public CustomPacketPayload.Type<TimeShiftSync> type() { return TYPE; }
+    }
+
+    /** Sneak+scroll tier change request from the client. */
+    public record TimeShiftTier(int delta) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, TimeShiftTier> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.VAR_INT, TimeShiftTier::delta, TimeShiftTier::new);
+        public static final CustomPacketPayload.Type<TimeShiftTier> TYPE =
+                new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(
+                        ImmortalStorageMod.MODID, "time_shift_tier"));
+        @Override public CustomPacketPayload.Type<TimeShiftTier> type() { return TYPE; }
+    }
 }

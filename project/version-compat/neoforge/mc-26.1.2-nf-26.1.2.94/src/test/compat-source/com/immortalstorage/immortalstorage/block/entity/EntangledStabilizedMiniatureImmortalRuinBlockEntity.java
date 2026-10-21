@@ -51,10 +51,14 @@ public final class EntangledStabilizedMiniatureImmortalRuinBlockEntity extends c
 
     public void serverTick() {
         if (!(level instanceof ServerLevel serverLevel)) return;
-        if (normal.enabled && normal.frequency > 0 && serverLevel.getGameTime() % normal.frequency == 0) {
+        if (normal.enabled && normal.frequency > 0
+                && (serverLevel.getGameTime() % com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, normal.frequency) == 0
+                        || com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition))) {
             collect(serverLevel, normal, 0);
         }
-        if (reversedSide.enabled && reversedSide.frequency > 0 && serverLevel.getGameTime() % reversedSide.frequency == 0) {
+        if (reversedSide.enabled && reversedSide.frequency > 0
+                && (serverLevel.getGameTime() % com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.gatedPeriod(serverLevel, reversedSide.frequency) == 0
+                        || com.immortalstorage.immortalstorage.timeshift.TimeShiftMachines.isShifted(serverLevel, worldPosition))) {
             for (int group = 0; group < reinforcementMultiplier(); group++)
                 if (!eject(serverLevel, reversedSide, 1)) break;
         }

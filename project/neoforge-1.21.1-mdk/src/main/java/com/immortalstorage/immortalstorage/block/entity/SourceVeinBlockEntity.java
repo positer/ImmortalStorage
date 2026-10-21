@@ -613,6 +613,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         }
         long tick = currentGameTick();
         long granted = fluxBudget.claim(tick, fluxLimit, requested, simulate);
+        if (!simulate && granted > 0L) ensureCacheForPull(granted);
         long extracted = policy.extractable(buffer.available(), granted);
         if (!simulate) {
             extracted = buffer.extract(extracted, false);
@@ -637,6 +638,7 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         long tick = currentGameTick();
         SourceVeinFluxBudget faceBudget = activeFaceFluxBudget(direction);
         long granted = faceBudget.claim(tick, fluxLimit, requested, simulate);
+        if (!simulate && policy == ResourceAmountPolicy.CONSUMED && granted > 0L) ensureCacheForPull(granted);
         long extracted = policy.extractable(buffer.available(), granted);
         if (!simulate && policy == ResourceAmountPolicy.CONSUMED) {
             extracted = buffer.extract(extracted, false);
@@ -722,28 +724,75 @@ public class SourceVeinBlockEntity extends BlockEntity implements MenuProvider, 
         return true;
     }
 
+    /**
+     * Free definitions keep filling their cache for nothing; paid definitions must not
+     * convert the owner's yuan on their own.
+     *
+     * <p>2026-10-21 user ruling: a source vein bound to Xianqiao used to convert the whole
+     * spendable balance into cache every tick, so the owner only ever saw "maximum
+     * convertible amount" and their yuan was already spent. Paid veins now convert on
+     * demand — see {@link #ensureCacheForPull(long)} — and the interface reports the
+     * cached, convertible and currency amounts separately.</p>
+     */
     private void refillCacheForAutomation(ServerLevel serverLevel) {
         if (!hasValidDefinition()) return;
+        if (!chargePlan().isFree()) return;
+        if (buffer.fillToCapacityWithoutCharge() > 0L) markCacheChanged();
+    }
+
+    /**
+     * Converts only the shortfall a single pull needs, never the whole balance.
+     *
+     * <p>The conversion is charged through the same prepaid cycle path as a manual
+     * refill, so the owner pays for exactly what they pull.</p>
+     */
+    private void ensureCacheForPull(long requiredUnits) {
+        if (requiredUnits <= 0L || buffer.available() >= requiredUnits) return;
         SourceChargePlan plan = chargePlan();
         if (plan.isFree()) {
             if (buffer.fillToCapacityWithoutCharge() > 0L) markCacheChanged();
             return;
         }
-
+        if (!(level instanceof ServerLevel serverLevel) || owner == null) return;
         var ownerPlayer = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
         if (ownerPlayer == null) return;
-        long currencyCap;
         long spendableUnits;
         synchronized (ownerPlayer) {
-            ImmortalStoragePlayerData data = ImmortalStoragePlayerData.get(ownerPlayer);
-            currencyCap = data.getImmortalYuanCapLong();
-            spendableUnits = data.getImmortalYuan();
+            spendableUnits = ImmortalStoragePlayerData.get(ownerPlayer).getImmortalYuan();
         }
-        long target = SourceVeinBuffer.targetForChargeCapacity(currencyCap,
-                plan.unitsPerBatch(), plan.outputsPerBatch(), MAX_BUFFER);
-        long produced = SourceVeinBuffer.affordableRefill(target, buffer.available(), spendableUnits,
+        long produced = SourceVeinBuffer.affordableRefill(requiredUnits, buffer.available(), spendableUnits,
                 plan.unitsPerBatch(), plan.outputsPerBatch());
         if (produced > 0L) replenishOneCycle(produced);
+    }
+
+    /** Cached units currently held without any conversion. */
+    public long cachedUnitsOnly() {
+        return buffer.available();
+    }
+
+    /** Units the owner's current yuan could convert right now; a read-only projection. */
+    public long convertibleUnitsOnly() {
+        SourceChargePlan plan = chargePlan();
+        if (plan.isFree()) return Long.MAX_VALUE;
+        if (!(level instanceof ServerLevel serverLevel) || owner == null) return 0L;
+        var ownerPlayer = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
+        if (ownerPlayer == null) return 0L;
+        long spendableUnits;
+        synchronized (ownerPlayer) {
+            spendableUnits = ImmortalStoragePlayerData.get(ownerPlayer).getImmortalYuan();
+        }
+        return SourceVeinBuffer.affordableRefill(Long.MAX_VALUE, 0L, spendableUnits,
+                plan.unitsPerBatch(), plan.outputsPerBatch());
+    }
+
+    /** The owner's current Immortal Yuan; the number the interface shows next to the projection. */
+    public long ownerCurrencyUnits() {
+        if (!(level instanceof ServerLevel serverLevel) || owner == null) return 0L;
+        var ownerPlayer = PersistentPlayerIdentity.onlinePlayer(serverLevel.getServer(), owner);
+        if (ownerPlayer == null) return 0L;
+        synchronized (ownerPlayer) {
+            return ImmortalStoragePlayerData.get(ownerPlayer).getImmortalYuan();
+        }
     }
 
     private boolean replenishOneCycle(long producedUnits) {
