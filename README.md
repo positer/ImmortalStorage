@@ -31,6 +31,18 @@ ImmortalStorage is a **cultivation mod for Minecraft** on NeoForge. It takes the
 
 Install the release JAR that matches your game version in the instance's mods directory, on both client and server, and keep one ImmortalStorage JAR per instance. Patchouli is embedded, so the handbook needs no separate installation. Back up worlds before updating.
 
+### What is new in 0.1.9
+
+| Change | In short |
+| --- | --- |
+| Guixu Time-Shift Staff | A shaped crafting-table item (one Immortal Forged Alloy, one Nurturing Crystal, two sticks, one Miniature Immortal Ruin). No durability, does not stack. |
+| Single-block acceleration | Right-click any block for a permanent 2x/4x/8x/16x/32x tier: a cyan box with the multiplier at the centre of every face. Sneak-scrolls cycle the tier the next application grants. |
+| 1024x window | Right-clicking an accelerated block spends one Primordial Qi for a 60-second real-time 1024x, drawn in red, that falls back to the permanent tier when it ends. Shift-right-click clears all staff acceleration at once. |
+| Realm and third-party stacking | The personal realm's extra passes multiply with the staff tier instead of replacing it, the same way JDT and Torcherino behave; the blacklist tags `immortalstorage:time_acceleration_disallowed` and `c:tick_acceleration_disallowed` are honoured. |
+| AE2 and RS networks | The Xianqiao manager and its disks join AE2/RS networks, expose exchange recipes as processing patterns, and deliver a whole order in one sink call. Free sources count as real stock; paid sources stay a projection on the Xianqiao interface only. |
+| Disk drive nodes | A Xianqiao disk placed in an AE2 or RS disk drive registers an exchange-recipe provider on that drive, so a drive alone can craft without the manager beside it. |
+| Sources | Lava is a paid source now (1 Immortal Yuan per 64 mB); water and milk stay free. Exchange recipes no longer depend on the cache being filled. |
+
 ### What is new in 0.1.8
 
 | Change | In short |
@@ -177,6 +189,18 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 | 26.1.2 | 26.1.2.94 | 25 |
 
 将对应版本的发行 JAR 安装到客户端与服务端实例的 mods 目录，每个实例只保留一个仙藏 JAR。已内置 Patchouli，手册无需另装依赖。更新前请备份世界。
+
+### 0.1.9 新增内容
+
+| 改动 | 简要说明 |
+| --- | --- |
+| 归墟时移法杖 | 合成台有序合成：仙锻合金一块、蕴灵晶一枚、木棍两根、迷你仙墟一块。无耐久、不可堆叠。 |
+| 单方块加速 | 右键任意方块获得常驻 2x/4x/8x/16x/32x：青色边框，每面中心悬挂倍率。潜行滚轮切换下次施加的档位。 |
+| 1024x 窗口 | 右键已加速方块消耗 1 个混元一气，换取 60 秒真实时间 1024x（红色），到期回落到原常驻档位；Shift 右键一次清空全部时移加速。 |
+| 仙窍与第三方叠加 | 仙窍自身的额外 pass 与法杖档位相乘而非覆盖，与 JDT、Torcherone 的行为一致；黑名单标签 `immortalstorage:time_acceleration_disallowed` 与 `c:tick_acceleration_disallowed` 均生效。 |
+| AE2 与 RS 网络 | 仙窍管理器与磁盘接入 AE2/RS 网络，以处理样板形式暴露兑换配方，并在一次 sink 调用内交付整笔订单。免费源计为真实库存；付费源仅在仙窍界面投影。 |
+| 磁盘驱动器节点 | 仙窍磁盘放入 AE2/RS 磁盘驱动器时，会在该驱动器上注册兑换配方供应节点，单独一台驱动器即可合成。 |
+| 源脉 | 岩浆改为付费源（1 仙元 / 64 mB），水与奶保持免费；兑换配方不再依赖缓存是否非空。 |
 
 ### 0.1.8 新增内容
 
