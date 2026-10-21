@@ -11,6 +11,13 @@
 - Sneak-scrolling while holding the staff cycles the tier the next application will grant. Changing the held tier never alters a block that is already accelerated.
 - The acceleration follows JDT's approach: every block-entity pass adds the block's extra ticks, so the personal realm's own extra passes multiply with the staff tier instead of replacing it. Blocks carrying immortalstorage:time_acceleration_disallowed or c:tick_acceleration_disallowed are never accelerated, and blocks that only expose random ticks are accelerated by the same expectation and can be disabled in the config.
 - Ancient Jade documents the staff in English and Simplified Chinese.
+- The Xianqiao manager and the Xianqiao disks join Applied Energistics 2 and Refined Storage networks. A manager registers as a network member by itself, whether it is placed next to a cable or directly against a machine: it now initialises its containers when the block entity enters a level, instead of waiting for something else to ask for the capability (RS never probes plain neighbours, which is why only cables used to work).
+- Both networks see exchange recipes as processing patterns. Paid veins are quoted per batch of Immortal Yuan; free veins are never published as patterns, so they stay storage rather than becoming an infinite mint. Fluids publish the same way as items, and the recipe no longer requires a filled cache — the quotation is a rate, not a stock level.
+- A Xianqiao disk placed in an AE2 drive or an RS disk drive registers an exchange-recipe provider on that drive, so a drive on its own can craft without a manager beside it. Removing the disk withdraws the recipes.
+- One crafting push now completes the whole order instead of draining it one batch per tick: a single sink call scales its delivery with the Immortal Yuan it was actually handed.
+- Free sources count as real stock in AE2 and RS terminals; paid sources stay a projection that only the Xianqiao interface shows.
+- Lava is a paid source now (1 Immortal Yuan per 64 mB of lava), matching the other stage-6 sources; water and milk stay free.
+- Breaking the manager is the owner's decision again: Refined Storage used to veto the break through its own build-permission check, which ignored game mode and refused creative players too. The manager now answers that check from its own ownership rule.
 
 ### 简体中文
 
@@ -21,6 +28,13 @@
 - 手持法杖时潜行+滚轮循环切换"下一次赋予"的档位；手持档位变化不会改动任何已经放出的加速。
 - 加速沿用 JDT 的做法：每个方块实体轮次都为该方块补上额外 tick，因此仙窍自身的额外轮次与时移档位相乘而不是相互取代。命中 immortalstorage:time_acceleration_disallowed 或 c:tick_acceleration_disallowed 的方块永不被加速；只有随机刻的方块按同样的期望值加速，并可在配置中关闭。
 - 古玉手册以中英双语记录这把法杖。
+- 仙窍管理器与仙窍磁盘接入 AE2 与 RS 网络。管理器自己会注册为网络成员，无论贴着线缆还是直接贴着机器：它在方块实体进入世界时就初始化自己的容器，而不再等别人来询问能力（RS 从不去探测普通邻居，所以此前只有线缆能用）。
+- 两套网络都以处理样板的形式看到兑换配方。付费源脉按每批仙元报价；免费源脉不发布样板，因此它只是存储而不是无限铸币。流体与物品的发布方式一致，且配方不再要求缓存非空——报价是汇率，不是库存水位。
+- 仙窍磁盘放入 AE2 驱动器或 RS 磁盘驱动器时，会在该驱动器上注册兑换配方供应节点，因此单独一台驱动器即可合成，无需旁边再放管理器。取出磁盘即撤回配方。
+- 一次合成推送现在一次完成整笔订单，而不是每 tick 抽一批：单次 sink 调用会按它实际收到的仙元量成比例交付。
+- 免费源在 AE2 与 RS 终端中计为真实库存；付费源仍是只在仙窍界面投影的虚拟量。
+- 岩浆现在是付费源（每 64 mB 消耗 1 仙元），与其他六阶源脉一致；水与奶保持免费。
+- 破坏管理器重新由所有者决定：Refined Storage 此前用自己那套建造权限检查否决破坏，而该检查不看游戏模式、连创造模式也拒绝。管理器现在按自己的所有权规则回应这项检查。
 
 ## [0.1.8]
 
