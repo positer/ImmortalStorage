@@ -16,7 +16,6 @@
 - A Xianqiao disk placed in an AE2 drive or an RS disk drive registers an exchange-recipe provider on that drive, so a drive on its own can craft without a manager beside it. Removing the disk withdraws the recipes.
 - One crafting push now completes the whole order instead of draining it one batch per tick: a single sink call scales its delivery with the Immortal Yuan it was actually handed.
 - Free sources count as real stock in AE2 and RS terminals; paid sources stay a projection that only the Xianqiao interface shows.
-- Lava is a paid source now (1 Immortal Yuan per 64 mB of lava), matching the other stage-6 sources; water and milk stay free.
 - Breaking the manager is the owner's decision again: Refined Storage used to veto the break through its own build-permission check, which ignored game mode and refused creative players too. The manager now answers that check from its own ownership rule.
 
 ### 简体中文
@@ -33,7 +32,6 @@
 - 仙窍磁盘放入 AE2 驱动器或 RS 磁盘驱动器时，会在该驱动器上注册兑换配方供应节点，因此单独一台驱动器即可合成，无需旁边再放管理器。取出磁盘即撤回配方。
 - 一次合成推送现在一次完成整笔订单，而不是每 tick 抽一批：单次 sink 调用会按它实际收到的仙元量成比例交付。
 - 免费源在 AE2 与 RS 终端中计为真实库存；付费源仍是只在仙窍界面投影的虚拟量。
-- 岩浆现在是付费源（每 64 mB 消耗 1 仙元），与其他六阶源脉一致；水与奶保持免费。
 - 破坏管理器重新由所有者决定：Refined Storage 此前用自己那套建造权限检查否决破坏，而该检查不看游戏模式、连创造模式也拒绝。管理器现在按自己的所有权规则回应这项检查。
 
 ## [0.1.8]

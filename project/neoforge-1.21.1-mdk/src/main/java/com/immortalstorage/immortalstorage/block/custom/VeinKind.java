@@ -6,9 +6,7 @@ package com.immortalstorage.immortalstorage.block.custom;
 public enum VeinKind {
     WATER(0, 64, true, 0, true, false),
     MILK(0, 64, true, 0, true, false),
-    // Lava is NOT free: it is a stage-6 fluid source and must be paid for like any other paid
-    // vein (2026-10-21 user ruling: "lava should cost something"). Water and milk stay free.
-    LAVA(1, 64, false, 6, true, false),
+    LAVA(0, 64, true, 6, true, false),
     COBBLE(0, 64, true, 0, false, false),
     STONE(1, 64, false, 6, false, false),
     SMOOTH_STONE(1, 64, false, 7, false, false),
