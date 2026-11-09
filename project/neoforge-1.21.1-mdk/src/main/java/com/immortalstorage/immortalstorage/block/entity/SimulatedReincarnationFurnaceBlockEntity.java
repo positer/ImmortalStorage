@@ -8,6 +8,9 @@ import com.immortalstorage.immortalstorage.item.custom.SpiritDriveItem;
 import com.immortalstorage.immortalstorage.menu.custom.SimulatedReincarnationFurnaceMenu;
 import com.immortalstorage.immortalstorage.network.storage.PersonalStorageNetwork;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardOutputRouter;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Machine;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Target;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -281,8 +284,16 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
 
     private boolean hasSpecimenSource() {
         ItemStack source = items.getStackInSlot(SOURCE_SLOT);
-        return source.getItem() instanceof SpawnEggItem
-                || source.getItem() instanceof SoulCatcherItem && SoulCatcherItem.hasEntity(source);
+        EntityType<?> type = null;
+        if (source.getItem() instanceof SpawnEggItem egg) type = egg.getType(source);
+        else if (source.getItem() instanceof SoulCatcherItem && SoulCatcherItem.hasEntity(source)) {
+            var id = net.minecraft.resources.ResourceLocation.tryParse(SoulCatcherItem.containedEntity(source).getString("id"));
+            type = id == null ? null : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+        }
+        if (type == null) return false;
+        var mode = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
+        return MachinePolicyApi.allowsEntity(Machine.SIMULATED_REINCARNATION_FURNACE, 1, mode, type)
+                && MachinePolicyApi.allowsItem(Machine.SIMULATED_REINCARNATION_FURNACE, 1, mode, Target.INPUT_ITEM, source.getItem());
     }
 
     public @Nullable LivingEntity createDisplayEntity(net.minecraft.world.level.Level displayLevel) {
@@ -332,6 +343,9 @@ public final class SimulatedReincarnationFurnaceBlockEntity extends BlockEntity
         }
         int processMultiplier = Math.max(1, items.getStackInSlot(SOURCE_SLOT).getCount())
                 * reinforcementMultiplier();
+        var mode = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(specimen.getType());
+        drops = drops.stream().filter(stack -> MachinePolicyApi.allowsItem(
+                Machine.SIMULATED_REINCARNATION_FURNACE, 1, mode, Target.OUTPUT_ITEM, stack.getItem())).toList();
         drops = multiplyDrops(drops, processMultiplier);
         int xp = (int) Math.min(Integer.MAX_VALUE,
                 (long) Math.max(0, specimen.getExperienceReward(level, killer)) * processMultiplier);

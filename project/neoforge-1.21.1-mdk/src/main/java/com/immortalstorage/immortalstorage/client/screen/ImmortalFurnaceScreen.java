@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Vanilla-pixel-language screen with three furnace lanes in one menu. */
-public class ImmortalFurnaceScreen extends AbstractContainerScreen<ImmortalFurnaceMenu> {
+public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFurnaceMenu> {
     private net.minecraft.client.gui.components.Button redstoneModeButton;
     private net.minecraft.client.gui.components.Button settingsButton;
     private boolean settingsOpen;
@@ -48,12 +48,11 @@ public class ImmortalFurnaceScreen extends AbstractContainerScreen<ImmortalFurna
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
         VanillaGuiPainter.panel(graphics, x, y, imageWidth, imageHeight);
         if (settingsOpen) {
-            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 4, topPos, 104, 62);
             graphics.drawString(font, Component.translatable("container.immortalstorage.redstone_mode.title"),
                     leftPos + imageWidth + 12, topPos + 10, TEXT, false);
         }

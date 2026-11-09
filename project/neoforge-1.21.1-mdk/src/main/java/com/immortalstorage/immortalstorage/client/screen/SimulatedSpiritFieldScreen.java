@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Main panel geometry and slot layout exactly match the Simulated Reincarnation Furnace. */
-public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<SimulatedSpiritFieldMenu> {
+public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<SimulatedSpiritFieldMenu> {
     private Button redstoneModeButton;
     private static final ResourceLocation FURNACE = ResourceLocation.withDefaultNamespace(
             "textures/gui/container/furnace.png");
@@ -42,13 +42,14 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.reincarnation.settings"))).build());
+                        "container.immortalstorage.configuration"))).build());
         buildSettingsWidgets();
         refreshSettingsWidgets();
     }
@@ -127,7 +128,7 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
         automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
-    @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         graphics.fill(leftPos + 2, topPos + 2, leftPos + imageWidth - 2, topPos + 17, 0xFFD8D8D8);
         graphics.hLine(leftPos + 3, leftPos + imageWidth - 4, topPos + 17, 0xFF8B8B8B);
@@ -145,9 +146,8 @@ public final class SimulatedSpiritFieldScreen extends AbstractContainerScreen<Si
 
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
-        VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
         graphics.drawString(font, Component.translatable(
-                "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
+                "container.immortalstorage.configuration"), panelX + 8, topPos + 7, 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.drawString(font, Component.translatable(

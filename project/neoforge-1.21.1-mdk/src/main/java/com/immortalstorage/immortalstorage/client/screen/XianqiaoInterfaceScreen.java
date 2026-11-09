@@ -47,7 +47,7 @@ import java.util.Optional;
  * off-screen list to keep alive.</p>
  */
 public class XianqiaoInterfaceScreen
-        extends AbstractContainerScreen<XianqiaoInterfaceMenu>
+        extends ConfigurationWindowScreen<XianqiaoInterfaceMenu>
         implements TerminalFluidScreenAccess {
     private static final int TEXT = 0xFF404040;
     private static final int GHOST_TINT = 0x1F63B7BE;
@@ -86,6 +86,13 @@ public class XianqiaoInterfaceScreen
         this.imageWidth = SCREEN_WIDTH;
         this.imageHeight = SCREEN_HEIGHT;
         this.inventoryLabelY = 139;
+    }
+
+    @Override
+    protected boolean followsWindow(net.minecraft.client.gui.components.AbstractWidget widget) {
+        // Centered modal dialogs have their own coordinate system; hidden dialog widgets must stay there.
+        return widget != amountInput && widget != applyAmountButton && widget != cancelAmountButton
+                && !slotFaceButtons.containsValue(widget) && !externalResourceButtons.contains(widget);
     }
 
     @Override
@@ -163,7 +170,7 @@ public class XianqiaoInterfaceScreen
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
         VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);

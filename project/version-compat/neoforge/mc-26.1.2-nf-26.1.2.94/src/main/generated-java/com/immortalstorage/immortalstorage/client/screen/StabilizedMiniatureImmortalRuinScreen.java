@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Vanilla six-row chest with a compact settings tab and server-backed +/- controls. */
-public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniatureImmortalRuinMenu> extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<M> {
+public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniatureImmortalRuinMenu> extends ConfigurationWindowScreen<M> {
     private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
     protected boolean settings;
     private boolean filtersOpen;
@@ -32,6 +32,8 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
         imageHeight = 222;
         inventoryLabelY = imageHeight - 94;
     }
+
+    @Override protected int configurationPanelWidth() { return 156; }
 
     @Override
     protected void init() {
@@ -171,7 +173,7 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, TEXTURE, leftPos, topPos, imageWidth, imageHeight, 0.0F, 0.0F, 256, 256);
         if (filtersOpen) {
             var ruin = filterEntity();
@@ -186,12 +188,12 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
             }
             VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
             graphics.text(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
-                    leftPos + 210, topPos + 203, 0xFFFFFF, true);
+                    leftPos + 210, topPos + 203, ConfigurationStyle.TEXT, false);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
-        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
+        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
+        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, ConfigurationStyle.TEXT, false);
     }
 
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

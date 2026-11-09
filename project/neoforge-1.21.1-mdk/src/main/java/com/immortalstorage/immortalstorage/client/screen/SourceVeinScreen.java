@@ -20,7 +20,7 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 /** Vanilla-widget face configuration; the source cache is intentionally hidden. */
-public class SourceVeinScreen extends AbstractContainerScreen<SourceVeinMenu> {
+public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> {
     private static final int TEXT = 0xFF404040;
     private static final int TITLE_X = 8;
     private static final int TITLE_Y = 6;
@@ -87,7 +87,7 @@ public class SourceVeinScreen extends AbstractContainerScreen<SourceVeinMenu> {
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
         VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);

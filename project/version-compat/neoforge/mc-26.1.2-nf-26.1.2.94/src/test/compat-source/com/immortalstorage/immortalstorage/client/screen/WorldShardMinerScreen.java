@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Miner cache screen with the same settings tab and geometry as the Treasure Basin. */
-public final class WorldShardMinerScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<WorldShardMinerMenu> {
+public final class WorldShardMinerScreen extends ConfigurationWindowScreen<WorldShardMinerMenu> {
     private static final Identifier CHEST_TEXTURE = Identifier.withDefaultNamespace(
             "textures/gui/container/generic_54.png");
     private static final int TEXT = 0xFF404040;
@@ -37,18 +37,24 @@ public final class WorldShardMinerScreen extends com.immortalstorage.immortalsto
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.world_shard_miner.settings"))).build());
+                        "container.immortalstorage.configuration"))).build());
         int panelX = leftPos + imageWidth + 4;
-        for (Direction side : Direction.values()) {
-            Button face = Button.builder(Component.literal(side.getName().substring(0, 1).toUpperCase()),
-                    button -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId,
-                            10 + side.get3DDataValue()))
-                    .bounds(panelX + 8 + (side.get3DDataValue() % 3) * 34,
-                            topPos + 34 + (side.get3DDataValue() / 3) * 34, 30, 30).build();
-            settingsWidgets.add(addRenderableWidget(face));
+        for (int index = 0; index < ConfigurationStyle.FACES.size(); index++) {
+            Direction side = ConfigurationStyle.FACES.get(index);
+            final int face = side.get3DDataValue();
+            Button button = new FacePreviewButton(panelX + 8 + (index % 3) * 34,
+                    topPos + 34 + (index / 3) * 34, 30,
+                    Component.literal(side.getName().substring(0, 1).toUpperCase(java.util.Locale.ROOT)),
+                    () -> net.minecraft.world.item.ItemStack.EMPTY,
+                    () -> menu.outputFace(face) ? ConfigurationStyle.ENABLED : ConfigurationStyle.DISABLED,
+                    clicked -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 10 + face));
+            button.setTooltip(Tooltip.create(Component.translatable(
+                    "container.immortalstorage.reincarnation.face." + face)));
+            settingsWidgets.add(addRenderableWidget(button));
         }
         settingsWidgets.add(addRenderableWidget(Button.builder(Component.empty(), button ->
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 0))
@@ -57,12 +63,24 @@ public final class WorldShardMinerScreen extends com.immortalstorage.immortalsto
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1))
                 .bounds(panelX + 8, topPos + 132, 110, 20).build()));
         refreshSettings();
+        refreshOutputButtons();
+    }
+
+    private void refreshOutputButtons() {
+        if (settingsWidgets.size() < 8) return;
+        settingsWidgets.get(6).setMessage(Component.translatable(
+                "container.immortalstorage.reincarnation." + (menu.xianqiaoOutput() ? "xianqiao_on" : "xianqiao_off")));
+        settingsWidgets.get(7).setMessage(Component.translatable(
+                "container.immortalstorage.reincarnation." + (menu.automaticOutput() ? "automatic_on" : "automatic_off")));
+        settingsWidgets.get(6).setAlpha(menu.xianqiaoOutput() ? 1.0F : 0.45F);
+        settingsWidgets.get(7).setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
     private void toggleSettings() {
         settingsOpen = !settingsOpen;
         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 2);
         refreshSettings();
+        refreshOutputButtons();
     }
 
     private void refreshSettings() {
@@ -70,7 +88,9 @@ public final class WorldShardMinerScreen extends com.immortalstorage.immortalsto
         menu.setSettingsVisible(settingsOpen);
     }
 
-    @Override protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void containerTick() { super.containerTick(); refreshOutputButtons(); }
+
+    @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, CHEST_TEXTURE, x, y, 0.0F, 0.0F,
@@ -86,8 +106,7 @@ public final class WorldShardMinerScreen extends com.immortalstorage.immortalsto
                 0.0F, 126.0F, imageWidth, 96, 256, 256);
         if (settingsOpen) {
             int panelX = leftPos + imageWidth + 4;
-            VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
-            VanillaGuiPainter.slot(graphics, leftPos + 190, topPos + 160, true);
+                VanillaGuiPainter.slot(graphics, leftPos + 190, topPos + 160, true);
         }
     }
 
@@ -103,15 +122,7 @@ public final class WorldShardMinerScreen extends com.immortalstorage.immortalsto
         if (settingsOpen) {
             int panelX = imageWidth + 4;
             graphics.text(font, Component.translatable(
-                    "container.immortalstorage.world_shard_miner.settings"), panelX + 8, 8, TEXT, false);
-            graphics.text(font, Component.translatable(
-                    "container.immortalstorage.world_shard_miner.xianqiao_output",
-                    Component.translatable(menu.xianqiaoOutput() ? "options.on" : "options.off")),
-                    panelX + 12, 114, TEXT, false);
-            graphics.text(font, Component.translatable(
-                    "container.immortalstorage.world_shard_miner.automatic_output",
-                    Component.translatable(menu.automaticOutput() ? "options.on" : "options.off")),
-                    panelX + 12, 138, TEXT, false);
+                    "container.immortalstorage.configuration"), panelX + 8, 8, TEXT, false);
             graphics.text(font, Component.translatable(
                     "container.immortalstorage.reinforcement_plugin"), panelX + 34, 165, TEXT, false);
         }

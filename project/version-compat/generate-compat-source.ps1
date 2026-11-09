@@ -527,7 +527,9 @@ function Transform-2612([string] $text, [string] $relativePath) {
         @('event.addListener(new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "tool_locator"), new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())'),
         @('event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())',
-            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())')
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())'),
+        @('event.addListener(new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener())',
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "machine_policies"), new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener())')
     )
     foreach ($replacement in $reloadKeys) {
         $text = $text.Replace($replacement[0], $replacement[1])
@@ -2034,7 +2036,7 @@ function Transform-2612([string] $text, [string] $relativePath) {
 
     # 26.1.2 retains JSON resources but the listener constructor now consumes
     # ExtraCodecs.JSON instead of Gson.
-    if ($relativePath -match '(?:SourceDefinitionReloadListener|ToolLocatorReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog)\.java$') {
+    if ($relativePath -match '(?:SourceDefinitionReloadListener|ToolLocatorReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog|MachinePolicyReloadListener)\.java$') {
         $text = $text.Replace('extends SimpleJsonResourceReloadListener',
             'extends SimpleJsonResourceReloadListener<JsonElement>')
         $text = $text.Replace('super(GSON, DIRECTORY);',

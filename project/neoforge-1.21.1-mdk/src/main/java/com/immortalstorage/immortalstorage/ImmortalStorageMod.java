@@ -95,6 +95,8 @@ public class ImmortalStorageMod {
     private static void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(com.immortalstorage.immortalstorage.api.source.ImmortalStorageChargeProviders::freezeRegistration);
         event.enqueueWork(com.immortalstorage.immortalstorage.api.worldshard.WorldShardApi::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog::freezeRegistration);
     }
 
     @SubscribeEvent
@@ -106,6 +108,7 @@ public class ImmortalStorageMod {
         event.addListener(new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
         event.addListener(new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener());
         event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
+        event.addListener(new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener());
     }
 
     @SubscribeEvent

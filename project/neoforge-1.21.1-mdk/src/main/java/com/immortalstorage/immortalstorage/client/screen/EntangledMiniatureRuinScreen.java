@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Merged ruin storage with the stabilized settings/filter panels and a normal/reversed side selector. */
-public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<EntangledMiniatureRuinMenu> {
+public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScreen<EntangledMiniatureRuinMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
     private static final int SIDE_SPAN = 100;
     private static final int PER_SIDE = 10;
@@ -35,6 +35,8 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
         imageHeight = 222;
         inventoryLabelY = imageHeight - 94;
     }
+
+    @Override protected int configurationPanelWidth() { return 156; }
 
     @Override
     protected void init() {
@@ -174,7 +176,7 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
     }
 
     @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         graphics.blit(TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
         if (filtersOpen) {
             var ruin = filterEntity();
@@ -189,13 +191,13 @@ public final class EntangledMiniatureRuinScreen extends AbstractContainerScreen<
             }
             VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
             graphics.drawString(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
-                    leftPos + 210, topPos + 203, 0xFFFFFF, true);
+                    leftPos + 210, topPos + 203, ConfigurationStyle.TEXT, false);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
-        for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
-        graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
-        graphics.drawString(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, 0xFFFFFF, true);
+        for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
+        graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, ConfigurationStyle.TEXT, false);
+        graphics.drawString(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, ConfigurationStyle.TEXT, false);
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {

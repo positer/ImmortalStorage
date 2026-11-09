@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /** Both modes process left to right and share the simulated-machine settings controls. */
-public final class SpiritCompressorScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<SpiritCompressorMenu> {
+public final class SpiritCompressorScreen extends ConfigurationWindowScreen<SpiritCompressorMenu> {
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN, Direction.WEST, Direction.SOUTH, Direction.EAST);
     private static final int SETTINGS_WIDTH = 112;
@@ -81,7 +81,7 @@ public final class SpiritCompressorScreen extends com.immortalstorage.immortalst
         MachineRedstoneModeButton.refresh(redstone, menu);
     }
     @Override protected void containerTick() { super.containerTick(); refresh(); }
-    @Override protected void renderBg(GuiGraphicsExtractor graphics, float tick, int mx, int my) {
+    @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float tick, int mx, int my) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (settingsOpen) {
             int panelX = leftPos + imageWidth + 4;

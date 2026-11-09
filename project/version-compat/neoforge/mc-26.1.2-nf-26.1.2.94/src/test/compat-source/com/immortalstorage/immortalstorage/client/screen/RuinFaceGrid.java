@@ -29,10 +29,11 @@ public final class RuinFaceGrid {
         for (int i = 0; i < ORDER.length; i++) {
             int ordinal = ORDER[i];
             int id = localBase + ordinal;
-            Button button = Button.builder(Component.literal(RuinFaceText.abbr(ordinal)), clicked -> onToggle.accept(id))
-                    .bounds(panelX + (i % 3) * 30, panelY + (i / 3) * 20, 28, 18)
-                    .tooltip(Tooltip.create(tooltip(ordinal)))
-                    .build();
+            Button button = new FacePreviewButton(panelX + (i % 3) * 30 + 5, panelY + (i / 3) * 20,
+                    18, Component.literal(RuinFaceText.abbr(ordinal)),
+                    () -> net.minecraft.world.item.ItemStack.EMPTY, () -> ConfigurationStyle.ENABLED,
+                    clicked -> onToggle.accept(id));
+            button.setTooltip(Tooltip.create(tooltip(ordinal)));
             buttons.add(button);
         }
         return buttons;

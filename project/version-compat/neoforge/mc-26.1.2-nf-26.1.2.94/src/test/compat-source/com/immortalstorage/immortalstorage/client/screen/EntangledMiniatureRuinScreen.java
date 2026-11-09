@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Merged ruin storage with the stabilized settings/filter panels and a normal/reversed side selector. */
-public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<EntangledMiniatureRuinMenu> {
+public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScreen<EntangledMiniatureRuinMenu> {
     private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
     private static final int SIDE_SPAN = 100;
     private static final int PER_SIDE = 10;
@@ -36,6 +36,8 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
         imageHeight = 222;
         inventoryLabelY = imageHeight - 94;
     }
+
+    @Override protected int configurationPanelWidth() { return 156; }
 
     @Override
     protected void init() {
@@ -175,7 +177,7 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, TEXTURE, leftPos, topPos, imageWidth, imageHeight, 0.0F, 0.0F, 256, 256);
         if (filtersOpen) {
             var ruin = filterEntity();
@@ -190,13 +192,13 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
             }
             VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
             graphics.text(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
-                    leftPos + 210, topPos + 203, 0xFFFFFF, true);
+                    leftPos + 210, topPos + 203, ConfigurationStyle.TEXT, false);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
-        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, 0xFFFFFF, true);
+        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
+        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, ConfigurationStyle.TEXT, false);
+        graphics.text(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, ConfigurationStyle.TEXT, false);
     }
 
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {

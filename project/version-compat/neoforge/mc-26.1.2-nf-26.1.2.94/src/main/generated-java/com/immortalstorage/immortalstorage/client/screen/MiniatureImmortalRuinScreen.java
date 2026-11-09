@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class MiniatureImmortalRuinScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<MiniatureImmortalRuinMenu> {
+public final class MiniatureImmortalRuinScreen extends ConfigurationWindowScreen<MiniatureImmortalRuinMenu> {
     private final List<Button> optionButtons = new ArrayList<>();
     private Button redstoneModeButton;
     public MiniatureImmortalRuinScreen(MiniatureImmortalRuinMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = 132; }
@@ -34,7 +34,7 @@ public final class MiniatureImmortalRuinScreen extends com.immortalstorage.immor
             button.setAlpha(id == 3 || menu.value(id) != 0 ? 1.0F : 0.35F);
         }
     }
-    @Override protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) { graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xE0C6C6C6); }
+    @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) { graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xE0C6C6C6); }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) { graphics.text(font, title, titleLabelX, titleLabelY, 0x404040, false); }
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) { super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY); }
 }

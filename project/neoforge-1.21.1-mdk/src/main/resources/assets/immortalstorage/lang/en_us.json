@@ -750,5 +750,6 @@
   "immortalstorage.configuration.time_shift.maxBlocks": "Maximum shifted blocks per dimension",
   "immortalstorage.configuration.time_shift.maxBlocks.tooltip": "Maximum number of time-shifted blocks recorded per dimension.",
   "immortalstorage.configuration.time_shift.randomTickBlocks": "Accelerate random-tick blocks",
-  "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip": "Allow accelerating blocks that only expose random ticks, such as crops and leaves."
+  "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip": "Allow accelerating blocks that only expose random ticks, such as crops and leaves.",
+  "container.immortalstorage.configuration": "Behavior & Output"
 }

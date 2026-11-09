@@ -46,7 +46,7 @@ import java.util.Optional;
  * grid.
  */
 public final class AdvancedXianqiaoInterfaceScreen
-        extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<AdvancedXianqiaoInterfaceMenu>
+        extends ConfigurationWindowScreen<AdvancedXianqiaoInterfaceMenu>
         implements TerminalFluidScreenAccess {
     private static final int TEXT = 0xFF404040;
     private static final int GHOST_TINT = 0x1F63B7BE;
@@ -97,6 +97,15 @@ public final class AdvancedXianqiaoInterfaceScreen
         this.imageHeight = SCREEN_HEIGHT;
         this.inventoryLabelY = 139;
     }
+
+    @Override
+    protected boolean followsWindow(net.minecraft.client.gui.components.AbstractWidget widget) {
+        // Centered modal dialogs have their own coordinate system; hidden dialog widgets must stay there.
+        return widget != amountInput && widget != applyAmountButton && widget != cancelAmountButton
+                && !slotFaceButtons.containsValue(widget) && !externalResourceButtons.contains(widget);
+    }
+
+    @Override protected int configurationPanelWidth() { return 156; }
 
     @Override
     protected void init() {
@@ -277,7 +286,7 @@ public final class AdvancedXianqiaoInterfaceScreen
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
         VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);
@@ -310,10 +319,10 @@ public final class AdvancedXianqiaoInterfaceScreen
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) {
-            graphics.text(font, labels[i], leftPos + PANEL_X + 92, topPos + 22 + i * 18, 0xFFFFFF, true);
+            graphics.text(font, labels[i], leftPos + PANEL_X + 92, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
         }
         graphics.text(font, Component.translatable("container.immortalstorage.ruin.tick").getString(),
-                leftPos + PANEL_X + 92, topPos + 175, 0xFFFFFF, true);
+                leftPos + PANEL_X + 92, topPos + 175, ConfigurationStyle.TEXT, false);
     }
 
     @Override

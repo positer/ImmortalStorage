@@ -33,6 +33,8 @@ Install the release JAR that matches your game version in the instance's mods di
 
 ### What is new in 0.1.9
 
+Development additions: reloadable machine blacklists/whitelists, addon APIs and consistent configuration windows. See the [machine policy contract](docs/machine-policy-api.md). These additions are not part of the published 0.1.8 release.
+
 | Change | In short |
 | --- | --- |
 | Guixu Time-Shift Staff | A shaped crafting-table item (one Immortal Forged Alloy, one Nurturing Crystal, two sticks, one Miniature Immortal Ruin). No durability, does not stack. |
@@ -191,6 +193,8 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 将对应版本的发行 JAR 安装到客户端与服务端实例的 mods 目录，每个实例只保留一个仙藏 JAR。已内置 Patchouli，手册无需另装依赖。更新前请备份世界。
 
 ### 0.1.9 新增内容
+
+开发版新增按等级／模式生效的机器黑白名单、附属 API 和统一的配置窗口，详见[机器扩展合同](docs/machine-policy-api.md)。这些改动尚未包含在已发布的 0.1.8 中。
 
 | 改动 | 简要说明 |
 | --- | --- |

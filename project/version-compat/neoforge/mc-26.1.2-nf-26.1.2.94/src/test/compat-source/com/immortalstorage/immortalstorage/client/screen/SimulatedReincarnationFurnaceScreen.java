@@ -21,7 +21,7 @@ import java.util.Map;
 
 /** Wide vanilla-style machine panel with a Xianqiao Interface matching face-preview rail. */
 public final class SimulatedReincarnationFurnaceScreen
-        extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<SimulatedReincarnationFurnaceMenu> {
+        extends ConfigurationWindowScreen<SimulatedReincarnationFurnaceMenu> {
     private static final Identifier FURNACE = Identifier.withDefaultNamespace(
             "textures/gui/container/furnace.png");
 private static final List<Direction> SIDE_ORDER = List.of(
@@ -48,13 +48,14 @@ private static final List<Direction> SIDE_ORDER = List.of(
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.reincarnation.settings"))).build());
+                        "container.immortalstorage.configuration"))).build());
         buildSettingsWidgets();
         refreshSettingsWidgets();
     }
@@ -133,7 +134,7 @@ private static final List<Direction> SIDE_ORDER = List.of(
         automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
-    @Override protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         graphics.fill(leftPos + 2, topPos + 2, leftPos + imageWidth - 2, topPos + 17, 0xFFD8D8D8);
         graphics.horizontalLine(leftPos + 3, leftPos + imageWidth - 4, topPos + 17, 0xFF8B8B8B);
@@ -152,9 +153,8 @@ private static final List<Direction> SIDE_ORDER = List.of(
 
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
         int panelX = leftPos + imageWidth + 4;
-        VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
+                "container.immortalstorage.configuration"), panelX + 8, topPos + 7, 0x404040, false);
         graphics.text(font, Component.translatable(
                 "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.text(font, Component.translatable(

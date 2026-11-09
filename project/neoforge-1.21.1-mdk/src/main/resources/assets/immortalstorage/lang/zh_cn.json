@@ -750,5 +750,6 @@
   "immortalstorage.configuration.time_shift.maxBlocks": "每维度时移方块上限",
   "immortalstorage.configuration.time_shift.maxBlocks.tooltip": "每个维度最多记录的时移方块数量。",
   "immortalstorage.configuration.time_shift.randomTickBlocks": "允许加速随机刻方块",
-  "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip": "是否允许加速只依赖随机刻的方块（作物、树叶等）。"
+  "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip": "是否允许加速只依赖随机刻的方块（作物、树叶等）。",
+  "container.immortalstorage.configuration": "行为与输出设置"
 }

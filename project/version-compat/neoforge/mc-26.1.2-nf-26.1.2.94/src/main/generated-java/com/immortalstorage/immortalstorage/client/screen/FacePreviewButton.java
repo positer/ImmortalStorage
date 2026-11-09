@@ -27,7 +27,7 @@ final class FacePreviewButton extends Button {
         int x = getX();
         int y = getY();
         int size = getWidth();
-        int border = borderColor.getAsInt();
+        int border = alpha < 1.0F ? ConfigurationStyle.DISABLED : borderColor.getAsInt();
         graphics.fill(x, y, x + size, y + size, border);
         graphics.fill(x + 2, y + 2, x + size - 2, y + size - 2,
                 isHoveredOrFocused() ? 0xFFB8B8B8 : 0xFF8A8A8A);

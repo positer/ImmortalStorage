@@ -57,7 +57,9 @@ final class EnchantmentHandbookContractTest {
             "immortalstorage.configuration.time_shift.maxBlocks",
             "immortalstorage.configuration.time_shift.maxBlocks.tooltip",
             "immortalstorage.configuration.time_shift.randomTickBlocks",
-            "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip");
+            "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip",
+            // Shared movable machine configuration window.
+            "container.immortalstorage.configuration");
     private static final Map<String, String> ENGLISH_KEYS = Map.of(
             "container.immortalstorage.enchantment_compressor", "Enchantment Compressor",
             "container.immortalstorage.enchantment_decompressor", "Enchantment Decompressor");

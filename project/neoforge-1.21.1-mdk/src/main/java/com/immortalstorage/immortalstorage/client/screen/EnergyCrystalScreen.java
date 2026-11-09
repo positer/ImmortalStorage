@@ -23,7 +23,7 @@ import java.util.Optional;
  * Mekanism-inspired FE memory meter.  The left machine geometry remains shared
  * with the two simulated machines, including the static processing arrow.
  */
-public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCrystalMenu> {
+public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyCrystalMenu> {
     private Button redstoneModeButton;
     private static final ResourceLocation FURNACE = ResourceLocation.withDefaultNamespace(
             "textures/gui/container/furnace.png");
@@ -53,6 +53,7 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
@@ -138,7 +139,7 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
         automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
-    @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         graphics.fill(leftPos + 2, topPos + 2, leftPos + imageWidth - 2, topPos + 17, 0xFFD8D8D8);
         graphics.hLine(leftPos + 3, leftPos + imageWidth - 4, topPos + 17, 0xFF8B8B8B);
@@ -194,7 +195,6 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
-        VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
         graphics.drawString(font, Component.translatable(
                 menu.uiKey("settings")), panelX + 8, topPos + 7,
                 0x404040, false);

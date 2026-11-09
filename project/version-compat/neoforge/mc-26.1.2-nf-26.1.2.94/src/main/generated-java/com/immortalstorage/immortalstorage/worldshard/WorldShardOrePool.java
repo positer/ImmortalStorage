@@ -37,6 +37,16 @@ public final class WorldShardOrePool {
         return new WorldShardOrePool(List.copyOf(entries), cumulative);
     }
 
+    public WorldShardOrePool filtered(java.util.function.Predicate<Item> allowed) {
+        Map<Item, Long> weights = new LinkedHashMap<>();
+        long previous = 0;
+        for (Entry entry : entries) {
+            if (allowed.test(entry.item())) weights.put(entry.item(), entry.cumulativeWeight() - previous);
+            previous = entry.cumulativeWeight();
+        }
+        return weights.size() == entries.size() ? this : of(weights);
+    }
+
     public boolean isEmpty() {
         return entries.isEmpty();
     }

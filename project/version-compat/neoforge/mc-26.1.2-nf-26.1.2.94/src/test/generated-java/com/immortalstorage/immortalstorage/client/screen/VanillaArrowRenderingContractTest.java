@@ -54,7 +54,9 @@ final class VanillaArrowRenderingContractTest {
     @Test
     void standaloneImmortalFurnaceHasBaseArrowsAndValidProgressSprites() throws IOException {
         String source = Files.readString(SCREEN_SOURCES.resolve("ImmortalFurnaceScreen.java"));
-        String background = methodBody(source, "protected void renderBg");
+        String background = methodBody(source, "protected void renderMachineBackground");
+        String frame = Files.readString(SCREEN_SOURCES.resolve("ConfigurationWindowScreen.java"));
+        assertTrue(methodBody(frame, "protected final void renderBg").contains("renderMachineBackground("));
 
         assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("textures/gui/container/furnace.png"));
         assertTrue(Files.readString(SCREEN_SOURCES.resolve("VanillaGuiPainter.java")).contains("79.0F, 34.0F, 24, 16, 256, 256"));
