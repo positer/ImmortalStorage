@@ -33,7 +33,7 @@ Install the release JAR that matches your game version in the instance's mods di
 
 ### What is new in 0.1.9
 
-Development additions: reloadable machine blacklists/whitelists, addon APIs and consistent configuration windows. See the [machine policy contract](docs/machine-policy-api.md). These additions are not part of the published 0.1.8 release.
+Development additions: reloadable machine blacklists/whitelists, addon APIs and consistent configuration windows with titles attached directly to their panels. See the [machine policy contract](docs/machine-policy-api.md). These additions are not part of the published 0.1.8 release.
 
 | Change | In short |
 | --- | --- |
@@ -194,7 +194,7 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 
 ### 0.1.9 新增内容
 
-开发版新增按等级／模式生效的机器黑白名单、附属 API 和统一的配置窗口，详见[机器扩展合同](docs/machine-policy-api.md)。这些改动尚未包含在已发布的 0.1.8 中。
+开发版新增按等级／模式生效的机器黑白名单、附属 API 和统一的配置窗口；窗口标题直接贴合面板且不重复，详见[机器扩展合同](docs/machine-policy-api.md)。这些改动尚未包含在已发布的 0.1.8 中。
 
 | 改动 | 简要说明 |
 | --- | --- |

@@ -38,7 +38,7 @@ public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFur
                 Component.literal("⚙"), button -> {
                     settingsOpen = !settingsOpen;
                     redstoneModeButton.visible = settingsOpen;
-                }).bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20).build());
+                }).bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20).build());
         redstoneModeButton.visible = settingsOpen;
     }
 
@@ -80,7 +80,6 @@ public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFur
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT, false);
         graphics.drawString(font, "I", 40, LANE_Y[0] + 5, TEXT, false);
         graphics.drawString(font, "II", 37, LANE_Y[1] + 5, TEXT, false);

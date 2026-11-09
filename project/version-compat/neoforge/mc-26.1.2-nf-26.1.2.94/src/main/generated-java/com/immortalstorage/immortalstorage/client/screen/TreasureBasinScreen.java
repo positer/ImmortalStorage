@@ -42,7 +42,7 @@ public final class TreasureBasinScreen extends ConfigurationWindowScreen<Treasur
                 leftPos + imageWidth + 28, topPos + 17, menu));
         redstoneModeButton.visible = false;
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
-                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.configuration"))).build());
         int panelX = leftPos + imageWidth + 4;
@@ -127,7 +127,6 @@ public final class TreasureBasinScreen extends ConfigurationWindowScreen<Treasur
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
         graphics.text(font,
                 Component.translatable("container.immortalstorage.treasure_basin.mode", modeName()),
                 8, 17, TEXT, false);
@@ -142,8 +141,6 @@ public final class TreasureBasinScreen extends ConfigurationWindowScreen<Treasur
                 inventoryLabelX, inventoryLabelY, TEXT, false);
         if (settingsOpen) {
             int panelX = imageWidth + 4;
-            graphics.text(font, Component.translatable(
-                    "container.immortalstorage.configuration"), panelX + 8, 8, TEXT, false);
             graphics.text(font, Component.translatable(
                     "container.immortalstorage.reinforcement_plugin"), panelX + 34, 165, TEXT, false);
         }

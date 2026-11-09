@@ -33,7 +33,7 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         super.init(); settingsWidgets.clear(); faceButtons.clear();
         int panelX = leftPos + imageWidth + 4;
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settingsOpen = !settingsOpen; refresh(); })
-                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.reincarnation.settings"))).build());
         redstone = addRenderableWidget(MachineRedstoneModeButton.create(panelX + 12, topPos + 18, menu));
         settingsWidgets.add(redstone);
@@ -86,7 +86,6 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         if (settingsOpen) {
             int panelX = leftPos + imageWidth + 4;
             VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
-            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
             graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
             graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108, 0x404040, false);
         }
@@ -97,7 +96,6 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
                 leftPos + arrowX + 22 + i, topPos + 63 - i, 0xFF888888);
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mx, int my) {
-        graphics.text(font, title, 8, 7, 0x404040, false);
         graphics.text(font, Component.translatable("container.immortalstorage.spirit_compressor."
                 + (menu.value(7) == 0 ? "invalid" : "formed")), 8, 84, 0x404040, false);
     }

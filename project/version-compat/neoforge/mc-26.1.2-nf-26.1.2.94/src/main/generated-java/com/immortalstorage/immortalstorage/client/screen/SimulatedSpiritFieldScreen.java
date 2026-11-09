@@ -46,7 +46,7 @@ private static final List<Direction> SIDE_ORDER = List.of(
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
-                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.configuration"))).build());
         buildSettingsWidgets();
@@ -145,15 +145,12 @@ private static final List<Direction> SIDE_ORDER = List.of(
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.configuration"), panelX + 8, topPos + 7, 0x404040, false);
-        graphics.text(font, Component.translatable(
                 "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.text(font, Component.translatable(
                 "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
                 0x404040, false);
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, 0x404040, false);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

@@ -14,7 +14,7 @@ public final class MiniatureImmortalRuinScreen extends ConfigurationWindowScreen
     private final List<Button> optionButtons = new ArrayList<>();
     private Button redstoneModeButton;
     public MiniatureImmortalRuinScreen(MiniatureImmortalRuinMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = 132; }
-    @Override protected void init() { super.init(); optionButtons.clear(); redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 18, menu)); button(0, 22); button(1, 44); button(2, 66); button(3, 88); button(4, 110); }
+    @Override protected void init() { super.init(); optionButtons.clear(); redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 35, menu)); button(0, 22); button(1, 44); button(2, 66); button(3, 88); button(4, 110); }
     private void button(int id, int y) {
         Button button = Button.builder(label(id), b -> {
             if (minecraft != null && minecraft.gameMode != null) minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -34,6 +34,6 @@ public final class MiniatureImmortalRuinScreen extends ConfigurationWindowScreen
         }
     }
     @Override protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) { graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, 0xE0C6C6C6); }
-    @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) { graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false); }
+    @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {  }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) { super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY); }
 }

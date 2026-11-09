@@ -43,10 +43,10 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
         redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
-                .bounds(leftPos + 4, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 4, topPos - 37, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
-                }).bounds(leftPos + 26, topPos - 20, 20, 20)
+                }).bounds(leftPos + 26, topPos - 37, 20, 20)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
                         "container.immortalstorage.stabilized_ruin.filter"))).build());
         if (settings) addSettingsButtons();

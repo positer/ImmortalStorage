@@ -49,16 +49,16 @@ public final class AdvancedEntangledMiniatureRuinScreen extends ConfigurationWin
         redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
-                .bounds(leftPos + 4, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 4, topPos - 37, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
-                }).bounds(leftPos + 26, topPos - 20, 20, 20)
+                }).bounds(leftPos + 26, topPos - 37, 20, 20)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
                         "container.immortalstorage.stabilized_ruin.filter"))).build());
         addRenderableWidget(Button.builder(Component.literal("◀"), b -> { activeSide = 0; refreshWidgets(); })
-                .bounds(leftPos + 48, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 48, topPos - 37, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▶"), b -> { activeSide = 1; refreshWidgets(); })
-                .bounds(leftPos + 70, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 70, topPos - 37, 20, 20).build());
         if (settings) addSettingsButtons();
         if (filtersOpen) addFilterButtons();
     }
@@ -213,7 +213,6 @@ public final class AdvancedEntangledMiniatureRuinScreen extends ConfigurationWin
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

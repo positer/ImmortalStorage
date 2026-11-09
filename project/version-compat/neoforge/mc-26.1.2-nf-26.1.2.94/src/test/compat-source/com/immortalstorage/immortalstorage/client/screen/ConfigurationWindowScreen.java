@@ -36,23 +36,24 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         if (sidePage) right = Math.max(right, leftPos + imageWidth + configurationPanelWidth());
         layoutWidth = right - leftPos;
         layoutHeight = bottom - topPos;
-        // The title, tab row and machine body form one continuous surface.
-        VanillaGuiPainter.panel(graphics, leftPos, topPos - 38, imageWidth, imageHeight + 38);
         if (sidePage) {
-            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos - 38,
-                    right - leftPos - imageWidth - 2, bottom - topPos + 38);
+            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos,
+                    right - leftPos - imageWidth - 2, bottom - topPos);
         }
         renderMachineBackground(graphics, partialTick, mouseX, mouseY);
-        if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos - 38,
+        if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos - 17,
                 right - leftPos - imageWidth - 2, Component.translatable("container.immortalstorage.configuration"));
-        ConfigurationStyle.header(graphics, font, leftPos, topPos - 38, imageWidth, title);
+        ConfigurationStyle.header(graphics, font, leftPos, topPos - 17, imageWidth, title);
+    }
+    @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
     protected abstract void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY);
     @Override public boolean mouseClicked(double x, double y, int button) {
         // Existing tabs/controls take precedence; only the unoccupied title bar starts a move.
         for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && widget.isMouseOver(x, y))
             return super.mouseClicked(x, y, button);
-        boolean externalTitle = y >= topPos - 38 && y < topPos - 21 && x >= leftPos && x < windowRight();
+        boolean externalTitle = y >= topPos - 17 && y < topPos && x >= leftPos && x < windowRight();
         boolean nativeTitle = y >= topPos && y < topPos + 16 && x >= leftPos && x < leftPos + imageWidth;
         if (button == 0 && (externalTitle || nativeTitle)) {
             movingWindow = true; grabX = x - leftPos; grabY = y - topPos; return true;

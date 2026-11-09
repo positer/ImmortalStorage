@@ -132,7 +132,7 @@ public final class AdvancedXianqiaoInterfaceScreen
         addRenderableWidget(Button.builder(Component.literal("⚙"), clicked -> {
                     settings = !settings;
                     refreshWidgets();
-                }).bounds(leftPos + 4, topPos - 20, 20, 20)
+                }).bounds(leftPos + 4, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.advanced_xianqiao_interface.config")))
                 .build());
@@ -326,7 +326,6 @@ public final class AdvancedXianqiaoInterfaceScreen
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, this.title, 8, 6, TEXT, false);
         graphics.drawString(this.font,
                 Component.translatable("container.immortalstorage.xianqiao_interface.targets"),
                 8, 19, TEXT, false);

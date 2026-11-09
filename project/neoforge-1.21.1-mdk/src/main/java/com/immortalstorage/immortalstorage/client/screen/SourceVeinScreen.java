@@ -22,8 +22,8 @@ import org.lwjgl.glfw.GLFW;
 /** Vanilla-widget face configuration; the source cache is intentionally hidden. */
 public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> {
     private static final int TEXT = 0xFF404040;
-    private static final int TITLE_X = 8;
-    private static final int TITLE_Y = 6;
+    private static final int TITLE_X = 6;
+    private static final int TITLE_Y = -13;
     private static final int TITLE_MAX_WIDTH = 160;
     private static final String ELLIPSIS = "\u2026";
     private static final Direction[] SIDE_BUTTONS = {
@@ -91,8 +91,6 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
         int x = this.leftPos;
         int y = this.topPos;
         VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);
-        graphics.fill(x + 2, y + 2, x + this.imageWidth - 2, y + 18, 0xFFD8D8D8);
-        graphics.hLine(x + 3, x + this.imageWidth - 4, y + 18, 0xFF858585);
     }
 
     @Override
@@ -104,7 +102,6 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(this.font, fittedTitle(), TITLE_X, TITLE_Y, TEXT, false);
         graphics.drawString(this.font,
                 Component.translatable("container.immortalstorage.source_vein.flux"), 8, 27, TEXT, false);
         graphics.drawString(this.font,

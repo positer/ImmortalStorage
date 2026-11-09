@@ -58,7 +58,7 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
-                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(menu.uiKey("settings")))).build());
         buildSettingsWidgets();
         refreshSettingsWidgets();
@@ -196,9 +196,6 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.drawString(font, Component.translatable(
-                menu.uiKey("settings")), panelX + 8, topPos + 7,
-                0x404040, false);
-        graphics.drawString(font, Component.translatable(
                 menu.uiKey("faces")), panelX + 8, topPos + 38,
                 0x404040, false);
         graphics.drawString(font, Component.translatable(
@@ -212,7 +209,6 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY,
                 0x404040, false);
     }

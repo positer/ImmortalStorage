@@ -54,7 +54,7 @@ public final class SimulatedReincarnationFurnaceScreen
                 leftPos + imageWidth + 16, topPos + 18, menu));
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
-                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.configuration"))).build());
         buildSettingsWidgets();
@@ -156,8 +156,6 @@ public final class SimulatedReincarnationFurnaceScreen
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.drawString(font, Component.translatable(
-                "container.immortalstorage.configuration"), panelX + 8, topPos + 7, 0x404040, false);
-        graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
@@ -165,7 +163,6 @@ public final class SimulatedReincarnationFurnaceScreen
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
     }
 

@@ -100,7 +100,7 @@ public class XianqiaoInterfaceScreen
     protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 18, menu));
+                leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 35, menu));
         sideButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
@@ -348,7 +348,6 @@ public class XianqiaoInterfaceScreen
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, this.title, 8, 6, TEXT, false);
         graphics.text(this.font,
                 Component.translatable("container.immortalstorage.xianqiao_interface.targets"),
                 8, 19, TEXT, false);
