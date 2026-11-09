@@ -43,8 +43,8 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         }
         renderMachineBackground(graphics, partialTick, mouseX, mouseY);
         if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos - 17,
-                right - leftPos - imageWidth - 2, Component.translatable("container.immortalstorage.configuration"));
-        ConfigurationStyle.header(graphics, font, leftPos, topPos - 17, imageWidth, title);
+                right - leftPos - imageWidth - 2, Component.translatable("container.immortalstorage.configuration"), 2);
+        ConfigurationStyle.header(graphics, font, leftPos, topPos - 17, imageWidth, title, 7);
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
