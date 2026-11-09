@@ -15,7 +15,12 @@ final class ConfigurationStyle {
             Direction.WEST, Direction.SOUTH, Direction.EAST);
     private ConfigurationStyle() {}
     static void header(GuiGraphics graphics, Font font, int x, int y, int width, Component title) {
-        VanillaGuiPainter.panel(graphics, x, y, width, 17);
+        // Erase the body's old top bevel so the joined surface has no internal seam.
+        graphics.fill(x + 2, y + 2, x + width - 2, y + 19, 0xFFC6C6C6);
+        graphics.vLine(x, y, y + 20, 0xFFFFFFFF);
+        graphics.vLine(x + 1, y, y + 20, 0xFFD8D8D8);
+        graphics.vLine(x + width - 2, y, y + 20, 0xFF8B8B8B);
+        graphics.vLine(x + width - 1, y, y + 20, 0xFF373737);
         graphics.drawString(font, font.plainSubstrByWidth(title.getString(), Math.max(0, width - 12)),
                 x + 6, y + 4, TEXT, false);
     }

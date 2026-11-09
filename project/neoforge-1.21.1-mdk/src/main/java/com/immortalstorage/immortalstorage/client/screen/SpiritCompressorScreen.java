@@ -18,7 +18,6 @@ import java.util.Map;
 public final class SpiritCompressorScreen extends ConfigurationWindowScreen<SpiritCompressorMenu> {
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN, Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private static final int SETTINGS_WIDTH = 112;
     private final Map<Direction, FacePreviewButton> faceButtons = new EnumMap<>(Direction.class);
     private final List<Button> settingsWidgets = new ArrayList<>();
     private boolean settingsOpen;
@@ -84,7 +83,6 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (settingsOpen) {
             int panelX = leftPos + imageWidth + 4;
-            VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
             graphics.drawString(font, Component.translatable("container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
             graphics.drawString(font, Component.translatable("container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108, 0x404040, false);
         }
