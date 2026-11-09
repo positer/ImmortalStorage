@@ -51,6 +51,18 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
+    @Override protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.renderTooltip(graphics, mouseX, mouseY);
+        for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && widget.isMouseOver(mouseX, mouseY)) return;
+        if (mouseY < topPos || mouseY >= topPos + 17) return;
+        Component machine = configurationMachineTitle();
+        if (mouseX >= leftPos && mouseX < leftPos + imageWidth && font.width(machine) > imageWidth - 12)
+            com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, machine, mouseX, mouseY);
+        int sideX = leftPos + imageWidth + 2, sideWidth = windowRight() - sideX;
+        Component side = configurationSideTitle();
+        if (sideWidth > 0 && mouseX >= sideX && mouseX < sideX + sideWidth && font.width(side) > sideWidth - 12)
+            com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, side, mouseX, mouseY);
+    }
     protected Component configurationMachineTitle() { return title; }
     protected Component configurationSideTitle() { return Component.translatable("container.immortalstorage.configuration"); }
     protected abstract void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY);

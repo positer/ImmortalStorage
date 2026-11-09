@@ -61,7 +61,7 @@ public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
                     panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
-                    27, Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    27, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
             button.setTooltip(Tooltip.create(Component.translatable(
@@ -88,11 +88,8 @@ public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<
         return preview.isEmpty() ? ItemStack.EMPTY : preview;
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U"; case DOWN -> "D"; case NORTH -> "N";
-            case SOUTH -> "S"; case WEST -> "W"; case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private void toggleSettings() {
@@ -147,13 +144,13 @@ public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.drawString(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
+                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, ConfigurationStyle.TEXT, false);
         graphics.drawString(font, Component.translatable(
                 "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
-                0x404040, false);
+                ConfigurationStyle.TEXT, false);
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
+        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         renderBackground(graphics, mouseX, mouseY, partialTick); super.render(graphics, mouseX, mouseY, partialTick);

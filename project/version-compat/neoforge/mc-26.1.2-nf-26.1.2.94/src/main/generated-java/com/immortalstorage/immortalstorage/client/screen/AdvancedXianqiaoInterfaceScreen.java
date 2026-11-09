@@ -116,7 +116,7 @@ public final class AdvancedXianqiaoInterfaceScreen
             FacePreviewButton button = new FacePreviewButton(
                     this.leftPos + SIDE_GRID_X + (index % 3) * SIDE_COLUMN_STRIDE,
                     this.topPos + SIDE_GRID_Y + (index / 3) * SIDE_ROW_STRIDE,
-                    SIDE_BUTTON_WIDTH, Component.literal(shortSide(side)),
+                    SIDE_BUTTON_WIDTH, shortSide(side),
                     () -> ItemStack.EMPTY, () -> interfaceModeColor(side),
                     ignored -> cycleSideMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
@@ -164,7 +164,7 @@ public final class AdvancedXianqiaoInterfaceScreen
             Button maskButton = new FacePreviewButton(
                     dialogX + 42 + (index % 3) * 32,
                     dialogY + 62 + (index / 3) * 20, MASK_BUTTON_SIZE,
-                    Component.literal(shortSide(side)), () -> ItemStack.EMPTY,
+                    shortSide(side), () -> ItemStack.EMPTY,
                     () -> 0xFF777777, ignored -> toggleSlotFace(side));
             this.addWidget(maskButton);
             slotFaceButtons.put(side, maskButton);
@@ -621,7 +621,7 @@ public final class AdvancedXianqiaoInterfaceScreen
     private void updateControls() {
         for (Map.Entry<Direction, FacePreviewButton> entry : sideButtons.entrySet()) {
             Button sideButton = entry.getValue();
-            sideButton.setMessage(Component.literal(shortSide(entry.getKey())));
+            sideButton.setMessage(shortSide(entry.getKey()));
             sideButton.setTooltip(Tooltip.create(sideTooltip(entry.getKey())));
             sideButton.visible = !amountDialogOpen && !externalDialogOpen;
             sideButton.active = menu.getBlockEntity() != null
@@ -718,15 +718,8 @@ public final class AdvancedXianqiaoInterfaceScreen
                 selectedTarget, side.ordinal(), !menu.isSlotFaceEnabled(selectedTarget, side)));
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private String fullSideName(Direction side) {

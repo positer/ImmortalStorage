@@ -1,5 +1,7 @@
 # ImmortalStorage · 仙藏
 
+开发进展（2026-11-10，0.1.9）：机器页面中英文补全，统一方向、状态和提示，修复新版本状态文字缺失，并补充可选 Nemo 筛选框译文。公开发布仍为 0.1.8；[机器配置说明](docs/machine-policy-api.md)。
+
 **0.1.8 · NeoForge** · [Latest release / 最新发布: 0.1.8](https://github.com/positer/ImmortalStorage/releases/tag/0.1.8) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)

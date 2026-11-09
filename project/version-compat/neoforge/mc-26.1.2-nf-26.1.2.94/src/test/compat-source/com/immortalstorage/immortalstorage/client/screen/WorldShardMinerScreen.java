@@ -48,7 +48,7 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
             final int face = side.get3DDataValue();
             Button button = new FacePreviewButton(panelX + 8 + (index % 3) * 34,
                     topPos + 34 + (index / 3) * 34, 30,
-                    Component.literal(side.getName().substring(0, 1).toUpperCase(java.util.Locale.ROOT)),
+                    ConfigurationStyle.faceLabel(side),
                     () -> net.minecraft.world.item.ItemStack.EMPTY,
                     () -> menu.outputFace(face) ? ConfigurationStyle.ENABLED : ConfigurationStyle.DISABLED,
                     clicked -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 10 + face));

@@ -30,7 +30,7 @@ public final class RuinFaceGrid {
             int ordinal = ORDER[i];
             int id = localBase + ordinal;
             Button button = new FacePreviewButton(panelX + (i % 3) * 30 + 5, panelY + (i / 3) * 20,
-                    18, Component.literal(RuinFaceText.abbr(ordinal)),
+                    18, RuinFaceText.label(ordinal),
                     () -> net.minecraft.world.item.ItemStack.EMPTY, () -> ConfigurationStyle.ENABLED,
                     clicked -> onToggle.accept(id));
             button.setTooltip(Tooltip.create(tooltip(ordinal)));

@@ -41,7 +41,7 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
                     panelX + 12 + index % 3 * 31, topPos + 48 + index / 3 * 31, 27,
-                    Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    shortSide(side), () -> adjacentBlockPreview(side),
                     () -> modeColor(menu.value(side.ordinal())), clicked -> send(side.ordinal()));
             faceButtons.put(side, button); settingsWidgets.add(addRenderableWidget(button));
         }
@@ -59,9 +59,8 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         // Skip the structure shell to show the actual automation neighbour.
         return new ItemStack(minecraft.level.getBlockState(menu.blockPos().relative(side, 2)).getBlock());
     }
-    private static String shortSide(Direction side) {
-        return switch (side) { case UP -> "U"; case DOWN -> "D"; case NORTH -> "N";
-            case SOUTH -> "S"; case WEST -> "W"; case EAST -> "E"; };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
     private static int modeColor(int mode) {
         return switch (mode) { case 1 -> 0xFF38A85A; case 2 -> 0xFFE69A38;
@@ -86,8 +85,8 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (settingsOpen) {
             int panelX = leftPos + imageWidth + 4;
-            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
-            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108, 0x404040, false);
+            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, ConfigurationStyle.TEXT, false);
+            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108, ConfigurationStyle.TEXT, false);
         }
         for (var slot : menu.slots) VanillaGuiPainter.slot(graphics, leftPos + slot.x, topPos + slot.y, true);
         int arrowX = menu.reversed() ? 60 : 94;
@@ -97,7 +96,7 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mx, int my) {
         graphics.text(font, Component.translatable("container.immortalstorage.spirit_compressor."
-                + (menu.value(7) == 0 ? "invalid" : "formed")), 8, SpiritCompressorLayout.STATUS_Y, 0x404040, false);
+                + (menu.value(7) == 0 ? "invalid" : "formed")), 8, SpiritCompressorLayout.STATUS_Y, ConfigurationStyle.TEXT, false);
     }
     @Override public void render(GuiGraphicsExtractor graphics, int mx, int my, float tick) {
         super.render(graphics, mx, my, tick); renderTooltip(graphics, mx, my);

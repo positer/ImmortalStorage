@@ -21,6 +21,7 @@ public final class SourceVeinManagerScreen extends AbstractContainerScreen<Sourc
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        ConfigurationExternalWidgets.place(children(), leftPos, topPos, imageWidth);
         int x = leftPos;
         int y = topPos;
         graphics.fill(x, y, x + imageWidth, y + imageHeight, PANEL);
@@ -31,6 +32,12 @@ public final class SourceVeinManagerScreen extends AbstractContainerScreen<Sourc
         drawSlots(graphics, x + 7, y + 17, 9, 8);
         drawSlots(graphics, x + 7, y + 173, 9, 3);
         drawSlots(graphics, x + 7, y + 231, 9, 1);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawString(font, title, titleLabelX, titleLabelY, ConfigurationStyle.TEXT, false);
+        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
 
     @Override

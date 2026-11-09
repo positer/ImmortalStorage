@@ -32,6 +32,11 @@ public class StabilizedMiniatureImmortalRuinScreen<M extends StabilizedMiniature
         inventoryLabelY = imageHeight - 94;
     }
 
+    @Override protected net.minecraft.network.chat.Component configurationSideTitle() {
+        return filtersOpen ? net.minecraft.network.chat.Component.translatable("container.immortalstorage.stabilized_ruin.filter")
+                : super.configurationSideTitle();
+    }
+
     @Override protected int configurationPanelWidth() { return 156; }
 
     @Override

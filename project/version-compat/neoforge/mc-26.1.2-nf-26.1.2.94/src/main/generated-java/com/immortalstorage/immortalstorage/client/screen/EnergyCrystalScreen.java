@@ -72,7 +72,7 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
                     panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
-                    27, Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    27, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
             button.setTooltip(Tooltip.create(Component.translatable(
@@ -96,15 +96,8 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
         return preview.isEmpty() ? ItemStack.EMPTY : preview;
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private void toggleSettings() {
@@ -198,10 +191,10 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
         int panelX = leftPos + imageWidth + 4;
         graphics.text(font, Component.translatable(
                 menu.uiKey("faces")), panelX + 8, topPos + 38,
-                0x404040, false);
+                ConfigurationStyle.TEXT, false);
         graphics.text(font, Component.translatable(
                 menu.uiKey("switches")),
-                panelX + 8, topPos + 108, 0x404040, false);
+                panelX + 8, topPos + 108, ConfigurationStyle.TEXT, false);
     }
 
     private boolean tankHovered(double mouseX, double mouseY) {
@@ -211,7 +204,7 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
 
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY,
-                0x404040, false);
+                ConfigurationStyle.TEXT, false);
     }
 
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {

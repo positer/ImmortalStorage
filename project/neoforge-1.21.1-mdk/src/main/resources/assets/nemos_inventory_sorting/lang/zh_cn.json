@@ -1,0 +1,7 @@
+{
+  "nemos_inventory_sorting.gui.inventory.itemFilter": "筛选…",
+  "nemos_inventory_sorting.itemFilter": "筛选物品",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence": "切换筛选条件保留",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence.toggleOn": "启用筛选条件保留",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence.toggleOff": "关闭筛选条件保留"
+}

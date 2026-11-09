@@ -108,7 +108,7 @@ public class XianqiaoInterfaceScreen
             int buttonY = this.topPos + SIDE_GRID_Y
                     + (index / 3) * SIDE_ROW_STRIDE;
             FacePreviewButton button = new FacePreviewButton(
-                    buttonX, buttonY, SIDE_BUTTON_WIDTH, Component.literal(shortSide(side)),
+                    buttonX, buttonY, SIDE_BUTTON_WIDTH, shortSide(side),
                     () -> sideButtonPreview(side), () -> interfaceModeColor(side),
                     ignored -> cycleSideMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
@@ -146,7 +146,7 @@ public class XianqiaoInterfaceScreen
             FacePreviewButton maskButton = new FacePreviewButton(
                     dialogX + 42 + (index % 3) * 32,
                     dialogY + 62 + (index / 3) * 20, MASK_BUTTON_SIZE,
-                    Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    shortSide(side), () -> adjacentBlockPreview(side),
                     () -> 0xFF777777, ignored -> toggleSlotFace(side));
             this.addWidget(maskButton);
             slotFaceButtons.put(side, maskButton);
@@ -614,15 +614,8 @@ public class XianqiaoInterfaceScreen
                 selectedTarget, side.ordinal(), !menu.isSlotFaceEnabled(selectedTarget, side)));
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private String fullSideName(Direction side) {
@@ -1017,7 +1010,7 @@ public class XianqiaoInterfaceScreen
     }
 
     private Component sideLabel(Direction side) {
-        return Component.literal(shortSide(side));
+        return shortSide(side);
     }
 
     private Component sideTooltip(Direction side) {

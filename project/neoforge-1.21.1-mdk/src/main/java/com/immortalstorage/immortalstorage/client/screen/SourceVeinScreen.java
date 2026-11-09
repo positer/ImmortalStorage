@@ -65,7 +65,7 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
             int x = this.leftPos + 56 + (index % 3) * 22;
             int y = this.topPos + 61 + (index / 3) * 21;
             FacePreviewButton button = new FacePreviewButton(
-                    x, y, 20, Component.literal(shortSide(side)),
+                    x, y, 20, shortSide(side),
                     () -> adjacentBlockPreview(side), () -> sourceModeColor(side),
                     ignored -> cycleMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
@@ -217,15 +217,8 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
         };
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private Component sideLabel(Direction side) {

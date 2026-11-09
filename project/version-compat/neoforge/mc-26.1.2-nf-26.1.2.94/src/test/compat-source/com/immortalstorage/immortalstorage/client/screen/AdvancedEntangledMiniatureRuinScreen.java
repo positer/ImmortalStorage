@@ -213,8 +213,10 @@ public final class AdvancedEntangledMiniatureRuinScreen extends ConfigurationWin
     }
 
     @Override protected net.minecraft.network.chat.Component configurationSideTitle() {
-        return net.minecraft.network.chat.Component.translatable(activeSide == 0
-                ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed");
+        Component page = filtersOpen ? Component.translatable("container.immortalstorage.stabilized_ruin.filter") : super.configurationSideTitle();
+        return Component.translatable("container.immortalstorage.configuration.mode", page,
+                Component.translatable(activeSide == 0
+                        ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed"));
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     }

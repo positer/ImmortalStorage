@@ -118,6 +118,7 @@ public final class XianqiaoRedstoneInterfaceScreen
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        ConfigurationExternalWidgets.place(children(), leftPos, topPos, imageWidth);
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         VanillaGuiPainter.slot(graphics, leftPos + SLOT_X, topPos + FIRST_ROW_Y, true);
         graphics.fill(leftPos + SLOT_X, topPos + FIRST_ROW_Y,

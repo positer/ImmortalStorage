@@ -50,6 +50,18 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
+    @Override protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+        super.renderTooltip(graphics, mouseX, mouseY);
+        for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && widget.isMouseOver(mouseX, mouseY)) return;
+        if (mouseY < topPos || mouseY >= topPos + 17) return;
+        Component machine = configurationMachineTitle();
+        if (mouseX >= leftPos && mouseX < leftPos + imageWidth && font.width(machine) > imageWidth - 12)
+            graphics.renderTooltip(font, machine, mouseX, mouseY);
+        int sideX = leftPos + imageWidth + 2, sideWidth = windowRight() - sideX;
+        Component side = configurationSideTitle();
+        if (sideWidth > 0 && mouseX >= sideX && mouseX < sideX + sideWidth && font.width(side) > sideWidth - 12)
+            graphics.renderTooltip(font, side, mouseX, mouseY);
+    }
     protected Component configurationMachineTitle() { return title; }
     protected Component configurationSideTitle() { return Component.translatable("container.immortalstorage.configuration"); }
     protected abstract void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY);

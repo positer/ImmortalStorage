@@ -59,7 +59,32 @@ final class EnchantmentHandbookContractTest {
             "immortalstorage.configuration.time_shift.randomTickBlocks",
             "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip",
             // Shared movable machine configuration window.
-            "container.immortalstorage.configuration");
+            "container.immortalstorage.configuration",
+            // Machine-page localization additions, explicitly recorded without changing the retained-key digest.
+            "container.immortalstorage.configuration.face.up",
+            "container.immortalstorage.configuration.face.down",
+            "container.immortalstorage.configuration.face.north",
+            "container.immortalstorage.configuration.face.south",
+            "container.immortalstorage.configuration.face.west",
+            "container.immortalstorage.configuration.face.east",
+            "container.immortalstorage.configuration.on",
+            "container.immortalstorage.configuration.off",
+            "container.immortalstorage.configuration.mode",
+            "container.immortalstorage.miniature_ruin.players",
+            "container.immortalstorage.miniature_ruin.entity_damage",
+            "container.immortalstorage.miniature_ruin.player_damage",
+            "container.immortalstorage.miniature_ruin.force",
+            "container.immortalstorage.miniature_ruin.force.none",
+            "container.immortalstorage.miniature_ruin.force.light",
+            "container.immortalstorage.miniature_ruin.force.medium",
+            "container.immortalstorage.miniature_ruin.force.strong",
+            "container.immortalstorage.miniature_ruin.force.teleport",
+            "container.immortalstorage.miniature_ruin.tooltip.players",
+            "container.immortalstorage.miniature_ruin.tooltip.entity_damage",
+            "container.immortalstorage.miniature_ruin.tooltip.player_damage",
+            "container.immortalstorage.miniature_ruin.tooltip.force",
+            "container.immortalstorage.miniature_ruin.tooltip.warp",
+            "container.immortalstorage.configuration.face.any");
     private static final Map<String, String> ENGLISH_KEYS = Map.of(
             "container.immortalstorage.enchantment_compressor", "Enchantment Compressor",
             "container.immortalstorage.enchantment_decompressor", "Enchantment Decompressor");

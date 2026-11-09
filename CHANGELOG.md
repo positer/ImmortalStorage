@@ -4,6 +4,8 @@
 
 ### English
 
+- Completed machine page localization, including face labels, ruin states, mode titles and full-title tooltips. Restored missing status labels on 26.1.2 and supplied optional Nemo filter translations.
+
 - Added the non-stackable Guixu Time-Shift Staff, crafted from Immortal Forged Alloy, Nurturing Crystal, two sticks and a Miniature Immortal Ruin; it has no durability.
 - Right-click applies permanent 2x/4x/8x/16x/32x acceleration with cyan borders and face labels. Sneak-scroll selects the next tier; Shift-right-click clears acceleration.
 - A second right-click spends one Primordial Qi for a red 1024x boost lasting 60 real-time seconds, then restores the original permanent tier.
@@ -15,6 +17,8 @@
 - Machine configuration windows share face controls and output switches, with compact native title rows and no duplicate headings. Nemo’s Inventory Sorting filters stay above the title without covering machine controls.
 
 ### 简体中文
+
+- 补全机器各页中英文方向、仙墟状态、模式标题与完整标题提示；修复 26.1.2 状态文字缺失，并补充可选 Nemo 筛选框翻译。
 
 - 新增归墟时移法杖：仙锻合金、蕴灵晶、两根木棍和迷你仙墟合成，无耐久、不可堆叠。
 - 右键赋予常驻 2x/4x/8x/16x/32x 加速，显示青色边框与六面倍率；潜行滚轮选择下一档，Shift 右键清除加速。

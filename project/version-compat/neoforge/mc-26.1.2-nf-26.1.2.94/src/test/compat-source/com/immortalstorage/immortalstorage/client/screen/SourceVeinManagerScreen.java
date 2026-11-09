@@ -22,6 +22,7 @@ public final class SourceVeinManagerScreen extends com.immortalstorage.immortals
 
     @Override
     protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+        ConfigurationExternalWidgets.place(children(), leftPos, topPos, imageWidth);
         int x = leftPos;
         int y = topPos;
         graphics.fill(x, y, x + imageWidth, y + imageHeight, PANEL);
@@ -32,6 +33,12 @@ public final class SourceVeinManagerScreen extends com.immortalstorage.immortals
         drawSlots(graphics, x + 7, y + 17, 9, 8);
         drawSlots(graphics, x + 7, y + 173, 9, 3);
         drawSlots(graphics, x + 7, y + 231, 9, 1);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.text(font, title, titleLabelX, titleLabelY, ConfigurationStyle.TEXT, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
 
     @Override

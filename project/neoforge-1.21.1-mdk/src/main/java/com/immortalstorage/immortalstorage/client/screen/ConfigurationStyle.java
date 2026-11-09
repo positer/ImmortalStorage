@@ -14,6 +14,9 @@ final class ConfigurationStyle {
     static final List<Direction> FACES = List.of(Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
     private ConfigurationStyle() {}
+    static Component faceLabel(Direction side) {
+        return Component.translatable("container.immortalstorage.configuration.face." + side.getName());
+    }
     static void header(GuiGraphics graphics, Font font, int x, int y, int width, Component title) {
         // Reuse the body's native title row; no extra header height or internal seam.
         graphics.fill(x + 2, y + 2, x + width - 2, y + 17, 0xFFC6C6C6);
@@ -21,7 +24,12 @@ final class ConfigurationStyle {
         graphics.vLine(x + 1, y, y + 18, 0xFFD8D8D8);
         graphics.vLine(x + width - 2, y, y + 18, 0xFF8B8B8B);
         graphics.vLine(x + width - 1, y, y + 18, 0xFF373737);
-        graphics.drawString(font, font.plainSubstrByWidth(title.getString(), Math.max(0, width - 12)),
-                x + 6, y + 4, TEXT, false);
+        int available = Math.max(0, width - 12);
+        String text = title.getString();
+        if (font.width(text) > available) {
+            String ellipsis = "\u2026";
+            text = font.plainSubstrByWidth(text, Math.max(0, available - font.width(ellipsis))) + ellipsis;
+        }
+        graphics.drawString(font, text, x + 6, y + 4, TEXT, false);
     }
 }

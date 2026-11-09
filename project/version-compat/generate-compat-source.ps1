@@ -1975,6 +1975,10 @@ function Transform-2612([string] $text, [string] $relativePath) {
             $text = $text.Replace('super.renderSlotHighlight(graphics, slot, mouseX, mouseY, partialTick);', '')
         }
         if ($relativePath -match '[\\/]client[\\/]screen[\\/]' -or $text.Contains('GuiGraphics')) {
+            $text = $text.Replace('graphics.renderTooltip(font, machine, mouseX, mouseY);',
+                'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, machine, mouseX, mouseY);')
+            $text = $text.Replace('graphics.renderTooltip(font, side, mouseX, mouseY);',
+                'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, side, mouseX, mouseY);')
             $text = [regex]::Replace($text,
                 '(?s)graphics\.renderTooltip\(\s*this\.font,\s*(.*?),\s*(?:java\.util\.)?Optional\.empty\(\),\s*mouseX,\s*mouseY\);',
                 'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, this.font, $1, mouseX, mouseY);')
