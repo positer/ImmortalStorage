@@ -37,7 +37,7 @@ private static final int TEXT = 0xFF404040;
                 Component.literal("⚙"), button -> {
                     settingsOpen = !settingsOpen;
                     redstoneModeButton.visible = settingsOpen;
-                }).bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20).build());
+                }).bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20).build());
         redstoneModeButton.visible = settingsOpen;
     }
 

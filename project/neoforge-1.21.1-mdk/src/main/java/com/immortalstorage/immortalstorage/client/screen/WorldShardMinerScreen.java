@@ -38,7 +38,7 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
         super.init();
         settingsWidgets.clear();
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
-                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.configuration"))).build());
         int panelX = leftPos + imageWidth + 4;

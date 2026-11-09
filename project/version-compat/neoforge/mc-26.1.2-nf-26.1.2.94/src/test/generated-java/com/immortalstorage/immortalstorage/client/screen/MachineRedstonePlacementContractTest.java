@@ -22,14 +22,15 @@ final class MachineRedstonePlacementContractTest {
         assertTrue(basin.contains("redstoneModeButton.visible = settingsOpen"));
     }
 
-    @Test void advancedStabilizedRuinRedstoneOccupiesTopOfSettingsPanelWithoutMovingSchedulingControls() throws Exception {
+    @Test void advancedRuinRedstoneStaysAboveNativeTitleWithoutMovingSchedulingControls() throws Exception {
         String source = Files.readString(screen("AdvancedStabilizedMiniatureImmortalRuinScreen.java"));
-        assertTrue(source.contains("redstoneButtonY() { return topPos + 2; }"));
+        assertTrue(source.contains("redstoneButtonY() { return topPos - 20; }"));
         assertTrue(source.contains("topPos + 226"));
 
         String entangled = Files.readString(screen("AdvancedEntangledMiniatureRuinScreen.java"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos + 2, menu"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 98, topPos + 4"));
+        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos - 20, menu"));
+        assertTrue(entangled.contains("configurationSideTitle()"));
+        assertTrue(entangled.contains("container.immortalstorage.ruin.side_reversed"));
         assertTrue(entangled.contains("topPos + 228"));
     }
 

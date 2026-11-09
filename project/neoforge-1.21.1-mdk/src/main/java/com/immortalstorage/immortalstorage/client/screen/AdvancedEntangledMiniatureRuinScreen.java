@@ -45,20 +45,20 @@ public final class AdvancedEntangledMiniatureRuinScreen extends ConfigurationWin
     protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 6, topPos + 2, menu));
+                leftPos + imageWidth + 6, topPos - 20, menu));
         redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
-                .bounds(leftPos + 4, topPos - 37, 20, 20).build());
+                .bounds(leftPos + 4, topPos - 20, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
-                }).bounds(leftPos + 26, topPos - 37, 20, 20)
+                }).bounds(leftPos + 26, topPos - 20, 20, 20)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
                         "container.immortalstorage.stabilized_ruin.filter"))).build());
         addRenderableWidget(Button.builder(Component.literal("◀"), b -> { activeSide = 0; refreshWidgets(); })
-                .bounds(leftPos + 48, topPos - 37, 20, 20).build());
+                .bounds(leftPos + 48, topPos - 20, 20, 20).build());
         addRenderableWidget(Button.builder(Component.literal("▶"), b -> { activeSide = 1; refreshWidgets(); })
-                .bounds(leftPos + 70, topPos - 37, 20, 20).build());
+                .bounds(leftPos + 70, topPos - 20, 20, 20).build());
         if (settings) addSettingsButtons();
         if (filtersOpen) addFilterButtons();
     }
@@ -209,9 +209,12 @@ public final class AdvancedEntangledMiniatureRuinScreen extends ConfigurationWin
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
         graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, ConfigurationStyle.TEXT, false);
-        graphics.drawString(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 98, topPos + 4, ConfigurationStyle.TEXT, false);
     }
 
+    @Override protected net.minecraft.network.chat.Component configurationSideTitle() {
+        return net.minecraft.network.chat.Component.translatable(activeSide == 0
+                ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed");
+    }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
     }
 

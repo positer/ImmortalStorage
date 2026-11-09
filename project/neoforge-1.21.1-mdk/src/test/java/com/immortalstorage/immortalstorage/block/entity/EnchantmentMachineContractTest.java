@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.block.entity;
 
 import org.junit.jupiter.api.Test;
+import com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorLayout;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -105,12 +106,12 @@ final class EnchantmentMachineContractTest {
         assertTrue(read("client/screen/SpiritCompressorScreen.java").contains("Component.translatable(menu.titleKey())"));
     }
 
-    @Test void theSharedScreenGeometryIsUnchangedAndNoMachineLocksItsMaterialRow() throws Exception {
+    @Test void theCompactScreenGroupsDoNotOverlapAndNoMachineLocksItsMaterialRow() throws Exception {
         String menu = read("menu/custom/SpiritCompressorMenu.java");
-        assertTrue(menu.contains("addSlot(new SlotItemHandler(handler, 0, 26, 46)"));
-        assertTrue(menu.contains("98 + i % 4 * 18, 28 + i / 4 * 18"));
-        assertTrue(menu.contains("8 + i % 4 * 18, 28 + i / 4 * 18"));
-        assertTrue(menu.contains("134, 46"));
+        assertTrue(SpiritCompressorLayout.MATERIAL_Y + 3 * 18 <= SpiritCompressorLayout.STATUS_Y);
+        assertTrue(SpiritCompressorLayout.STATUS_Y + 9 <= SpiritCompressorLayout.PLAYER_Y);
+        assertTrue(SpiritCompressorLayout.PLAYER_Y + 3 * 18 + 4 <= SpiritCompressorLayout.HOTBAR_Y);
+        assertTrue(SpiritCompressorLayout.HOTBAR_Y + 16 + 4 <= SpiritCompressorLayout.HEIGHT);
         assertTrue(menu.contains("private boolean lockedInput(int slot) {"));
         assertTrue(menu.contains("return machine != null && machine.locksSlot(slot);"));
         assertFalse(menu.contains("ruin.machine().inputEnd()"), "the gate must never re-derive the machine from the world (F1)");

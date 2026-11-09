@@ -1,6 +1,7 @@
 package com.immortalstorage.immortalstorage.client.screen;
 
 import com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorMenu;
+import com.immortalstorage.immortalstorage.menu.custom.SpiritCompressorLayout;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
@@ -25,13 +26,13 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
     private Button xianqiao;
     public SpiritCompressorScreen(SpiritCompressorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, Component.translatable(menu.titleKey()));
-        imageWidth = 176; imageHeight = 182;
+        imageWidth = 176; imageHeight = SpiritCompressorLayout.HEIGHT;
     }
     @Override protected void init() {
         super.init(); settingsWidgets.clear(); faceButtons.clear();
         int panelX = leftPos + imageWidth + 4;
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settingsOpen = !settingsOpen; refresh(); })
-                .bounds(leftPos + imageWidth - 22, topPos - 37, 20, 20)
+                .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.reincarnation.settings"))).build());
         redstone = addRenderableWidget(MachineRedstoneModeButton.create(panelX + 12, topPos + 18, menu));
         settingsWidgets.add(redstone);
@@ -47,6 +48,7 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
                 .bounds(panelX + 12, topPos + 120, 89, 18).build());
         settingsWidgets.add(xianqiao); refresh();
     }
+    @Override protected int configurationPanelWidth() { return 116; }
     private void send(int id) {
         if (minecraft != null && minecraft.gameMode != null)
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
@@ -88,13 +90,13 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
         }
         for (var slot : menu.slots) VanillaGuiPainter.slot(graphics, leftPos + slot.x, topPos + slot.y, true);
         int arrowX = menu.reversed() ? 60 : 94;
-        graphics.fill(leftPos + arrowX, topPos + 52, leftPos + arrowX + 21, topPos + 58, 0xFF888888);
-        for (int i = 0; i < 9; i++) graphics.fill(leftPos + arrowX + 21 + i, topPos + 47 + i,
-                leftPos + arrowX + 22 + i, topPos + 63 - i, 0xFF888888);
+        graphics.fill(leftPos + arrowX, topPos + SpiritCompressorLayout.ARROW_Y, leftPos + arrowX + 21, topPos + SpiritCompressorLayout.ARROW_Y + 6, 0xFF888888);
+        for (int i = 0; i < 9; i++) graphics.fill(leftPos + arrowX + 21 + i, topPos + SpiritCompressorLayout.ARROW_Y - 5 + i,
+                leftPos + arrowX + 22 + i, topPos + SpiritCompressorLayout.ARROW_Y + 11 - i, 0xFF888888);
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mx, int my) {
         graphics.drawString(font, Component.translatable("container.immortalstorage.spirit_compressor."
-                + (menu.value(7) == 0 ? "invalid" : "formed")), 8, 84, 0x404040, false);
+                + (menu.value(7) == 0 ? "invalid" : "formed")), 8, SpiritCompressorLayout.STATUS_Y, 0x404040, false);
     }
     @Override public void render(GuiGraphics graphics, int mx, int my, float tick) {
         super.render(graphics, mx, my, tick); renderTooltip(graphics, mx, my);

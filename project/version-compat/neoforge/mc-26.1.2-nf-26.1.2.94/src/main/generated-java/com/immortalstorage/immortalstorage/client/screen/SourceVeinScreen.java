@@ -24,7 +24,7 @@ import org.lwjgl.glfw.GLFW;
 public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> {
     private static final int TEXT = 0xFF404040;
     private static final int TITLE_X = 6;
-    private static final int TITLE_Y = -13;
+    private static final int TITLE_Y = 4;
     private static final int TITLE_MAX_WIDTH = 160;
     private static final String ELLIPSIS = "\u2026";
     private static final Direction[] SIDE_BUTTONS = {
@@ -135,6 +135,8 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
         if (this.fluxInput != null && this.fluxInput.isFocused()) applyFluxLimit();
         super.removed();
     }
+
+    @Override protected Component configurationMachineTitle() { return fittedTitle(); }
 
     private Component fittedTitle() {
         if (this.font.width(this.title) <= TITLE_MAX_WIDTH) return this.title;

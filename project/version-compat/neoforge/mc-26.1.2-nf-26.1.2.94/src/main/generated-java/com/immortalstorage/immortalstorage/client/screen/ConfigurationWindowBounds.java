@@ -7,7 +7,7 @@ public final class ConfigurationWindowBounds {
         return Math.max(Math.min(0, viewport - body), Math.min(Math.max(0, viewport - body), value));
     }
     public static int y(int value, int viewport, int body) {
-        int minimum = Math.max(-12, Math.min(38, viewport - body));
-        return Math.max(minimum, Math.min(Math.max(38, viewport - body), value));
+        int minimum = Math.max(-12, Math.min(21, viewport - body));
+        return Math.max(minimum, Math.min(Math.max(21, viewport - body), value));
     }
 }

@@ -100,7 +100,7 @@ public class XianqiaoInterfaceScreen
     protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 35, menu));
+                leftPos + imageWidth - MachineRedstoneModeButton.WIDTH, topPos - 18, menu));
         sideButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);

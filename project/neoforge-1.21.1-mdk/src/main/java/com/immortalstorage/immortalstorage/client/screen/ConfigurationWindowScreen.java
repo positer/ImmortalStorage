@@ -22,6 +22,7 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         movingWindow = false;
     }
     @Override protected final void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        ConfigurationExternalWidgets.place(children(), leftPos, topPos, imageWidth);
         // Existing controls retain their geometry and authoritative payloads. Side pages share one framed surface.
         int right = leftPos + imageWidth;
         int bottom = topPos + imageHeight;
@@ -35,28 +36,29 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         if (sidePage) right = Math.max(right, leftPos + imageWidth + configurationPanelWidth());
         layoutWidth = right - leftPos;
         layoutHeight = bottom - topPos;
-        // Only the title and body share a frame; the control row above stays transparent.
-        VanillaGuiPainter.panel(graphics, leftPos, topPos - 17, imageWidth, imageHeight + 17);
+        // The native title row and body share a frame; the control row above stays transparent.
+        VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (sidePage) {
-            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos - 17,
-                    right - leftPos - imageWidth - 2, bottom - topPos + 17);
+            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos,
+                    right - leftPos - imageWidth - 2, bottom - topPos);
         }
         renderMachineBackground(graphics, partialTick, mouseX, mouseY);
-        if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos - 17,
-                right - leftPos - imageWidth - 2, Component.translatable("container.immortalstorage.configuration"), 2);
-        ConfigurationStyle.header(graphics, font, leftPos, topPos - 17, imageWidth, title, 7);
+        if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos,
+                right - leftPos - imageWidth - 2, configurationSideTitle());
+        ConfigurationStyle.header(graphics, font, leftPos, topPos, imageWidth, configurationMachineTitle());
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
+    protected Component configurationMachineTitle() { return title; }
+    protected Component configurationSideTitle() { return Component.translatable("container.immortalstorage.configuration"); }
     protected abstract void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY);
     @Override public boolean mouseClicked(double x, double y, int button) {
         // Existing tabs/controls take precedence; only the unoccupied title bar starts a move.
         for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && widget.isMouseOver(x, y))
             return super.mouseClicked(x, y, button);
-        boolean externalTitle = y >= topPos - 17 && y < topPos && x >= leftPos && x < windowRight();
-        boolean nativeTitle = y >= topPos && y < topPos + 16 && x >= leftPos && x < leftPos + imageWidth;
-        if (button == 0 && (externalTitle || nativeTitle)) {
+        boolean titleRow = y >= topPos && y < topPos + 17 && x >= leftPos && x < windowRight();
+        if (button == 0 && titleRow) {
             movingWindow = true; grabX = x - leftPos; grabY = y - topPos; return true;
         }
         return super.mouseClicked(x, y, button);

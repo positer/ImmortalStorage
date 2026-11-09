@@ -12,7 +12,7 @@
 - Connected paid sources provide item/fluid processing patterns without requiring a filled cache. Free sources remain real terminal stock; paid stock projections remain on the Xianqiao interface.
 - Each crafting delivery settles the full supplied batch; the connected network controls when deliveries occur. Manager breaking follows its owner permissions.
 - Added reloadable level/mode blacklists and whitelists for the World Shard Miner, Simulated Spirit Field and Simulated Reincarnation Furnace, plus addon APIs. Unconfigured machines retain their existing behavior.
-- Machine configuration windows share face controls and output switches, with titles attached directly to their bodies and no duplicate headings.
+- Machine configuration windows share face controls and output switches, with compact native title rows and no duplicate headings. Nemo’s Inventory Sorting filters stay above the title without covering machine controls.
 
 ### 简体中文
 
@@ -24,7 +24,7 @@
 - 已连接的付费源脉提供物品和流体处理样板，无须预先填满缓存；免费源脉显示为终端库存，付费库存投影保留在仙窍接口。
 - 每次合成投递按实际交付材料全量结算，投递节奏由所接网络决定；管理器拆除遵循拥有者权限。
 - 世界碎片采集器、模拟灵田、模拟轮回炼化炉新增按等级与模式生效的可重载黑白名单及附属 API；未配置时保持既有行为。
-- 机器配置窗口统一六面按钮与输出开关的呈现，标题直接贴合主体，并移除重复标题。
+- 机器配置窗口统一六面按钮与输出开关的呈现，复用原生标题行、去除额外占位留白；Nemo’s Inventory Sorting 的筛选框与图钉放在标题上方，避让机器控件。
 
 ## [0.1.8]
 

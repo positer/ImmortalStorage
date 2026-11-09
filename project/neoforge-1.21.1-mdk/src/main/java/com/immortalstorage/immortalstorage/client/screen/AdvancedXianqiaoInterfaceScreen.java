@@ -132,7 +132,7 @@ public final class AdvancedXianqiaoInterfaceScreen
         addRenderableWidget(Button.builder(Component.literal("⚙"), clicked -> {
                     settings = !settings;
                     refreshWidgets();
-                }).bounds(leftPos + 4, topPos - 37, 20, 20)
+                }).bounds(leftPos + 4, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.advanced_xianqiao_interface.config")))
                 .build());
