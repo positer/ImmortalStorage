@@ -15,7 +15,8 @@ final class ConfigurationStyle {
             Direction.WEST, Direction.SOUTH, Direction.EAST);
     private ConfigurationStyle() {}
     static void header(GuiGraphicsExtractor graphics, Font font, int x, int y, int width, Component title) {
-        VanillaGuiPainter.panel(graphics, x, y, width, 17);
+        graphics.fill(x + 2, y + 2, x + width - 2, y + 17, 0xFFD8D8D8);
+        graphics.horizontalLine(x + 2, x + width - 3, y + 17, 0xFF8B8B8B);
         graphics.text(font, font.plainSubstrByWidth(title.getString(), Math.max(0, width - 12)),
                 x + 6, y + 4, TEXT, false);
     }

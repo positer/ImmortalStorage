@@ -36,8 +36,11 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         if (sidePage) right = Math.max(right, leftPos + imageWidth + configurationPanelWidth());
         layoutWidth = right - leftPos;
         layoutHeight = bottom - topPos;
+        // The title, tab row and machine body form one continuous surface.
+        VanillaGuiPainter.panel(graphics, leftPos, topPos - 38, imageWidth, imageHeight + 38);
         if (sidePage) {
-            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos, right - leftPos - imageWidth - 2, bottom - topPos);
+            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos - 38,
+                    right - leftPos - imageWidth - 2, bottom - topPos + 38);
         }
         renderMachineBackground(graphics, partialTick, mouseX, mouseY);
         if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos - 38,
