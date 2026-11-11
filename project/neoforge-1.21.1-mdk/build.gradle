@@ -541,6 +541,7 @@ tasks.named('jar', Jar).configure {
     exclude 'com/immortalstorage/immortalstorage/debug/**'
     exclude '**/MachinePolicyGameTest*.class'
     exclude '**/ConfigurationClientProbe*.class'
+    exclude '**/PickClientProbe*.class'
     exclude '**/*DebugCommands*.class'
     exclude '**/*TestAccess*.class'
 
@@ -575,6 +576,7 @@ tasks.register('verifyProductionJarBoundary') {
             include 'com/immortalstorage/immortalstorage/debug/**'
             include '**/MachinePolicyGameTest*.class'
             include '**/ConfigurationClientProbe*.class'
+            include '**/PickClientProbe*.class'
             include '**/*DebugCommands*.class'
             include '**/*TestAccess*.class'
         }.files

@@ -590,6 +590,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
         'player\.getCooldowns\(\)\.addCooldown\(player\.getItemInHand\(([^)]+)\)\.getItem\(\),',
         'player.getCooldowns().addCooldown(player.getItemInHand($1),')
 
+    # Native pick APIs moved between the supported Minecraft generations.
+    if ($relativePath -match 'XianqiaoPickTarget\.java$') {
+        $text = $text.Replace('state.getCloneItemStack(blockHit, player.serverLevel(), pos, player)',
+            'state.getCloneItemStack(pos, player.serverLevel(), false, player)')
+        $text = $text.Replace('player.canInteractWithEntity(entity, 3.0)',
+            'player.isWithinEntityInteractionRange(entity, 3.0)')
+        $text = $text.Replace('ClientboundSetCarriedItemPacket', 'ClientboundSetHeldSlotPacket')
+        $text = $text.Replace('player.getInventory().selected = slot', 'player.getInventory().setSelectedSlot(slot)')
+    }
+
     $text = $text.Replace('player.getInventory().selected',
         'player.getInventory().getSelectedSlot()')
 

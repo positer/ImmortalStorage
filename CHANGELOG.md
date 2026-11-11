@@ -4,6 +4,8 @@
 
 ### English
 
+- From stage six, Pick Block moves matching Xianqiao stock into your main hand. The previous stack goes to your inventory first, then Xianqiao; item components and Yuan accounting are preserved. Creative picking stays unchanged.
+
 - Completed machine page localization, including face labels, ruin states, mode titles and full-title tooltips. Restored missing status labels on 26.1.2 and supplied optional Nemo filter translations.
 
 - Added the non-stackable Guixu Time-Shift Staff, crafted from Immortal Forged Alloy, Nurturing Crystal, two sticks and a Miniature Immortal Ruin; it has no durability.
@@ -17,6 +19,8 @@
 - Machine configuration windows share face controls and output switches, with compact native title rows and no duplicate headings. Nemo’s Inventory Sorting filters stay above the title without covering machine controls.
 
 ### 简体中文
+
+- 六阶起可用原版选取键将仙窍中的匹配物品移到主手，旧手持优先放入背包、余量回仙窍；保留物品组件并遵循真元／仙元账目，创造模式选取保持原样。
 
 - 补全机器各页中英文方向、仙墟状态、模式标题与完整标题提示；修复 26.1.2 状态文字缺失，并补充可选 Nemo 筛选框翻译。
 

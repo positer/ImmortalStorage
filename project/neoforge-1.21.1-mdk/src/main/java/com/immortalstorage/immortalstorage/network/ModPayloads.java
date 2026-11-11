@@ -17,6 +17,16 @@ import java.util.List;
 public enum ModPayloads {
     ;
 
+    /** Only a world target is accepted; the server resolves the item and its components. */
+    public record PickXianqiaoItem(long pos, int entityId) implements CustomPacketPayload {
+        public static final Type<PickXianqiaoItem> TYPE = new Type<>(
+                ResourceLocation.fromNamespaceAndPath(ImmortalStorageMod.MODID, "pick_xianqiao_item"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, PickXianqiaoItem> STREAM_CODEC =
+                StreamCodec.composite(ByteBufCodecs.VAR_LONG, PickXianqiaoItem::pos,
+                        ByteBufCodecs.VAR_INT, PickXianqiaoItem::entityId, PickXianqiaoItem::new);
+        @Override public Type<PickXianqiaoItem> type() { return TYPE; }
+    }
+
     public record ConfigureXianqiaoRedstone(long pos, long low, long high, boolean inverted,
                                              int action, String channel, String resourceId) implements CustomPacketPayload {
         public ConfigureXianqiaoRedstone(int containerIdIgnored, BlockPos pos, long low, long high, boolean inverted) { this(pos.asLong(), low, high, inverted, 0, "", ""); }
