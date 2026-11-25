@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.10]
+
+### English
+
+- From stage six, use the vanilla Pick Block binding to move matching Xianqiao stock straight into your main hand. The previous stack goes to your inventory first and any remainder goes back to Xianqiao. Item components are preserved and creative picking is unchanged.
+- Reworked container and machine screens to fit smaller windows. Expanded sidebars now align from row to row, redundant headings and blank space are removed, and real inventory slots stay usable.
+- Added reloadable machine allowlists and blocklists by tier and mode for the World Shard Miner, Simulated Spirit Field, and Simulated Reincarnation Furnace. Machines keep their existing behavior if no list is configured.
+- Completed English and Simplified Chinese machine labels and tooltips, restored missing status text on 26.1.2, and improved placement of optional inventory-sorting controls on supported screens.
+
+- **Known limitations:** On 1.21.1 with Create 6.0.10, targeting a schematic entity in survival does not retrieve its schematic from Xianqiao. On either version, switching hotbar slots and picking in the same game tick can put the item in the previous slot. Switch slots first, then pick.
+
+### 简体中文
+
+- 六阶起可用原版选取键，把仙窍中的匹配物品直接移到主手。旧手持优先移入背包，放不下的部分回到仙窍；保留物品组件，创造模式选取不变。
+- 调整容器和机器界面以适应窄窗。展开侧栏各行左右对齐，去除重复标题和多余留白，保留真实物品槽的可用性。
+- 世界碎片采集器、模拟灵田和模拟轮回炼化炉新增按等级及模式生效、可重载的黑白名单；未配置名单时保持原有行为。
+- 补全机器界面的中英文标签及提示，恢复 26.1.2 缺失的状态文字，并改善受支持界面中可选物品整理控件的位置。
+- **已知限制：** 1.21.1 生存模式下，瞄准 Create 6.0.10 的蓝图实体时，选取键不能从仙窍取出蓝图。两版若在同一游戏刻切槽并选取，物品可能进入原快捷栏槽位；可先切槽，再选取。
+
 ## [0.1.9]
 
 ### English

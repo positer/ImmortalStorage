@@ -1,8 +1,8 @@
 # ImmortalStorage · 仙藏
 
-开发进展（2026-11-11，0.1.9）：六阶起可用原版选取键从仙窍取物到主手，旧手持优先移入背包、余量回仙窍；按完整组件匹配并遵循真元／仙元账本。机器页面已完成中英文本地化。公开发布仍为 0.1.8；[机器配置说明](docs/machine-policy-api.md)。
+0.1.10：整理窄窗和展开侧栏布局，加入六阶仙窍原版选取，并补全机器界面的中英文。详见[更新日志](CHANGELOG.md#0110)。
 
-**0.1.8 · NeoForge** · [Latest release / 最新发布: 0.1.8](https://github.com/positer/ImmortalStorage/releases/tag/0.1.8) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
+**0.1.10 · NeoForge** · [Latest release / 最新发布: 0.1.10](https://github.com/positer/ImmortalStorage/releases/tag/0.1.10) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
 
@@ -33,9 +33,11 @@ ImmortalStorage is a **cultivation mod for Minecraft** on NeoForge. It takes the
 
 Install the release JAR that matches your game version in the instance's mods directory, on both client and server, and keep one ImmortalStorage JAR per instance. Patchouli is embedded, so the handbook needs no separate installation. Back up worlds before updating.
 
-### What is new in 0.1.9
+### What is new in 0.1.10
 
-Development additions: reloadable machine blacklists/whitelists, addon APIs and compact configuration windows with native title rows and optional sorting-filter placement above the title. See the [machine policy contract](docs/machine-policy-api.md). These additions are not part of the published 0.1.8 release.
+Machine allowlists and blocklists, native Pick Block from Xianqiao and the expanded sidebar layout are included in 0.1.10. See the [changelog](CHANGELOG.md#0110) and [machine policy contract](docs/machine-policy-api.md).
+
+### What is new in 0.1.9
 
 | Change | In short |
 | --- | --- |
@@ -195,9 +197,11 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 
 将对应版本的发行 JAR 安装到客户端与服务端实例的 mods 目录，每个实例只保留一个仙藏 JAR。已内置 Patchouli，手册无需另装依赖。更新前请备份世界。
 
-### 0.1.9 新增内容
+### 0.1.10 新增内容
 
-开发版新增按等级／模式生效的机器黑白名单、附属 API 和统一的配置窗口；复用原生标题行以减少留白，并适配标题上方的可选排序模组筛选框，详见[机器扩展合同](docs/machine-policy-api.md)。这些改动尚未包含在已发布的 0.1.8 中。
+机器分级黑白名单、仙窍原版选取与展开侧栏调整已纳入 0.1.10。详见[更新日志](CHANGELOG.md#0110)与[机器配置说明](docs/machine-policy-api.md)。
+
+### 0.1.9 新增内容
 
 | 改动 | 简要说明 |
 | --- | --- |
