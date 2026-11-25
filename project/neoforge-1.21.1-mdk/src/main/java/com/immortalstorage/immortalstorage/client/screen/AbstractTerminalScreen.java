@@ -94,12 +94,13 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends A
                 TerminalLayout.SEARCH_HEIGHT,
                 Component.translatable("container.immortalstorage.terminal.search"));
         this.searchBox.setBordered(false);
+        this.searchBox.setTextColor(0xFF303030);
         this.searchBox.setMaxLength(64);
         this.searchBox.setHint(Component.translatable("container.immortalstorage.terminal.search_hint"));
         this.searchBox.setResponder(value -> { });
         this.searchBox.setValue(this.retainedSearch);
         this.searchBox.setResponder(this::onSearchChanged);
-        this.addRenderableWidget(this.searchBox);
+        this.addWidget(this.searchBox);
         this.craftClearButton = this.addRenderableWidget(Button.builder(Component.literal("×"),
                         button -> requestMenuButton(10))
                 .bounds(this.leftPos + 81, this.topPos + this.imageHeight - 159, 10, 10)
@@ -203,11 +204,38 @@ abstract class AbstractTerminalScreen<M extends AbstractContainerMenu> extends A
         return Component.literal(craftMatchComponentsEnabled() ? "N" : "n");
     }
 
-    protected final void renderTerminalChrome(GuiGraphics graphics, boolean xianqiao) {
+    protected final void renderTerminalChrome(GuiGraphics graphics, boolean xianqiao,
+                                                int mouseX, int mouseY, float partialTick) {
         tickScrollAnimation();
         VanillaGuiPainter.terminalPanel(graphics, this.leftPos, this.topPos, this.imageWidth, this.imageHeight,
                 this.visibleRows, totalStorageRows(), this.workspaceExpanded, this.craftingVisible,
-                xianqiao, scrollFraction());
+                xianqiao, this.searchBox != null && this.searchBox.isFocused(), scrollFraction());
+        renderTerminalSearch(graphics, mouseX, mouseY, partialTick);
+    }
+
+    private void renderTerminalSearch(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (this.searchBox == null || !this.searchBox.visible) return;
+        if (this.searchBox.isFocused()) {
+            this.searchBox.render(graphics, mouseX, mouseY, partialTick);
+        } else {
+            String text = this.searchBox.getValue();
+            boolean empty = text.isEmpty();
+            if (empty) text = Component.translatable("container.immortalstorage.terminal.search_hint").getString();
+            String fitted = this.font.plainSubstrByWidth(text, this.searchBox.getWidth() - 2 * TerminalLayout.SEARCH_PADDING);
+            graphics.drawString(this.font, fitted, this.searchBox.getX() + TerminalLayout.SEARCH_PADDING,
+                    this.searchBox.getY() + 2,
+                    empty ? 0xFF545454 : 0xFF303030, false);
+        }
+    }
+
+    protected final void renderTerminalTitle(GuiGraphics graphics, Component workspaceTitle) {
+        String text = workspaceTitle.getString();
+        int available = TerminalLayout.SEARCH_X - TerminalLayout.TITLE_X - 4;
+        if (this.font.width(text) > available) {
+            String ellipsis = "\u2026";
+            text = this.font.plainSubstrByWidth(text, Math.max(0, available - this.font.width(ellipsis))) + ellipsis;
+        }
+        graphics.drawString(this.font, text, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y, 0xFF404040, false);
     }
 
     @Override

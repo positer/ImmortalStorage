@@ -121,7 +121,7 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
         if (settingsOpen) {
             int panelX = imageWidth + 4;
             graphics.text(font, Component.translatable(
-                    "container.immortalstorage.reinforcement_plugin"), panelX + 34, 165, TEXT, false);
+                    "container.immortalstorage.configuration.reinforcement_short"), panelX + 34, 165, TEXT, false);
         }
     }
 

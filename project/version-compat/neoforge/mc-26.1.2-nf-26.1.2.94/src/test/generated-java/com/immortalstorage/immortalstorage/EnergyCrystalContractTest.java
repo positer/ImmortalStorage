@@ -68,15 +68,15 @@ final class EnergyCrystalContractTest {
         assertTrue(menu.contains("ReinforcementPluginHost.isPlugin(stack)"),
                 "the output slot must expose the reinforcement plugin exception through the menu");
         assertTrue(registrations.contains("Capabilities.Energy.BLOCK"));
-        assertTrue(menu.contains("new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 26, 26)"));
+        assertTrue(menu.contains("new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 19, 26)"));
         assertTrue(menu.contains("getMaxStackSize(ItemStack stack)"),
                 "the processing slot must accept the source item's complete stack");
         String inputSlot = menu.substring(menu.indexOf("class InputSlot"), menu.indexOf("class FuelSlot"));
         assertFalse(inputSlot.contains("getMaxStackSize() { return 1; }"),
                 "the processing slot must not force a single-item input");
-        assertTrue(menu.contains("new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 26, 62)"));
-        assertTrue(menu.contains("new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 59, 44)"));
-        assertTrue(screen.contains("imageWidth = 230"));
+        assertTrue(menu.contains("new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 19, 62)"));
+        assertTrue(menu.contains("new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 52, 44)"));
+        assertTrue(screen.contains("imageWidth = 198"));
         assertTrue(screen.contains("TANK_WIDTH = 72"));
         assertTrue(screen.contains("TANK_HEIGHT = 54"));
         assertTrue(screen.contains("stored"));

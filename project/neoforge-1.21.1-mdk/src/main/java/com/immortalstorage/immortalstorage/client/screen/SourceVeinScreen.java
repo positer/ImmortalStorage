@@ -46,8 +46,10 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
         super.init();
         this.sideButtons.clear();
         this.lastSyncedFlux = this.menu.getFluxLimit();
-        this.fluxInput = new EditBox(this.font, this.leftPos + 48, this.topPos + 22, 84, 18,
+        this.fluxInput = new EditBox(this.font, this.leftPos + 52, this.topPos + 27, 76, 13,
                 Component.translatable("container.immortalstorage.source_vein.flux_input"));
+        this.fluxInput.setBordered(false);
+        this.fluxInput.setTextColor(TEXT);
         this.fluxInput.setMaxLength(128);
         this.fluxInput.setHint(Component.translatable("container.immortalstorage.source_vein.flux_input_hint"));
         this.fluxInput.setValue(Long.toString(this.lastSyncedFlux));
@@ -90,7 +92,9 @@ public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> 
     protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
-        VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);
+        int outline = this.fluxInput.isFocused() ? 0xFF2F7178 : 0xFF8B8B8B;
+        graphics.fill(x + 48, y + 22, x + 132, y + 40, outline);
+        graphics.fill(x + 49, y + 23, x + 131, y + 39, 0xFFE5E5E5);
     }
 
     @Override

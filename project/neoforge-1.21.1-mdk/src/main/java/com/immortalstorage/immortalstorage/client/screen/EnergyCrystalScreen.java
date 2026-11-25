@@ -30,8 +30,8 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private static final int SETTINGS_WIDTH = 112;
-    private static final int TANK_X = 132;
+    @Override protected int configurationPanelWidth() { return 116; }
+    private static final int TANK_X = 118;
     private static final int TANK_Y = 26;
     private static final int TANK_WIDTH = 72;
     private static final int TANK_HEIGHT = 54;
@@ -43,11 +43,11 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
 
     public EnergyCrystalScreen(EnergyCrystalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 230;
-        imageHeight = 187;
+        imageWidth = 198;
+        imageHeight = 192;
         titleLabelX = 8;
         titleLabelY = 6;
-        inventoryLabelX = 26;
+        inventoryLabelX = 19;
         inventoryLabelY = 94;
     }
 
@@ -55,7 +55,8 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
         super.init();
         settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 16, topPos + 18, menu));
+                leftPos + imageWidth + 14, topPos + 18, menu));
+        redstoneModeButton.setWidth(89);
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
@@ -70,7 +71,7 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
+                    panelX + 10 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
                     27, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
@@ -80,9 +81,9 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
             settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
-                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+                .bounds(panelX + 10, topPos + 120, 89, 18).build());
         automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
-                .bounds(panelX + 12, topPos + 143, 89, 18).build());
+                .bounds(panelX + 10, topPos + 143, 89, 18).build());
         settingsWidgets.add(xianqiaoButton);
         settingsWidgets.add(automaticButton);
     }
@@ -142,11 +143,11 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
 
         int burnDuration = Math.max(1, menu.burnDuration());
         int flame = Mth.ceil(Math.min(1.0F, menu.burnTicks() / (float) burnDuration) * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 28, topPos + 47, flame,
+        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 21, topPos + 47, flame,
                 menu.burnTicks() > 0);
         // Deliberately no burn/process overlay on the arrow: the crystal arrow
         // is a fixed direction cue, not a progress indicator.
-        graphics.blit(FURNACE, leftPos + 91, topPos + 44, 79.0F, 34.0F,
+        graphics.blit(FURNACE, leftPos + 82, topPos + 44, 79.0F, 34.0F,
                 24, 16, 256, 256);
         renderEnergyTank(graphics);
         if (settingsOpen) renderSettingsPanel(graphics);
@@ -189,11 +190,11 @@ public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyC
     private void renderSettingsPanel(GuiGraphics graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.drawString(font, Component.translatable(
-                menu.uiKey("faces")), panelX + 8, topPos + 38,
+                menu.uiKey("faces")), panelX + 10, topPos + 38,
                 ConfigurationStyle.TEXT, false);
         graphics.drawString(font, Component.translatable(
                 menu.uiKey("switches")),
-                panelX + 8, topPos + 108, ConfigurationStyle.TEXT, false);
+                panelX + 10, topPos + 108, ConfigurationStyle.TEXT, false);
     }
 
     private boolean tankHovered(double mouseX, double mouseY) {

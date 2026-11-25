@@ -1589,9 +1589,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
         }
     }
 
-    if ($relativePath -match '[\\/]client[\\/]screen[\\/](TerminalTabButton|TerminalInventoryActionButton|FacePreviewButton)\.java$') {
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/](TerminalTabButton|TerminalInventoryActionButton|TerminalControlButton|FacePreviewButton)\.java$') {
         $text = $text.Replace('protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)',
             'protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)')
+    }
+
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/]InsetNumberBox\.java$') {
+        $text = $text.Replace('public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)',
+            'public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)')
+        $text = $text.Replace('super.renderWidget(graphics, mouseX, mouseY, partialTick);',
+            'super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick);')
     }
 
     if ($relativePath -match '[\\/]client[\\/]keybind[\\/]ImmortalStorageKeybinds\.java$') {
@@ -1989,6 +1996,20 @@ function Transform-2612([string] $text, [string] $relativePath) {
                 'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, machine, mouseX, mouseY);')
             $text = $text.Replace('graphics.renderTooltip(font, side, mouseX, mouseY);',
                 'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, side, mouseX, mouseY);')
+            if ($relativePath -match 'AbstractTerminalScreen\.java$') {
+                $text = $text.Replace('this.searchBox.render(graphics, mouseX, mouseY, partialTick);',
+                    'this.searchBox.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+            }
+            if ($relativePath -match 'XianqiaoRedstoneInterfaceScreen\.java$') {
+                $text = $text.Replace('high.render(graphics, mouseX, mouseY, partialTick);',
+                    'high.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+                $text = $text.Replace('low.render(graphics, mouseX, mouseY, partialTick);',
+                    'low.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+                $text = $text.Replace('graphics.renderTooltip(font, polarityButton.getMessage(), mouseX, mouseY);',
+                    'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, polarityButton.getMessage(), mouseX, mouseY);')
+                $text = $text.Replace('graphics.renderTooltip(font, title, mouseX, mouseY);',
+                    'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, title, mouseX, mouseY);')
+            }
             $text = [regex]::Replace($text,
                 '(?s)graphics\.renderTooltip\(\s*this\.font,\s*(.*?),\s*(?:java\.util\.)?Optional\.empty\(\),\s*mouseX,\s*mouseY\);',
                 'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, this.font, $1, mouseX, mouseY);')
@@ -2579,8 +2600,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*x \+ 95, laneY, width, 16\);',
             'VanillaGuiPainter.furnaceProgress(graphics, x + 95, laneY, width);')
         $text = [regex]::Replace($text,
-            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*leftPos \+ 91, topPos \+ 44, progress, 16\);',
-            'VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);')
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*leftPos \+ (\d+), topPos \+ (\d+), progress, 16\);',
+            'VanillaGuiPainter.furnaceProgress(graphics, leftPos + $1, topPos + $2, progress);')
     }
     if ($relativePath -match '[\\/]client[\\/]screen[\\/]VanillaArrowRenderingContractTest\.java$') {
         $text = $text.Replace('assertTrue(source.contains("textures/gui/container/furnace.png"))',

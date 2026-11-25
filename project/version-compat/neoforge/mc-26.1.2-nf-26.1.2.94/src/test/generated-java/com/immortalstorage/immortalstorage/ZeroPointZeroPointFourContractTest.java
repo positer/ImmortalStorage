@@ -91,8 +91,11 @@ final class ZeroPointZeroPointFourContractTest {
 
     @Test void realmManagementPanelContainsMagnetAndEnvironmentControls() throws Exception {
         String screen = source("client/screen/XianqiaoStorageScreen.java");
-        assertTrue(screen.contains("REALM_HEIGHT = 160"));
-        assertTrue(screen.contains("REALM_WIDTH, REALM_HEIGHT"));
+        assertTrue(screen.contains("REALM_HEIGHT = 144"));
+        assertTrue(screen.contains("ConfigurationStyle.header"));
+        assertTrue(screen.contains("this.topPos + 140, mainWidth, 16"));
+        assertTrue(18 + 144 - (140 + 16) >= 6, "Last realm action stays inside the panel");
+        assertTrue(screen.contains("realmPanelWidth(), REALM_HEIGHT"));
         assertTrue(screen.contains("this.magnetButton.setMessage(magnetLabel())"));
         assertTrue(screen.contains("this.dayNightButton") && screen.contains("this.weatherButton"));
         assertTrue(screen.contains("new ModPayloads.RealmEnvironment(this.menu.containerId, 0)"));

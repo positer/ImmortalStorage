@@ -11,6 +11,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu> extends AbstractContainerScreen<M> {
     private int windowOffsetX, windowOffsetY, layoutWidth, layoutHeight;
     private boolean movingWindow;
+    private int previousFootprint;
     private double grabX, grabY;
     protected ConfigurationWindowScreen(M menu, Inventory inventory, Component title) { super(menu, inventory, title); }
     @Override protected void init() {
@@ -20,27 +21,40 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         topPos = ConfigurationWindowBounds.y(topPos + windowOffsetY, height, Math.max(imageHeight, layoutHeight));
         windowOffsetX = leftPos - centeredX; windowOffsetY = topPos - centeredY;
         movingWindow = false;
+        previousFootprint = 0;
     }
     @Override protected final void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         ConfigurationExternalWidgets.place(children(), leftPos, topPos, imageWidth);
         // Existing controls retain their geometry and authoritative payloads. Side pages share one framed surface.
         int right = leftPos + imageWidth;
-        int bottom = topPos + imageHeight;
+        int sideBottom = topPos + configurationPanelMinimumHeight();
         boolean sidePage = false;
         for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && followsWindow(widget)
                 && widget.getX() >= leftPos + imageWidth) {
             sidePage = true;
             right = Math.max(right, widget.getX() + widget.getWidth() + 8);
-            bottom = Math.max(bottom, widget.getY() + widget.getHeight() + 8);
+            sideBottom = Math.max(sideBottom, widget.getY() + widget.getHeight() + 8);
         }
         if (sidePage) right = Math.max(right, leftPos + imageWidth + configurationPanelWidth());
         layoutWidth = right - leftPos;
-        layoutHeight = bottom - topPos;
+        layoutHeight = Math.max(imageHeight, sidePage ? sideBottom - topPos : 0);
+        if (layoutWidth != previousFootprint) {
+            // On expansion the background, real slots and live controls move together.
+            int moveX = ConfigurationWindowBounds.x(leftPos, width, layoutWidth) - leftPos;
+            if (moveX != 0) {
+                for (var child : children()) if (child instanceof AbstractWidget widget && followsWindow(widget))
+                    widget.setX(widget.getX() + moveX);
+                leftPos += moveX;
+                right += moveX;
+                windowOffsetX += moveX;
+            }
+            previousFootprint = layoutWidth;
+        }
         // The native title row and body share a frame; the control row above stays transparent.
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (sidePage) {
             VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 2, topPos,
-                    right - leftPos - imageWidth - 2, bottom - topPos);
+                    right - leftPos - imageWidth - 2, sideBottom - topPos);
         }
         renderMachineBackground(graphics, partialTick, mouseX, mouseY);
         if (sidePage) ConfigurationStyle.header(graphics, font, leftPos + imageWidth + 2, topPos,
@@ -55,11 +69,11 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         for (var child : children()) if (child instanceof AbstractWidget widget && widget.visible && widget.isMouseOver(mouseX, mouseY)) return;
         if (mouseY < topPos || mouseY >= topPos + 17) return;
         Component machine = configurationMachineTitle();
-        if (mouseX >= leftPos && mouseX < leftPos + imageWidth && font.width(machine) > imageWidth - 12)
+        if (mouseX >= leftPos && mouseX < leftPos + imageWidth && font.width(machine) > imageWidth - 16)
             graphics.renderTooltip(font, machine, mouseX, mouseY);
         int sideX = leftPos + imageWidth + 2, sideWidth = windowRight() - sideX;
         Component side = configurationSideTitle();
-        if (sideWidth > 0 && mouseX >= sideX && mouseX < sideX + sideWidth && font.width(side) > sideWidth - 12)
+        if (sideWidth > 0 && mouseX >= sideX && mouseX < sideX + sideWidth && font.width(side) > sideWidth - 16)
             graphics.renderTooltip(font, side, mouseX, mouseY);
     }
     protected Component configurationMachineTitle() { return title; }
@@ -104,6 +118,7 @@ public abstract class ConfigurationWindowScreen<M extends AbstractContainerMenu>
         return true;
     }
     protected int configurationPanelWidth() { return 132; }
+    protected int configurationPanelMinimumHeight() { return imageHeight; }
     protected boolean followsWindow(AbstractWidget widget) { return true; }
     @Override public boolean mouseReleased(double x, double y, int button) {
         if (button == 0 && movingWindow) { movingWindow = false; return true; }

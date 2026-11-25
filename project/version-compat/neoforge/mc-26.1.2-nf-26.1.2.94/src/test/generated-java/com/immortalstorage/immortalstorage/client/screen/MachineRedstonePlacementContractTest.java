@@ -16,22 +16,31 @@ final class MachineRedstonePlacementContractTest {
                 "SimulatedReincarnationFurnaceScreen.java", "EnergyCrystalScreen.java"}) {
             String source = Files.readString(screen(name));
             assertTrue(source.contains("settingsWidgets.add(redstoneModeButton)"), name);
-            assertTrue(source.contains("leftPos + imageWidth + 16, topPos + 18"), name);
+            assertTrue(source.contains("leftPos + imageWidth + 14, topPos + 18"), name);
         }
         String basin = Files.readString(screen("TreasureBasinScreen.java"));
         assertTrue(basin.contains("redstoneModeButton.visible = settingsOpen"));
     }
 
-    @Test void advancedRuinRedstoneStaysAboveNativeTitleWithoutMovingSchedulingControls() throws Exception {
+    @Test void advancedRuinRedstoneStaysAboveTitleAndDoesNotOverlapSchedulingControls() throws Exception {
         String source = Files.readString(screen("AdvancedStabilizedMiniatureImmortalRuinScreen.java"));
-        assertTrue(source.contains("redstoneButtonY() { return topPos - 20; }"));
-        assertTrue(source.contains("topPos + 226"));
+        assertTrue(source.contains("redstoneButtonY() { return topPos - 18; }"));
+        assertCompactSchedule(source);
 
         String entangled = Files.readString(screen("AdvancedEntangledMiniatureRuinScreen.java"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos - 20, menu"));
+        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos - 18, menu"));
         assertTrue(entangled.contains("configurationSideTitle()"));
         assertTrue(entangled.contains("container.immortalstorage.ruin.side_reversed"));
-        assertTrue(entangled.contains("topPos + 228"));
+        assertCompactSchedule(entangled);
+    }
+
+    private static void assertCompactSchedule(String source) {
+        for (int y : new int[]{164, 181, 198}) {
+            assertTrue(source.contains("topPos + " + y + ", 120, 16"), "scheduling row at " + y);
+        }
+        assertTrue(source.contains("accessButton = addActionButton("));
+        assertTrue(source.contains("splitButton = addActionButton("));
+        assertTrue(source.contains("orderButton = addActionButton("));
     }
 
     private static Path screen(String name) {

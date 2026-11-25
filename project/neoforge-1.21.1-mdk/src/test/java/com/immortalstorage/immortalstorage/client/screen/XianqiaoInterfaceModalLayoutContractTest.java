@@ -51,9 +51,9 @@ final class XianqiaoInterfaceModalLayoutContractTest {
 
         assertTrue(screen.contains("SCREEN_WIDTH = 176"),
                 "the two-row controls must retain the vanilla 176px container width");
-        assertTrue(screen.contains("SCREEN_HEIGHT = 243"));
+        assertTrue(screen.contains("SCREEN_HEIGHT = 216"));
         assertTrue(screen.contains("SIDE_GRID_X = 56"));
-        assertTrue(screen.contains("SIDE_GRID_Y = 97"),
+        assertTrue(screen.contains("SIDE_GRID_Y = 86"),
                 "the face grid belongs immediately below the output cache row");
         assertTrue(screen.contains("SIDE_BUTTON_WIDTH = 20"));
         assertTrue(screen.contains("SIDE_COLUMN_STRIDE = 22"));
@@ -69,10 +69,10 @@ final class XianqiaoInterfaceModalLayoutContractTest {
         assertTrue(sourceScreen.contains("(index / 3) * 21"));
         assertFalse(screen.contains("index * SIDE_BUTTON_STRIDE"),
                 "the six controls must not regress to one oversized row");
-        assertTrue(menu.contains("PLAYER_INVENTORY_Y = 152"));
-        assertTrue(menu.contains("HOTBAR_Y = 210"));
-        assertTrue(screen.contains("this.inventoryLabelY = 139"));
-        assertTrue(screen.contains("8, 86, TEXT, false"));
+        assertTrue(menu.contains("PLAYER_INVENTORY_Y = 139"));
+        assertTrue(menu.contains("HOTBAR_Y = 195"));
+        assertTrue(screen.contains("this.inventoryLabelY = 128"));
+        assertTrue(screen.contains("8, 76, TEXT, false"));
     }
 
     @Test

@@ -26,7 +26,7 @@ public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<
 private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private static final int SETTINGS_WIDTH = 112;
+    @Override protected int configurationPanelWidth() { return 116; }
     private final Map<Direction, FacePreviewButton> faceButtons = new EnumMap<>(Direction.class);
     private final List<Button> settingsWidgets = new ArrayList<>();
     private Button xianqiaoButton;
@@ -35,15 +35,16 @@ private static final List<Direction> SIDE_ORDER = List.of(
 
     public SimulatedSpiritFieldScreen(SimulatedSpiritFieldMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 230; imageHeight = 187; titleLabelX = 8; titleLabelY = 6;
-        inventoryLabelX = 26; inventoryLabelY = 94;
+        imageWidth = 198; imageHeight = 192; titleLabelX = 8; titleLabelY = 6;
+        inventoryLabelX = 19; inventoryLabelY = 94;
     }
 
     @Override protected void init() {
         super.init();
         settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 16, topPos + 18, menu));
+                leftPos + imageWidth + 14, topPos + 18, menu));
+        redstoneModeButton.setWidth(89);
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
@@ -59,7 +60,7 @@ private static final List<Direction> SIDE_ORDER = List.of(
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
+                    panelX + 10 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
                     27, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
@@ -69,14 +70,14 @@ private static final List<Direction> SIDE_ORDER = List.of(
             settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
-                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+                .bounds(panelX + 10, topPos + 120, 89, 18).build());
         automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
-                .bounds(panelX + 12, topPos + 143, 89, 18).build());
+                .bounds(panelX + 10, topPos + 143, 89, 18).build());
         settingsWidgets.add(xianqiaoButton);
         settingsWidgets.add(automaticButton);
         settingsWidgets.add(addRenderableWidget(Button.builder(
                 Component.translatable("container.immortalstorage.reincarnation.release_xp"), clicked -> send(2))
-                .bounds(panelX + 12, topPos + 166, 89, 18).build()));
+                .bounds(panelX + 10, topPos + 166, 89, 18).build()));
     }
 
     private ItemStack adjacentBlockPreview(Direction side) {
@@ -132,19 +133,19 @@ private static final List<Direction> SIDE_ORDER = List.of(
         graphics.horizontalLine(leftPos + 8, leftPos + imageWidth - 9, topPos + 92, 0xFFFFFFFF);
         VanillaGuiPainter.slots(graphics, leftPos, topPos, menu.slots);
         int flame = Mth.ceil(Math.min(1.0F, menu.burnTicks() / 500.0F) * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 28, topPos + 47, flame, menu.burnTicks() > 0);
-        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, FURNACE, leftPos + 91, topPos + 44, 79.0F, 34.0F, 24, 16, 256, 256);
+        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 21, topPos + 47, flame, menu.burnTicks() > 0);
+        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, FURNACE, leftPos + 82, topPos + 44, 79.0F, 34.0F, 24, 16, 256, 256);
         int progress = Mth.ceil(Math.min(1.0F, menu.progress() / 50.0F) * 24.0F);
-        if (progress > 0) VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);
+        if (progress > 0) VanillaGuiPainter.furnaceProgress(graphics, leftPos + 82, topPos + 44, progress);
         if (settingsOpen) renderSettingsPanel(graphics);
     }
 
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
         int panelX = leftPos + imageWidth + 4;
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, ConfigurationStyle.TEXT, false);
+                "container.immortalstorage.reincarnation.faces"), panelX + 10, topPos + 38, ConfigurationStyle.TEXT, false);
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
+                "container.immortalstorage.reincarnation.switches"), panelX + 10, topPos + 108,
                 ConfigurationStyle.TEXT, false);
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {

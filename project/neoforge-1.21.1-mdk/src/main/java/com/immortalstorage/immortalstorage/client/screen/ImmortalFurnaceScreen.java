@@ -2,7 +2,6 @@ package com.immortalstorage.immortalstorage.client.screen;
 
 import com.immortalstorage.immortalstorage.menu.custom.ImmortalFurnaceMenu;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -33,7 +32,7 @@ public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFur
     @Override protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 13, topPos + 30, menu));
+                leftPos + imageWidth + 9, topPos + 22, menu));
         settingsButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
                 Component.literal("⚙"), button -> {
                     settingsOpen = !settingsOpen;
@@ -47,17 +46,18 @@ public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFur
         MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
     }
 
+    @Override protected int configurationPanelMinimumHeight() { return 46; }
+
+    @Override protected int configurationPanelWidth() { return 102; }
+
+    @Override protected Component configurationSideTitle() {
+        return Component.translatable("container.immortalstorage.redstone_mode.title");
+    }
+
     @Override
     protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        VanillaGuiPainter.panel(graphics, x, y, imageWidth, imageHeight);
-        if (settingsOpen) {
-            graphics.drawString(font, Component.translatable("container.immortalstorage.redstone_mode.title"),
-                    leftPos + imageWidth + 12, topPos + 10, TEXT, false);
-        }
-        graphics.fill(x + 2, y + 2, x + imageWidth - 2, y + 16, 0xFFD8D8D8);
-        graphics.hLine(x + 2, x + imageWidth - 3, y + 16, 0xFF8B8B8B);
         graphics.hLine(x + 7, x + imageWidth - 8, y + 116, 0xFF8B8B8B);
         graphics.hLine(x + 7, x + imageWidth - 8, y + 117, 0xFFFFFFFF);
         VanillaGuiPainter.slots(graphics, x, y, menu.slots);

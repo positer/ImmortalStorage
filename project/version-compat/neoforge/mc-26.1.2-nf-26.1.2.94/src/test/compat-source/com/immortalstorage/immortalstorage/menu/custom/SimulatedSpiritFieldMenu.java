@@ -41,16 +41,16 @@ public final class SimulatedSpiritFieldMenu extends AbstractContainerMenu implem
         this.redstoneMode = MachineRedstoneMenu.dataSlot(field);
         checkContainerSize(container, SimulatedSpiritFieldBlockEntity.SLOT_COUNT);
         checkContainerDataCount(data, SimulatedSpiritFieldBlockEntity.DATA_COUNT);
-        addSlot(new SeedSlot(container, 0, 26, 26));
-        addSlot(new FuelSlot(container, 1, 26, 62));
-        addSlot(new ToolSlot(container, 2, 59, 44));
+        addSlot(new SeedSlot(container, 0, 19, 26));
+        addSlot(new FuelSlot(container, 1, 19, 62));
+        addSlot(new ToolSlot(container, 2, 52, 44));
         for (int row = 0; row < 3; row++) for (int col = 0; col < 4; col++) {
-            addSlot(new OutputSlot(container, 3 + row * 4 + col, 132 + col * 18, 26 + row * 18));
+            addSlot(new OutputSlot(container, 3 + row * 4 + col, 118 + col * 18, 26 + row * 18));
         }
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
-            addSlot(new Slot(inventory, col + row * 9 + 9, 26 + col * 18, 105 + row * 18));
+            addSlot(new Slot(inventory, col + row * 9 + 9, 19 + col * 18, 105 + row * 18));
         }
-        for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 26 + col * 18, 163));
+        for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 19 + col * 18, 163));
         container.startOpen(inventory.player); addDataSlots(data); addDataSlot(redstoneMode);
     }
 

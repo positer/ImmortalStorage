@@ -21,7 +21,9 @@ class XianqiaoRealmTimeLayoutContractTest {
                 "com/immortalstorage/immortalstorage/client/screen/XianqiaoStorageScreen.java"));
 
         assertTrue(screen.contains("REALM_TIME_SIDE_INSET"));
-        assertTrue(screen.contains("REALM_WIDTH - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE"));
+        assertTrue(screen.contains("realmPanelWidth() - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE"));
+        assertTrue(screen.contains("insetX, timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE"));
+        assertTrue(screen.contains("panelX + (realmPanelWidth() - this.font.width(timeScaleValue)) / 2"));
         assertTrue(screen.contains("container.immortalstorage.terminal.time_scale_title"));
         assertTrue(screen.contains("String timeScale = String.format"));
         assertTrue(screen.contains("graphics.text(this.font, timeScaleValue"));

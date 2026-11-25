@@ -2,6 +2,7 @@ package com.immortalstorage.immortalstorage.client.screen;
 
 import com.immortalstorage.immortalstorage.block.entity.EntangledStabilizedMiniatureImmortalRuinBlockEntity;
 import com.immortalstorage.immortalstorage.menu.custom.EntangledMiniatureRuinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.RuinFilterLayout;
 import com.immortalstorage.immortalstorage.network.ModPayloads;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -36,7 +37,10 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
         inventoryLabelY = imageHeight - 94;
     }
 
-    @Override protected int configurationPanelWidth() { return 156; }
+    @Override protected int configurationPanelWidth() { return filtersOpen ? 132 : 140; }
+    @Override protected int configurationPanelMinimumHeight() {
+        return filtersOpen ? RuinFilterLayout.MINIMUM_PANEL_HEIGHT : super.configurationPanelMinimumHeight();
+    }
 
     @Override
     protected void init() {
@@ -46,16 +50,16 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
         redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
-                .bounds(leftPos + 4, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 4, topPos - 18, 20, 18).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
-                }).bounds(leftPos + 26, topPos - 20, 20, 20)
+                }).bounds(leftPos + 26, topPos - 18, 20, 18)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
                         "container.immortalstorage.stabilized_ruin.filter"))).build());
         addRenderableWidget(Button.builder(Component.literal("◀"), b -> { activeSide = 0; refreshWidgets(); })
-                .bounds(leftPos + 48, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 48, topPos - 18, 20, 18).build());
         addRenderableWidget(Button.builder(Component.literal("▶"), b -> { activeSide = 1; refreshWidgets(); })
-                .bounds(leftPos + 70, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 70, topPos - 18, 20, 18).build());
         if (settings) addSettingsButtons();
         if (filtersOpen) addFilterButtons();
     }
@@ -71,7 +75,7 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
             addActionButton(leftPos + imageWidth + 6, y, 16, 16, "-", index * 2);
             addActionButton(leftPos + imageWidth + 78, y, 16, 16, "+", index * 2 + 1);
             int valueIndex = index;
-            EditBox box = new EditBox(font, leftPos + imageWidth + 25, y, 50, 16, Component.empty());
+            EditBox box = new InsetNumberBox(font, leftPos + imageWidth + 25, y, 50, 16, Component.empty());
             box.setValue(Integer.toString(menu.value(base() + index)));
             box.setFilter(text -> text.matches("-?\\d{0,5}"));
             box.setResponder(text -> {
@@ -83,11 +87,11 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
             valueBoxes.add(box);
             addRenderableWidget(box);
         }
-        previewButton = addActionButton(leftPos + imageWidth + 6, topPos + 130, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
-        enabledButton = addActionButton(leftPos + imageWidth + 6, topPos + 150, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
-        addActionButton(leftPos + imageWidth + 6, topPos + 170, 20, 18, "-", 14);
-        addActionButton(leftPos + imageWidth + 74, topPos + 170, 20, 18, "+", 15);
-        EditBox frequency = new EditBox(font, leftPos + imageWidth + 29, topPos + 170, 42, 18, Component.empty());
+        previewButton = addActionButton(leftPos + imageWidth + 6, topPos + 128, 60, 16, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
+        enabledButton = addActionButton(leftPos + imageWidth + 6 + 64, topPos + 128, 60, 16, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
+        addActionButton(leftPos + imageWidth + 6, topPos + 148, 20, 16, "-", 14);
+        addActionButton(leftPos + imageWidth + 74, topPos + 148, 20, 16, "+", 15);
+        EditBox frequency = new InsetNumberBox(font, leftPos + imageWidth + 29, topPos + 148, 42, 16, Component.empty());
         frequency.setValue(Integer.toString(menu.value(base() + 6)));
         frequency.setFilter(text -> text.matches("\\d{0,5}"));
         frequency.setResponder(text -> {
@@ -116,7 +120,7 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
                         new ModPayloads.ToggleEntangledRuinFilterMode(menu.containerId, activeSide, 1)))
                 .bounds(panelX, topPos + 112, 88, 18).build());
         faceButtons.clear();
-        faceButtons.addAll(RuinFaceGrid.add(this::sendFaceToggle, activeSide * SIDE_SPAN + 20, panelX, topPos + 132));
+        faceButtons.addAll(RuinFaceGrid.add(this::sendFaceToggle, activeSide * SIDE_SPAN + 20, panelX, topPos + RuinFilterLayout.FACE_GRID_Y));
         for (Button button : faceButtons) addRenderableWidget(button);
         RuinFaceGrid.sync(faceButtons, menu.value(base() + 9), faceButtonVisible());
     }
@@ -189,14 +193,16 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
             if (!faceButtons.isEmpty()) {
                 RuinFaceGrid.sync(faceButtons, menu.value(base() + 9), faceButtonVisible());
             }
-            VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
-            graphics.drawString(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
-                    leftPos + 210, topPos + 203, ConfigurationStyle.TEXT, false);
+            VanillaGuiPainter.slot(graphics, leftPos + RuinFilterLayout.REINFORCEMENT_X,
+                    topPos + RuinFilterLayout.REINFORCEMENT_Y, true);
+            graphics.drawString(font, Component.translatable("container.immortalstorage.configuration.reinforcement_short"),
+                    leftPos + RuinFilterLayout.REINFORCEMENT_X + 22,
+                    topPos + RuinFilterLayout.REINFORCEMENT_Y + 5, ConfigurationStyle.TEXT, false);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) graphics.drawString(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
-        graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, ConfigurationStyle.TEXT, false);
+        graphics.drawString(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 152, ConfigurationStyle.TEXT, false);
     }
 
     @Override protected net.minecraft.network.chat.Component configurationSideTitle() {
@@ -205,9 +211,6 @@ public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScree
                 Component.translatable(activeSide == 0
                         ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed"));
     }
-    @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-    }
-
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);

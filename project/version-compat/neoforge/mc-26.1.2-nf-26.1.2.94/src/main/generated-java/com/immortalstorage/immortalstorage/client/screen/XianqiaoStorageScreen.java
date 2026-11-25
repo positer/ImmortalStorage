@@ -29,8 +29,9 @@ import java.util.Optional;
 
 public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorageMenu>
         implements TerminalFluidScreenAccess {
-    private static final int REALM_WIDTH = 104;
-    private static final int REALM_HEIGHT = 160;
+    private static final int REALM_WIDTH = 116;
+    private static final int REALM_MIN_WIDTH = 92;
+    private static final int REALM_HEIGHT = 144;
     /** Small vanilla panel seam; the removed channel rail no longer reserves 32 px. */
     private static final int REALM_GAP = 4;
     private static final int REALM_TIME_BUTTON_SIZE = 20;
@@ -105,69 +106,49 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         this.craftModuleButton.active = terminalUnlocked;
         this.furnaceModuleButton.active = terminalUnlocked;
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
-        this.tribulateButton = this.addRenderableWidget(Button.builder(
-                        Component.translatable("container.immortalstorage.terminal.tribulate"),
-                        button -> ClientPacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 20,
-                        this.topPos + 99, 68, 20)
-                .tooltip(net.minecraft.client.gui.components.Tooltip.create(
-                        Component.translatable("container.immortalstorage.terminal.tribulate_hint")))
-                .build());
-        int environmentX = this.leftPos + this.imageWidth + REALM_GAP + 8;
-        this.dayNightButton = this.addRenderableWidget(Button.builder(dayNightLabel(),
-                        button -> ClientPacketDistributor.sendToServer(
-                                new ModPayloads.RealmEnvironment(this.menu.containerId, 0)))
-                .bounds(environmentX, this.topPos + 78, 42, 18)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.day_night_hint"))).build());
-        this.weatherButton = this.addRenderableWidget(Button.builder(weatherLabel(),
-                        button -> ClientPacketDistributor.sendToServer(
-                                new ModPayloads.RealmEnvironment(this.menu.containerId, 1)))
-                .bounds(environmentX + 46, this.topPos + 78, 42, 18)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.weather_hint"))).build());
-        int realmPanelX = this.leftPos + this.imageWidth + REALM_GAP;
+        int panelX = this.leftPos + this.imageWidth + REALM_GAP;
+        int insetX = panelX + REALM_TIME_SIDE_INSET;
+        int mainWidth = realmPanelWidth() - 2 * REALM_TIME_SIDE_INSET;
+        int environmentWidth = (mainWidth - 4) / 2;
+        this.tribulateButton = this.addRenderableWidget(new TerminalControlButton(
+                panelX + (realmPanelWidth() - 68) / 2, this.topPos + 99, 68, 18,
+                Component.translatable("container.immortalstorage.terminal.tribulate"),
+                button -> ClientPacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.tribulate_hint"))));
+        this.dayNightButton = this.addRenderableWidget(new TerminalControlButton(
+                insetX, this.topPos + 78, environmentWidth, 16, dayNightLabel(),
+                button -> ClientPacketDistributor.sendToServer(new ModPayloads.RealmEnvironment(this.menu.containerId, 0)),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.day_night_hint"))));
+        this.weatherButton = this.addRenderableWidget(new TerminalControlButton(
+                insetX + environmentWidth + 4, this.topPos + 78, environmentWidth, 16, weatherLabel(),
+                button -> ClientPacketDistributor.sendToServer(new ModPayloads.RealmEnvironment(this.menu.containerId, 1)),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.weather_hint"))));
         int timeControlY = this.topPos + REALM_TIME_ROW_Y;
-        this.slowerTimeButton = this.addRenderableWidget(Button.builder(Component.literal("-"),
-                        button -> ClientPacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, -1)))
-                .bounds(realmPanelX + REALM_TIME_SIDE_INSET, timeControlY,
-                        REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE)
-                .tooltip(net.minecraft.client.gui.components.Tooltip.create(
-                        Component.translatable("container.immortalstorage.terminal.time_slower")))
-                .build());
-        this.fasterTimeButton = this.addRenderableWidget(Button.builder(Component.literal("+"),
-                        button -> ClientPacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, 1)))
-                .bounds(realmPanelX + REALM_WIDTH - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE,
-                        timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE)
-                .tooltip(net.minecraft.client.gui.components.Tooltip.create(
-                        Component.translatable("container.immortalstorage.terminal.time_faster")))
-                .build());
-        this.autoFurnaceFuelButton = this.addRenderableWidget(Button.builder(
-                        autoFurnaceFuelLabel(), button -> requestMenuButton(
-                                XianqiaoStorageMenu.AUTO_FURNACE_FUEL_BUTTON))
-                .bounds(this.leftPos + 92, this.topPos + this.imageHeight - 179, 76, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.auto_fuel_hint")))
-                .build());
-        this.autoFurnaceFillButton = this.addRenderableWidget(Button.builder(
-                        autoFurnaceFillLabel(), button -> requestMenuButton(
-                                XianqiaoStorageMenu.AUTO_FURNACE_FILL_BUTTON))
-                .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 72, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.auto_fill_hint")))
-                .build());
-        this.handAutoRefillButton = this.addRenderableWidget(Button.builder(
-                        handAutoRefillLabel(), button -> requestMenuButton(
-                                XianqiaoStorageMenu.HAND_AUTO_REFILL_BUTTON))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 120, 88, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.hand_refill_hint")))
-                .build());
-        this.magnetButton = this.addRenderableWidget(Button.builder(magnetLabel(),
-                        button -> requestMenuButton(XianqiaoStorageMenu.MAGNET_BUTTON))
-                .bounds(this.leftPos + this.imageWidth + REALM_GAP + 8, this.topPos + 139, 88, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.magnet_hint"))).build());
+        this.slowerTimeButton = this.addRenderableWidget(new TerminalControlButton(
+                insetX, timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE, Component.literal("-"),
+                button -> ClientPacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, -1)),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.time_slower"))));
+        this.fasterTimeButton = this.addRenderableWidget(new TerminalControlButton(
+                panelX + realmPanelWidth() - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE,
+                timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE, Component.literal("+"),
+                button -> ClientPacketDistributor.sendToServer(new ModPayloads.TimeFlow(this.menu.containerId, 1)),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.time_faster"))));
+        this.autoFurnaceFuelButton = this.addRenderableWidget(new TerminalControlButton(
+                this.leftPos + 92, this.topPos + this.imageHeight - 179, 76, 16, autoFurnaceFuelLabel(),
+                button -> requestMenuButton(XianqiaoStorageMenu.AUTO_FURNACE_FUEL_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.auto_fuel_hint"))));
+        this.autoFurnaceFillButton = this.addRenderableWidget(new TerminalControlButton(
+                this.leftPos + 16, this.topPos + this.imageHeight - 179, 72, 16, autoFurnaceFillLabel(),
+                button -> requestMenuButton(XianqiaoStorageMenu.AUTO_FURNACE_FILL_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.auto_fill_hint"))));
+        this.handAutoRefillButton = this.addRenderableWidget(new TerminalControlButton(
+                insetX, this.topPos + 121, mainWidth, 16, handAutoRefillLabel(),
+                button -> requestMenuButton(XianqiaoStorageMenu.HAND_AUTO_REFILL_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.hand_refill_hint"))));
+        this.magnetButton = this.addRenderableWidget(new TerminalControlButton(
+                insetX, this.topPos + 140, mainWidth, 16, magnetLabel(),
+                button -> requestMenuButton(XianqiaoStorageMenu.MAGNET_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.magnet_hint"))));
         int inventoryActionsY = this.topPos + TerminalLayout.inventoryY(this.imageHeight)
                 - (TerminalLayout.SLOT_SIZE + TerminalInventoryActionButton.SIZE) / 2;
         int inventoryActionsX = this.leftPos + this.imageWidth - 30;
@@ -191,13 +172,18 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         updateRealmWidgets();
     }
 
+    private int realmPanelWidth() {
+        return TerminalLayout.fitSidePanelWidth(this.width, this.imageWidth, TerminalLayout.MODULE_RAIL_X,
+                REALM_GAP, REALM_MIN_WIDTH, REALM_WIDTH);
+    }
+
     private Component magnetLabel() { return Component.translatable(this.menu.getData().isMagnetEnabled()
             ? "container.immortalstorage.terminal.magnet_on"
             : "container.immortalstorage.terminal.magnet_off"); }
 
     @Override
     protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-        renderTerminalChrome(graphics, true);
+        renderTerminalChrome(graphics, true, mouseX, mouseY, partialTick);
         renderStorageSlotsClipped(graphics, storageSlotCountInternal());
         renderFluidStorage(graphics);
         renderExternalResourceStorage(graphics);
@@ -219,19 +205,18 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         }
         if (this.realmVisible) {
             int panelX = this.leftPos + this.imageWidth + REALM_GAP;
-            VanillaGuiPainter.panel(graphics, panelX, this.topPos + 18, REALM_WIDTH, REALM_HEIGHT);
-            VanillaGuiPainter.moduleTitle(graphics, this.font,
-                    Component.translatable("container.immortalstorage.terminal.management").getString(),
-                    panelX + 8, this.topPos + 26);
+            VanillaGuiPainter.panel(graphics, panelX, this.topPos + 18, realmPanelWidth(), REALM_HEIGHT);
+            ConfigurationStyle.header(graphics, this.font, panelX, this.topPos + 18, realmPanelWidth(),
+                    Component.translatable("container.immortalstorage.terminal.management"));
             Component timeScaleTitle = Component.translatable(
                     "container.immortalstorage.terminal.time_scale_title");
             graphics.text(this.font, timeScaleTitle,
-                    panelX + (REALM_WIDTH - this.font.width(timeScaleTitle)) / 2,
+                    panelX + (realmPanelWidth() - this.font.width(timeScaleTitle)) / 2,
                     this.topPos + REALM_TIME_LABEL_Y, 0xFF404040, false);
             String timeScale = String.format(java.util.Locale.ROOT, "%.1fx", this.menu.getData().getTimeScale());
             Component timeScaleValue = Component.literal(timeScale);
             graphics.text(this.font, timeScaleValue,
-                    panelX + (REALM_WIDTH - this.font.width(timeScaleValue)) / 2,
+                    panelX + (realmPanelWidth() - this.font.width(timeScaleValue)) / 2,
                     this.topPos + REALM_TIME_ROW_Y
                             + (REALM_TIME_BUTTON_SIZE - this.font.lineHeight) / 2,
                     0xFF404040, false);
@@ -273,8 +258,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         Component workspaceTitle = this.stonecutterVisible
                 ? Component.translatable("container.immortalstorage.terminal.stonecutter_title")
                 : this.title;
-        graphics.text(this.font, workspaceTitle, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
-                0xFF404040, false);
+        renderTerminalTitle(graphics, workspaceTitle);
         graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX,
                 this.inventoryLabelY, 0xFF404040, false);
         renderStorageAmountOverlays(graphics);
@@ -481,7 +465,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 TerminalLayout.TAB_WIDTH, railHeight));
         if (this.realmVisible) {
             areas.add(new Rect2i(this.leftPos + this.imageWidth + REALM_GAP, this.topPos + 18,
-                    REALM_WIDTH, REALM_HEIGHT));
+                    realmPanelWidth(), REALM_HEIGHT));
         }
         return List.copyOf(areas);
     }
@@ -775,7 +759,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
     protected int adjustTerminalLeftPos(int centeredLeftPos) {
         if (!this.realmVisible) return centeredLeftPos;
         return TerminalLayout.compositeLeft(this.width, this.imageWidth,
-                TerminalLayout.MODULE_RAIL_X, REALM_GAP, REALM_WIDTH);
+                TerminalLayout.MODULE_RAIL_X, REALM_GAP, realmPanelWidth());
     }
 
     private void selectModule(int module) {

@@ -54,7 +54,7 @@ public final class EntangledMiniatureRuinMenu extends AbstractContainerMenu impl
         container.startOpen(inventory.player);
         for (int row = 0; row < 6; row++) for (int col = 0; col < 9; col++)
             addSlot(new Slot(container, col + row * 9, 8 + col * 18, 18 + row * 18));
-        addSlot(new Slot(container, 54, 188, 198) {
+        addSlot(new Slot(container, 54, RuinFilterLayout.REINFORCEMENT_X, RuinFilterLayout.REINFORCEMENT_Y) {
             @Override public boolean mayPlace(ItemStack stack) { return com.immortalstorage.immortalstorage.block.entity.ReinforcementPluginHost.isPlugin(stack); }
             @Override public int getMaxStackSize() { return 1; }
             @Override public boolean isActive() { return pluginVisible; }

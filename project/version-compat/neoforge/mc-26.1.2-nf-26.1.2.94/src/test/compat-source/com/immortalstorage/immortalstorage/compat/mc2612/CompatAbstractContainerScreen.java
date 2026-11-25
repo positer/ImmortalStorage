@@ -106,6 +106,7 @@ public abstract class CompatAbstractContainerScreen<T extends AbstractContainerM
     private void extractCompatSlotHighlight(GuiGraphicsExtractor graphics, Identifier sprite) {
         if (this.hoveredSlot == null || !this.hoveredSlot.isHighlightable()) return;
         Rect2i bounds = visualSlotBounds(this.hoveredSlot);
+        if (bounds.getWidth() <= 0 || bounds.getHeight() <= 0) return;
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite,
                 bounds.getX() - this.leftPos - 4,
                 bounds.getY() - this.topPos - 4, 24, 24);
@@ -148,6 +149,13 @@ public abstract class CompatAbstractContainerScreen<T extends AbstractContainerM
     protected void renderSlotContents(GuiGraphicsExtractor graphics, ItemStack stack,
                                       Slot slot, String countString) {
         if (stack.isEmpty()) {
+            if (this instanceof com.immortalstorage.immortalstorage.client.screen.TerminalScreenAccess
+                    && slot.isActive() && slot.getItem().isEmpty()) {
+                Identifier hint = slot.getNoItemIcon();
+                if (hint != null) {
+                    graphics.blitSprite(RenderPipelines.GUI_TEXTURED, hint, slot.x, slot.y, 16, 16);
+                }
+            }
             return;
         }
         int x = slot.x;
@@ -172,10 +180,9 @@ public abstract class CompatAbstractContainerScreen<T extends AbstractContainerM
 
     private Slot findHoveredSlot(double mouseX, double mouseY) {
         if (this instanceof com.immortalstorage.immortalstorage.client.screen.TerminalScreenAccess terminal) {
-            Slot slot = terminal.immortalstorage$getSlotAt(mouseX, mouseY);
-            if (slot != null) {
-                return slot;
-            }
+            // A miss is authoritative. The menu's static slot coordinates include rows that are not
+            // visible in the moving terminal viewport; falling back paints a ghost over unrelated labels.
+            return terminal.immortalstorage$getSlotAt(mouseX, mouseY);
         }
         for (Slot slot : this.menu.slots) {
             if (slot.isActive()

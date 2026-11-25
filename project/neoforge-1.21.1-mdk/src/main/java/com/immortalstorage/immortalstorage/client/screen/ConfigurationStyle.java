@@ -4,6 +4,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.Direction;
+import net.minecraft.util.FormattedCharSequence;
 import java.util.List;
 
 /** Shared frame, text palette and face order for machine configuration surfaces. */
@@ -13,7 +14,20 @@ final class ConfigurationStyle {
     static final int DISABLED = 0xFF777777;
     static final List<Direction> FACES = List.of(Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
+    static final int CHOOSER_TOP = 27;
+    static final int CHOOSER_ROW = 20;
     private ConfigurationStyle() {}
+
+    static int chooserHeight(int choices) {
+        return 32 + CHOOSER_ROW * Math.max(1, Math.min(5, choices));
+    }
+
+    static void amountSummary(GuiGraphics graphics, Font font, Component summary, int x, int y, int width) {
+        List<FormattedCharSequence> lines = font.split(summary, width);
+        for (int i = 0; i < Math.min(lines.size(), 3); i++) {
+            graphics.drawString(font, lines.get(i), x, y + i * 9, TEXT, false);
+        }
+    }
     static Component faceLabel(Direction side) {
         return Component.translatable("container.immortalstorage.configuration.face." + side.getName());
     }
@@ -24,12 +38,12 @@ final class ConfigurationStyle {
         graphics.vLine(x + 1, y, y + 18, 0xFFD8D8D8);
         graphics.vLine(x + width - 2, y, y + 18, 0xFF8B8B8B);
         graphics.vLine(x + width - 1, y, y + 18, 0xFF373737);
-        int available = Math.max(0, width - 12);
+        int available = Math.max(0, width - 16);
         String text = title.getString();
         if (font.width(text) > available) {
             String ellipsis = "\u2026";
             text = font.plainSubstrByWidth(text, Math.max(0, available - font.width(ellipsis))) + ellipsis;
         }
-        graphics.drawString(font, text, x + 6, y + 4, TEXT, false);
+        graphics.drawString(font, text, x + 8, y + 5, TEXT, false);
     }
 }

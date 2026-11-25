@@ -33,6 +33,12 @@ final class EnchantmentHandbookContractTest {
             "assets/immortalstorage/patchouli_books/jade_guide/%s/entries/automation/enchantment_compressor.json";
     private static final String LANG_PATH = "assets/immortalstorage/lang/%s.json";
     private static final List<String> NEW_KEYS = List.of(
+            "container.immortalstorage.xianqiao_redstone_interface.polarity",
+            "container.immortalstorage.configuration.reinforcement_short",
+            "message.immortalstorage.cultivation.progress_hint",
+            "message.immortalstorage.cultivation.not_started",
+            "message.immortalstorage.cultivation.lingqi",
+            "message.immortalstorage.cultivation.stage",
             "container.immortalstorage.enchantment_compressor",
             "container.immortalstorage.enchantment_decompressor",
             // 0.1.9 Guixu Time-Shift Staff: item/staff feedback keys in both locales.
