@@ -49,10 +49,10 @@ public class XianqiaoInterfaceMenu extends AbstractContainerMenu implements Mach
     public static final int PLAYER_SLOT_COUNT = 36;
     public static final int MENU_SLOT_COUNT = PLAYER_START + PLAYER_SLOT_COUNT;
 
-    public static final int CONFIG_Y = 31;
-    public static final int BUFFER_Y = 67;
-    public static final int PLAYER_INVENTORY_Y = 152;
-    public static final int HOTBAR_Y = 210;
+    public static final int CONFIG_Y = 29;
+    public static final int BUFFER_Y = 57;
+    public static final int PLAYER_INVENTORY_Y = 139;
+    public static final int HOTBAR_Y = 195;
     private static final int SIDE_DATA_START = 0;
     private static final int REVISION_LOW_DATA = SIDE_DATA_START + 6;
     private static final int REVISION_HIGH_DATA = REVISION_LOW_DATA + 1;

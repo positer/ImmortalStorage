@@ -3,14 +3,13 @@ import com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainer
 
 import com.immortalstorage.immortalstorage.menu.custom.ImmortalFurnaceMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 /** Vanilla-pixel-language screen with three furnace lanes in one menu. */
-public class ImmortalFurnaceScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<ImmortalFurnaceMenu> {
+public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFurnaceMenu> {
     private net.minecraft.client.gui.components.Button redstoneModeButton;
     private net.minecraft.client.gui.components.Button settingsButton;
     private boolean settingsOpen;
@@ -32,7 +31,8 @@ private static final int TEXT = 0xFF404040;
     @Override protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 13, topPos + 30, menu));
+                leftPos + imageWidth + 10, topPos + 22, menu));
+        redstoneModeButton.setWidth(84);
         settingsButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
                 Component.literal("⚙"), button -> {
                     settingsOpen = !settingsOpen;
@@ -46,18 +46,18 @@ private static final int TEXT = 0xFF404040;
         MachineRedstoneModeButton.refresh(redstoneModeButton, menu);
     }
 
+    @Override protected int configurationPanelMinimumHeight() { return 46; }
+
+    @Override protected int configurationPanelWidth() { return 102; }
+
+    @Override protected Component configurationSideTitle() {
+        return Component.translatable("container.immortalstorage.redstone_mode.title");
+    }
+
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = leftPos;
         int y = topPos;
-        VanillaGuiPainter.panel(graphics, x, y, imageWidth, imageHeight);
-        if (settingsOpen) {
-            VanillaGuiPainter.panel(graphics, leftPos + imageWidth + 4, topPos, 104, 62);
-            graphics.text(font, Component.translatable("container.immortalstorage.redstone_mode.title"),
-                    leftPos + imageWidth + 12, topPos + 10, TEXT, false);
-        }
-        graphics.fill(x + 2, y + 2, x + imageWidth - 2, y + 16, 0xFFD8D8D8);
-        graphics.horizontalLine(x + 2, x + imageWidth - 3, y + 16, 0xFF8B8B8B);
         graphics.horizontalLine(x + 7, x + imageWidth - 8, y + 116, 0xFF8B8B8B);
         graphics.horizontalLine(x + 7, x + imageWidth - 8, y + 117, 0xFFFFFFFF);
         VanillaGuiPainter.slots(graphics, x, y, menu.slots);
@@ -79,7 +79,6 @@ private static final int TEXT = 0xFF404040;
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, TEXT, false);
         graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, TEXT, false);
         graphics.text(font, "I", 40, LANE_Y[0] + 5, TEXT, false);
         graphics.text(font, "II", 37, LANE_Y[1] + 5, TEXT, false);

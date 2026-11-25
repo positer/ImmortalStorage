@@ -4,35 +4,35 @@
 
 ### English
 
-- Added the Guixu Time-Shift Staff: a shaped crafting-table item made from one Immortal Forged Alloy, one Nurturing Crystal, two sticks and one Miniature Immortal Ruin. It has no durability and does not stack.
-- Right-clicking any block applies a permanent single-block acceleration: the block gains a cyan box and its multiplier is written at the centre of every face, in cyan. The multiplier is the tier the staff currently holds — 2x, 4x, 8x, 16x or 32x.
-- Right-clicking an already accelerated block spends one Primordial Qi from the player's inventory or Xianqiao storage, turns the box and its label red at 1024x and grants 1024x for 60 seconds of the player's real time. When that window closes the block falls back to exactly the permanent tier it was given.
-- Shift-right-clicking a block that carries a permanent or 1024x acceleration clears all of the staff's acceleration on it at once.
-- Sneak-scrolling while holding the staff cycles the tier the next application will grant. Changing the held tier never alters a block that is already accelerated.
-- The acceleration follows JDT's approach: every block-entity pass adds the block's extra ticks, so the personal realm's own extra passes multiply with the staff tier instead of replacing it. Blocks carrying immortalstorage:time_acceleration_disallowed or c:tick_acceleration_disallowed are never accelerated, and blocks that only expose random ticks are accelerated by the same expectation and can be disabled in the config.
-- Ancient Jade documents the staff in English and Simplified Chinese.
-- The Xianqiao manager and the Xianqiao disks join Applied Energistics 2 and Refined Storage networks. A manager registers as a network member by itself, whether it is placed next to a cable or directly against a machine: it now initialises its containers when the block entity enters a level, instead of waiting for something else to ask for the capability (RS never probes plain neighbours, which is why only cables used to work).
-- Both networks see exchange recipes as processing patterns. Paid veins are quoted per batch of Immortal Yuan; free veins are never published as patterns, so they stay storage rather than becoming an infinite mint. Fluids publish the same way as items, and the recipe no longer requires a filled cache — the quotation is a rate, not a stock level.
-- A Xianqiao disk placed in an AE2 drive or an RS disk drive registers an exchange-recipe provider on that drive, so a drive on its own can craft without a manager beside it. Removing the disk withdraws the recipes.
-- One crafting push now completes the whole order instead of draining it one batch per tick: a single sink call scales its delivery with the Immortal Yuan it was actually handed.
-- Free sources count as real stock in AE2 and RS terminals; paid sources stay a projection that only the Xianqiao interface shows.
-- Breaking the manager is the owner's decision again: Refined Storage used to veto the break through its own build-permission check, which ignored game mode and refused creative players too. The manager now answers that check from its own ownership rule.
+- From stage six, Pick Block moves matching Xianqiao stock into your main hand. The previous stack goes to your inventory first, then Xianqiao; item components and Yuan accounting are preserved. Creative picking stays unchanged.
+
+- Completed machine page localization, including face labels, ruin states, mode titles and full-title tooltips. Restored missing status labels on 26.1.2 and supplied optional Nemo filter translations.
+
+- Added the non-stackable Guixu Time-Shift Staff, crafted from Immortal Forged Alloy, Nurturing Crystal, two sticks and a Miniature Immortal Ruin; it has no durability.
+- Right-click applies permanent 2x/4x/8x/16x/32x acceleration with cyan borders and face labels. Sneak-scroll selects the next tier; Shift-right-click clears acceleration.
+- A second right-click spends one Primordial Qi for a red 1024x boost lasting 60 real-time seconds, then restores the original permanent tier.
+- Staff acceleration multiplies with realm acceleration, respects acceleration blacklist tags, and optionally accelerates random ticks. Ancient Jade explains it in both languages.
+- Xianqiao managers and disks join AE2/RS networks. A disk drive can provide exchange recipes without a manager; removing the disk withdraws them.
+- Connected paid sources provide item/fluid processing patterns without requiring a filled cache. Free sources remain real terminal stock; paid stock projections remain on the Xianqiao interface.
+- Each crafting delivery settles the full supplied batch; the connected network controls when deliveries occur. Manager breaking follows its owner permissions.
+- Added reloadable level/mode blacklists and whitelists for the World Shard Miner, Simulated Spirit Field and Simulated Reincarnation Furnace, plus addon APIs. Unconfigured machines retain their existing behavior.
+- Machine configuration windows share face controls and output switches, with compact native title rows and no duplicate headings. Nemo’s Inventory Sorting filters stay above the title without covering machine controls.
 
 ### 简体中文
 
-- 新增归墟时移法杖，合成台有序合成：仙锻合金一块、蕴灵晶一枚、木棍两根、迷你仙墟一块。无耐久，不可堆叠。
-- 右键任意方块即赋予常驻的单方块加速：方块出现青色边框，每一面中心悬挂当前倍率（青色）。倍率取自法杖当前档位——2x、4x、8x、16x、32x。
-- 再次右键已加速的方块会消耗背包或仙窍中的 1 个混元一气，把边框与字样变红并显示 1024x，提供 60 秒（玩家真实时间）的 1024x 加速；该窗口结束后回落到它被赋予时的常驻档位。
-- Shift 右键带有常驻或 1024x 加速的方块，会一次清空它上面全部时移法杖加速。
-- 手持法杖时潜行+滚轮循环切换"下一次赋予"的档位；手持档位变化不会改动任何已经放出的加速。
-- 加速沿用 JDT 的做法：每个方块实体轮次都为该方块补上额外 tick，因此仙窍自身的额外轮次与时移档位相乘而不是相互取代。命中 immortalstorage:time_acceleration_disallowed 或 c:tick_acceleration_disallowed 的方块永不被加速；只有随机刻的方块按同样的期望值加速，并可在配置中关闭。
-- 古玉手册以中英双语记录这把法杖。
-- 仙窍管理器与仙窍磁盘接入 AE2 与 RS 网络。管理器自己会注册为网络成员，无论贴着线缆还是直接贴着机器：它在方块实体进入世界时就初始化自己的容器，而不再等别人来询问能力（RS 从不去探测普通邻居，所以此前只有线缆能用）。
-- 两套网络都以处理样板的形式看到兑换配方。付费源脉按每批仙元报价；免费源脉不发布样板，因此它只是存储而不是无限铸币。流体与物品的发布方式一致，且配方不再要求缓存非空——报价是汇率，不是库存水位。
-- 仙窍磁盘放入 AE2 驱动器或 RS 磁盘驱动器时，会在该驱动器上注册兑换配方供应节点，因此单独一台驱动器即可合成，无需旁边再放管理器。取出磁盘即撤回配方。
-- 一次合成推送现在一次完成整笔订单，而不是每 tick 抽一批：单次 sink 调用会按它实际收到的仙元量成比例交付。
-- 免费源在 AE2 与 RS 终端中计为真实库存；付费源仍是只在仙窍界面投影的虚拟量。
-- 破坏管理器重新由所有者决定：Refined Storage 此前用自己那套建造权限检查否决破坏，而该检查不看游戏模式、连创造模式也拒绝。管理器现在按自己的所有权规则回应这项检查。
+- 六阶起可用原版选取键将仙窍中的匹配物品移到主手，旧手持优先放入背包、余量回仙窍；保留物品组件并遵循真元／仙元账目，创造模式选取保持原样。
+
+- 补全机器各页中英文方向、仙墟状态、模式标题与完整标题提示；修复 26.1.2 状态文字缺失，并补充可选 Nemo 筛选框翻译。
+
+- 新增归墟时移法杖：仙锻合金、蕴灵晶、两根木棍和迷你仙墟合成，无耐久、不可堆叠。
+- 右键赋予常驻 2x/4x/8x/16x/32x 加速，显示青色边框与六面倍率；潜行滚轮选择下一档，Shift 右键清除加速。
+- 再次右键消耗一个混元一气，获得红色 1024x 加速，持续真实时间 60 秒后恢复原常驻档位。
+- 时移与仙窍加速相乘，遵守加速黑名单标签，并可配置随机刻加速；古玉提供双语说明。
+- 仙窍管理器与磁盘接入 AE2/RS。驱动器内的磁盘可独立提供兑换配方，取出磁盘后撤回配方。
+- 已连接的付费源脉提供物品和流体处理样板，无须预先填满缓存；免费源脉显示为终端库存，付费库存投影保留在仙窍接口。
+- 每次合成投递按实际交付材料全量结算，投递节奏由所接网络决定；管理器拆除遵循拥有者权限。
+- 世界碎片采集器、模拟灵田、模拟轮回炼化炉新增按等级与模式生效的可重载黑白名单及附属 API；未配置时保持既有行为。
+- 机器配置窗口统一六面按钮与输出开关的呈现，复用原生标题行、去除额外占位留白；Nemo’s Inventory Sorting 的筛选框与图钉放在标题上方，避让机器控件。
 
 ## [0.1.8]
 

@@ -19,14 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 /** Main panel geometry and slot layout exactly match the Simulated Reincarnation Furnace. */
-public final class SimulatedSpiritFieldScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<SimulatedSpiritFieldMenu> {
+public final class SimulatedSpiritFieldScreen extends ConfigurationWindowScreen<SimulatedSpiritFieldMenu> {
     private Button redstoneModeButton;
     private static final Identifier FURNACE = Identifier.withDefaultNamespace(
             "textures/gui/container/furnace.png");
 private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private static final int SETTINGS_WIDTH = 112;
+    @Override protected int configurationPanelWidth() { return 116; }
     private final Map<Direction, FacePreviewButton> faceButtons = new EnumMap<>(Direction.class);
     private final List<Button> settingsWidgets = new ArrayList<>();
     private Button xianqiaoButton;
@@ -35,31 +35,33 @@ private static final List<Direction> SIDE_ORDER = List.of(
 
     public SimulatedSpiritFieldScreen(SimulatedSpiritFieldMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 230; imageHeight = 187; titleLabelX = 8; titleLabelY = 6;
-        inventoryLabelX = 26; inventoryLabelY = 94;
+        imageWidth = 198; imageHeight = 192; titleLabelX = 8; titleLabelY = 6;
+        inventoryLabelX = 19; inventoryLabelY = 94;
     }
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 16, topPos + 18, menu));
+                leftPos + imageWidth + 10, topPos + 18, menu));
+        redstoneModeButton.setWidth(98);
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.reincarnation.settings"))).build());
+                        "container.immortalstorage.configuration"))).build());
         buildSettingsWidgets();
         refreshSettingsWidgets();
     }
 
     private void buildSettingsWidgets() {
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         faceButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
-                    27, Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    railX + (index % 3) * 34, topPos + 46 + (index / 3) * 34,
+                    30, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
             button.setTooltip(Tooltip.create(Component.translatable(
@@ -68,14 +70,14 @@ private static final List<Direction> SIDE_ORDER = List.of(
             settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
-                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+                .bounds(railX, topPos + 123, 98, 18).build());
         automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
-                .bounds(panelX + 12, topPos + 143, 89, 18).build());
+                .bounds(railX, topPos + 144, 98, 18).build());
         settingsWidgets.add(xianqiaoButton);
         settingsWidgets.add(automaticButton);
         settingsWidgets.add(addRenderableWidget(Button.builder(
                 Component.translatable("container.immortalstorage.reincarnation.release_xp"), clicked -> send(2))
-                .bounds(panelX + 12, topPos + 166, 89, 18).build()));
+                .bounds(railX, topPos + 165, 98, 18).build()));
     }
 
     private ItemStack adjacentBlockPreview(Direction side) {
@@ -86,11 +88,8 @@ private static final List<Direction> SIDE_ORDER = List.of(
         return preview.isEmpty() ? ItemStack.EMPTY : preview;
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U"; case DOWN -> "D"; case NORTH -> "N";
-            case SOUTH -> "S"; case WEST -> "W"; case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private void toggleSettings() {
@@ -126,7 +125,7 @@ private static final List<Direction> SIDE_ORDER = List.of(
         automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
-    @Override protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         graphics.fill(leftPos + 2, topPos + 2, leftPos + imageWidth - 2, topPos + 17, 0xFFD8D8D8);
         graphics.horizontalLine(leftPos + 3, leftPos + imageWidth - 4, topPos + 17, 0xFF8B8B8B);
@@ -134,27 +133,23 @@ private static final List<Direction> SIDE_ORDER = List.of(
         graphics.horizontalLine(leftPos + 8, leftPos + imageWidth - 9, topPos + 92, 0xFFFFFFFF);
         VanillaGuiPainter.slots(graphics, leftPos, topPos, menu.slots);
         int flame = Mth.ceil(Math.min(1.0F, menu.burnTicks() / 500.0F) * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 28, topPos + 47, flame, menu.burnTicks() > 0);
-        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, FURNACE, leftPos + 91, topPos + 44, 79.0F, 34.0F, 24, 16, 256, 256);
+        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 21, topPos + 47, flame, menu.burnTicks() > 0);
+        com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, FURNACE, leftPos + 82, topPos + 44, 79.0F, 34.0F, 24, 16, 256, 256);
         int progress = Mth.ceil(Math.min(1.0F, menu.progress() / 50.0F) * 24.0F);
-        if (progress > 0) VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);
+        if (progress > 0) VanillaGuiPainter.furnaceProgress(graphics, leftPos + 82, topPos + 44, progress);
         if (settingsOpen) renderSettingsPanel(graphics);
     }
 
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
-        int panelX = leftPos + imageWidth + 4;
-        VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
+        int railX = leftPos + imageWidth + 10;
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.settings"), panelX + 8, topPos + 7, 0x404040, false);
+                "container.immortalstorage.reincarnation.faces"), railX, topPos + 36, ConfigurationStyle.TEXT, false);
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, 0x404040, false);
-        graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108,
-                0x404040, false);
+                "container.immortalstorage.reincarnation.switches"), railX, topPos + 112,
+                ConfigurationStyle.TEXT, false);
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, 0x404040, false);
-        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0x404040, false);
+        graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, ConfigurationStyle.TEXT, false);
     }
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);

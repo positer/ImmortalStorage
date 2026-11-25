@@ -9,6 +9,9 @@ import com.immortalstorage.immortalstorage.worldshard.WorldShardMiningMath;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardMinerStatus;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardOutputRouter;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardPyramid;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Machine;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Target;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -90,7 +93,8 @@ public final class WorldShardMinerBlockEntity extends com.immortalstorage.immort
         if (resolved == null || resolved.orePool().isEmpty()) return;
         int samples = WorldShardMiningMath.samplesPerCycle(
                 pyramid.level(), resolved.mode().samplingMultiplier());
-        Map<Item, Integer> outputs = resolved.orePool().sampleBatch(level.getRandom(), samples);
+        var pool = miner.policyPool(resolved.orePool(), pyramid.level(), resolved.mode().id());
+        Map<Item, Integer> outputs = pool.sampleBatch(level.getRandom(), samples);
         if (outputs.isEmpty()) return;
         List<ItemStack> generated = outputs.entrySet().stream()
                 .filter(entry -> entry.getKey() != null && entry.getValue() != null && entry.getValue() > 0)
@@ -99,6 +103,22 @@ public final class WorldShardMinerBlockEntity extends com.immortalstorage.immort
         generated = ReinforcementPluginHost.multiplyOutputs(
                 generated, miner.reinforcementMultiplier());
         miner.routeGenerated(level, generated);
+    }
+
+    private com.immortalstorage.immortalstorage.worldshard.WorldShardOrePool policySourcePool;
+    private com.immortalstorage.immortalstorage.worldshard.WorldShardOrePool filteredPolicyPool;
+    private long policyGeneration = -1;
+    private int policyLevel;
+    private Identifier policyMode;
+    private com.immortalstorage.immortalstorage.worldshard.WorldShardOrePool policyPool(
+            com.immortalstorage.immortalstorage.worldshard.WorldShardOrePool pool, int level, Identifier mode) {
+        if (pool != policySourcePool || policyGeneration != MachinePolicyApi.generation()
+                || policyLevel != level || !mode.equals(policyMode)) {
+            policySourcePool = pool; policyGeneration = MachinePolicyApi.generation(); policyLevel = level; policyMode = mode;
+            filteredPolicyPool = pool.filtered(item -> MachinePolicyApi.allowsItem(
+                    Machine.WORLD_SHARD_MINER, level, mode, Target.OUTPUT_ITEM, item));
+        }
+        return filteredPolicyPool;
     }
 
     public boolean tryClaimOwner(@Nullable UUID owner) {

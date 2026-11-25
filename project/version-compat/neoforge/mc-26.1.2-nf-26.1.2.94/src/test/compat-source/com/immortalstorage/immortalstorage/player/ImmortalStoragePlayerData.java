@@ -145,6 +145,7 @@ public final class ImmortalStoragePlayerData implements com.immortalstorage.immo
     private long xianqiaoSourceItemGeneration;
     private int xianqiaoMutationDepth;
     private boolean xianqiaoMutationDirty;
+    private boolean xianqiaoOwnerSyncPending;
     /** One O(n) physical scan per committed revision, shared by menus, capabilities and yuan accounting. */
     private long xianqiaoSummaryGeneration = Long.MIN_VALUE;
     private List<StorageItemSummary> xianqiaoItemSummary = List.of();
@@ -706,6 +707,10 @@ public final class ImmortalStoragePlayerData implements com.immortalstorage.immo
                 xianqiaoMutationDirty = false;
                 if (xianqiaoStorageRevision < Long.MAX_VALUE) xianqiaoStorageRevision++;
                 xianqiaoStorageGeneration = nextGeneration(xianqiaoStorageGeneration);
+            }
+            if (xianqiaoMutationDepth == 0 && xianqiaoOwnerSyncPending) {
+                xianqiaoOwnerSyncPending = false;
+                syncOwner();
             }
         }
     }
@@ -1533,6 +1538,10 @@ public final class ImmortalStoragePlayerData implements com.immortalstorage.immo
     }
 
     private void syncOwner() {
+        if (xianqiaoMutationDepth > 0) {
+            xianqiaoOwnerSyncPending = true;
+            return;
+        }
         if (owner instanceof ServerPlayer serverPlayer) syncTo(serverPlayer);
     }
 
@@ -1875,6 +1884,7 @@ public final class ImmortalStoragePlayerData implements com.immortalstorage.immo
         xianqiaoStorageRevision = Math.max(0L, tag.getLongOr("xianqiaoStorageRevision", 0L));
         xianqiaoMutationDepth = 0;
         xianqiaoMutationDirty = false;
+        xianqiaoOwnerSyncPending = false;
         if (tag.contains("xianqiaoStorage")) {
             ListTag list = tag.getListOrEmpty("xianqiaoStorage");
             for (int i = 0; i < list.size(); i++) {

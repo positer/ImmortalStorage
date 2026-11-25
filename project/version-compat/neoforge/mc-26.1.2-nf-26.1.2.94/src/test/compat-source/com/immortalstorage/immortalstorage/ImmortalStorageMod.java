@@ -97,6 +97,8 @@ public class ImmortalStorageMod {
     private static void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(com.immortalstorage.immortalstorage.api.source.ImmortalStorageChargeProviders::freezeRegistration);
         event.enqueueWork(com.immortalstorage.immortalstorage.api.worldshard.WorldShardApi::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi::freezeRegistration);
+        event.enqueueWork(com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog::freezeRegistration);
     }
 
     @SubscribeEvent
@@ -108,6 +110,7 @@ public class ImmortalStorageMod {
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "source_definitions"), new com.immortalstorage.immortalstorage.source.definition.SourceDefinitionReloadListener());
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "tool_locator"), new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener());
         event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener());
+        event.addListener(net.minecraft.resources.Identifier.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "machine_policies"), new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener());
     }
 
     @SubscribeEvent

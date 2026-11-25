@@ -23,15 +23,15 @@ import java.util.Optional;
  * Mekanism-inspired FE memory meter.  The left machine geometry remains shared
  * with the two simulated machines, including the static processing arrow.
  */
-public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCrystalMenu> {
+public final class EnergyCrystalScreen extends ConfigurationWindowScreen<EnergyCrystalMenu> {
     private Button redstoneModeButton;
     private static final ResourceLocation FURNACE = ResourceLocation.withDefaultNamespace(
             "textures/gui/container/furnace.png");
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
             Direction.WEST, Direction.SOUTH, Direction.EAST);
-    private static final int SETTINGS_WIDTH = 112;
-    private static final int TANK_X = 132;
+    @Override protected int configurationPanelWidth() { return 116; }
+    private static final int TANK_X = 118;
     private static final int TANK_Y = 26;
     private static final int TANK_WIDTH = 72;
     private static final int TANK_HEIGHT = 54;
@@ -43,18 +43,20 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
     public EnergyCrystalScreen(EnergyCrystalMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 230;
-        imageHeight = 187;
+        imageWidth = 198;
+        imageHeight = 192;
         titleLabelX = 8;
         titleLabelY = 6;
-        inventoryLabelX = 26;
+        inventoryLabelX = 19;
         inventoryLabelY = 94;
     }
 
     @Override protected void init() {
         super.init();
+        settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 16, topPos + 18, menu));
+                leftPos + imageWidth + 10, topPos + 18, menu));
+        redstoneModeButton.setWidth(98);
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
@@ -64,13 +66,13 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
     }
 
     private void buildSettingsWidgets() {
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         faceButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 12 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
-                    27, Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    railX + (index % 3) * 34, topPos + 46 + (index / 3) * 34,
+                    30, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
             button.setTooltip(Tooltip.create(Component.translatable(
@@ -79,9 +81,9 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
             settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
-                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+                .bounds(railX, topPos + 123, 98, 18).build());
         automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
-                .bounds(panelX + 12, topPos + 143, 89, 18).build());
+                .bounds(railX, topPos + 144, 98, 18).build());
         settingsWidgets.add(xianqiaoButton);
         settingsWidgets.add(automaticButton);
     }
@@ -94,15 +96,8 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
         return preview.isEmpty() ? ItemStack.EMPTY : preview;
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private void toggleSettings() {
@@ -138,7 +133,7 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
         automaticButton.setAlpha(menu.automaticOutput() ? 1.0F : 0.45F);
     }
 
-    @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    @Override protected void renderMachineBackground(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         graphics.fill(leftPos + 2, topPos + 2, leftPos + imageWidth - 2, topPos + 17, 0xFFD8D8D8);
         graphics.hLine(leftPos + 3, leftPos + imageWidth - 4, topPos + 17, 0xFF8B8B8B);
@@ -148,11 +143,11 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
 
         int burnDuration = Math.max(1, menu.burnDuration());
         int flame = Mth.ceil(Math.min(1.0F, menu.burnTicks() / (float) burnDuration) * 13.0F);
-        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 28, topPos + 47, flame,
+        VanillaGuiPainter.furnaceFlame(graphics, leftPos + 21, topPos + 47, flame,
                 menu.burnTicks() > 0);
         // Deliberately no burn/process overlay on the arrow: the crystal arrow
         // is a fixed direction cue, not a progress indicator.
-        graphics.blit(FURNACE, leftPos + 91, topPos + 44, 79.0F, 34.0F,
+        graphics.blit(FURNACE, leftPos + 82, topPos + 44, 79.0F, 34.0F,
                 24, 16, 256, 256);
         renderEnergyTank(graphics);
         if (settingsOpen) renderSettingsPanel(graphics);
@@ -193,17 +188,13 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
     }
 
     private void renderSettingsPanel(GuiGraphics graphics) {
-        int panelX = leftPos + imageWidth + 4;
-        VanillaGuiPainter.panel(graphics, panelX, topPos, SETTINGS_WIDTH, imageHeight);
+        int railX = leftPos + imageWidth + 10;
         graphics.drawString(font, Component.translatable(
-                menu.uiKey("settings")), panelX + 8, topPos + 7,
-                0x404040, false);
-        graphics.drawString(font, Component.translatable(
-                menu.uiKey("faces")), panelX + 8, topPos + 38,
-                0x404040, false);
+                menu.uiKey("faces")), railX, topPos + 36,
+                ConfigurationStyle.TEXT, false);
         graphics.drawString(font, Component.translatable(
                 menu.uiKey("switches")),
-                panelX + 8, topPos + 108, 0x404040, false);
+                railX, topPos + 112, ConfigurationStyle.TEXT, false);
     }
 
     private boolean tankHovered(double mouseX, double mouseY) {
@@ -212,9 +203,8 @@ public final class EnergyCrystalScreen extends AbstractContainerScreen<EnergyCry
     }
 
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY,
-                0x404040, false);
+                ConfigurationStyle.TEXT, false);
     }
 
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

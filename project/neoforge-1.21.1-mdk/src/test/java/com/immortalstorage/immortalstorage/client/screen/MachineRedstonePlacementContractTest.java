@@ -11,21 +11,31 @@ final class MachineRedstonePlacementContractTest {
                 "SimulatedReincarnationFurnaceScreen.java", "EnergyCrystalScreen.java"}) {
             String source = Files.readString(screen(name));
             assertTrue(source.contains("settingsWidgets.add(redstoneModeButton)"), name);
-            assertTrue(source.contains("leftPos + imageWidth + 16, topPos + 18"), name);
+            assertTrue(source.contains("leftPos + imageWidth + 10, topPos + 18"), name);
         }
         String basin = Files.readString(screen("TreasureBasinScreen.java"));
         assertTrue(basin.contains("redstoneModeButton.visible = settingsOpen"));
     }
 
-    @Test void advancedStabilizedRuinRedstoneOccupiesTopOfSettingsPanelWithoutMovingSchedulingControls() throws Exception {
+    @Test void advancedRuinRedstoneStaysAboveTitleAndDoesNotOverlapSchedulingControls() throws Exception {
         String source = Files.readString(screen("AdvancedStabilizedMiniatureImmortalRuinScreen.java"));
-        assertTrue(source.contains("redstoneButtonY() { return topPos + 2; }"));
-        assertTrue(source.contains("topPos + 226"));
+        assertTrue(source.contains("redstoneButtonY() { return topPos - 18; }"));
+        assertCompactSchedule(source);
 
         String entangled = Files.readString(screen("AdvancedEntangledMiniatureRuinScreen.java"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos + 2, menu"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 98, topPos + 4"));
-        assertTrue(entangled.contains("topPos + 228"));
+        assertTrue(entangled.contains("leftPos + imageWidth + 10, topPos - 18, menu"));
+        assertTrue(entangled.contains("configurationSideTitle()"));
+        assertTrue(entangled.contains("container.immortalstorage.ruin.side_reversed"));
+        assertCompactSchedule(entangled);
+    }
+
+    private static void assertCompactSchedule(String source) {
+        for (int y : new int[]{162, 180, 198}) {
+            assertTrue(source.contains("topPos + " + y + ", 122, 16"), "scheduling row at " + y);
+        }
+        assertTrue(source.contains("accessButton = addActionButton("));
+        assertTrue(source.contains("splitButton = addActionButton("));
+        assertTrue(source.contains("orderButton = addActionButton("));
     }
 
     private static Path screen(String name) {

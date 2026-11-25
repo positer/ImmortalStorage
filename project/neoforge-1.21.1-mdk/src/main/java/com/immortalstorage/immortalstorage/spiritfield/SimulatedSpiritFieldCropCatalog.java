@@ -28,10 +28,21 @@ public final class SimulatedSpiritFieldCropCatalog {
     public static final String DIRECTORY = "simulated_spirit_field_crops";
     private static volatile Map<Item, Entry> entries = Map.of();
 
+    private static final Map<Item, Entry> addonEntries = new LinkedHashMap<>();
+    private static volatile long generation;
+    private static boolean frozen;
+    public static synchronized void register(Item seed, Entry entry) {
+        if (frozen) throw new IllegalStateException("crop registration closed");
+        java.util.Objects.requireNonNull(seed); java.util.Objects.requireNonNull(entry);
+        if (addonEntries.putIfAbsent(seed, entry) != null) throw new IllegalArgumentException("duplicate seed");
+    }
+    public static synchronized void freezeRegistration() { frozen = true; }
+    public static long generation() { return generation; }
     public static Optional<Entry> find(Item seed) { return Optional.ofNullable(entries.get(seed)); }
-    static void install(Map<Item, Entry> next) { entries = Map.copyOf(next); }
+    static void install(Map<Item, Entry> next) { entries = Map.copyOf(next); generation++; }
 
     public record Entry(BlockState crop, List<SubstrateRule> substrates) {
+        public Entry { java.util.Objects.requireNonNull(crop); substrates = List.copyOf(substrates); }
         public boolean accepts(BlockState substrate) {
             return substrates.isEmpty() || substrates.stream().anyMatch(rule -> rule.matches(substrate));
         }
@@ -48,7 +59,7 @@ public final class SimulatedSpiritFieldCropCatalog {
 
         @Override protected void apply(Map<ResourceLocation, JsonElement> resources,
                                        ResourceManager resourceManager, ProfilerFiller profiler) {
-            Map<Item, Entry> loaded = new LinkedHashMap<>();
+            Map<Item, Entry> loaded = new LinkedHashMap<>(addonEntries);
             resources.entrySet().stream().sorted(Map.Entry.comparingByKey(
                     Comparator.comparing(ResourceLocation::toString))).forEach(resource -> {
                 try {

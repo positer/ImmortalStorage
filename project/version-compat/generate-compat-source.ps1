@@ -527,7 +527,9 @@ function Transform-2612([string] $text, [string] $relativePath) {
         @('event.addListener(new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())',
             'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "tool_locator"), new com.immortalstorage.immortalstorage.locator.ToolLocatorReloadListener())'),
         @('event.addListener(new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())',
-            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())')
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "simulated_spirit_field_crops"), new com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog.ReloadListener())'),
+        @('event.addListener(new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener())',
+            'event.addListener(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(com.immortalstorage.immortalstorage.ImmortalStorageMod.MODID, "machine_policies"), new com.immortalstorage.immortalstorage.machine.MachinePolicyReloadListener())')
     )
     foreach ($replacement in $reloadKeys) {
         $text = $text.Replace($replacement[0], $replacement[1])
@@ -587,6 +589,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
     $text = [regex]::Replace($text,
         'player\.getCooldowns\(\)\.addCooldown\(player\.getItemInHand\(([^)]+)\)\.getItem\(\),',
         'player.getCooldowns().addCooldown(player.getItemInHand($1),')
+
+    # Native pick APIs moved between the supported Minecraft generations.
+    if ($relativePath -match 'XianqiaoPickTarget\.java$') {
+        $text = $text.Replace('state.getCloneItemStack(blockHit, player.serverLevel(), pos, player)',
+            'state.getCloneItemStack(pos, player.serverLevel(), false, player)')
+        $text = $text.Replace('player.canInteractWithEntity(entity, 3.0)',
+            'player.isWithinEntityInteractionRange(entity, 3.0)')
+        $text = $text.Replace('ClientboundSetCarriedItemPacket', 'ClientboundSetHeldSlotPacket')
+        $text = $text.Replace('player.getInventory().selected = slot', 'player.getInventory().setSelectedSlot(slot)')
+    }
 
     $text = $text.Replace('player.getInventory().selected',
         'player.getInventory().getSelectedSlot()')
@@ -1577,9 +1589,16 @@ function Transform-2612([string] $text, [string] $relativePath) {
         }
     }
 
-    if ($relativePath -match '[\\/]client[\\/]screen[\\/](TerminalTabButton|TerminalInventoryActionButton|FacePreviewButton)\.java$') {
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/](TerminalTabButton|TerminalInventoryActionButton|TerminalControlButton|FacePreviewButton)\.java$') {
         $text = $text.Replace('protected void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)',
             'protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)')
+    }
+
+    if ($relativePath -match '[\\/]client[\\/]screen[\\/]InsetNumberBox\.java$') {
+        $text = $text.Replace('public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)',
+            'public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick)')
+        $text = $text.Replace('super.renderWidget(graphics, mouseX, mouseY, partialTick);',
+            'super.extractWidgetRenderState(graphics, mouseX, mouseY, partialTick);')
     }
 
     if ($relativePath -match '[\\/]client[\\/]keybind[\\/]ImmortalStorageKeybinds\.java$') {
@@ -1973,6 +1992,24 @@ function Transform-2612([string] $text, [string] $relativePath) {
             $text = $text.Replace('super.renderSlotHighlight(graphics, slot, mouseX, mouseY, partialTick);', '')
         }
         if ($relativePath -match '[\\/]client[\\/]screen[\\/]' -or $text.Contains('GuiGraphics')) {
+            $text = $text.Replace('graphics.renderTooltip(font, machine, mouseX, mouseY);',
+                'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, machine, mouseX, mouseY);')
+            $text = $text.Replace('graphics.renderTooltip(font, side, mouseX, mouseY);',
+                'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, side, mouseX, mouseY);')
+            if ($relativePath -match 'AbstractTerminalScreen\.java$') {
+                $text = $text.Replace('this.searchBox.render(graphics, mouseX, mouseY, partialTick);',
+                    'this.searchBox.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+            }
+            if ($relativePath -match 'XianqiaoRedstoneInterfaceScreen\.java$') {
+                $text = $text.Replace('high.render(graphics, mouseX, mouseY, partialTick);',
+                    'high.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+                $text = $text.Replace('low.render(graphics, mouseX, mouseY, partialTick);',
+                    'low.extractRenderState(graphics, mouseX, mouseY, partialTick);')
+                $text = $text.Replace('graphics.renderTooltip(font, polarityButton.getMessage(), mouseX, mouseY);',
+                    'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, polarityButton.getMessage(), mouseX, mouseY);')
+                $text = $text.Replace('graphics.renderTooltip(font, title, mouseX, mouseY);',
+                    'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, font, title, mouseX, mouseY);')
+            }
             $text = [regex]::Replace($text,
                 '(?s)graphics\.renderTooltip\(\s*this\.font,\s*(.*?),\s*(?:java\.util\.)?Optional\.empty\(\),\s*mouseX,\s*mouseY\);',
                 'com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.renderTooltip(graphics, this.font, $1, mouseX, mouseY);')
@@ -2034,7 +2071,7 @@ function Transform-2612([string] $text, [string] $relativePath) {
 
     # 26.1.2 retains JSON resources but the listener constructor now consumes
     # ExtraCodecs.JSON instead of Gson.
-    if ($relativePath -match '(?:SourceDefinitionReloadListener|ToolLocatorReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog)\.java$') {
+    if ($relativePath -match '(?:SourceDefinitionReloadListener|ToolLocatorReloadListener|WorldShardMinerReloadListener|WorldShardLootReloadListener|SimulatedSpiritFieldCropCatalog|MachinePolicyReloadListener)\.java$') {
         $text = $text.Replace('extends SimpleJsonResourceReloadListener',
             'extends SimpleJsonResourceReloadListener<JsonElement>')
         $text = $text.Replace('super(GSON, DIRECTORY);',
@@ -2563,8 +2600,8 @@ function Transform-2612([string] $text, [string] $relativePath) {
             'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*x \+ 95, laneY, width, 16\);',
             'VanillaGuiPainter.furnaceProgress(graphics, x + 95, laneY, width);')
         $text = [regex]::Replace($text,
-            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*leftPos \+ 91, topPos \+ 44, progress, 16\);',
-            'VanillaGuiPainter.furnaceProgress(graphics, leftPos + 91, topPos + 44, progress);')
+            'com\.immortalstorage\.immortalstorage\.compat\.mc2612\.CompatGui\.blitSprite\(graphics, BURN_PROGRESS, 24, 16, 0, 0,\s*leftPos \+ (\d+), topPos \+ (\d+), progress, 16\);',
+            'VanillaGuiPainter.furnaceProgress(graphics, leftPos + $1, topPos + $2, progress);')
     }
     if ($relativePath -match '[\\/]client[\\/]screen[\\/]VanillaArrowRenderingContractTest\.java$') {
         $text = $text.Replace('assertTrue(source.contains("textures/gui/container/furnace.png"))',

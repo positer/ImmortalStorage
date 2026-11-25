@@ -13,7 +13,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-/** Eight rows of source members in one server-authoritative menu. */
+/** All 72 source members in one server-authoritative menu. */
 public final class SourceVeinManagerMenu extends AbstractContainerMenu {
     public static final int MEMBER_SLOTS = SourceVeinManagerInventory.SLOT_COUNT;
     public static final int PLAYER_START = MEMBER_SLOTS;
@@ -35,9 +35,9 @@ public final class SourceVeinManagerMenu extends AbstractContainerMenu {
         this.members = members;
         checkContainerSize(members, MEMBER_SLOTS);
         members.startOpen(inventory.player);
-        for (int row = 0; row < 8; row++) {
-            for (int column = 0; column < 9; column++) {
-                int slot = column + row * 9;
+        for (int row = 0; row < 6; row++) {
+            for (int column = 0; column < 12; column++) {
+                int slot = column + row * 12;
                 addSlot(new Slot(members, slot, 8 + column * 18, 18 + row * 18) {
                     @Override public boolean mayPlace(ItemStack stack) {
                         return members.canPlaceItem(getContainerSlot(), stack);
@@ -47,10 +47,10 @@ public final class SourceVeinManagerMenu extends AbstractContainerMenu {
             }
         }
         for (int row = 0; row < 3; row++) for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 174 + row * 18));
+            addSlot(new Slot(inventory, column + row * 9 + 9, 35 + column * 18, 139 + row * 18));
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 232));
+            addSlot(new Slot(inventory, column, 35 + column * 18, 195));
         }
     }
 

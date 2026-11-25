@@ -21,10 +21,10 @@ import java.util.Map;
 import org.lwjgl.glfw.GLFW;
 
 /** Vanilla-widget face configuration; the source cache is intentionally hidden. */
-public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<SourceVeinMenu> {
+public class SourceVeinScreen extends ConfigurationWindowScreen<SourceVeinMenu> {
     private static final int TEXT = 0xFF404040;
-    private static final int TITLE_X = 8;
-    private static final int TITLE_Y = 6;
+    private static final int TITLE_X = 6;
+    private static final int TITLE_Y = 4;
     private static final int TITLE_MAX_WIDTH = 160;
     private static final String ELLIPSIS = "\u2026";
     private static final Direction[] SIDE_BUTTONS = {
@@ -47,8 +47,10 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
         super.init();
         this.sideButtons.clear();
         this.lastSyncedFlux = this.menu.getFluxLimit();
-        this.fluxInput = new EditBox(this.font, this.leftPos + 48, this.topPos + 22, 84, 18,
+        this.fluxInput = new EditBox(this.font, this.leftPos + 52, this.topPos + 27, 76, 13,
                 Component.translatable("container.immortalstorage.source_vein.flux_input"));
+        this.fluxInput.setBordered(false);
+        this.fluxInput.setTextColor(TEXT);
         this.fluxInput.setMaxLength(128);
         this.fluxInput.setHint(Component.translatable("container.immortalstorage.source_vein.flux_input_hint"));
         this.fluxInput.setValue(Long.toString(this.lastSyncedFlux));
@@ -66,7 +68,7 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
             int x = this.leftPos + 56 + (index % 3) * 22;
             int y = this.topPos + 61 + (index / 3) * 21;
             FacePreviewButton button = new FacePreviewButton(
-                    x, y, 20, Component.literal(shortSide(side)),
+                    x, y, 20, shortSide(side),
                     () -> adjacentBlockPreview(side), () -> sourceModeColor(side),
                     ignored -> cycleMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
@@ -88,12 +90,12 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
-        VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);
-        graphics.fill(x + 2, y + 2, x + this.imageWidth - 2, y + 18, 0xFFD8D8D8);
-        graphics.horizontalLine(x + 3, x + this.imageWidth - 4, y + 18, 0xFF858585);
+        int outline = this.fluxInput.isFocused() ? 0xFF2F7178 : 0xFF8B8B8B;
+        graphics.fill(x + 48, y + 22, x + 132, y + 40, outline);
+        graphics.fill(x + 49, y + 23, x + 131, y + 39, 0xFFE5E5E5);
     }
 
     @Override
@@ -105,7 +107,6 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, fittedTitle(), TITLE_X, TITLE_Y, TEXT, false);
         graphics.text(this.font,
                 Component.translatable("container.immortalstorage.source_vein.flux"), 8, 27, TEXT, false);
         graphics.text(this.font,
@@ -138,6 +139,8 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
         if (this.fluxInput != null && this.fluxInput.isFocused()) applyFluxLimit();
         super.removed();
     }
+
+    @Override protected Component configurationMachineTitle() { return fittedTitle(); }
 
     private Component fittedTitle() {
         if (this.font.width(this.title) <= TITLE_MAX_WIDTH) return this.title;
@@ -219,15 +222,8 @@ public class SourceVeinScreen extends com.immortalstorage.immortalstorage.compat
         };
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private Component sideLabel(Direction side) {

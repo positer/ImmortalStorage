@@ -1,5 +1,7 @@
 # ImmortalStorage · 仙藏
 
+开发进展（2026-11-11，0.1.9）：六阶起可用原版选取键从仙窍取物到主手，旧手持优先移入背包、余量回仙窍；按完整组件匹配并遵循真元／仙元账本。机器页面已完成中英文本地化。公开发布仍为 0.1.8；[机器配置说明](docs/machine-policy-api.md)。
+
 **0.1.8 · NeoForge** · [Latest release / 最新发布: 0.1.8](https://github.com/positer/ImmortalStorage/releases/tag/0.1.8) · [Changelog / 更新日志](CHANGELOG.md) · [English](#english) · [简体中文](#简体中文)
 
 ![ImmortalStorage](immortalstorage-logo.png)
@@ -32,6 +34,8 @@ ImmortalStorage is a **cultivation mod for Minecraft** on NeoForge. It takes the
 Install the release JAR that matches your game version in the instance's mods directory, on both client and server, and keep one ImmortalStorage JAR per instance. Patchouli is embedded, so the handbook needs no separate installation. Back up worlds before updating.
 
 ### What is new in 0.1.9
+
+Development additions: reloadable machine blacklists/whitelists, addon APIs and compact configuration windows with native title rows and optional sorting-filter placement above the title. See the [machine policy contract](docs/machine-policy-api.md). These additions are not part of the published 0.1.8 release.
 
 | Change | In short |
 | --- | --- |
@@ -89,7 +93,7 @@ The full list, including the remaining fixes and the handbook work, is in the [c
 | --- | --- |
 | Cultivation and stages | Ten stages driven by qi, pills and tribulations. Kongqiao opens crafting at stage 3, smithing at stage 4 and the Immortal Furnace at stage 5; stage 6 migrates storage into Xianqiao and unlocks the personal realm, and later stages add fluids, supported energy and Soul Escape. Stage 6 onwards grants constant Night Vision. |
 | Personal realm | A persistent private dimension with day/night, weather and time-flow controls, respawn, World Barrier boundaries, Domain Expansion into the outside world, and isolated entity ticking with acceleration protection. |
-| Personal storage | Search, sorting, a magnet, replenishment, and crafting, smithing, stonecutting and Immortal Furnace functions unlocked by stage. Xianqiao also stores supported energy, chemicals, Mana, Source, Souls and addon resource keys. |
+| Personal storage | Native Pick Block from Xianqiao at stage six, search, sorting, a magnet, replenishment, and crafting, smithing, stonecutting and Immortal Furnace functions unlocked by stage. Xianqiao also stores supported energy, chemicals, Mana, Source, Souls and addon resource keys. |
 | Equipment | Three spirit sword tiers, the five-mode Spirit Instrument and Immortal Artifact, and the Immortal One's Rule with Spiritual Aura Guard, virtual elytra flight, Soul Escape and warp travel. |
 | Resource locator | An enabled Spirit Instrument, or a carried Immortal Artifact, outlines containers and loot in yellow, spawners in purple and archaeology in green; holding an artifact in Mine mode adds white ore outlines. |
 | Automation and interfaces | Xianqiao and Advanced Xianqiao Interfaces, the Xianqiao Redstone Interface with hysteresis threshold control, the Source Vein Manager, and datapack-defined item, fluid and block sources. |
@@ -147,6 +151,7 @@ The Spirit Instrument and the Immortal Artifact can locate resources while they 
 | Default input | Action |
 | --- | --- |
 | B | Open personal storage; search, sort, craft and manage equipment/resources. |
+| Middle mouse / Pick Block | From stage six, withdraw the native picked item from Xianqiao into your main hand; move the previous stack to inventory, then Xianqiao. |
 | T | Show cultivation progress. |
 | V / Shift+V | Enter or leave your realm / toggle Domain Expansion outside it, or return to its center inside it. |
 | Shift + mouse wheel | Cycle the held tool's modes: wrench, build, mine, teleport and explore. |
@@ -191,6 +196,8 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 将对应版本的发行 JAR 安装到客户端与服务端实例的 mods 目录，每个实例只保留一个仙藏 JAR。已内置 Patchouli，手册无需另装依赖。更新前请备份世界。
 
 ### 0.1.9 新增内容
+
+开发版新增按等级／模式生效的机器黑白名单、附属 API 和统一的配置窗口；复用原生标题行以减少留白，并适配标题上方的可选排序模组筛选框，详见[机器扩展合同](docs/machine-policy-api.md)。这些改动尚未包含在已发布的 0.1.8 中。
 
 | 改动 | 简要说明 |
 | --- | --- |
@@ -303,6 +310,7 @@ Both targets integrate with their matching AE2, Refined Storage, JEI and Curios 
 | 默认操作 | 功能 |
 | --- | --- |
 | B | 打开个人存储，搜索、排序、合成及管理装备与资源。 |
+| 鼠标中键／选取方块 | 六阶起从仙窍取出原生选取结果至主手，旧手持按背包、仙窍顺序安置。 |
 | T | 查看修行进度。 |
 | V / Shift+V | 进入或离开仙窍 / 在外界展开或收起领域，在仙窍内回到中心。 |
 | Shift + 鼠标滚轮 | 切换手持工具的扳手、建筑、挖掘、传送与探索模式。 |

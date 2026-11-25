@@ -10,6 +10,9 @@ import com.immortalstorage.immortalstorage.network.storage.PersonalStorageNetwor
 import com.immortalstorage.immortalstorage.player.ImmortalStoragePlayerData;
 import com.immortalstorage.immortalstorage.spiritfield.SimulatedSpiritFieldCropCatalog;
 import com.immortalstorage.immortalstorage.worldshard.WorldShardOutputRouter;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Machine;
+import com.immortalstorage.immortalstorage.api.machine.MachinePolicyApi.Target;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -107,6 +110,7 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
     private @Nullable net.minecraft.server.MinecraftServer cachedEndpointServer;
     private @Nullable net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> cachedEndpointDimension;
     private @Nullable List<ItemStack> pendingHarvestDrops;
+    private long cachedCropGeneration = -1;
     private ItemStack cachedCropSeed = ItemStack.EMPTY;
     private Optional<BlockState> cachedCrop = Optional.empty();
     private final ContainerData data = new ContainerData() {
@@ -306,7 +310,9 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
 
     private Optional<BlockState> cropFor(ItemStack seed) {
         if (seed == null) seed = ItemStack.EMPTY;
-        if (ItemStack.isSameItemSameComponents(cachedCropSeed, seed)) return cachedCrop;
+        if (cachedCropGeneration == SimulatedSpiritFieldCropCatalog.generation()
+                && ItemStack.isSameItemSameComponents(cachedCropSeed, seed)) return cachedCrop;
+        cachedCropGeneration = SimulatedSpiritFieldCropCatalog.generation();
         cachedCropSeed = seed.isEmpty() ? ItemStack.EMPTY : seed.copyWithCount(1);
         cachedCrop = Optional.empty();
         if (!isValidSeed(seed)) return cachedCrop;
@@ -360,12 +366,13 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
 
     private boolean hasHarvestableCrop() {
         Optional<BlockState> crop = cropFor(items.get(SEED_SLOT));
-        return crop.isPresent() && compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate);
+        return crop.isPresent() && policyAllowsCrop(crop.get())
+                && compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate);
     }
 
     private List<ItemStack> harvestDrops(ServerLevel level) {
         Optional<BlockState> crop = cropFor(items.get(SEED_SLOT));
-        if (crop.isEmpty() || !compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate)) return List.of();
+        if (crop.isEmpty() || !policyAllowsCrop(crop.get()) || !compatibleSeed(items.get(SEED_SLOT), crop.get(), substrate)) return List.of();
         if (items.get(SEED_SLOT).is(Items.CHORUS_FRUIT)) {
             return multiplyDrops(List.of(new ItemStack(Items.CHORUS_FLOWER), new ItemStack(Items.CHORUS_FRUIT, 2)));
         }
@@ -377,10 +384,19 @@ public final class SimulatedSpiritFieldBlockEntity extends BlockEntity
                 ? List.of(new ItemStack(Items.CHORUS_FRUIT)) : drops);
     }
 
+    private boolean policyAllowsCrop(BlockState crop) {
+        var mode = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(crop.getBlock());
+        return MachinePolicyApi.allowsItem(Machine.SIMULATED_SPIRIT_FIELD, 1, mode, Target.INPUT_ITEM, items.get(SEED_SLOT).getItem())
+                && MachinePolicyApi.allowsBlock(Machine.SIMULATED_SPIRIT_FIELD, 1, mode, crop.getBlock())
+                && MachinePolicyApi.allowsBlock(Machine.SIMULATED_SPIRIT_FIELD, 1, mode, Target.SUBSTRATE_BLOCK, substrate.getBlock());
+    }
+
     private List<ItemStack> multiplyDrops(List<ItemStack> source) {
         long multiplier = (long) Math.max(1, items.get(SEED_SLOT).getCount()) * reinforcementMultiplier();
         List<ItemStack> result = new ArrayList<>();
+        var mode = cropFor(items.get(SEED_SLOT)).map(crop -> net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(crop.getBlock())).orElse(null);
         for (ItemStack stack : source) {
+            if (!MachinePolicyApi.allowsItem(Machine.SIMULATED_SPIRIT_FIELD, 1, mode, Target.OUTPUT_ITEM, stack.getItem())) continue;
             long remaining = Math.min(Integer.MAX_VALUE, (long) stack.getCount() * multiplier);
             while (remaining > 0L) {
                 int count = (int) Math.min(stack.getMaxStackSize(), remaining);

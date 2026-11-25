@@ -23,16 +23,18 @@ public final class RuinFaceGrid {
     private RuinFaceGrid() {
     }
 
-    /** Builds six 28x18 toggle buttons in grid order, three per row, starting at (panelX, panelY). */
+    /** Builds six 28x18 toggle buttons in grid order, three per row across the 90-pixel filter rail, starting at (panelX, panelY). */
     public static List<Button> add(IntConsumer onToggle, int localBase, int panelX, int panelY) {
         List<Button> buttons = new ArrayList<>();
         for (int i = 0; i < ORDER.length; i++) {
             int ordinal = ORDER[i];
             int id = localBase + ordinal;
-            Button button = Button.builder(Component.literal(RuinFaceText.abbr(ordinal)), clicked -> onToggle.accept(id))
-                    .bounds(panelX + (i % 3) * 30, panelY + (i / 3) * 20, 28, 18)
-                    .tooltip(Tooltip.create(tooltip(ordinal)))
-                    .build();
+            Button button = new FacePreviewButton(panelX + (i % 3) * 31, panelY + (i / 3) * 20,
+                    18, RuinFaceText.label(ordinal),
+                    () -> net.minecraft.world.item.ItemStack.EMPTY, () -> ConfigurationStyle.ENABLED,
+                    clicked -> onToggle.accept(id));
+            button.setWidth(28);
+            button.setTooltip(Tooltip.create(tooltip(ordinal)));
             buttons.add(button);
         }
         return buttons;

@@ -45,16 +45,16 @@ public final class SpiritCompressorMenu extends AbstractContainerMenu implements
         var handler = ruin == null || inventory.player.level().isClientSide ? new ItemStackHandler(13) : machine.activeInventory();
         boolean serverSide = ruin != null && ruin.getLevel() != null && !ruin.getLevel().isClientSide;
         if (reversed) {
-            addSlot(new SlotItemHandler(handler, 0, 26, 46) { @Override public boolean mayPickup(Player player) { return !lockedInput(index); } });
-            for (int i = 0; i < 12; i++) addSlot(productSlot(handler, i + 1, 98 + i % 4 * 18, 28 + i / 4 * 18, serverSide));
+            addSlot(new SlotItemHandler(handler, 0, 26, SpiritCompressorLayout.SINGLE_Y) { @Override public boolean mayPickup(Player player) { return !lockedInput(index); } });
+            for (int i = 0; i < 12; i++) addSlot(productSlot(handler, i + 1, 98 + i % 4 * 18, SpiritCompressorLayout.MATERIAL_Y + i / 4 * 18, serverSide));
         } else {
-            for (int i = 0; i < 12; i++) addSlot(new SlotItemHandler(handler, i, 8 + i % 4 * 18, 28 + i / 4 * 18) {
+            for (int i = 0; i < 12; i++) addSlot(new SlotItemHandler(handler, i, 8 + i % 4 * 18, SpiritCompressorLayout.MATERIAL_Y + i / 4 * 18) {
                 @Override public boolean mayPickup(Player player) { return !lockedInput(index); }
             });
-            addSlot(productSlot(handler, 12, 134, 46, serverSide));
+            addSlot(productSlot(handler, 12, 134, SpiritCompressorLayout.SINGLE_Y, serverSide));
         }
-        for (int i = 0; i < 27; i++) addSlot(new Slot(inventory, i + 9, 8 + i % 9 * 18, 100 + i / 9 * 18));
-        for (int i = 0; i < 9; i++) addSlot(new Slot(inventory, i, 8 + i * 18, 158));
+        for (int i = 0; i < 27; i++) addSlot(new Slot(inventory, i + 9, 8 + i % 9 * 18, SpiritCompressorLayout.PLAYER_Y + i / 9 * 18));
+        for (int i = 0; i < 9; i++) addSlot(new Slot(inventory, i, 8 + i * 18, SpiritCompressorLayout.HOTBAR_Y));
         data = ruin == null || inventory.player.level().isClientSide ? new SimpleContainerData(9) : new ContainerData() {
             @Override public int get(int i) { return i < 6 ? machine.mode(i) : i == 6 ? (machine.xianqiaoOutput() ? 1 : 0) : i == 7 ? (machine.formed() ? 1 : 0) : (machine.reversed() ? 1 : 0); }
             @Override public void set(int i, int value) {}

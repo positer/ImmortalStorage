@@ -63,15 +63,15 @@ final class EnergyCrystalContractTest {
         assertTrue(menu.contains("ReinforcementPluginHost.isPlugin(stack)"),
                 "the output slot must expose the reinforcement plugin exception through the menu");
         assertTrue(registrations.contains("Capabilities.EnergyStorage.BLOCK"));
-        assertTrue(menu.contains("new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 26, 26)"));
+        assertTrue(menu.contains("new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 19, 26)"));
         assertTrue(menu.contains("getMaxStackSize(ItemStack stack)"),
                 "the processing slot must accept the source item's complete stack");
         String inputSlot = menu.substring(menu.indexOf("class InputSlot"), menu.indexOf("class FuelSlot"));
         assertFalse(inputSlot.contains("getMaxStackSize() { return 1; }"),
                 "the processing slot must not force a single-item input");
-        assertTrue(menu.contains("new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 26, 62)"));
-        assertTrue(menu.contains("new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 59, 44)"));
-        assertTrue(screen.contains("imageWidth = 230"));
+        assertTrue(menu.contains("new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 19, 62)"));
+        assertTrue(menu.contains("new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 52, 44)"));
+        assertTrue(screen.contains("imageWidth = 198"));
         assertTrue(screen.contains("TANK_WIDTH = 72"));
         assertTrue(screen.contains("TANK_HEIGHT = 54"));
         assertTrue(screen.contains("stored"));
@@ -327,9 +327,9 @@ final class EnergyCrystalContractTest {
         String field = source("client", "screen", "SimulatedSpiritFieldScreen.java");
         String furnace = source("client", "screen", "SimulatedReincarnationFurnaceScreen.java");
         for (String screen : new String[]{crystal, field, furnace}) {
-            assertTrue(screen.contains("topPos + 108"), "switch heading must be below face buttons");
-            assertTrue(screen.contains("topPos + 120"), "first switch must be below heading");
-            assertTrue(screen.contains("topPos + 143"), "second switch must be below first switch");
+            assertTrue(screen.contains("topPos + 112"), "switch heading must be below face buttons");
+            assertTrue(screen.contains(".bounds(railX, topPos + 123, 98, 18)"), "first switch must be below heading");
+            assertTrue(screen.contains(".bounds(railX, topPos + 144, 98, 18)"), "second switch must be below first switch");
         }
     }
 

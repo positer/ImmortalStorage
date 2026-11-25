@@ -64,29 +64,30 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         this.craftModuleButton.active = this.menu.isCraftingUnlocked();
         this.smithingModuleButton.active = this.menu.isSmithingUnlocked();
         this.furnaceModuleButton.active = this.menu.isFurnaceUnlocked();
-        this.autoFurnaceFillButton = this.addRenderableWidget(Button.builder(
-                        autoFurnaceFillLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FILL_BUTTON))
-                .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 72, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.auto_fill_hint")))
-                .build());
-        this.autoFurnaceFuelButton = this.addRenderableWidget(Button.builder(
-                        autoFurnaceFuelLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FUEL_BUTTON))
-                .bounds(this.leftPos + 92, this.topPos + this.imageHeight - 179, 76, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.auto_fuel_hint")))
-                .build());
-        this.magnetButton = this.addRenderableWidget(Button.builder(magnetLabel(),
-                        button -> requestMenuButton(KongqiaoMenu.MAGNET_BUTTON))
-                .bounds(this.leftPos + 16, this.topPos + this.imageHeight - 179, 152, 16)
-                .tooltip(Tooltip.create(Component.translatable(
-                        "container.immortalstorage.terminal.magnet_hint"))).build());
+        this.autoFurnaceFillButton = this.addRenderableWidget(new TerminalControlButton(
+                this.leftPos + 8, this.topPos + this.imageHeight - 179, 72, 16,
+                autoFurnaceFillLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FILL_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.auto_fill_hint"))));
+        this.autoFurnaceFuelButton = this.addRenderableWidget(new TerminalControlButton(
+                this.leftPos + 85, this.topPos + this.imageHeight - 179, 103, 16,
+                autoFurnaceFuelLabel(), button -> requestMenuButton(KongqiaoMenu.AUTO_FURNACE_FUEL_BUTTON),
+                Tooltip.create(Component.translatable("container.immortalstorage.terminal.auto_fuel_hint"))));
+        this.magnetButton = this.addRenderableWidget(new TerminalControlButton(
+                this.leftPos + TerminalLayout.MAGNET_X, this.topPos + TerminalLayout.SEARCH_Y,
+                TerminalLayout.MAGNET_WIDTH, TerminalLayout.SEARCH_HEIGHT, magnetLabel(),
+                button -> requestMenuButton(KongqiaoMenu.MAGNET_BUTTON), Tooltip.create(Component.translatable(
+                        "container.immortalstorage.terminal.magnet_hint")),
+                () -> this.menu.getData().isMagnetEnabled() ? "M+" : "M-"));
         updateFurnaceButtons();
-        if (this.magnetButton != null) {
-            this.magnetButton.visible = this.menu.getData().getStage() >= 4 && !this.furnaceVisible;
-            this.magnetButton.active = this.magnetButton.visible;
-            this.magnetButton.setMessage(magnetLabel());
-        }
+        updateMagnetButton();
+    }
+
+    private void updateMagnetButton() {
+        if (this.magnetButton == null) return;
+        this.magnetButton.visible = this.menu.getData().getStage() >= 4 && !this.furnaceVisible;
+        this.magnetButton.active = this.magnetButton.visible;
+        Component label = magnetLabel();
+        if (!this.magnetButton.getMessage().equals(label)) this.magnetButton.setMessage(label);
     }
 
     private Component magnetLabel() { return Component.translatable(this.menu.getData().isMagnetEnabled()
@@ -95,7 +96,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
-        renderTerminalChrome(graphics, false);
+        renderTerminalChrome(graphics, false, mouseX, mouseY, partialTick);
         renderStorageSlotsClipped(graphics, storageSlotCountInternal());
         if (this.furnaceVisible) {
             VanillaGuiPainter.terminalFurnaceModule(graphics, this.leftPos, this.topPos, this.imageHeight,
@@ -164,8 +165,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
         Component workspaceTitle = this.stonecutterVisible
                 ? Component.translatable("container.immortalstorage.terminal.stonecutter_title")
                 : this.title;
-        graphics.drawString(this.font, workspaceTitle, TerminalLayout.TITLE_X, TerminalLayout.TITLE_Y,
-                0xFF404040, false);
+        renderTerminalTitle(graphics, workspaceTitle);
         graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX,
                 this.inventoryLabelY, 0xFF404040, false);
         if (this.craftingVisible && this.menu.getData().getStage() < 3) {
@@ -286,6 +286,7 @@ public class KongqiaoScreen extends AbstractTerminalScreen<KongqiaoMenu> {
             applyModuleState(module);
         }
         updateFurnaceButtons();
+        updateMagnetButton();
     }
 
     @Override

@@ -48,20 +48,20 @@ import java.util.Optional;
  * off-screen list to keep alive.</p>
  */
 public class XianqiaoInterfaceScreen
-        extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<XianqiaoInterfaceMenu>
+        extends ConfigurationWindowScreen<XianqiaoInterfaceMenu>
         implements TerminalFluidScreenAccess {
     private static final int TEXT = 0xFF404040;
     private static final int GHOST_TINT = 0x1F63B7BE;
     private static final int SCREEN_WIDTH = 176;
-    private static final int SCREEN_HEIGHT = 243;
+    private static final int SCREEN_HEIGHT = 216;
     private static final int SIDE_GRID_X = 56;
-    private static final int SIDE_GRID_Y = 97;
+    private static final int SIDE_GRID_Y = 86;
     private static final int SIDE_BUTTON_WIDTH = 20;
     private static final int SIDE_COLUMN_STRIDE = 22;
     private static final int SIDE_ROW_STRIDE = 21;
     private static final float MODAL_Z = 500.0F;
     private static final int DIALOG_WIDTH = 176;
-    private static final int DIALOG_HEIGHT = 132;
+    private static final int DIALOG_HEIGHT = 150;
     private static final int MASK_BUTTON_SIZE = 18;
     private static final List<Direction> SIDE_ORDER = List.of(
             Direction.UP, Direction.NORTH, Direction.DOWN,
@@ -86,7 +86,14 @@ public class XianqiaoInterfaceScreen
         super(menu, inventory, title);
         this.imageWidth = SCREEN_WIDTH;
         this.imageHeight = SCREEN_HEIGHT;
-        this.inventoryLabelY = 139;
+        this.inventoryLabelY = 128;
+    }
+
+    @Override
+    protected boolean followsWindow(net.minecraft.client.gui.components.AbstractWidget widget) {
+        // Centered modal dialogs have their own coordinate system; hidden dialog widgets must stay there.
+        return widget != amountInput && widget != applyAmountButton && widget != cancelAmountButton
+                && !slotFaceButtons.containsValue(widget) && !externalResourceButtons.contains(widget);
     }
 
     @Override
@@ -102,7 +109,7 @@ public class XianqiaoInterfaceScreen
             int buttonY = this.topPos + SIDE_GRID_Y
                     + (index / 3) * SIDE_ROW_STRIDE;
             FacePreviewButton button = new FacePreviewButton(
-                    buttonX, buttonY, SIDE_BUTTON_WIDTH, Component.literal(shortSide(side)),
+                    buttonX, buttonY, SIDE_BUTTON_WIDTH, shortSide(side),
                     () -> sideButtonPreview(side), () -> interfaceModeColor(side),
                     ignored -> cycleSideMode(side));
             button.setTooltip(Tooltip.create(sideTooltip(side)));
@@ -111,8 +118,8 @@ public class XianqiaoInterfaceScreen
         }
         int dialogX = dialogX();
         int dialogY = dialogY();
-        this.amountInput = new EditBox(this.font, dialogX + 10,
-                dialogY + 31, DIALOG_WIDTH - 20, 18,
+        this.amountInput = new InsetNumberBox(this.font, dialogX + 10,
+                dialogY + 49, DIALOG_WIDTH - 20, 18,
                 Component.translatable("container.immortalstorage.xianqiao_interface.amount_input"));
         this.amountInput.setMaxLength(20);
         this.amountInput.setFilter(value -> value.isEmpty()
@@ -121,12 +128,12 @@ public class XianqiaoInterfaceScreen
         this.applyAmountButton = Button.builder(
                         Component.translatable("container.immortalstorage.xianqiao_interface.apply"),
                         ignored -> applyAmount())
-                .bounds(dialogX + 10, dialogY + 106, 74, 20)
+                .bounds(dialogX + 10, dialogY + 124, 74, 20)
                 .build();
         this.cancelAmountButton = Button.builder(
                         Component.translatable("container.immortalstorage.xianqiao_interface.cancel"),
                         ignored -> closeAmountDialog())
-                .bounds(dialogX + 92, dialogY + 106, 74, 20)
+                .bounds(dialogX + 92, dialogY + 124, 74, 20)
                 .build();
         this.activePullButton = Button.builder(Component.empty(), ignored -> toggleActiveTransfer(true))
                 .bounds(this.leftPos + 4, this.topPos + SIDE_GRID_Y, 24, 20).build();
@@ -139,8 +146,8 @@ public class XianqiaoInterfaceScreen
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton maskButton = new FacePreviewButton(
                     dialogX + 42 + (index % 3) * 32,
-                    dialogY + 62 + (index / 3) * 20, MASK_BUTTON_SIZE,
-                    Component.literal(shortSide(side)), () -> adjacentBlockPreview(side),
+                    dialogY + 80 + (index / 3) * 20, MASK_BUTTON_SIZE,
+                    shortSide(side), () -> adjacentBlockPreview(side),
                     () -> 0xFF777777, ignored -> toggleSlotFace(side));
             this.addWidget(maskButton);
             slotFaceButtons.put(side, maskButton);
@@ -164,7 +171,7 @@ public class XianqiaoInterfaceScreen
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         int x = this.leftPos;
         int y = this.topPos;
         VanillaGuiPainter.panel(graphics, x, y, this.imageWidth, this.imageHeight);
@@ -341,18 +348,17 @@ public class XianqiaoInterfaceScreen
 
     @Override
     protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, this.title, 8, 6, TEXT, false);
         graphics.text(this.font,
                 Component.translatable("container.immortalstorage.xianqiao_interface.targets"),
-                8, 19, TEXT, false);
+                8, 18, TEXT, false);
         graphics.text(this.font,
                 Component.translatable("container.immortalstorage.xianqiao_interface.buffers"),
-                8, 55, TEXT, false);
+                8, 47, TEXT, false);
         graphics.text(this.font, this.playerInventoryTitle,
                 this.inventoryLabelX, this.inventoryLabelY, TEXT, false);
         graphics.text(this.font,
                 Component.translatable("container.immortalstorage.xianqiao_interface.sides"),
-                8, 86, TEXT, false);
+                8, 76, TEXT, false);
     }
 
     @Override
@@ -530,7 +536,7 @@ public class XianqiaoInterfaceScreen
     private void validateAmount() {
         if (amountInput == null || applyAmountButton == null) return;
         boolean valid = validAmount();
-        amountInput.setTextColor(valid ? 0xFFE0E0E0 : 0xFFFF5555);
+        amountInput.setTextColor(valid ? 0xFF363636 : 0xFFA32C2E);
         applyAmountButton.active = amountDialogOpen && valid && menu.getBlockEntity() != null;
     }
 
@@ -606,15 +612,8 @@ public class XianqiaoInterfaceScreen
                 selectedTarget, side.ordinal(), !menu.isSlotFaceEnabled(selectedTarget, side)));
     }
 
-    private static String shortSide(Direction side) {
-        return switch (side) {
-            case UP -> "U";
-            case DOWN -> "D";
-            case NORTH -> "N";
-            case SOUTH -> "S";
-            case WEST -> "W";
-            case EAST -> "E";
-        };
+    private static Component shortSide(Direction side) {
+        return ConfigurationStyle.faceLabel(side);
     }
 
     private String fullSideName(Direction side) {
@@ -674,13 +673,13 @@ public class XianqiaoInterfaceScreen
         for (Button button : externalResourceButtons) removeWidget(button);
         externalResourceButtons.clear();
         int x = dialogX() + 10;
-        int y = dialogY() + 27;
+        int y = externalDialogY() + ConfigurationStyle.CHOOSER_TOP;
         int width = DIALOG_WIDTH - 20;
         for (int index = 0; index < 5; index++) {
             final int buttonIndex = index;
             Button button = Button.builder(Component.empty(),
                             ignored -> configureExternalResourceButton(buttonIndex))
-                    .bounds(x, y + index * 20, width, 18)
+                    .bounds(x, y + index * ConfigurationStyle.CHOOSER_ROW, width, 18)
                     .build();
             button.visible = false;
             button.active = false;
@@ -697,6 +696,8 @@ public class XianqiaoInterfaceScreen
         for (int index = 0; index < externalResourceButtons.size(); index++) {
             int resourceIndex = externalResourceOffset + index;
             Button button = externalResourceButtons.get(index);
+            button.setX(dialogX() + 10);
+            button.setY(externalDialogY() + ConfigurationStyle.CHOOSER_TOP + index * ConfigurationStyle.CHOOSER_ROW);
             boolean present = resourceIndex < resources.size();
             button.setMessage(present
                     ? ExternalResourceCatalog.displayName(resources.get(resourceIndex))
@@ -771,8 +772,8 @@ public class XianqiaoInterfaceScreen
         try {
             graphics.fill(0, 0, this.width, this.height, 0x78000000);
             int x = dialogX();
-            int y = dialogY();
-            VanillaGuiPainter.panel(graphics, x, y, DIALOG_WIDTH, DIALOG_HEIGHT);
+            int y = externalDialogY();
+            VanillaGuiPainter.panel(graphics, x, y, DIALOG_WIDTH, externalDialogHeight());
             graphics.fill(x + 2, y + 2, x + DIALOG_WIDTH - 2, y + 19, 0xFFD8D8D8);
             graphics.horizontalLine(x + 3, x + DIALOG_WIDTH - 4, y + 19, 0xFF8B8B8B);
             graphics.text(font,
@@ -821,11 +822,11 @@ public class XianqiaoInterfaceScreen
             graphics.text(font,
                     Component.translatable("container.immortalstorage.xianqiao_interface.amount_title",
                             selectedTarget + 1), x + 8, y + 7, TEXT, false);
-            graphics.text(font, amountSummary(), x + 10, y + 22, TEXT, false);
+            ConfigurationStyle.amountSummary(graphics, font, amountSummary(), x + 10, y + 22, DIALOG_WIDTH - 20);
             amountInput.extractRenderState(graphics, mouseX, mouseY, partialTick);
             graphics.text(font,
                     Component.translatable("container.immortalstorage.xianqiao_interface.slot_faces"),
-                    x + 8, y + 52, TEXT, false);
+                    x + 8, y + 70, TEXT, false);
             for (Button button : slotFaceButtons.values()) button.extractRenderState(graphics, mouseX, mouseY, partialTick);
             applyAmountButton.extractRenderState(graphics, mouseX, mouseY, partialTick);
             cancelAmountButton.extractRenderState(graphics, mouseX, mouseY, partialTick);
@@ -999,16 +1000,24 @@ public class XianqiaoInterfaceScreen
         graphics.pose().popMatrix();
     }
 
+    private int externalDialogHeight() {
+        return ConfigurationStyle.chooserHeight(menu.availableExternalResources().size());
+    }
+
+    private int externalDialogY() {
+        return (this.height - externalDialogHeight()) / 2;
+    }
+
     private int dialogX() {
-        return this.leftPos + (this.imageWidth - DIALOG_WIDTH) / 2;
+        return (this.width - DIALOG_WIDTH) / 2;
     }
 
     private int dialogY() {
-        return this.topPos + (this.imageHeight - DIALOG_HEIGHT) / 2;
+        return (this.height - DIALOG_HEIGHT) / 2;
     }
 
     private Component sideLabel(Direction side) {
-        return Component.literal(shortSide(side));
+        return shortSide(side);
     }
 
     private Component sideTooltip(Direction side) {

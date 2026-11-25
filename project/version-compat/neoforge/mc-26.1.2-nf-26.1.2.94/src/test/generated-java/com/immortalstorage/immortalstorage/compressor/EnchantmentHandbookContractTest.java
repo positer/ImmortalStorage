@@ -38,6 +38,12 @@ final class EnchantmentHandbookContractTest {
             "assets/immortalstorage/patchouli_books/jade_guide/%s/entries/automation/enchantment_compressor.json";
     private static final String LANG_PATH = "assets/immortalstorage/lang/%s.json";
     private static final List<String> NEW_KEYS = List.of(
+            "container.immortalstorage.xianqiao_redstone_interface.polarity",
+            "container.immortalstorage.configuration.reinforcement_short",
+            "message.immortalstorage.cultivation.progress_hint",
+            "message.immortalstorage.cultivation.not_started",
+            "message.immortalstorage.cultivation.lingqi",
+            "message.immortalstorage.cultivation.stage",
             "container.immortalstorage.enchantment_compressor",
             "container.immortalstorage.enchantment_decompressor",
             // 0.1.9 Guixu Time-Shift Staff: item/staff feedback keys in both locales.
@@ -62,7 +68,34 @@ final class EnchantmentHandbookContractTest {
             "immortalstorage.configuration.time_shift.maxBlocks",
             "immortalstorage.configuration.time_shift.maxBlocks.tooltip",
             "immortalstorage.configuration.time_shift.randomTickBlocks",
-            "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip");
+            "immortalstorage.configuration.time_shift.randomTickBlocks.tooltip",
+            // Shared movable machine configuration window.
+            "container.immortalstorage.configuration",
+            // Machine-page localization additions, explicitly recorded without changing the retained-key digest.
+            "container.immortalstorage.configuration.face.up",
+            "container.immortalstorage.configuration.face.down",
+            "container.immortalstorage.configuration.face.north",
+            "container.immortalstorage.configuration.face.south",
+            "container.immortalstorage.configuration.face.west",
+            "container.immortalstorage.configuration.face.east",
+            "container.immortalstorage.configuration.on",
+            "container.immortalstorage.configuration.off",
+            "container.immortalstorage.configuration.mode",
+            "container.immortalstorage.miniature_ruin.players",
+            "container.immortalstorage.miniature_ruin.entity_damage",
+            "container.immortalstorage.miniature_ruin.player_damage",
+            "container.immortalstorage.miniature_ruin.force",
+            "container.immortalstorage.miniature_ruin.force.none",
+            "container.immortalstorage.miniature_ruin.force.light",
+            "container.immortalstorage.miniature_ruin.force.medium",
+            "container.immortalstorage.miniature_ruin.force.strong",
+            "container.immortalstorage.miniature_ruin.force.teleport",
+            "container.immortalstorage.miniature_ruin.tooltip.players",
+            "container.immortalstorage.miniature_ruin.tooltip.entity_damage",
+            "container.immortalstorage.miniature_ruin.tooltip.player_damage",
+            "container.immortalstorage.miniature_ruin.tooltip.force",
+            "container.immortalstorage.miniature_ruin.tooltip.warp",
+            "container.immortalstorage.configuration.face.any");
     private static final Map<String, String> ENGLISH_KEYS = Map.of(
             "container.immortalstorage.enchantment_compressor", "Enchantment Compressor",
             "container.immortalstorage.enchantment_decompressor", "Enchantment Decompressor");

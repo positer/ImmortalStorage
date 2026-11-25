@@ -51,15 +51,15 @@ public final class EnergyCrystalMenu extends AbstractContainerMenu implements Ma
         this.redstoneMode = MachineRedstoneMenu.dataSlot(crystal);
         checkContainerSize(container, EnergyCrystalBlockEntity.SLOT_COUNT);
         checkContainerDataCount(data, EnergyCrystalBlockEntity.DATA_COUNT);
-        addSlot(new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 26, 26));
-        addSlot(new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 26, 62));
-        addSlot(new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 59, 44));
+        addSlot(new InputSlot(container, EnergyCrystalBlockEntity.INPUT_SLOT, 19, 26));
+        addSlot(new FuelSlot(container, EnergyCrystalBlockEntity.FUEL_SLOT, 19, 62));
+        addSlot(new ExtraSlot(container, EnergyCrystalBlockEntity.EXTRA_SLOT, 52, 44));
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
-                addSlot(new Slot(inventory, col + row * 9 + 9, 26 + col * 18, 105 + row * 18));
+                addSlot(new Slot(inventory, col + row * 9 + 9, 19 + col * 18, 105 + row * 18));
             }
         }
-        for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 26 + col * 18, 163));
+        for (int col = 0; col < 9; col++) addSlot(new Slot(inventory, col, 19 + col * 18, 163));
         container.startOpen(inventory.player);
         addDataSlots(data);
         addDataSlot(redstoneMode);

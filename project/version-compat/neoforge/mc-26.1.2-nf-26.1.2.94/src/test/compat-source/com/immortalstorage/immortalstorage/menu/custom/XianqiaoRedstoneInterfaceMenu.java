@@ -28,9 +28,9 @@ import java.util.List;
 public final class XianqiaoRedstoneInterfaceMenu extends AbstractContainerMenu {
     private static final int CONFIGURATION_SYNC_MARKER = 0x58495253;
     public static final long DEFAULT_EXTERNAL_CACHE_AMOUNT = 1_000L;
-    public static final int CONFIG_Y = 8;
-    public static final int PLAYER_INVENTORY_Y = 65;
-    public static final int HOTBAR_Y = 123;
+    public static final int CONFIG_Y = 31;
+    public static final int PLAYER_INVENTORY_Y = 92;
+    public static final int HOTBAR_Y = PLAYER_INVENTORY_Y + 58;
     private static final String FLUID_DISPLAY_TAG = "ImmortalStorageInterfaceFluid";
     private static final String EXTERNAL_DISPLAY_TAG = "ImmortalStorageInterfaceExternalResource";
 

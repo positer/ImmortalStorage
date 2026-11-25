@@ -158,10 +158,11 @@ public final class ImmortalStorageKeybinds {
         }
         // Pre-ascension plain-V no longer prints lingqi; point the player at T.
         if (d.getStage() >= 1) {
-            com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(p, Component.literal("Press T for your cultivation progress")
-                    .withStyle(ChatFormatting.AQUA), true);
+            Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("message.immortalstorage.cultivation.progress_hint",
+                            SHOW_PROGRESS.getTranslatedKeyMessage())
+                    .withStyle(ChatFormatting.AQUA), false);
         } else {
-            com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(p, Component.literal("Not cultivating yet").withStyle(ChatFormatting.RED), true);
+            Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("message.immortalstorage.cultivation.not_started").withStyle(ChatFormatting.RED), false);
         }
     }
 
@@ -169,13 +170,13 @@ public final class ImmortalStorageKeybinds {
         if (d.getStage() >= 1 && d.getStage() <= 5) {
             int cur = d.getLingqiProgress();
             int cap = d.getLingqiCap();
-            com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(p, Component.literal("Lingqi: " + cur + " / " + cap)
-                    .withStyle(ChatFormatting.AQUA), true);
+            Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("message.immortalstorage.cultivation.lingqi", cur, cap)
+                    .withStyle(ChatFormatting.AQUA), false);
         } else if (d.getStage() >= 6) {
-            com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(p, Component.literal("Stage " + d.getStage())
-                    .withStyle(ChatFormatting.GOLD), true);
+            Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("message.immortalstorage.cultivation.stage", d.getStage())
+                    .withStyle(ChatFormatting.GOLD), false);
         } else {
-            com.immortalstorage.immortalstorage.compat.mc2612.CompatMessages.sendSystemMessage(p, Component.literal("Not cultivating yet").withStyle(ChatFormatting.RED), true);
+            Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("message.immortalstorage.cultivation.not_started").withStyle(ChatFormatting.RED), false);
         }
     }
 

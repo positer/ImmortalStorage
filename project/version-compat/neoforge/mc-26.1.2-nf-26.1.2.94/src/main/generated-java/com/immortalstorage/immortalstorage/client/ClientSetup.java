@@ -72,6 +72,7 @@ public final class ClientSetup {
         ImmortalStorageKeybinds.init(modBus, forgeBus);
         forgeBus.register(com.immortalstorage.immortalstorage.compat.mc2612.TargetClientRecipeCache.class);
         forgeBus.addListener(ClientItemTooltips::onTooltip);
+        forgeBus.addListener(XianqiaoPickInput::onPick);
         forgeBus.addListener(ClientRealmSnowfall::onClientTick);
         SpiritStaffBuildPreview.init(forgeBus);
         forgeBus.addListener(com.immortalstorage.immortalstorage.client.render.OneQiBeamRenderer::render);

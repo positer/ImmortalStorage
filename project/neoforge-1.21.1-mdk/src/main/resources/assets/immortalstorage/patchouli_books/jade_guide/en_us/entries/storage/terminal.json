@@ -1,5 +1,5 @@
 {
-  "name":"Personal Storage Terminal",
+  "name":"Storage Terminal",
   "icon":"immortalstorage:xianqiao_manager",
   "category":"immortalstorage:storage",
   "sortnum":0,
@@ -7,6 +7,8 @@
     {"type":"patchouli:text","text":"Personal storage is not merely a carried chest; it is a workbench that unfolds with cultivation. Its keybind can open over most non-text screens, and closing the terminal returns to the previous screen."},
     {"type":"patchouli:text","title":"Kongqiao and Xianqiao","text":"Stages one through five keep physical slots with expanded stack limits. At stage six, items become identity-based aggregates rather than a fixed grid. Stage seven adds fluids; stage eight adds FE, mana, source, chemicals and other external resources. The server stores every amount as a long value."},
     {"type":"patchouli:text","title":"Find, Store, Withdraw","text":"Search matches names, tooltips, tags and namespaces; sort by amount, name or mod. Scroll continuously and hold Shift for the authoritative amount. Buttons sort, deposit all, or withdraw the current filter. Typing E in search never closes the terminal."},
+    {"type":"patchouli:text","title":"Pick from Xianqiao","text":"From stage six, aim at a block or entity and press the native Pick Block key (middle mouse by default). Its native creative pick result withdraws up to one normal stack from Xianqiao, matching all components. A matching held item needs no withdrawal. Missing stock falls back to inventory picking. Creative mode keeps native behavior."},
+    {"type":"patchouli:text","title":"Relocation and Accounting","text":"The previous held stack merges into inventory first, then uses empty slots; any remainder returns to Xianqiao. Armor and offhand slots are excluded. Yuan accounting follows the real items owned by the player: internal moves do not count as fresh deposits. Stage-ten infinite Immortal Yuan follows its existing policy."},
     {"type":"patchouli:text","title":"Fluids and External Resources","text":"Fluids use their animated material and display bucket amounts. Mekanism chemicals move through real containers; containerless resources such as FE use interfaces, crystals, AE2 or RS. Every transfer is server-validated, preserving remainders without 32-bit truncation."},
     {"type":"patchouli:text","title":"Craft in One Place","text":"Stage three opens a 3×3 crafting grid; stage four opens smithing. Missing ingredients refill from personal storage. JEI or EMI can transfer recipes when installed. Stage five adds the embedded Immortal Furnace, alongside equipment and fluid tabs."},
     {"type":"patchouli:text","title":"Magnet and Equipment","text":"The magnet sends drops within 13×13×13 directly into personal storage. Equipment uses vanilla inventory-slot semantics, so drag splitting and inventory sorters still understand it. Any remainder stays safe when storage cannot accept it."},

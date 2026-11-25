@@ -141,12 +141,12 @@ public final class VanillaGuiPainter {
 
     static void terminalPanel(GuiGraphicsExtractor g, int x, int y, int w, int h, int rows, int totalRows,
                               boolean workspaceExpanded, boolean craftingVisible,
-                              boolean xianqiao, float scrollFraction) {
+                              boolean xianqiao, boolean searchFocused, float scrollFraction) {
         panel(g, x, y, w, h);
         g.fill(x + 2, y + 2, x + w - 2, y + 16, PANEL_2);
         g.horizontalLine(x + 2, x + w - 3, y + 16, MID);
-        terminalSearch(g, x + TerminalLayout.SEARCH_X, y + TerminalLayout.SEARCH_Y,
-                TerminalLayout.SEARCH_WIDTH, TerminalLayout.SEARCH_HEIGHT, accent(xianqiao));
+        portableSearch(g, x + TerminalLayout.SEARCH_X, y + TerminalLayout.SEARCH_Y,
+                TerminalLayout.SEARCH_WIDTH, TerminalLayout.SEARCH_HEIGHT, accent(xianqiao), searchFocused);
 
         int storageHeight = rows * TerminalLayout.SLOT_PITCH;
         terminalScrollbar(g, x + TerminalLayout.SCROLLBAR_X, y + TerminalLayout.STORAGE_Y,
@@ -535,6 +535,11 @@ public final class VanillaGuiPainter {
         g.horizontalLine(x + 5, x + w - 8, y + 4, 0xFF4A4A4A);
         g.horizontalLine(x + 5, x + w - 28, y + 7, 0xFF303030);
         g.fill(x + w - 13, y + 3, x + w - 8, y + 8, accent);
+    }
+
+    private static void portableSearch(GuiGraphicsExtractor g, int x, int y, int w, int h, int accent, boolean focused) {
+        g.fill(x, y, x + w, y + h, focused ? accent : 0xFF827F79);
+        g.fill(x + 1, y + 1, x + w - 1, y + h - 1, 0xFFE3E3E3);
     }
 
     private static void scrollbar(GuiGraphicsExtractor g, int x, int y, int w, int h, int accent) {

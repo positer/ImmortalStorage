@@ -26,24 +26,25 @@ final class FacePreviewButton extends Button {
     protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         int x = getX();
         int y = getY();
-        int size = getWidth();
-        int border = borderColor.getAsInt();
-        graphics.fill(x, y, x + size, y + size, border);
-        graphics.fill(x + 2, y + 2, x + size - 2, y + size - 2,
+        int width = getWidth();
+        int height = getHeight();
+        int border = alpha < 1.0F ? ConfigurationStyle.DISABLED : borderColor.getAsInt();
+        graphics.fill(x, y, x + width, y + height, border);
+        graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2,
                 isHoveredOrFocused() ? 0xFFB8B8B8 : 0xFF8A8A8A);
 
         ItemStack stack = preview.get();
         if (stack == null || stack.isEmpty()) {
             var font = Minecraft.getInstance().font;
-            graphics.centeredText(font, getMessage(), x + size / 2,
-                    y + (size - font.lineHeight) / 2, 0xFFFFFFFF);
+            graphics.centeredText(font, getMessage(), x + width / 2,
+                    y + (height - font.lineHeight) / 2, 0xFFFFFFFF);
         } else {
-            graphics.fakeItem(stack.copyWithCount(1), x + (size - 16) / 2, y + (size - 16) / 2);
+            graphics.fakeItem(stack.copyWithCount(1), x + (width - 16) / 2, y + (height - 16) / 2);
         }
         if (alpha < 1.0F) {
             int shade = Math.min(220, Math.max(0, (int) ((1.0F - alpha) * 220.0F)));
-            graphics.fill(x + 2, y + 2, x + size - 2, y + size - 2, shade << 24);
+            graphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, shade << 24);
         }
-        if (isFocused()) graphics.outline(x + 1, y + 1, size - 2, size - 2, 0xFFFFFFFF);
+        if (isFocused()) graphics.outline(x + 1, y + 1, width - 2, height - 2, 0xFFFFFFFF);
     }
 }

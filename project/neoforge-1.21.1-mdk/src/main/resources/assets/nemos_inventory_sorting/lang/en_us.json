@@ -1,0 +1,7 @@
+{
+  "nemos_inventory_sorting.gui.inventory.itemFilter": "Filter...",
+  "nemos_inventory_sorting.itemFilter": "Filter items",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence": "Toggle filter persistence",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence.toggleOn": "Enable filter persistence",
+  "nemos_inventory_sorting.gui.toggleFilterPersistence.toggleOff": "Disable filter persistence"
+}

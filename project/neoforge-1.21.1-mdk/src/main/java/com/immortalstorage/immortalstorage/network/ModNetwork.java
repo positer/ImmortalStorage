@@ -36,6 +36,10 @@ public final class ModNetwork {
 
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar(PROTOCOL).optional();
+        registrar.playToServer(ModPayloads.PickXianqiaoItem.TYPE, ModPayloads.PickXianqiaoItem.STREAM_CODEC,
+                (packet, context) -> context.enqueueWork(() -> {
+                    if (context.player() instanceof ServerPlayer player) XianqiaoPickTarget.handle(player, packet);
+                }));
         registrar.playToClient(ToolLocatorFilterSync.TYPE, ToolLocatorFilterSync.STREAM_CODEC, (packet, context) -> context.enqueueWork(() ->
                 com.immortalstorage.immortalstorage.client.render.ToolLocatorClient.installFilter(packet)));
         registrar.playToClient(ToolLocatorSync.TYPE, ToolLocatorSync.STREAM_CODEC, (packet, context) -> context.enqueueWork(() ->

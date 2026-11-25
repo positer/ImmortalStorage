@@ -3,6 +3,7 @@ import com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainer
 
 import com.immortalstorage.immortalstorage.block.entity.EntangledStabilizedMiniatureImmortalRuinBlockEntity;
 import com.immortalstorage.immortalstorage.menu.custom.EntangledMiniatureRuinMenu;
+import com.immortalstorage.immortalstorage.menu.custom.RuinFilterLayout;
 import com.immortalstorage.immortalstorage.network.ModPayloads;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Merged ruin storage with the stabilized settings/filter panels and a normal/reversed side selector. */
-public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immortalstorage.compat.mc2612.CompatAbstractContainerScreen<EntangledMiniatureRuinMenu> {
+public final class EntangledMiniatureRuinScreen extends ConfigurationWindowScreen<EntangledMiniatureRuinMenu> {
     private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/generic_54.png");
     private static final int SIDE_SPAN = 100;
     private static final int PER_SIDE = 10;
@@ -37,24 +38,30 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
         inventoryLabelY = imageHeight - 94;
     }
 
+    @Override protected int configurationPanelWidth() { return filtersOpen ? 108 : 140; }
+    @Override protected int configurationPanelMinimumHeight() {
+        return filtersOpen ? RuinFilterLayout.MINIMUM_PANEL_HEIGHT : super.configurationPanelMinimumHeight();
+    }
+
     @Override
     protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 6, topPos + 194, menu));
+                leftPos + imageWidth + 10, topPos + 162, menu));
+        redstoneModeButton.setWidth(122);
         redstoneModeButton.visible = settings;
         menu.setPluginVisible(filtersOpen);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settings = !settings; filtersOpen = false; refreshWidgets(); })
-                .bounds(leftPos + 4, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 4, topPos - 18, 20, 18).build());
         addRenderableWidget(Button.builder(Component.literal("▦"), button -> {
                     filtersOpen = !filtersOpen; settings = false; refreshWidgets();
-                }).bounds(leftPos + 26, topPos - 20, 20, 20)
+                }).bounds(leftPos + 26, topPos - 18, 20, 18)
                 .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable(
                         "container.immortalstorage.stabilized_ruin.filter"))).build());
         addRenderableWidget(Button.builder(Component.literal("◀"), b -> { activeSide = 0; refreshWidgets(); })
-                .bounds(leftPos + 48, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 48, topPos - 18, 20, 18).build());
         addRenderableWidget(Button.builder(Component.literal("▶"), b -> { activeSide = 1; refreshWidgets(); })
-                .bounds(leftPos + 70, topPos - 20, 20, 20).build());
+                .bounds(leftPos + 70, topPos - 18, 20, 18).build());
         if (settings) addSettingsButtons();
         if (filtersOpen) addFilterButtons();
     }
@@ -67,10 +74,10 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
         valueBoxes.clear();
         for (int index = 0; index < 6; index++) {
             int y = topPos + 18 + index * 18;
-            addActionButton(leftPos + imageWidth + 6, y, 16, 16, "-", index * 2);
-            addActionButton(leftPos + imageWidth + 78, y, 16, 16, "+", index * 2 + 1);
+            addActionButton(leftPos + imageWidth + 36, y, 16, 16, "-", index * 2);
+            addActionButton(leftPos + imageWidth + 116, y, 16, 16, "+", index * 2 + 1);
             int valueIndex = index;
-            EditBox box = new EditBox(font, leftPos + imageWidth + 25, y, 50, 16, Component.empty());
+            EditBox box = new InsetNumberBox(font, leftPos + imageWidth + 55, y, 58, 16, Component.empty());
             box.setValue(Integer.toString(menu.value(base() + index)));
             box.setFilter(text -> text.matches("-?\\d{0,5}"));
             box.setResponder(text -> {
@@ -82,11 +89,11 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
             valueBoxes.add(box);
             addRenderableWidget(box);
         }
-        previewButton = addActionButton(leftPos + imageWidth + 6, topPos + 130, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
-        enabledButton = addActionButton(leftPos + imageWidth + 6, topPos + 150, 88, 18, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
-        addActionButton(leftPos + imageWidth + 6, topPos + 170, 20, 18, "-", 14);
-        addActionButton(leftPos + imageWidth + 74, topPos + 170, 20, 18, "+", 15);
-        EditBox frequency = new EditBox(font, leftPos + imageWidth + 29, topPos + 170, 42, 18, Component.empty());
+        previewButton = addActionButton(leftPos + imageWidth + 10, topPos + 126, 59, 16, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
+        enabledButton = addActionButton(leftPos + imageWidth + 73, topPos + 126, 59, 16, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
+        addActionButton(leftPos + imageWidth + 36, topPos + 144, 16, 16, "-", 14);
+        addActionButton(leftPos + imageWidth + 116, topPos + 144, 16, 16, "+", 15);
+        EditBox frequency = new InsetNumberBox(font, leftPos + imageWidth + 55, topPos + 144, 58, 16, Component.empty());
         frequency.setValue(Integer.toString(menu.value(base() + 6)));
         frequency.setFilter(text -> text.matches("\\d{0,5}"));
         frequency.setResponder(text -> {
@@ -100,7 +107,7 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
     }
 
     private void addFilterButtons() {
-        int panelX = leftPos + imageWidth + 6;
+        int panelX = leftPos + imageWidth + 10;
         var ruin = filterEntity();
         Component nbt = Component.translatable(ruin != null && ruin.filterMatchComponents(activeSide)
                 ? "container.immortalstorage.stabilized_ruin.nbt_on"
@@ -110,12 +117,12 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
                 : "container.immortalstorage.stabilized_ruin.blacklist");
         addRenderableWidget(Button.builder(nbt, button -> ClientPacketDistributor.sendToServer(
                         new ModPayloads.ToggleEntangledRuinFilterMode(menu.containerId, activeSide, 0)))
-                .bounds(panelX, topPos + 92, 88, 18).build());
+                .bounds(panelX, topPos + 92, 90, 18).build());
         addRenderableWidget(Button.builder(list, button -> ClientPacketDistributor.sendToServer(
                         new ModPayloads.ToggleEntangledRuinFilterMode(menu.containerId, activeSide, 1)))
-                .bounds(panelX, topPos + 112, 88, 18).build());
+                .bounds(panelX, topPos + 112, 90, 18).build());
         faceButtons.clear();
-        faceButtons.addAll(RuinFaceGrid.add(this::sendFaceToggle, activeSide * SIDE_SPAN + 20, panelX, topPos + 132));
+        faceButtons.addAll(RuinFaceGrid.add(this::sendFaceToggle, activeSide * SIDE_SPAN + 20, panelX, topPos + RuinFilterLayout.FACE_GRID_Y));
         for (Button button : faceButtons) addRenderableWidget(button);
         RuinFaceGrid.sync(faceButtons, menu.value(base() + 9), faceButtonVisible());
     }
@@ -134,7 +141,7 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
     }
 
     public net.minecraft.client.renderer.Rect2i filterSlotBounds(int slot) {
-        return new net.minecraft.client.renderer.Rect2i(leftPos + imageWidth + 6 + (slot % 5) * 18,
+        return new net.minecraft.client.renderer.Rect2i(leftPos + imageWidth + 10 + (slot % 5) * 18,
                 topPos + 16 + (slot / 5) * 18, 18, 18);
     }
 
@@ -175,34 +182,37 @@ public final class EntangledMiniatureRuinScreen extends com.immortalstorage.immo
     }
 
     @Override
-    protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderMachineBackground(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, TEXTURE, leftPos, topPos, imageWidth, imageHeight, 0.0F, 0.0F, 256, 256);
         if (filtersOpen) {
             var ruin = filterEntity();
             for (int slot = 0; slot < 20; slot++) {
                 var bounds = filterSlotBounds(slot);
-                VanillaGuiPainter.slot(graphics, bounds.getX(), bounds.getY(), true);
+                VanillaGuiPainter.slot(graphics, bounds.getX() + 1, bounds.getY() + 1, true);
                 if (ruin != null && !ruin.filter(activeSide, slot).isEmpty()) graphics.item(
                         ruin.filter(activeSide, slot), bounds.getX() + 1, bounds.getY() + 1);
             }
             if (!faceButtons.isEmpty()) {
                 RuinFaceGrid.sync(faceButtons, menu.value(base() + 9), faceButtonVisible());
             }
-            VanillaGuiPainter.slot(graphics, leftPos + 188, topPos + 198, true);
-            graphics.text(font, Component.translatable("container.immortalstorage.reinforcement_plugin"),
-                    leftPos + 210, topPos + 203, 0xFFFFFF, true);
+            VanillaGuiPainter.slot(graphics, leftPos + RuinFilterLayout.REINFORCEMENT_X,
+                    topPos + RuinFilterLayout.REINFORCEMENT_Y, true);
+            graphics.text(font, Component.translatable("container.immortalstorage.configuration.reinforcement_short"),
+                    leftPos + RuinFilterLayout.REINFORCEMENT_X + 22,
+                    topPos + RuinFilterLayout.REINFORCEMENT_Y + 5, ConfigurationStyle.TEXT, false);
         }
         if (!settings) return;
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
-        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 98, topPos + 22 + i * 18, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 98, topPos + 175, 0xFFFFFF, true);
-        graphics.text(font, net.minecraft.network.chat.Component.translatable(activeSide == 0 ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed").getString(), leftPos + imageWidth + 6, topPos + 2, 0xFFFFFF, true);
+        for (int i = 0; i < labels.length; i++) graphics.text(font, labels[i], leftPos + imageWidth + 10, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
+        graphics.text(font, net.minecraft.network.chat.Component.translatable("container.immortalstorage.ruin.tick").getString(), leftPos + imageWidth + 10, topPos + 148, ConfigurationStyle.TEXT, false);
     }
 
-    @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(font, title, titleLabelX, titleLabelY, 0x404040, false);
+    @Override protected net.minecraft.network.chat.Component configurationSideTitle() {
+        Component page = filtersOpen ? Component.translatable("container.immortalstorage.stabilized_ruin.filter") : super.configurationSideTitle();
+        return Component.translatable("container.immortalstorage.configuration.mode", page,
+                Component.translatable(activeSide == 0
+                        ? "container.immortalstorage.ruin.side_normal" : "container.immortalstorage.ruin.side_reversed"));
     }
-
     @Override public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);

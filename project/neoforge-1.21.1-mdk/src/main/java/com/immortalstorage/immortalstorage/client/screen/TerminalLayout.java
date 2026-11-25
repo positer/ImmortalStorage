@@ -21,9 +21,12 @@ public final class TerminalLayout {
     public static final int DEFAULT_ROWS = 5;
     public static final int STORAGE_X = 8;
     public static final int STORAGE_Y = 18;
-    public static final int SEARCH_X = 80;
+    public static final int SEARCH_X = 97;
+    public static final int SEARCH_PADDING = 3;
+    public static final int MAGNET_X = 174;
+    public static final int MAGNET_WIDTH = 15;
     public static final int SEARCH_Y = 4;
-    public static final int SEARCH_WIDTH = 89;
+    public static final int SEARCH_WIDTH = 73;
     public static final int SEARCH_HEIGHT = 12;
     public static final int SCROLLBAR_X = 175;
     public static final int SCROLLBAR_WIDTH = 14;
@@ -199,6 +202,11 @@ public final class TerminalLayout {
     public static boolean terminalContains(int guiLeft, int guiTop, int imageHeight, double mouseX, double mouseY) {
         return mouseX >= guiLeft && mouseX < guiLeft + WIDTH
                 && mouseY >= guiTop && mouseY < guiTop + imageHeight;
+    }
+
+    static int fitSidePanelWidth(int screenWidth, int mainWidth, int railX, int gap, int minimum, int preferred) {
+        int available = screenWidth - mainWidth - Math.max(0, -railX) - gap;
+        return Math.max(minimum, Math.min(preferred, available));
     }
 
     public static int compositeLeft(int screenWidth, int mainWidth, int railX, int gap, int extraWidth) {

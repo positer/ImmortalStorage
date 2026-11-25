@@ -366,6 +366,50 @@ final class YuanStorageBoundaryTest {
         return new ItemStack(trueYuanItem, count);
     }
 
+    @Test
+    void pickRelocatesOwnedYuanAtTheCapWithoutDepositingTwice() {
+        var data = new ImmortalStoragePlayerData();
+        data.setStage(6);
+        long cap = data.getImmortalYuanCapLong();
+        data.insertXianqiaoItem(
+                com.immortalstorage.immortalstorage.api.storage.terminal.TerminalEntryKey.of(immortalYuan(1)),
+                cap, com.immortalstorage.immortalstorage.api.storage.terminal.TerminalStorageAction.EXECUTE);
+        var inventory = new net.minecraft.world.SimpleContainer(41);
+        for (int i = 0; i < 36; i++) inventory.setItem(i, new ItemStack(Items.DIRT, 64));
+        inventory.setItem(0, immortalYuan(8));
+        data.insertStack(new ItemStack(Items.STONE), true);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                com.immortalstorage.immortalstorage.player.XianqiaoPickItem.moveToHand(
+                        data, inventory, 0, new ItemStack(Items.STONE)));
+        assertEquals(cap + 8, activeCount(data, YuanKind.IMMORTAL),
+                "owned inventory stock must move even when the deposit cap is full");
+        assertEquals(Items.STONE, inventory.getItem(0).getItem());
+    }
+
+    @Test
+    void pickWithdrawsPhysicalYuanAndInfiniteProjectionUsesItsExistingPolicy() {
+        var data = new ImmortalStoragePlayerData();
+        data.setStage(6);
+        data.insertStack(immortalYuan(20), true);
+        var inventory = new net.minecraft.world.SimpleContainer(41);
+        org.junit.jupiter.api.Assertions.assertTrue(
+                com.immortalstorage.immortalstorage.player.XianqiaoPickItem.moveToHand(
+                        data, inventory, 0, immortalYuan(1)));
+        assertEquals(20, inventory.getItem(0).getCount());
+        assertEquals(0, activeCount(data, YuanKind.IMMORTAL));
+
+        com.immortalstorage.immortalstorage.config.ImmortalStorageConfig.STAGE_TEN_INFINITE_IMMORTAL_YUAN.set(true);
+        data.setStage(10);
+        inventory.setItem(0, ItemStack.EMPTY);
+        long revision = data.getXianqiaoStorageRevision();
+        org.junit.jupiter.api.Assertions.assertTrue(
+                com.immortalstorage.immortalstorage.player.XianqiaoPickItem.moveToHand(
+                        data, inventory, 0, data.getInfiniteImmortalYuanPrototype()));
+        assertEquals(64, inventory.getItem(0).getCount());
+        assertEquals(0, activeCount(data, YuanKind.IMMORTAL));
+        assertEquals(revision, data.getXianqiaoStorageRevision(), "infinite projection is not physical stock");
+    }
+
     private static ItemStack immortalYuan(int count) {
         return new ItemStack(immortalYuanItem, count);
     }
