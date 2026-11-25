@@ -16,6 +16,8 @@ class XianqiaoRealmTimeLayoutContractTest {
                 "java/com/immortalstorage/immortalstorage/client/screen/XianqiaoStorageScreen.java"));
 
         assertTrue(screen.contains("REALM_TIME_SIDE_INSET"));
+        assertTrue(screen.contains("insetX, this.topPos + 99, mainWidth, 18"), "single realm action spans both interior rails");
+        assertTrue(screen.contains("mainWidth - environmentWidth - 4"), "paired environment actions consume the odd remainder at the right rail");
         assertTrue(screen.contains("realmPanelWidth() - REALM_TIME_SIDE_INSET - REALM_TIME_BUTTON_SIZE"));
         assertTrue(screen.contains("insetX, timeControlY, REALM_TIME_BUTTON_SIZE, REALM_TIME_BUTTON_SIZE"));
         assertTrue(screen.contains("panelX + (realmPanelWidth() - this.font.width(timeScaleValue)) / 2"));

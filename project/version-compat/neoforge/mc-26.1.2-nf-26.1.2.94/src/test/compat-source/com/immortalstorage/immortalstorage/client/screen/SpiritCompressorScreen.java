@@ -31,22 +31,23 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
     }
     @Override protected void init() {
         super.init(); settingsWidgets.clear(); faceButtons.clear();
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> { settingsOpen = !settingsOpen; refresh(); })
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable("container.immortalstorage.reincarnation.settings"))).build());
-        redstone = addRenderableWidget(MachineRedstoneModeButton.create(panelX + 12, topPos + 18, menu));
+        redstone = addRenderableWidget(MachineRedstoneModeButton.create(railX, topPos + 18, menu));
+        redstone.setWidth(98);
         settingsWidgets.add(redstone);
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 12 + index % 3 * 31, topPos + 48 + index / 3 * 31, 27,
+                    railX + index % 3 * 34, topPos + 46 + index / 3 * 34, 30,
                     shortSide(side), () -> adjacentBlockPreview(side),
                     () -> modeColor(menu.value(side.ordinal())), clicked -> send(side.ordinal()));
             faceButtons.put(side, button); settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiao = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(6))
-                .bounds(panelX + 12, topPos + 120, 89, 18).build());
+                .bounds(railX, topPos + 123, 98, 18).build());
         settingsWidgets.add(xianqiao); refresh();
     }
     @Override protected int configurationPanelWidth() { return 116; }
@@ -84,9 +85,9 @@ public final class SpiritCompressorScreen extends ConfigurationWindowScreen<Spir
     @Override protected void renderMachineBackground(GuiGraphicsExtractor graphics, float tick, int mx, int my) {
         VanillaGuiPainter.panel(graphics, leftPos, topPos, imageWidth, imageHeight);
         if (settingsOpen) {
-            int panelX = leftPos + imageWidth + 4;
-            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.faces"), panelX + 8, topPos + 38, ConfigurationStyle.TEXT, false);
-            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.switches"), panelX + 8, topPos + 108, ConfigurationStyle.TEXT, false);
+            int railX = leftPos + imageWidth + 10;
+            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.faces"), railX, topPos + 36, ConfigurationStyle.TEXT, false);
+            graphics.text(font, Component.translatable("container.immortalstorage.reincarnation.switches"), railX, topPos + 112, ConfigurationStyle.TEXT, false);
         }
         for (var slot : menu.slots) VanillaGuiPainter.slot(graphics, leftPos + slot.x, topPos + slot.y, true);
         int arrowX = menu.reversed() ? 60 : 94;

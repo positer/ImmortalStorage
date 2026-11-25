@@ -56,7 +56,7 @@ public final class AdvancedXianqiaoInterfaceScreen
     private static final int SIDE_BUTTON_WIDTH = 20;
     private static final int SIDE_COLUMN_STRIDE = 22;
     private static final int SIDE_ROW_STRIDE = 21;
-    private static final int PANEL_X = SCREEN_WIDTH + 6;
+    private static final int PANEL_X = SCREEN_WIDTH + 10;
     private static final float MODAL_Z = 500.0F;
     private static final int DIALOG_WIDTH = 176;
     private static final int DIALOG_HEIGHT = 150;
@@ -185,10 +185,10 @@ public final class AdvancedXianqiaoInterfaceScreen
         valueBoxes.clear();
         for (int index = 0; index < 6; index++) {
             int y = topPos + 18 + index * 18;
-            addActionButton(leftPos + PANEL_X, y, 16, 16, "-", index * 2);
-            addActionButton(leftPos + PANEL_X + 72, y, 16, 16, "+", index * 2 + 1);
+            addActionButton(leftPos + PANEL_X + 26, y, 16, 16, "-", index * 2);
+            addActionButton(leftPos + PANEL_X + 106, y, 16, 16, "+", index * 2 + 1);
             int valueIndex = index;
-            EditBox box = new InsetNumberBox(font, leftPos + PANEL_X + 19, y, 50, 16, Component.empty());
+            EditBox box = new InsetNumberBox(font, leftPos + PANEL_X + 45, y, 58, 16, Component.empty());
             box.setValue(Integer.toString(menu.value(index)));
             box.setFilter(text -> text.matches("-?\\d{0,5}"));
             box.setResponder(text -> {
@@ -203,13 +203,13 @@ public final class AdvancedXianqiaoInterfaceScreen
             valueBoxes.add(box);
             addRenderableWidget(box);
         }
-        previewButton = addActionButton(leftPos + PANEL_X, topPos + 124, 60, 16,
+        previewButton = addActionButton(leftPos + PANEL_X, topPos + 126, 59, 16,
                 Component.translatable("container.immortalstorage.ruin.preview").getString(), 12);
-        enabledButton = addActionButton(leftPos + PANEL_X + 64, topPos + 124, 60, 16,
+        enabledButton = addActionButton(leftPos + PANEL_X + 63, topPos + 126, 59, 16,
                 Component.translatable("container.immortalstorage.ruin.enabled").getString(), 13);
-        addActionButton(leftPos + PANEL_X, topPos + 142, 20, 16, "-", 14);
-        addActionButton(leftPos + PANEL_X + 68, topPos + 142, 20, 16, "+", 15);
-        EditBox frequency = new InsetNumberBox(font, leftPos + PANEL_X + 23, topPos + 142, 42, 16, Component.empty());
+        addActionButton(leftPos + PANEL_X + 26, topPos + 144, 16, 16, "-", 14);
+        addActionButton(leftPos + PANEL_X + 106, topPos + 144, 16, 16, "+", 15);
+        EditBox frequency = new InsetNumberBox(font, leftPos + PANEL_X + 45, topPos + 144, 58, 16, Component.empty());
         frequency.setValue(Integer.toString(menu.value(6)));
         frequency.setFilter(text -> text.matches("\\d{0,5}"));
         frequency.setResponder(text -> {
@@ -223,15 +223,15 @@ public final class AdvancedXianqiaoInterfaceScreen
         });
         valueBoxes.add(frequency);
         addRenderableWidget(frequency);
-        accessButton = addActionButton(leftPos + PANEL_X, topPos + 160, 120, 16,
+        accessButton = addActionButton(leftPos + PANEL_X, topPos + 162, 122, 16,
                 Component.translatable(menu.value(9) == 0
                         ? "container.immortalstorage.advanced_ruin.access_skip"
                         : "container.immortalstorage.advanced_ruin.access_force").getString(), 16);
-        splitButton = addActionButton(leftPos + PANEL_X, topPos + 177, 120, 16,
+        splitButton = addActionButton(leftPos + PANEL_X, topPos + 180, 122, 16,
                 Component.translatable(menu.value(10) == 0
                         ? "container.immortalstorage.advanced_ruin.split_item"
                         : "container.immortalstorage.advanced_ruin.split_group").getString(), 17);
-        orderButton = addActionButton(leftPos + PANEL_X, topPos + 194, 120, 16,
+        orderButton = addActionButton(leftPos + PANEL_X, topPos + 198, 122, 16,
                 Component.translatable(menu.value(11) == 0
                         ? "container.immortalstorage.advanced_ruin.order_far"
                         : "container.immortalstorage.advanced_ruin.order_near").getString(), 18);
@@ -318,10 +318,10 @@ public final class AdvancedXianqiaoInterfaceScreen
     private void renderSettingsPanel(GuiGraphics graphics) {
         String[] labels = {"x", "y", "z", "+x", "+y", "+z"};
         for (int i = 0; i < labels.length; i++) {
-            graphics.drawString(font, labels[i], leftPos + PANEL_X + 92, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
+            graphics.drawString(font, labels[i], leftPos + PANEL_X, topPos + 22 + i * 18, ConfigurationStyle.TEXT, false);
         }
         graphics.drawString(font, Component.translatable("container.immortalstorage.ruin.tick").getString(),
-                leftPos + PANEL_X + 92, topPos + 146, ConfigurationStyle.TEXT, false);
+                leftPos + PANEL_X, topPos + 148, ConfigurationStyle.TEXT, false);
     }
 
     @Override

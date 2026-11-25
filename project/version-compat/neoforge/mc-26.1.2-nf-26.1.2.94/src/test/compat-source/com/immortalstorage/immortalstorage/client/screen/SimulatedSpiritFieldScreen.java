@@ -43,8 +43,8 @@ private static final List<Direction> SIDE_ORDER = List.of(
         super.init();
         settingsWidgets.clear();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 14, topPos + 18, menu));
-        redstoneModeButton.setWidth(89);
+                leftPos + imageWidth + 10, topPos + 18, menu));
+        redstoneModeButton.setWidth(98);
         settingsWidgets.add(redstoneModeButton);
         addRenderableWidget(Button.builder(Component.literal("⚙"), button -> toggleSettings())
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
@@ -55,13 +55,13 @@ private static final List<Direction> SIDE_ORDER = List.of(
     }
 
     private void buildSettingsWidgets() {
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         faceButtons.clear();
         for (int index = 0; index < SIDE_ORDER.size(); index++) {
             Direction side = SIDE_ORDER.get(index);
             FacePreviewButton button = new FacePreviewButton(
-                    panelX + 10 + (index % 3) * 31, topPos + 48 + (index / 3) * 31,
-                    27, shortSide(side), () -> adjacentBlockPreview(side),
+                    railX + (index % 3) * 34, topPos + 46 + (index / 3) * 34,
+                    30, shortSide(side), () -> adjacentBlockPreview(side),
                     () -> menu.outputFace(side.get3DDataValue()) ? 0xFF38A85A : 0xFF777777,
                     clicked -> send(10 + side.get3DDataValue()));
             button.setTooltip(Tooltip.create(Component.translatable(
@@ -70,14 +70,14 @@ private static final List<Direction> SIDE_ORDER = List.of(
             settingsWidgets.add(addRenderableWidget(button));
         }
         xianqiaoButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(0))
-                .bounds(panelX + 10, topPos + 120, 89, 18).build());
+                .bounds(railX, topPos + 123, 98, 18).build());
         automaticButton = addRenderableWidget(Button.builder(Component.empty(), clicked -> send(1))
-                .bounds(panelX + 10, topPos + 143, 89, 18).build());
+                .bounds(railX, topPos + 144, 98, 18).build());
         settingsWidgets.add(xianqiaoButton);
         settingsWidgets.add(automaticButton);
         settingsWidgets.add(addRenderableWidget(Button.builder(
                 Component.translatable("container.immortalstorage.reincarnation.release_xp"), clicked -> send(2))
-                .bounds(panelX + 10, topPos + 166, 89, 18).build()));
+                .bounds(railX, topPos + 165, 98, 18).build()));
     }
 
     private ItemStack adjacentBlockPreview(Direction side) {
@@ -141,11 +141,11 @@ private static final List<Direction> SIDE_ORDER = List.of(
     }
 
     private void renderSettingsPanel(GuiGraphicsExtractor graphics) {
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.faces"), panelX + 10, topPos + 38, ConfigurationStyle.TEXT, false);
+                "container.immortalstorage.reincarnation.faces"), railX, topPos + 36, ConfigurationStyle.TEXT, false);
         graphics.text(font, Component.translatable(
-                "container.immortalstorage.reincarnation.switches"), panelX + 10, topPos + 108,
+                "container.immortalstorage.reincarnation.switches"), railX, topPos + 112,
                 ConfigurationStyle.TEXT, false);
     }
     @Override protected void renderLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {

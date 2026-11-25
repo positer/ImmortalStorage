@@ -32,7 +32,8 @@ public class ImmortalFurnaceScreen extends ConfigurationWindowScreen<ImmortalFur
     @Override protected void init() {
         super.init();
         redstoneModeButton = addRenderableWidget(MachineRedstoneModeButton.create(
-                leftPos + imageWidth + 9, topPos + 22, menu));
+                leftPos + imageWidth + 10, topPos + 22, menu));
+        redstoneModeButton.setWidth(84);
         settingsButton = addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
                 Component.literal("⚙"), button -> {
                     settingsOpen = !settingsOpen;

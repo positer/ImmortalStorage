@@ -111,7 +111,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
         int mainWidth = realmPanelWidth() - 2 * REALM_TIME_SIDE_INSET;
         int environmentWidth = (mainWidth - 4) / 2;
         this.tribulateButton = this.addRenderableWidget(new TerminalControlButton(
-                panelX + (realmPanelWidth() - 68) / 2, this.topPos + 99, 68, 18,
+                insetX, this.topPos + 99, mainWidth, 18,
                 Component.translatable("container.immortalstorage.terminal.tribulate"),
                 button -> ClientPacketDistributor.sendToServer(new ModPayloads.TriggerTribulation(this.menu.containerId)),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.tribulate_hint"))));
@@ -120,7 +120,7 @@ public class XianqiaoStorageScreen extends AbstractTerminalScreen<XianqiaoStorag
                 button -> ClientPacketDistributor.sendToServer(new ModPayloads.RealmEnvironment(this.menu.containerId, 0)),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.day_night_hint"))));
         this.weatherButton = this.addRenderableWidget(new TerminalControlButton(
-                insetX + environmentWidth + 4, this.topPos + 78, environmentWidth, 16, weatherLabel(),
+                insetX + environmentWidth + 4, this.topPos + 78, mainWidth - environmentWidth - 4, 16, weatherLabel(),
                 button -> ClientPacketDistributor.sendToServer(new ModPayloads.RealmEnvironment(this.menu.containerId, 1)),
                 Tooltip.create(Component.translatable("container.immortalstorage.terminal.weather_hint"))));
         int timeControlY = this.topPos + REALM_TIME_ROW_Y;

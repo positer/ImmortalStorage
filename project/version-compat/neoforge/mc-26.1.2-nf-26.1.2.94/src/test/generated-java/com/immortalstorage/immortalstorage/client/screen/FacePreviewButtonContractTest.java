@@ -23,6 +23,8 @@ final class FacePreviewButtonContractTest {
         String source = Files.readString(java.resolve("SourceVeinScreen.java"));
 
         assertTrue(button.contains("graphics.fakeItem"));
+        assertTrue(button.contains("int height = getHeight()") && button.contains("y + (height - 16) / 2"),
+                "rectangular direction controls center their item within the real hitbox height");
         assertTrue(xianqiao.contains("adjacentBlockPreview"));
         assertTrue(xianqiao.contains("interfaceModeColor"));
         assertTrue(xianqiao.contains("slot_face_tooltip"));

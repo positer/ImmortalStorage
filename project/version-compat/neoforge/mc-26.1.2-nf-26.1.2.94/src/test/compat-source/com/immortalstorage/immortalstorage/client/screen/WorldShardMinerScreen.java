@@ -24,7 +24,7 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
     private static final int STATUS_TOP = 17;
     private static final int STATUS_HEIGHT = 18;
     private static final int CHEST_ROWS_HEIGHT = 54;
-    private static final int SETTINGS_WIDTH = 126;
+    @Override protected int configurationPanelWidth() { return 126; }
     private final List<Button> settingsWidgets = new ArrayList<>();
     private boolean settingsOpen;
 
@@ -42,12 +42,12 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
                 .bounds(leftPos + imageWidth - 22, topPos - 20, 20, 20)
                 .tooltip(Tooltip.create(Component.translatable(
                         "container.immortalstorage.configuration"))).build());
-        int panelX = leftPos + imageWidth + 4;
+        int railX = leftPos + imageWidth + 10;
         for (int index = 0; index < ConfigurationStyle.FACES.size(); index++) {
             Direction side = ConfigurationStyle.FACES.get(index);
             final int face = side.get3DDataValue();
-            Button button = new FacePreviewButton(panelX + 8 + (index % 3) * 34,
-                    topPos + 34 + (index / 3) * 34, 30,
+            Button button = new FacePreviewButton(railX + (index % 3) * 37,
+                    topPos + 35 + (index / 3) * 37, 34,
                     ConfigurationStyle.faceLabel(side),
                     () -> net.minecraft.world.item.ItemStack.EMPTY,
                     () -> menu.outputFace(face) ? ConfigurationStyle.ENABLED : ConfigurationStyle.DISABLED,
@@ -58,10 +58,10 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
         }
         settingsWidgets.add(addRenderableWidget(Button.builder(Component.empty(), button ->
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 0))
-                .bounds(panelX + 8, topPos + 108, 110, 20).build()));
+                .bounds(railX, topPos + 110, 108, 18).build()));
         settingsWidgets.add(addRenderableWidget(Button.builder(Component.empty(), button ->
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, 1))
-                .bounds(panelX + 8, topPos + 132, 110, 20).build()));
+                .bounds(railX, topPos + 132, 108, 18).build()));
         refreshSettings();
         refreshOutputButtons();
     }
@@ -105,7 +105,6 @@ public final class WorldShardMinerScreen extends ConfigurationWindowScreen<World
         com.immortalstorage.immortalstorage.compat.mc2612.CompatGui.blitTexture(graphics, CHEST_TEXTURE, x, y + STATUS_TOP + STATUS_HEIGHT + CHEST_ROWS_HEIGHT,
                 0.0F, 126.0F, imageWidth, 96, 256, 256);
         if (settingsOpen) {
-            int panelX = leftPos + imageWidth + 4;
                 VanillaGuiPainter.slot(graphics, leftPos + 190, topPos + 160, true);
         }
     }

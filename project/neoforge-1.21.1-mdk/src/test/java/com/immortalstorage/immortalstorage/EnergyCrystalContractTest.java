@@ -327,9 +327,9 @@ final class EnergyCrystalContractTest {
         String field = source("client", "screen", "SimulatedSpiritFieldScreen.java");
         String furnace = source("client", "screen", "SimulatedReincarnationFurnaceScreen.java");
         for (String screen : new String[]{crystal, field, furnace}) {
-            assertTrue(screen.contains("topPos + 108"), "switch heading must be below face buttons");
-            assertTrue(screen.contains("topPos + 120"), "first switch must be below heading");
-            assertTrue(screen.contains("topPos + 143"), "second switch must be below first switch");
+            assertTrue(screen.contains("topPos + 112"), "switch heading must be below face buttons");
+            assertTrue(screen.contains(".bounds(railX, topPos + 123, 98, 18)"), "first switch must be below heading");
+            assertTrue(screen.contains(".bounds(railX, topPos + 144, 98, 18)"), "second switch must be below first switch");
         }
     }
 

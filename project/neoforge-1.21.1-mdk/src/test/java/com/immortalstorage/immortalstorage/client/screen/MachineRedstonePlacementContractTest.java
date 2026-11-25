@@ -11,7 +11,7 @@ final class MachineRedstonePlacementContractTest {
                 "SimulatedReincarnationFurnaceScreen.java", "EnergyCrystalScreen.java"}) {
             String source = Files.readString(screen(name));
             assertTrue(source.contains("settingsWidgets.add(redstoneModeButton)"), name);
-            assertTrue(source.contains("leftPos + imageWidth + 14, topPos + 18"), name);
+            assertTrue(source.contains("leftPos + imageWidth + 10, topPos + 18"), name);
         }
         String basin = Files.readString(screen("TreasureBasinScreen.java"));
         assertTrue(basin.contains("redstoneModeButton.visible = settingsOpen"));
@@ -23,15 +23,15 @@ final class MachineRedstonePlacementContractTest {
         assertCompactSchedule(source);
 
         String entangled = Files.readString(screen("AdvancedEntangledMiniatureRuinScreen.java"));
-        assertTrue(entangled.contains("leftPos + imageWidth + 6, topPos - 18, menu"));
+        assertTrue(entangled.contains("leftPos + imageWidth + 10, topPos - 18, menu"));
         assertTrue(entangled.contains("configurationSideTitle()"));
         assertTrue(entangled.contains("container.immortalstorage.ruin.side_reversed"));
         assertCompactSchedule(entangled);
     }
 
     private static void assertCompactSchedule(String source) {
-        for (int y : new int[]{164, 181, 198}) {
-            assertTrue(source.contains("topPos + " + y + ", 120, 16"), "scheduling row at " + y);
+        for (int y : new int[]{162, 180, 198}) {
+            assertTrue(source.contains("topPos + " + y + ", 122, 16"), "scheduling row at " + y);
         }
         assertTrue(source.contains("accessButton = addActionButton("));
         assertTrue(source.contains("splitButton = addActionButton("));
